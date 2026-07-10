@@ -1,0 +1,52 @@
+{
+  "schema_version": "1.0.0",
+  "captured_at_utc": "2026-07-10T19:21:11Z",
+  "ticket_id": "P002",
+  "result": "passed-with-disclosed-scope",
+  "runtime": {
+    "build_id": "P002-egress-denied",
+    "bind_address": "127.0.0.1",
+    "port": 8766,
+    "egress_policy": "macOS sandbox profile denied network-outbound",
+    "page_loaded": true,
+    "build_marker_present": true
+  },
+  "observations": {
+    "process_sockets": [
+      "127.0.0.1:8766 LISTEN",
+      "one browser-to-local-server connection"
+    ],
+    "external_process_sockets": [],
+    "external_dom_assets": [],
+    "external_ai_requests": [],
+    "analytics_requests": [],
+    "login_requests": [],
+    "remote_storage_requests": []
+  },
+  "negative_controls": [
+    {
+      "target": "DNS-resolved HTTPS endpoint",
+      "result": "blocked",
+      "exit_code": 6
+    },
+    {
+      "target": "direct public IP endpoint",
+      "result": "blocked",
+      "exit_code": 7
+    }
+  ],
+  "static_controls": {
+    "streamlit_usage_telemetry": false,
+    "runtime_ai": false,
+    "analytics": false,
+    "login": false,
+    "permanent_storage": false,
+    "declared_external_endpoints": []
+  },
+  "evidence_method": "Egress-denied shell smoke test, process socket observation, browser DOM asset inspection, and static dependency/config tests.",
+  "limitations": [
+    "This record is not a packet capture.",
+    "The P002 shell performs no analysis and therefore does not verify future worker egress behavior.",
+    "Production container and reverse-proxy isolation remain assigned to P014 and final audit to P015."
+  ]
+}

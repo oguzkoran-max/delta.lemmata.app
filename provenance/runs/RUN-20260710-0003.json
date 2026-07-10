@@ -1,0 +1,75 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "RUN-20260710-0003",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": ["P002"],
+  "started_at_utc": "2026-07-10T18:42:52Z",
+  "ended_at_utc": "2026-07-10T19:21:11Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": null,
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "browser_targets": ["1440x1000", "390x844"],
+    "egress_denial": "macOS sandbox profile"
+  },
+  "command": "./scripts/verify.sh; browser desktop/mobile DOM and keyboard audit; egress-denied Streamlit smoke test",
+  "exit_code": 0,
+  "config_sha256": "7baa829523c35ec303ec59e41977ee7015d4c8cb1f2a445d04a331f819789e13",
+  "input_artifacts": [
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "aac2e17d0670adfde5a5f478f4d5e346d6bd859aa0b95ca63cb5b6d3040fa0f9"
+    },
+    {
+      "path": "app.py",
+      "sha256": "4a5e3ac6e0bcfc3616cb67f44d0af443323149f71431184f0f8fa386b6bfe0b4"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "2b156c85cc20b0c635a95737a3db0699f3cde502164d58f67d01366005476968"
+    },
+    {
+      "path": "src/delta_lemmata/workbench.py",
+      "sha256": "146215a54b11c8cf92254d984dc4d23d7c95180392d8206aec247a03c998a52d"
+    },
+    {
+      "path": "src/delta_lemmata/health.py",
+      "sha256": "aeb8372932ce3823c75d6c62b0ab05252d41e6a067610560f6b454df6c7c67ed"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P002/report.md",
+      "sha256": "0b5174d805eb625f93a9a59b15e143864a85c48851e14fd85b77881093c2107a"
+    },
+    {
+      "path": "provenance/evidence/P002/browser-audit.json",
+      "sha256": "64d7fd3ed332dace4d67c61859fe9ef745d4c914d7288dcb70221d11b78e672f"
+    },
+    {
+      "path": "provenance/evidence/P002/accessibility-report.json",
+      "sha256": "51de41017c4691efc57d82fb2b01e67ccaf861532b6a5d871dfa762d2579791a"
+    },
+    {
+      "path": "provenance/evidence/P002/network-trace.json",
+      "sha256": "8488521a0ca95af882a13d130fd6e7e3416b42ac332b3969e0100a9c401c7fe3"
+    },
+    {
+      "path": "provenance/evidence/P002/copy-snapshot.txt",
+      "sha256": "35b1ff61d38155deaf9ac304a820eb27a361f92ec6223cb102339506a366554e"
+    },
+    {
+      "path": "provenance/evidence/P002/desktop-1440x1000.png",
+      "sha256": "7f7e6f24ff80bbcc09af476dde68cbfbf1acc7a197d30814f1df3d56132d5f8e"
+    },
+    {
+      "path": "provenance/evidence/P002/mobile-390x844.png",
+      "sha256": "44e08577e91fd7521d63e54386f739b18528948f8746b9394f03d91896733853"
+    }
+  ],
+  "notes": "The final verification passed 40 tests at 100% measured Python source coverage. Browser and offline observations are scoped to the P002 interface shell; production security and scientific computation remain later-ticket responsibilities. Failed intermediate checks are preserved in the P002 report."
+}

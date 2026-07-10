@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "captured_at_utc": "2026-07-10T19:21:11Z",
+  "ticket_id": "P002",
+  "result": "passed-with-disclosed-scope",
+  "checks": [
+    {
+      "id": "keyboard-purpose-selection",
+      "result": "passed",
+      "procedure": "Focused the Text Proximity option, pressed ArrowRight, then Space.",
+      "observed_focus": "Group Comparison",
+      "observed_checked_controls": ["Group Comparison", "Guided"]
+    },
+    {
+      "id": "visible-control-names-desktop",
+      "result": "passed",
+      "visible_control_count": 10,
+      "unnamed_visible_controls": 0
+    },
+    {
+      "id": "visible-control-names-mobile",
+      "result": "passed",
+      "visible_control_count": 4,
+      "unnamed_visible_controls": 0
+    },
+    {
+      "id": "disabled-future-actions",
+      "result": "passed",
+      "controls": [
+        "Choose File",
+        "Add metadata table",
+        "Continue to parameters",
+        "Run analysis"
+      ],
+      "observed_state": "disabled"
+    },
+    {
+      "id": "responsive-text-and-panels",
+      "result": "passed",
+      "text_overflow_count": 0,
+      "panel_overlap_count": 0,
+      "horizontal_page_overflow": false
+    }
+  ],
+  "supporting_tests": [
+    "tests/test_webapp.py",
+    "tests/test_catalog.py",
+    "tests/test_workbench.py",
+    "provenance/evidence/P002/browser-audit.json"
+  ],
+  "limitations": [
+    "No screen-reader session was performed in P002.",
+    "No claim of WCAG conformance or general usability is made.",
+    "Error-message focus management will be tested when secure ingestion and executable workflows exist."
+  ]
+}

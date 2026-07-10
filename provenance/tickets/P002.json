@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P002",
+  "title": "English-Only Workbench Shell",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-10T18:42:52Z",
+  "closed_at_utc": null,
+  "objective": "Create the direct, accessible, English-only Delta workbench shell without implementing ingestion or stylometric computation.",
+  "scope": [
+    "Streamlit application entry point and workbench navigation",
+    "Text Proximity, Group Comparison, and Style Over Time purpose selection",
+    "Guided and Research mode shell with honestly disabled future controls",
+    "Central English UI string registry and shared state contract",
+    "Public-safe health and readiness information",
+    "Responsive, keyboard, copy, offline-network, and runtime-boundary evidence"
+  ],
+  "non_goals": [
+    "Editing lemmata.app or adding its future Launch Stylometry link",
+    "Corpus upload or ingestion",
+    "R stylo execution or scientific results",
+    "Pinocchio data or analysis",
+    "Production deployment, login, analytics, runtime AI, or permanent storage"
+  ],
+  "dependencies": ["P001"],
+  "claim_ids": ["CE-01", "CE-18", "CE-20"],
+  "threat_ids": ["SEC-14", "EPI-13"],
+  "decision_ids": ["HD-20260710-0003", "HD-20260710-0004"],
+  "prompt_event_ids": ["PE-20260710-0002"],
+  "commit_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex"],
+  "acceptance": [
+    {
+      "id": "P002-AC-01",
+      "criterion": "The workbench shell renders at desktop and mobile viewports without text overflow, incoherent overlap, or horizontal page scrolling.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P002-AC-02",
+      "criterion": "The primary workflow is keyboard reachable and interactive controls expose accessible names and state.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P002-AC-03",
+      "criterion": "Rendered and registered copy contains no prohibited authorship, confidence, universal ease, no-knowledge, or unverified reproducibility claim.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P002-AC-04",
+      "criterion": "The shell loads with external network access blocked and makes no AI, analytics, login, or remote-storage request.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P002-AC-05",
+      "criterion": "All user-facing application copy is retrieved from one English registry with no language selector or embedded Turkish/Italian locale.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P002-AC-06",
+      "criterion": "Health and readiness output exposes the version and build identity without a system path, environment value, or secret.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P002-AC-07",
+      "criterion": "Empty, loading, error, cancelled, and complete states have a versioned shared presentation contract and shell-level tests.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [],
+  "commands": [],
+  "blockers": []
+}

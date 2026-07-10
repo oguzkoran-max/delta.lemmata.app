@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0.0",
+  "captured_at_utc": "2026-07-10T19:21:11Z",
+  "ticket_id": "P002",
+  "target_url": "http://127.0.0.1:8766/",
+  "build_id": "P002-egress-denied",
+  "result": "passed",
+  "audits": [
+    {
+      "target": "desktop",
+      "viewport_css_px": {"width": 1440, "height": 1000},
+      "document_width_css_px": 1440,
+      "horizontal_overflow": false,
+      "visible_control_count": 10,
+      "visible_disabled_control_count": 4,
+      "unnamed_visible_controls": [],
+      "text_overflow": [],
+      "external_assets": [],
+      "prohibited_copy": [],
+      "panel_overlaps": [],
+      "build_marker_present": true,
+      "screenshot": "provenance/evidence/P002/desktop-1440x1000.png",
+      "screenshot_sha256": "7f7e6f24ff80bbcc09af476dde68cbfbf1acc7a197d30814f1df3d56132d5f8e"
+    },
+    {
+      "target": "mobile",
+      "viewport_css_px": {"width": 390, "height": 844},
+      "document_width_css_px": 390,
+      "horizontal_overflow": false,
+      "visible_control_count": 4,
+      "visible_disabled_control_count": 0,
+      "unnamed_visible_controls": [],
+      "text_overflow": [],
+      "external_assets": [],
+      "prohibited_copy": [],
+      "panel_overlaps": [],
+      "build_marker_present": true,
+      "sidebar_state": "collapsed-off-canvas",
+      "sidebar_rect_css_px": {"x": -300, "y": 0, "width": 1, "height": 844},
+      "screenshot": "provenance/evidence/P002/mobile-390x844.png",
+      "screenshot_sha256": "44e08577e91fd7521d63e54386f739b18528948f8746b9394f03d91896733853"
+    }
+  ],
+  "audit_method": "Browser DOM geometry, visible-control naming, local/external asset URL inspection, claim denylist inspection, and screenshot review.",
+  "limitations": [
+    "This is a P002 shell audit, not a full WCAG conformance assessment.",
+    "Only the documented desktop and mobile viewports were accepted in this ticket.",
+    "Production proxy, TLS, CORS, Host, CSRF, and security-header verification remains assigned to P014."
+  ]
+}

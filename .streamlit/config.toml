@@ -1,0 +1,26 @@
+[theme]
+primaryColor = "#116f63"
+backgroundColor = "#f4f6f5"
+secondaryBackgroundColor = "#e7eeeb"
+textColor = "#18211f"
+linkColor = "#315f7b"
+borderColor = "#ccd6d1"
+showWidgetBorder = true
+baseRadius = "small"
+buttonRadius = "small"
+font = "sans-serif"
+headingFont = "sans-serif"
+codeFont = "monospace"
+
+[browser]
+gatherUsageStats = false
+
+[server]
+headless = true
+enableCORS = true
+enableXsrfProtection = true
+runOnSave = true
+
+[client]
+showErrorDetails = "none"
+toolbarMode = "minimal"
