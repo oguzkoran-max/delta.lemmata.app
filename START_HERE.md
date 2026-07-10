@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P001 başlamaya hazır; ürün kodu henüz yazılmadı.
+**Güncel aşama:** P001 tamamlandı; P002 English-only workbench shell başlamaya hazır.
 
 ## 1. Her Oturumda Oku
 
@@ -104,15 +104,15 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Aktif iş `P001: Repository, Locks, Metadata, and Provenance Scaffold`dır.
+Sıradaki iş `P002: English-Only Workbench Shell`dır. P002 henüz açılmamıştır.
 
 Başlamadan önce:
 
 1. `SESSION_HANDOFF.md` dosyasını oku.
-2. Roadmap'te yalnız P001 bölümünü oku.
-3. ADR-0003 ve ADR-0008'i; claim CE-12/18/19/20 ile threat SEC-16/RP-08/RP-09'u oku.
-4. Mevcut Git topolojisini ve kullanıcı değişikliklerini yalnız incele; geri alma.
-5. Repository topolojisi kararını ADR-0009 olarak aç.
-6. P001 ticket kaydını aç, sonra scaffold ve human-decision ledger yapısını uygula.
+2. Roadmap'te yalnız P002 bölümünü oku.
+3. ADR-0001 ve ADR-0008'i; claim CE-01/18/20 ile threat SEC-14/EPI-13'ü oku.
+4. `provenance/tickets/P001.json` ve P001 acceptance raporundan temel ortamın geçtiğini doğrula.
+5. `prompts/P002-start.md` içindeki human-reviewed şablonu gerçek oturum isteğine uyarla.
+6. P002 için yeni Ticket ve PromptEvent aç; UI koduna ancak bundan sonra başla.
 
-P002 veya başka ürün özelliğine P001 acceptance kapısı geçmeden başlanmaz.
+P002'de ingestion, gerçek analiz, Pinokyo verisi veya deployment uygulanmaz.

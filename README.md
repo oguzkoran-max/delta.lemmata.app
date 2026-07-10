@@ -5,8 +5,9 @@ digital humanities research. Its supported workflows are designed to run without
 requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
-**Current stage:** P001 repository and provenance scaffold. No public analysis
-workflow has been implemented or validated yet.
+**Current stage:** P001 repository and provenance scaffold passed its acceptance
+gate. P002 is ready to start; no public analysis workflow has been implemented
+or validated yet.
 
 ## Product Boundaries
 

@@ -2,9 +2,9 @@
   "schema_version": "1.0.0",
   "ticket_id": "P001",
   "title": "Repository, Locks, Metadata, and Provenance Scaffold",
-  "status": "in-progress",
+  "status": "complete",
   "opened_at_utc": "2026-07-10T12:11:30Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-10T12:45:12Z",
   "objective": "Create an independent, portable, locked, testable, and evidence-producing project foundation without implementing product workflows.",
   "scope": [
     "Independent repository boundary",
@@ -24,7 +24,7 @@
   "threat_ids": ["SEC-16", "RP-08", "RP-09", "EPI-13"],
   "decision_ids": ["HD-20260710-0001", "HD-20260710-0002"],
   "prompt_event_ids": ["PE-20260710-0001"],
-  "commit_ids": [],
+  "commit_ids": ["26131a88a04d1d79ffe50d9eb9ee676d41c2072b"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -32,47 +32,127 @@
     {
       "id": "P001-AC-01",
       "criterion": "A documented single command restores the locked Python and R environments from a clean checkout.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P001/clean-clone-verification.md",
+        "provenance/runs/RUN-20260710-0002.json"
+      ]
     },
     {
       "id": "P001-AC-02",
       "criterion": "Format, lint, type, unit, metadata, and schema checks pass with zero errors.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P001/report.md",
+        "provenance/runs/RUN-20260710-0001.json",
+        "provenance/runs/RUN-20260710-0002.json"
+      ]
     },
     {
       "id": "P001-AC-03",
       "criterion": "Two frozen Python syncs preserve the lock and direct dependency versions; the R lock reports a consistent state.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P001/environment-summary.json",
+        "provenance/evidence/P001/clean-clone-verification.md"
+      ]
     },
     {
       "id": "P001-AC-04",
       "criterion": "PromptEvent capture modes and hashes validate without representing summary-only content as native.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/prompt-events.jsonl",
+        "tests/test_schemas.py"
+      ]
     },
     {
       "id": "P001-AC-05",
       "criterion": "HumanDecision records distinguish human ownership from AI assistance and validate against the schema.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/human-decision-ledger.jsonl",
+        "schemas/human-decision.schema.json",
+        "tests/test_schemas.py"
+      ]
     },
     {
       "id": "P001-AC-06",
       "criterion": "Repository scans find no secret, user corpus, or local absolute path in versionable files.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "scripts/scan_repository.py",
+        "provenance/evidence/P001/report.md"
+      ]
     },
     {
       "id": "P001-AC-07",
       "criterion": "Container base references are digest-pinned; local build verification is reported truthfully.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "containers/base-images.lock.json",
+        "containers/Dockerfile",
+        "docs/development/local-runtime-limitations.md"
+      ]
     }
   ],
-  "changed_files": [],
-  "commands": [],
+  "changed_files": [
+    "P000 canonical contracts, ADR-0001 through ADR-0008, and agent handoff documents imported as the initial repository baseline",
+    "ADR-0009, README, VERSION, LICENSE, CITATION.cff, codemeta.json, and repository policy files",
+    "pyproject.toml, uv.lock, renv.lock, Python package scaffold, and R dependency scaffold",
+    "PromptEvent, Ticket, HumanDecision, Run, AssetRights, and ReleaseManifest schemas and records",
+    "Bootstrap, verification, metadata, repository scan, SBOM, security, test, and CI files",
+    "P001 evidence report, environment summary, clean-clone verification, and two Run records"
+  ],
+  "commands": [
+    {
+      "command": "git init -b main",
+      "exit_code": 0,
+      "result": "Created the independent Delta repository on branch main; the parent repository ignores the complete directory.",
+      "evidence": "decisions/ADR-0009-repository-and-environment.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv lock --python 3.13.9",
+      "exit_code": 1,
+      "result": "Initial lock attempt correctly rejected incompatible legacy license metadata; metadata was corrected before retry.",
+      "evidence": "provenance/evidence/P001/report.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv lock --python 3.13.9",
+      "exit_code": 0,
+      "result": "Created the frozen Python dependency lock.",
+      "evidence": "uv.lock"
+    },
+    {
+      "command": "./scripts/bootstrap.sh",
+      "exit_code": 0,
+      "result": "Restored the locked Python and R project environments and reported a synchronized R lock.",
+      "evidence": "provenance/runs/RUN-20260710-0001.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "Passed format, lint, strict type, 24 test, metadata, schema, repository, supply-chain, and R lock checks with 100% measured Python source coverage.",
+      "evidence": "provenance/runs/RUN-20260710-0001.json"
+    },
+    {
+      "command": "./scripts/generate_evidence.sh",
+      "exit_code": 0,
+      "result": "Generated Python and R SBOMs, audited 44 runtime dependencies with zero reported known vulnerabilities, and produced zero secret findings after structural allowlisting.",
+      "evidence": "provenance/evidence/P001/environment-summary.json"
+    },
+    {
+      "command": "git clone --no-local <repository> <temporary-clone> && ./scripts/bootstrap.sh && ./scripts/verify.sh && git status --porcelain",
+      "exit_code": 0,
+      "result": "A new clone of commit 26131a8 restored both environments, passed all gates, and ended with zero versionable changes.",
+      "evidence": "provenance/evidence/P001/clean-clone-verification.md"
+    },
+    {
+      "command": "Rscript -e 'library(stylo)'",
+      "exit_code": 1,
+      "result": "The current macOS R/Tcl-Tk build requires XQuartz; this disclosed platform limitation does not represent a passed scientific execution test and remains assigned to P006.",
+      "evidence": "docs/development/local-runtime-limitations.md"
+    }
+  ],
   "blockers": []
 }

@@ -8,7 +8,8 @@
 ## Result
 
 All seven P001 acceptance criteria passed within their stated scope. The
-repository and local lock baseline are ready for an initial commit and P002.
+repository baseline was committed as `26131a8`, restored from a new Git clone,
+and is ready for P002.
 This report does not claim that the container has been built, that `stylo`
 analysis works, or that any scientific result has been validated.
 
@@ -46,7 +47,7 @@ Two consecutive frozen bootstrap runs left both lockfiles byte-identical.
 
 | Gate | Result | Evidence |
 |---|---|---|
-| P001-AC-01 clean checkout command | Passed | Isolated clean source copy; `./scripts/bootstrap.sh`, then full verify |
+| P001-AC-01 clean checkout command | Passed | New Git clone of `26131a8`; `./scripts/bootstrap.sh`, then full verify; zero working-tree changes |
 | P001-AC-02 quality checks | Passed | Ruff format/lint, strict mypy, 24 pytest tests, 100% Python source coverage |
 | P001-AC-03 lock consistency | Passed | Second bootstrap; both SHA-256 values unchanged; `renv` synchronized |
 | P001-AC-04 PromptEvent semantics | Passed | Native request hash and summary-only response separation validated by schema/tests |

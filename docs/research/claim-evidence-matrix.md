@@ -1,8 +1,8 @@
 # Delta Claim-Evidence Matrix
 
-**Durum:** P000 kanonik claim planı  
+**Durum:** P001 sonrası kanonik claim planı
 **Tarih:** 2026-07-10  
-**Kanıt durumu:** Ürün kodu ve run artifact'i henüz yok; bütün ampirik claim'ler `planned` durumunda
+**Kanıt durumu:** P001 temel ve provenance kontrolleri var; ürün ve bilimsel sonuç claim'leri henüz doğrulanmadı
 
 ## 1. Kullanım Kuralı
 
@@ -57,7 +57,19 @@ CE-15 p95 yüzde 20 sınırı P014 baseline ölçümünden önce dondurulacak pr
 | CE-19 | `Claude and Codex assisted development. From P001 onward, AI-assisted tickets are linked to PromptEvents with hashes and explicit recording modes.` | P001 sonrası AI-assisted ticket ve commit coverage yüzde 100; hash verification yüzde 100; reconstructed kayıt native diye sunulmaz; gaps raporlanır | `prompt-events.jsonl`, `provenance-coverage.json`, AI disclosure | P001-P015 | `AI tools assisted development; the surviving provenance record is incomplete and reconstructed where indicated.` |
 | CE-20 | `Delta was developed through scholarly vibe coding: a literary and digital humanities scholar without prior formal proficiency in Python software development retained ownership of research, method, acceptance, and scientific claims while using AI agents for implementation support.` | İmzalı öz-konumlanma beyanı; tamamlanan P001-P015 ticket'larında human decision/acceptance owner coverage yüzde 100; AI önerisi ile insan kararı ayrı; başarısız ajan koşumları dahil; Barış ledger walkthrough'u; genellenebilirlik iddiası sıfır | `human-decision-ledger.jsonl`, `scholarly-vibe-coding-case-report.md`, provenance coverage, expert checklist | P001-P015 | `AI agents assisted a scholar-led development process; the available record does not support a fuller claim about decision ownership or transferability.` |
 
-## 5. Claim Embargoları
+## 5. P001 Claim Durum Kaydı
+
+| Claim | Durum | P001 kanıtı | Kalan kapı |
+|---|---|---|---|
+| CE-12 | `implemented` | Kilitli ortamlar, citation/CodeMeta, checksum ve Run şemaları; `provenance/evidence/P001/report.md` | RO-Crate, gerçek release inventory, persistent identifiers ve P012/P015 clean rerun |
+| CE-18 | `implemented` | SBOM, dependency/config/secret taraması; v0.1 bağımlılıklarında runtime LLM istemcisi yok | P002 offline network trace ile P014/P015 production egress audit |
+| CE-19 | `implemented` | P001 Ticket, PromptEvent, commit ve recording-mode bağlantısı; exact request hash'i | P002-P015 tam coverage ve final provenance coverage raporu |
+| CE-20 | `implemented` | İki HumanDecision kaydı ve P001'de insan/AI rol ayrımı | P002-P015 owner coverage, başarısız koşumların kapsamı ve Barış ledger walkthrough'u |
+
+Bu ara durumlar claim'lerin `verified` olduğu anlamına gelmez. Site ve makale,
+ilgili son kapılar geçene kadar her satırın fallback language'ini kullanır.
+
+## 6. Claim Embargoları
 
 - CE-04 geçmeden genel `stylo parity` denmez; yalnız doğrulanan fixture adı verilir.
 - CE-11 ve CE-12 geçmeden `reproducible` kanıtlanmış sıfat gibi kullanılmaz. Güvenli ara ifade `reproducibility-oriented` olur.
@@ -69,7 +81,7 @@ CE-15 p95 yüzde 20 sınırı P014 baseline ölçümünden önce dondurulacak pr
 
 Çalışma başlığı kanıt üretilene dek `Reproducibility-Oriented` kullanır. `Reproducible` ancak CE-11 ve CE-12 birlikte geçerse submission öncesinde başlığa alınabilir.
 
-## 6. Site ve Makale Denylist
+## 7. Site ve Makale Denylist
 
 Şu ifadeler kullanılmaz:
 
@@ -95,7 +107,7 @@ Doğrulanabilir ürün cümlesi:
 
 Bu cümle yalnız desteklenen akışların teknik ön koşulunu tarif eder. General ease, learnability veya methodological competence claim'i değildir.
 
-## 7. Güncelleme Protokolü
+## 8. Güncelleme Protokolü
 
 Her ticket kapanırken:
 

@@ -1,8 +1,8 @@
 # Delta Project Memory
 
 **Son güncelleme:** 2026-07-10  
-**Durum:** P000 kapandı; P001 başlamaya hazır  
-**Kod:** Henüz başlamadı
+**Durum:** P001 kapandı; P002 başlamaya hazır
+**Kod:** Yalnız repository/provenance temeli var; kullanıcıya dönük iş akışı yok
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -168,9 +168,9 @@ Eski CLAUDE.md tarihsel arşive taşındı. Yeni sözleşme şu eski çelişkile
 
 ## Açık Kanıt İşleri
 
-P000 karar soruları tamamlandı. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
+P001 acceptance kapısı geçti. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
 
-P000 tasarımı çözülmüş, ilgili ticket acceptance kapısında izlenecekler:
+Sonraki ticket acceptance kapılarında izlenecekler:
 
 - Aday Collodi eserlerinin item-level source, edition ve rights audit'i
 - `research-grid-v1` içindeki kesin 24 hücrenin benchmark öncesi dondurulması
@@ -179,11 +179,11 @@ P000 tasarımı çözülmüş, ilgili ticket acceptance kapısında izlenecekler
 
 ## Sonraki Adımlar
 
-1. `prompts/P001-start.md` şablonuyla P001 oturumu başlatılır.
-2. Ayrı repository topolojisi ADR-0009 ile karara bağlanır.
-3. Lockfile, test, metadata ve provenance scaffold'u kurulur.
-4. P001 acceptance kanıtları `provenance/evidence/P001/` altında doğrulanır.
-5. P001 geçerse SESSION_HANDOFF P002'ye taşınır.
+1. `prompts/P002-start.md` şablonuyla P002 Ticket ve PromptEvent kaydı açılır.
+2. Yalnız English-only Streamlit workbench shell ve UI string registry uygulanır.
+3. Disabled state'ler gerçekmiş gibi görünmeden üç analiz amacı ile Guided/Research ayrımı gösterilir.
+4. Desktop/mobile, keyboard accessibility, denylisted copy ve offline-network acceptance kanıtları üretilir.
+5. P002 geçmeden ingestion veya gerçek analiz özelliğine başlanmaz.
 
 ## Anahtar Kullanıcı İfadeleri
 

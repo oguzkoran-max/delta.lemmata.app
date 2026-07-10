@@ -1,0 +1,39 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "RUN-20260710-0002",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": ["P001"],
+  "started_at_utc": "2026-07-10T12:42:51Z",
+  "ended_at_utc": "2026-07-10T12:43:08Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "26131a88a04d1d79ffe50d9eb9ee676d41c2072b",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "docker_available": false,
+    "checkout_type": "new local Git clone"
+  },
+  "command": "git clone --no-local <repository> <temporary-clone> && ./scripts/bootstrap.sh && ./scripts/verify.sh && git status --porcelain",
+  "exit_code": 0,
+  "config_sha256": "7baa829523c35ec303ec59e41977ee7015d4c8cb1f2a445d04a331f819789e13",
+  "input_artifacts": [
+    {
+      "path": "uv.lock",
+      "sha256": "5d435ec968063c0f4c7120e8974f1e94aef4b421eac265d52e0d7d4ce8ce450e"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P001/clean-clone-verification.md",
+      "sha256": "1de1c44571e63ffab632b7c45bbb1651d51d7c63e04568217bfd3e99558aec70"
+    }
+  ],
+  "notes": "The clean clone restored both locked environments, passed 24 tests and every P001 verification gate, and ended with zero versionable changes. The disclosed macOS stylo namespace limitation remains assigned to P006."
+}

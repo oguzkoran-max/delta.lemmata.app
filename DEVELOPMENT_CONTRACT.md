@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P000 kapandı, P001 başlamaya hazır  
+**Durum:** Kanonik; P001 acceptance kapısı geçti, P002 başlamaya hazır
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P001 hazırlığı, ürün kodu henüz başlamadı  
+**Aşama:** P001 temel altyapı tamamlandı; kullanıcıya dönük iş akışı henüz başlamadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.
@@ -638,7 +638,7 @@ Takvim bir kalite kapısını kaldırmaz. Rights, validation, rerun veya accepta
 
 ## 15. Geliştirme Kapıları
 
-P000, 2026-07-10 tarihinde `docs/development/p000-closure.md` kaydıyla kapatılmıştır. P001 acceptance kapısı geçmeden P002 veya başka ürün özelliğine başlanmaz.
+P000, 2026-07-10 tarihinde `docs/development/p000-closure.md` kaydıyla kapatılmıştır. P001 de 2026-07-10 tarihinde `provenance/evidence/P001/report.md` ile acceptance kapısını geçmiştir. P002 veya başka ticket ancak kendi Ticket ve PromptEvent kaydı açıldıktan sonra uygulanır.
 
 P000 çıktıları:
 
@@ -652,6 +652,14 @@ P000 çıktıları:
 - P001-P015 acceptance ve bağımlılık haritası: `docs/development/roadmap-P001-P015.md`
 - Ajan başlangıç yönlendirmesi: `START_HERE.md`
 - Kullanıcı kararı gerektiren açık P000 bloklayıcısı: sıfır
+
+P001 çıktıları:
+
+- Bağımsız Git repository ve repo sınırı: ADR-0009
+- Kilitli Python/R ortamları, metadata, provenance şemaları ve CI/security scaffold'u
+- Temiz Git klonunda tek komut bootstrap ve 24 testlik doğrulama
+- Machine-readable Ticket, PromptEvent, HumanDecision ve Run kayıtları
+- Açık sınırlamalar: Docker build/CI remote çalışması ve gerçek `stylo` parity henüz doğrulanmadı
 
 Kilitli sıra ve ayrıntılı acceptance koşulları `docs/development/roadmap-P001-P015.md` içindedir. Kısa sıra:
 

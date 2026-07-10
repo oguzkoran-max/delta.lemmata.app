@@ -105,6 +105,18 @@ Risk, yalnız olasılığa göre düşürülmez. Kullanıcı metni, hak ihlali v
 | EPI-12 | High | Distance ortalaması, grid hücreleri veya segment permütasyonu sahte örneklem büyüklüğü yaratır. | Bağımsızlık birimini work/author düzeyinde tanımla; hücreleri tekrar ölçüm olarak ele al; yöntem notu | Statistical design review | P010, P011, P015 |
 | EPI-13 | High | Tek uzman walkthrough'u veya scholarly vibe coding vakası, genel usability, programlama uzmanlığının gereksizliği ya da bilimsel geçerlilik kanıtı gibi sunulur. | Barış değerlendirmesini structured expert walkthrough olarak sınırla; araştırma katılımcısı yok; AI ajanları yazar değil; HumanDecision ledger; transferability claim'i yok; iddia denylisti | Walkthrough protocol, human-decision ledger, contribution statement, manuscript claim audit | P001, P015 |
 
+### P001 Kontrol Durumu
+
+| Threat | Durum | P001 kontrolü | Kalan doğrulama |
+|---|---|---|---|
+| SEC-16 | `implemented` | Python/R lock, digest-pinned base, action SHA lock, SBOM, vulnerability ve secret scan | Container build, signed/public release ve P014/P015 supply-chain audit |
+| RP-08 | `implemented` | VERSION, package, citation ve CodeMeta metadata consistency testi | Site/tag/container/DOI/SWHID içeren P015 cross-surface release audit |
+| RP-09 | `implemented` | Native request hash'i, summary-only response ayrımı ve commit-linked P001 PromptEvent | P002-P015 tam coverage raporu ve final disclosure audit |
+| EPI-13 | `implemented` | HumanDecision rol ayrımı, no-code claim sınırı ve site/makale denylisti | Barış walkthrough, contribution statement ve P015 manuscript claim audit |
+
+Buradaki `implemented`, riskin kapandığı anlamına gelmez. P001 yalnız zorunlu kontrol
+altyapısını kurmuştur; ilgili son ticket kanıtı olmadan `verified` kullanılmaz.
+
 ## 8. Release Kapıları
 
 ### Public Beta Kapısı

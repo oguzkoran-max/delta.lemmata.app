@@ -81,6 +81,8 @@ flowchart TD
 
 ### P001: Repository, Locks, Metadata, and Provenance Scaffold
 
+**Durum:** Tamamlandı; acceptance raporu `provenance/evidence/P001/report.md`.
+
 **Amaç:** Delta'yı bağımsız, taşınabilir, iki ajanla sürdürülebilir ve ilk commit'ten itibaren denetlenebilir bir yazılım projesi haline getirmek.
 
 **Bağımlılık:** P000 kapanışı.
@@ -111,6 +113,8 @@ flowchart TD
 **Sahip/denetçi:** Codex veya Claude uygular; Oğuz repo ve lisans kararını onaylar.
 
 ### P002: English-Only Workbench Shell
+
+**Durum:** Sıradaki ticket; henüz açılmadı.
 
 **Amaç:** Pazarlama landing page'i yerine doğrudan kullanılabilir, erişilebilir ve ileride yerelleştirilebilir iş istasyonu kabuğu kurmak.
 
