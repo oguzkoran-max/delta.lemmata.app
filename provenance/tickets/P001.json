@@ -1,0 +1,78 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P001",
+  "title": "Repository, Locks, Metadata, and Provenance Scaffold",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-10T12:11:30Z",
+  "closed_at_utc": null,
+  "objective": "Create an independent, portable, locked, testable, and evidence-producing project foundation without implementing product workflows.",
+  "scope": [
+    "Independent repository boundary",
+    "Python and R environment locks",
+    "Version, citation, license, and CodeMeta metadata",
+    "PromptEvent, Ticket, HumanDecision, Run, AssetRights, and ReleaseManifest schemas",
+    "CI, security scanning, SBOM, tests, and P001 evidence"
+  ],
+  "non_goals": [
+    "Streamlit workbench UI",
+    "Corpus ingestion",
+    "R stylo analysis wrapper",
+    "Pinocchio corpus or analysis"
+  ],
+  "dependencies": ["P000"],
+  "claim_ids": ["CE-12", "CE-18", "CE-19", "CE-20"],
+  "threat_ids": ["SEC-16", "RP-08", "RP-09", "EPI-13"],
+  "decision_ids": ["HD-20260710-0001", "HD-20260710-0002"],
+  "prompt_event_ids": ["PE-20260710-0001"],
+  "commit_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex"],
+  "acceptance": [
+    {
+      "id": "P001-AC-01",
+      "criterion": "A documented single command restores the locked Python and R environments from a clean checkout.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P001-AC-02",
+      "criterion": "Format, lint, type, unit, metadata, and schema checks pass with zero errors.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P001-AC-03",
+      "criterion": "Two frozen Python syncs preserve the lock and direct dependency versions; the R lock reports a consistent state.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P001-AC-04",
+      "criterion": "PromptEvent capture modes and hashes validate without representing summary-only content as native.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P001-AC-05",
+      "criterion": "HumanDecision records distinguish human ownership from AI assistance and validate against the schema.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P001-AC-06",
+      "criterion": "Repository scans find no secret, user corpus, or local absolute path in versionable files.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P001-AC-07",
+      "criterion": "Container base references are digest-pinned; local build verification is reported truthfully.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [],
+  "commands": [],
+  "blockers": []
+}

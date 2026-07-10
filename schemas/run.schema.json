@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://delta.lemmata.app/schemas/run.schema.json",
+  "title": "Delta Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "run_type",
+    "status",
+    "ticket_ids",
+    "started_at_utc",
+    "ended_at_utc",
+    "software_version",
+    "git_commit",
+    "environment",
+    "command",
+    "exit_code",
+    "config_sha256",
+    "input_artifacts",
+    "output_artifacts",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "run_id": {"type": "string", "pattern": "^RUN-[0-9]{8}-[0-9]{4}$"},
+    "run_type": {
+      "type": "string",
+      "enum": ["analysis", "benchmark", "test", "security", "rerun"]
+    },
+    "status": {"type": "string", "enum": ["started", "passed", "failed", "invalidated"]},
+    "ticket_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^P[0-9]{3}$"}
+    },
+    "started_at_utc": {"type": "string", "format": "date-time"},
+    "ended_at_utc": {"type": ["string", "null"], "format": "date-time"},
+    "software_version": {"type": "string", "minLength": 1},
+    "git_commit": {
+      "oneOf": [
+        {"type": "string", "pattern": "^[0-9a-f]{7,64}$"},
+        {"type": "null"}
+      ]
+    },
+    "environment": {"type": "object"},
+    "command": {"type": "string", "minLength": 1},
+    "exit_code": {"type": ["integer", "null"], "minimum": 0, "maximum": 255},
+    "config_sha256": {
+      "oneOf": [
+        {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        {"type": "null"}
+      ]
+    },
+    "input_artifacts": {"$ref": "#/$defs/artifacts"},
+    "output_artifacts": {"$ref": "#/$defs/artifacts"},
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"enum": ["passed", "failed", "invalidated"]}}},
+      "then": {
+        "properties": {
+          "ended_at_utc": {"type": "string"},
+          "exit_code": {"type": "integer"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

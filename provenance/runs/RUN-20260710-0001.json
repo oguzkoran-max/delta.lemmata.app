@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "RUN-20260710-0001",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": ["P001"],
+  "started_at_utc": "2026-07-10T12:11:30Z",
+  "ended_at_utc": "2026-07-10T12:37:03Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": null,
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "docker_available": false
+  },
+  "command": "./scripts/bootstrap.sh && ./scripts/verify.sh && ./scripts/generate_evidence.sh",
+  "exit_code": 0,
+  "config_sha256": "7baa829523c35ec303ec59e41977ee7015d4c8cb1f2a445d04a331f819789e13",
+  "input_artifacts": [
+    {
+      "path": "uv.lock",
+      "sha256": "5d435ec968063c0f4c7120e8974f1e94aef4b421eac265d52e0d7d4ce8ce450e"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P001/report.md",
+      "sha256": "44b9efeb4e3876129a727b98732080d1bc7d28824b26add8a18746e48188a72a"
+    },
+    {
+      "path": "provenance/evidence/P001/environment-summary.json",
+      "sha256": "230bbc5ae73bd0e0e0a8f9ed167a01b698868988a975e0e677d71467256e1284"
+    }
+  ],
+  "notes": "Container build and local stylo namespace load remain unverified and are disclosed in the P001 report."
+}

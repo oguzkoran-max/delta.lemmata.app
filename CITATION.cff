@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use Delta, cite the software release described by this file."
+type: software
+title: "Delta: An Uncertainty-Aware Stylometry Workbench"
+abstract: >-
+  Delta is a scholar-led, no-code workbench for literary stylometry. It is
+  designed to expose corpus checks, parameter sensitivity, interpretive limits,
+  and FAIR-oriented run evidence alongside supported analyses.
+version: 0.0.0.dev0
+authors:
+  - family-names: Koran
+    given-names: Oğuz
+    orcid: "https://orcid.org/0000-0001-7954-9597"
+    affiliation: "Ankara University"
+    email: "koran@ankara.edu.tr"
+license: MIT
+url: "https://delta.lemmata.app"
+keywords:
+  - stylometry
+  - digital humanities
+  - Burrows's Delta
+  - literary studies
+  - reproducibility

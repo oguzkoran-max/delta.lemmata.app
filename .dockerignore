@@ -1,0 +1,16 @@
+.git
+.github
+.tools
+.venv
+__pycache__
+.pytest_cache
+.mypy_cache
+.ruff_cache
+renv/library
+renv/staging
+provenance/evidence/*/generated
+data
+uploads
+workspaces
+exports
+*.log

@@ -1,0 +1,60 @@
+# Delta Agent Instructions
+
+Bu dizinde çalışan tüm Codex ve diğer ajanlar önce şu minimum paketi okur:
+
+1. START_HERE.md
+2. SESSION_HANDOFF.md
+3. docs/development/roadmap-P001-P015.md içindeki aktif ticket bölümü
+4. Aktif ticket'ta işaretlenen claim, threat ve ADR kayıtları
+
+DEVELOPMENT_CONTRACT.md ve PROJECT_MEMORY.md; mimari/yöntem kararı, belge çelişkisi, P000/P015 kapanışı, release veya START_HERE.md içinde sayılan özel durumlarda tamamen okunur. Bu yönlendirme bağlam tasarrufu içindir; kanonik sözleşmenin otoritesini değiştirmez.
+
+docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildir.
+
+## Çalışma Kuralları
+
+- P000 kapanmıştır. P001 acceptance kapısı geçmeden P002 veya başka ürün özelliğine başlama.
+- Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.
+- Kullanıcının onayladığı soruları yeniden sorma.
+- Runtime AI, dış API, analytics, login veya kalıcı proje saklama ekleme.
+- lda.lemmata.app koduna, environment'ına, portuna veya verisine dokunma.
+- R styloyu gizleme veya kendi Delta formülünü kanonik motor gibi sunma.
+- Kesin yazarlık, nedensellik veya pure style dili üretme.
+- Pinokyo'yu makalenin ana araştırma nesnesine dönüştürme; worked example olarak tut.
+- Pinokyo'yu authorship demo'ya veya iki sürümlü PhiloEditor benzeri karşılaştırmaya geri döndürme.
+- Diff, alignment, varyant anotasyonu, iki sütunlu edisyon karşılaştırması veya kritik edisyon işlevi ekleme.
+- Style Over Time sonucunu yaşlanma, olgunlaşma veya nedensel gelişim gibi sunma.
+- FAIR'i kalite sertifikası veya open ile eş anlamlı sunma.
+- Scholarly vibe coding'i “AI uzmanlığın yerini alır” veya “her araştırmacı güvenilir yazılım üretebilir” diye genelleme.
+- Kullanıcı değişikliklerini geri alma.
+
+## Hafıza Protokolü
+
+Bağlam sıkıştırmasını bekleme. Şu olaylardan hemen sonra belgeleri güncelle:
+
+- Kullanıcı yeni karar onayladı
+- Bir ADR kabul edildi veya değişti
+- P-ticket tamamlandı veya engellendi
+- Test, hakem veya güvenlik bulgusu sözleşmeyi etkiledi
+- Oturum devrediliyor veya kapanıyor
+
+Güncellenecekler:
+
+- Kalıcı karar veya gerekçe: PROJECT_MEMORY.md
+- Güncel durum ve sıradaki iş: SESSION_HANDOFF.md
+- Mimari/yöntem kararı: ilgili ADR
+- Kritik dönüm noktası: memory/checkpoints/YYYY-MM-DD-*.md
+
+Tam transkript kopyalama. Karar, gerekçe, alternatif, kanıt, sonuç ve en fazla üç anahtar kullanıcı alıntısı kaydet.
+
+## Provenance
+
+P001'den itibaren her gerçek LLM mesajı PromptEvent, geliştirme işi Ticket, insan-owned yöntem/claim/acceptance kararı HumanDecision, Git değişikliği Commit, karar ADR, bilimsel koşum Run olarak ayrı kimlik alır. Retrospektif kayıtları native veya exact diye etiketleme.
+
+## Her Ticket Sonunda
+
+- Değişen dosyaları listele.
+- Gerçek test komutlarını ve sonuçlarını kaydet.
+- Claim-evidence bağlantısını güncelle.
+- SESSION_HANDOFF.md dosyasını güncelle.
+- Gerekirse PROJECT_MEMORY.md ve ADR'yi güncelle.

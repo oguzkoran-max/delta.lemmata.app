@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://delta.lemmata.app/schemas/human-decision.schema.json",
+  "title": "Delta HumanDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision_id",
+    "decided_at_utc",
+    "ticket_ids",
+    "adr_ids",
+    "decision_owner",
+    "decision_owner_type",
+    "acceptance_owner",
+    "question_or_choice",
+    "ai_assistance",
+    "alternatives",
+    "accepted_option",
+    "rationale",
+    "evidence_required",
+    "status",
+    "source_quote",
+    "provenance_notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "decision_id": {"type": "string", "pattern": "^HD-[0-9]{8}-[0-9]{4}$"},
+    "decided_at_utc": {"type": "string", "format": "date-time"},
+    "ticket_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^P[0-9]{3}$"}
+    },
+    "adr_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^ADR-[0-9]{4}$"}
+    },
+    "decision_owner": {"type": "string", "minLength": 1},
+    "decision_owner_type": {"const": "human"},
+    "acceptance_owner": {"type": ["string", "null"]},
+    "question_or_choice": {"type": "string", "minLength": 1},
+    "ai_assistance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providers", "summary"],
+      "properties": {
+        "providers": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"type": "string", "enum": ["openai", "anthropic", "other"]}
+        },
+        "summary": {"type": "string"}
+      }
+    },
+    "alternatives": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["option", "disposition", "reason"],
+        "properties": {
+          "option": {"type": "string", "minLength": 1},
+          "disposition": {
+            "type": "string",
+            "enum": ["accepted", "rejected", "deferred"]
+          },
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "accepted_option": {"type": ["string", "null"]},
+    "rationale": {"type": "string", "minLength": 1},
+    "evidence_required": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "status": {
+      "type": "string",
+      "enum": ["proposed", "accepted", "rejected", "superseded"]
+    },
+    "source_quote": {"type": ["string", "null"]},
+    "provenance_notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"status": {"const": "accepted"}}},
+      "then": {
+        "properties": {
+          "accepted_option": {"type": "string", "minLength": 1},
+          "acceptance_owner": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  ]
+}

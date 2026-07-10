@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-07-10T12:37:03Z",
+  "ticket_id": "P001",
+  "development_host": {
+    "operating_system": "macOS 26.5.1",
+    "architecture": "arm64",
+    "docker_available": false,
+    "xquartz_available": false
+  },
+  "python": {
+    "version": "3.13.9",
+    "resolver": "uv 0.11.28",
+    "lock_sha256": "5d435ec968063c0f4c7120e8974f1e94aef4b421eac265d52e0d7d4ce8ce450e",
+    "streamlit": "1.59.1",
+    "pydantic": "2.13.4",
+    "jsonschema": "4.26.0"
+  },
+  "r": {
+    "version": "4.5.2",
+    "renv": "1.2.3",
+    "stylo": "0.7.71",
+    "jsonlite": "2.0.0",
+    "lock_sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d",
+    "lock_synchronized": true,
+    "local_stylo_namespace_load": "not-verified-missing-xquartz"
+  },
+  "container": {
+    "target_platform": "linux/amd64",
+    "base": "rocker/r-ver:4.5.2",
+    "manifest_digest": "sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c",
+    "build_status": "not-verified-docker-unavailable"
+  },
+  "verification": {
+    "tests_passed": 24,
+    "tests_failed": 0,
+    "python_source_coverage_percent": 100,
+    "clean_copy_bootstrap": "passed",
+    "second_bootstrap_lock_change": false,
+    "audited_runtime_dependencies": 44,
+    "known_python_vulnerabilities": 0,
+    "secret_findings_after_structural_allowlist": 0,
+    "python_sbom_components": 95,
+    "r_sbom_components": 18
+  }
+}

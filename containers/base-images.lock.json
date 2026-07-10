@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "queried_at_utc": "2026-07-10T12:11:30Z",
+  "registry": "registry-1.docker.io",
+  "repository": "rocker/r-ver",
+  "tag": "4.5.2",
+  "manifest_list_digest": "sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c",
+  "linux_amd64_digest": "sha256:62a0fbe9896e02bf19b408a39518da1fa1bca0d6fb85b4076c8d0fd33e588123",
+  "source": "Docker Registry HTTP API V2",
+  "verification_status": "digest-verified-build-not-run"
+}

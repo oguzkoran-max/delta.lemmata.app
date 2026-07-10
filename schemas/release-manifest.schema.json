@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://delta.lemmata.app/schemas/release-manifest.schema.json",
+  "title": "Delta Release Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "software_version",
+    "release_status",
+    "released_at_utc",
+    "git_commit",
+    "git_tag",
+    "container_image",
+    "python_lock_sha256",
+    "r_lock_sha256",
+    "citation_sha256",
+    "codemeta_sha256",
+    "doi",
+    "swhid",
+    "artifacts"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "software_version": {"type": "string", "minLength": 1},
+    "release_status": {"type": "string", "enum": ["draft", "candidate", "released"]},
+    "released_at_utc": {"type": ["string", "null"], "format": "date-time"},
+    "git_commit": {
+      "oneOf": [
+        {"type": "string", "pattern": "^[0-9a-f]{7,64}$"},
+        {"type": "null"}
+      ]
+    },
+    "git_tag": {"type": ["string", "null"]},
+    "container_image": {
+      "type": ["object", "null"],
+      "additionalProperties": false,
+      "required": ["reference", "digest"],
+      "properties": {
+        "reference": {"type": "string", "minLength": 1},
+        "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"}
+      }
+    },
+    "python_lock_sha256": {"$ref": "#/$defs/nullable_sha256"},
+    "r_lock_sha256": {"$ref": "#/$defs/nullable_sha256"},
+    "citation_sha256": {"$ref": "#/$defs/sha256"},
+    "codemeta_sha256": {"$ref": "#/$defs/sha256"},
+    "doi": {"type": ["string", "null"]},
+    "swhid": {"type": ["string", "null"]},
+    "artifacts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "media_type"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"$ref": "#/$defs/sha256"},
+          "media_type": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"release_status": {"const": "released"}}},
+      "then": {
+        "properties": {
+          "released_at_utc": {"type": "string"},
+          "git_commit": {"type": "string", "pattern": "^[0-9a-f]{7,64}$"},
+          "git_tag": {"type": "string", "minLength": 1},
+          "container_image": {"type": "object"}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullable_sha256": {
+      "oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+    }
+  }
+}

@@ -1,0 +1,83 @@
+[build-system]
+requires = ["setuptools>=80,<81", "wheel>=0.46,<1"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "delta-lemmata"
+dynamic = ["version"]
+description = "A scholar-led, uncertainty-aware stylometry workbench for literary research"
+readme = "README.md"
+requires-python = ">=3.13,<3.14"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [
+  { name = "Oğuz Koran", email = "koran@ankara.edu.tr" },
+]
+keywords = [
+  "stylometry",
+  "digital-humanities",
+  "burrows-delta",
+  "literary-studies",
+  "research-software",
+]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Intended Audience :: Science/Research",
+  "Programming Language :: Python :: 3.13",
+  "Topic :: Scientific/Engineering :: Information Analysis",
+  "Topic :: Text Processing :: Linguistic",
+]
+dependencies = [
+  "jsonschema>=4.23,<5",
+  "pydantic>=2.10,<3",
+  "streamlit>=1.40,<2",
+]
+
+[project.urls]
+Homepage = "https://delta.lemmata.app"
+
+[dependency-groups]
+dev = [
+  "cyclonedx-bom>=6,<8",
+  "detect-secrets>=1.5,<2",
+  "mypy>=1.14,<2",
+  "pip-audit>=2.8,<3",
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<8",
+  "pyyaml>=6,<7",
+  "ruff>=0.12,<1",
+  "types-jsonschema>=4.23,<5",
+]
+
+[tool.setuptools.dynamic]
+version = { file = ["VERSION"] }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+delta_lemmata = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--strict-config --strict-markers -ra"
+
+[tool.coverage.run]
+branch = true
+source = ["delta_lemmata"]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+
+[tool.ruff]
+target-version = "py313"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["B", "E", "F", "I", "UP"]
+
+[tool.mypy]
+python_version = "3.13"
+strict = true
+packages = ["delta_lemmata"]

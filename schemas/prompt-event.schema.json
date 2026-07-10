@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://delta.lemmata.app/schemas/prompt-event.schema.json",
+  "title": "Delta PromptEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "event_id",
+    "captured_at_utc",
+    "provider",
+    "model",
+    "surface",
+    "session_id",
+    "request_capture_mode",
+    "response_capture_mode",
+    "request_sha256",
+    "response_sha256",
+    "ticket_ids",
+    "adr_ids",
+    "commit_ids",
+    "redaction_status",
+    "result_summary",
+    "status",
+    "recording_notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "event_id": {"type": "string", "pattern": "^PE-[0-9]{8}-[0-9]{4}$"},
+    "captured_at_utc": {"type": "string", "format": "date-time"},
+    "provider": {"type": "string", "enum": ["openai", "anthropic", "other"]},
+    "model": {"type": "string", "minLength": 1},
+    "surface": {"type": "string", "minLength": 1},
+    "session_id": {"type": ["string", "null"]},
+    "request_capture_mode": {"$ref": "#/$defs/capture_mode"},
+    "response_capture_mode": {"$ref": "#/$defs/capture_mode"},
+    "request_sha256": {"$ref": "#/$defs/nullable_sha256"},
+    "response_sha256": {"$ref": "#/$defs/nullable_sha256"},
+    "ticket_ids": {"$ref": "#/$defs/ticket_ids"},
+    "adr_ids": {"$ref": "#/$defs/adr_ids"},
+    "commit_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^[0-9a-f]{7,64}$"}
+    },
+    "redaction_status": {
+      "type": "string",
+      "enum": ["none", "redacted", "not-stored"]
+    },
+    "result_summary": {"type": "string", "minLength": 1},
+    "status": {"type": "string", "enum": ["open", "closed"]},
+    "recording_notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "request_capture_mode": {
+            "enum": ["native", "transcribed", "reconstructed"]
+          }
+        }
+      },
+      "then": {"properties": {"request_sha256": {"$ref": "#/$defs/sha256"}}},
+      "else": {"properties": {"request_sha256": {"type": "null"}}}
+    },
+    {
+      "if": {
+        "properties": {
+          "response_capture_mode": {
+            "enum": ["native", "transcribed", "reconstructed"]
+          }
+        }
+      },
+      "then": {"properties": {"response_sha256": {"$ref": "#/$defs/sha256"}}},
+      "else": {"properties": {"response_sha256": {"type": "null"}}}
+    }
+  ],
+  "$defs": {
+    "capture_mode": {
+      "type": "string",
+      "enum": ["native", "transcribed", "reconstructed", "summary-only", "not-captured"]
+    },
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "nullable_sha256": {
+      "oneOf": [{"$ref": "#/$defs/sha256"}, {"type": "null"}]
+    },
+    "ticket_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^P[0-9]{3}$"}
+    },
+    "adr_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^ADR-[0-9]{4}$"}
+    }
+  }
+}

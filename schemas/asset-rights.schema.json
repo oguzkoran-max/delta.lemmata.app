@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://delta.lemmata.app/schemas/asset-rights.schema.json",
+  "title": "Delta Asset Rights",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "asset_id",
+    "source_id",
+    "title",
+    "asset_type",
+    "rights_status",
+    "license",
+    "permissions",
+    "evidence_urls",
+    "jurisdiction",
+    "assessed_by",
+    "assessed_at_utc",
+    "notes"
+  ],
+  "properties": {
+    "schema_version": {"const": "1.0.0"},
+    "asset_id": {"type": "string", "pattern": "^ASSET-[A-Za-z0-9._-]+$"},
+    "source_id": {"type": "string", "minLength": 1},
+    "title": {"type": "string", "minLength": 1},
+    "asset_type": {
+      "type": "string",
+      "enum": [
+        "underlying-work",
+        "edition",
+        "scan",
+        "transcription",
+        "markup",
+        "annotation",
+        "normalized-text",
+        "derived-output"
+      ]
+    },
+    "rights_status": {
+      "type": "string",
+      "enum": ["verified-open", "analysis-only", "permission-required", "unknown", "excluded"]
+    },
+    "license": {"type": ["string", "null"]},
+    "permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["upload", "analysis", "export", "public_redistribution"],
+      "properties": {
+        "upload": {"type": "boolean"},
+        "analysis": {"type": "boolean"},
+        "export": {"type": "boolean"},
+        "public_redistribution": {"type": "boolean"}
+      }
+    },
+    "evidence_urls": {
+      "type": "array",
+      "items": {"type": "string", "format": "uri"}
+    },
+    "jurisdiction": {"type": ["string", "null"]},
+    "assessed_by": {"type": "string", "minLength": 1},
+    "assessed_at_utc": {"type": "string", "format": "date-time"},
+    "notes": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "rights_status": {
+            "enum": ["analysis-only", "permission-required", "unknown", "excluded"]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "permissions": {
+            "properties": {"public_redistribution": {"const": false}}
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "permissions": {
+            "properties": {"public_redistribution": {"const": true}}
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "rights_status": {"const": "verified-open"},
+          "license": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  ]
+}

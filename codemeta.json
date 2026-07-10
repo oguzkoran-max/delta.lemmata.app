@@ -1,0 +1,41 @@
+{
+  "@context": "https://doi.org/10.5063/schema/codemeta-2.0",
+  "@type": "SoftwareSourceCode",
+  "name": "Delta",
+  "alternateName": "delta.lemmata.app",
+  "version": "0.0.0.dev0",
+  "description": "A scholar-led, uncertainty-aware stylometry workbench for literary research.",
+  "applicationCategory": "Digital Humanities Research Software",
+  "developmentStatus": "active",
+  "dateCreated": "2026-07-10",
+  "license": "https://spdx.org/licenses/MIT.html",
+  "url": "https://delta.lemmata.app",
+  "programmingLanguage": [
+    "Python 3.13",
+    "R 4.5"
+  ],
+  "operatingSystem": [
+    "Linux",
+    "macOS"
+  ],
+  "author": [
+    {
+      "@type": "Person",
+      "givenName": "Oğuz",
+      "familyName": "Koran",
+      "email": "koran@ankara.edu.tr",
+      "id": "https://orcid.org/0000-0001-7954-9597",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Ankara University"
+      }
+    }
+  ],
+  "keywords": [
+    "stylometry",
+    "digital humanities",
+    "Burrows's Delta",
+    "literary studies",
+    "reproducibility"
+  ]
+}
