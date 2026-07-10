@@ -63,6 +63,19 @@ def _map_row(number: int, label_key: str, *, active: bool) -> str:
     )
 
 
+def _experiment_map_markup() -> str:
+    """Return the shared experiment-map markup used by the sidebar and the panel."""
+
+    return (
+        '<div class="delta-map">'
+        + _map_row(1, "sidebar.step.purpose", active=True)
+        + _map_row(2, "sidebar.step.corpus", active=False)
+        + _map_row(3, "sidebar.step.parameters", active=False)
+        + _map_row(4, "sidebar.step.evidence", active=False)
+        + "</div>"
+    )
+
+
 def _render_sidebar(health: dict[str, Any]) -> None:
     with st.sidebar:
         st.badge(
@@ -72,15 +85,7 @@ def _render_sidebar(health: dict[str, Any]) -> None:
         )
         st.caption(text("sidebar.progress"))
         st.progress(25)
-        st.markdown(
-            '<div class="delta-map">'
-            + _map_row(1, "sidebar.step.purpose", active=True)
-            + _map_row(2, "sidebar.step.corpus", active=False)
-            + _map_row(3, "sidebar.step.parameters", active=False)
-            + _map_row(4, "sidebar.step.evidence", active=False)
-            + "</div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(_experiment_map_markup(), unsafe_allow_html=True)
         st.divider()
         st.subheader(text("sidebar.boundary_title"))
         st.caption(text("sidebar.boundary_body"))
@@ -180,6 +185,7 @@ def _render_corpus_stage() -> None:
                 text("corpus.metadata_button"),
                 icon=":material/table_view:",
                 disabled=True,
+                help=text("corpus.metadata_button_help"),
                 width="stretch",
             )
         with continue_column:
@@ -187,6 +193,7 @@ def _render_corpus_stage() -> None:
                 text("corpus.continue_button"),
                 icon=":material/arrow_forward:",
                 disabled=True,
+                help=text("corpus.continue_button_help"),
                 width="stretch",
             )
 
@@ -195,15 +202,7 @@ def _render_experiment_map() -> None:
     with st.container(border=True, key="experiment_map"):
         st.subheader(text("map.title"))
         st.caption(text("map.body"))
-        st.markdown(
-            '<div class="delta-map">'
-            + _map_row(1, "sidebar.step.purpose", active=True)
-            + _map_row(2, "sidebar.step.corpus", active=False)
-            + _map_row(3, "sidebar.step.parameters", active=False)
-            + _map_row(4, "sidebar.step.evidence", active=False)
-            + "</div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(_experiment_map_markup(), unsafe_allow_html=True)
 
 
 def _render_boundary(purpose: PurposeSpec) -> None:

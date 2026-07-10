@@ -8,10 +8,13 @@ APP_CSS = """
   --delta-line: #ccd6d1;
   --delta-canvas: #f4f6f5;
   --delta-paper: #ffffff;
+  /* Teal is the single accent wired into this stylesheet. Badge hues come from
+     Streamlit's named palette and the link colour lives in
+     .streamlit/config.toml, so no further accent tokens are defined here.
+     --delta-teal-on-dark is a lightened teal for the dark sidebar, where the
+     base teal fails WCAG AA contrast on #1c2925. */
   --delta-teal: #116f63;
-  --delta-coral: #c95742;
-  --delta-amber: #b17a18;
-  --delta-blue: #315f7b;
+  --delta-teal-on-dark: #63b6a6;
 }
 
 [data-testid="stAppViewContainer"] {
@@ -193,6 +196,11 @@ footer,
 .delta-map-row.is-active .delta-map-state {
   color: var(--delta-teal);
   font-weight: 750;
+}
+
+[data-testid="stSidebar"] .delta-map-row.is-active .delta-map-number,
+[data-testid="stSidebar"] .delta-map-row.is-active .delta-map-state {
+  color: var(--delta-teal-on-dark);
 }
 
 .delta-evidence-row {

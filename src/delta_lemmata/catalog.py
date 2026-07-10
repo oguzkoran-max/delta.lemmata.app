@@ -80,17 +80,19 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "mode.label": "Analysis mode",
     "mode.guided.label": "Guided",
     "mode.guided.body": (
-        "A constrained parameter sweep with method explanations and visible defaults."
+        "Will run a constrained parameter sweep with method explanations and visible defaults."
     ),
     "mode.research.label": "Research",
     "mode.research.body": (
-        "A documented parameter grid with explicit resource limits and complete cell reporting."
+        "Will run a documented parameter grid with explicit resource limits "
+        "and complete cell reporting."
     ),
     "mode.status": "Configuration opens after corpus validation.",
     "corpus.eyebrow": "CORPUS · STEP 2",
     "corpus.title": "Add the research corpus",
     "corpus.body": (
-        "Secure corpus intake is deliberately unavailable until the P003 validation gate passes."
+        "Secure corpus intake is deliberately unavailable until it has been "
+        "implemented and security-tested."
     ),
     "corpus.locked": "Locked for validation",
     "corpus.uploader": "Corpus files",
@@ -99,7 +101,13 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "This interface shell does not process files."
     ),
     "corpus.metadata_button": "Add metadata table",
+    "corpus.metadata_button_help": (
+        "Metadata import opens after secure corpus intake has been implemented and tested."
+    ),
     "corpus.continue_button": "Continue to parameters",
+    "corpus.continue_button_help": (
+        "Parameter configuration opens once a corpus has been loaded and checked."
+    ),
     "map.title": "Experiment map",
     "map.body": "Each stage opens only after its own validation gate passes.",
     "boundary.title": "Method boundary",

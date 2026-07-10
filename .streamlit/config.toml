@@ -19,7 +19,7 @@ gatherUsageStats = false
 headless = true
 enableCORS = true
 enableXsrfProtection = true
-runOnSave = true
+runOnSave = false
 
 [client]
 showErrorDetails = "none"
