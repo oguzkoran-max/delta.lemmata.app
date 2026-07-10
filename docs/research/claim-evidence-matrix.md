@@ -69,6 +69,18 @@ CE-15 p95 yüzde 20 sınırı P014 baseline ölçümünden önce dondurulacak pr
 Bu ara durumlar claim'lerin `verified` olduğu anlamına gelmez. Site ve makale,
 ilgili son kapılar geçene kadar her satırın fallback language'ini kullanır.
 
+### P002 Claim Durum Kaydı
+
+| Claim | Durum | P002 kanıtı | Kalan kapı |
+|---|---|---|---|
+| CE-01 | `implemented` | Üç amacı ve Guided/Research ayrımını doğrudan browser workbench'te gösteren shell; gelecekteki işlemler dürüstçe disabled | P003, P008, P009 ve P012 sonrası upload-to-export E2E; P015 açık defect kapısı |
+| CE-18 | `implemented` | Runtime policy ve dependency/config testleri; outbound ağ kapalıyken açılan shell; sıfır gözlenen external AI/analytics isteği | P014 production worker/container egress ve P015 final runtime audit |
+| CE-20 | `implemented` | HumanDecision, PromptEvent, Ticket, Run, başarısız ara kontroller, acceptance ve temiz-klon bağlantıları; insan acceptance sahibi açık | P003-P015 owner/commit coverage ve Barış ledger walkthrough'u |
+
+P002'nin `implemented` durumu tarayıcı kabuğuna ilişkindir. CE-01 için desteklenen
+iş akışının tamamlandığı, CE-18 için production runtime'ın bütünüyle doğrulandığı
+veya CE-20 için modelin genellenebilir olduğu iddia edilmez.
+
 ## 6. Claim Embargoları
 
 - CE-04 geçmeden genel `stylo parity` denmez; yalnız doğrulanan fixture adı verilir.

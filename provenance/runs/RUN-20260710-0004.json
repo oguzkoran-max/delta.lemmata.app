@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "RUN-20260710-0004",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": ["P002"],
+  "started_at_utc": "2026-07-10T19:25:35Z",
+  "ended_at_utc": "2026-07-10T19:27:05Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "a888e7c81e5fdae12687903de29d0728f5c7cbd5",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "checkout_type": "new local Git clone without local object sharing"
+  },
+  "command": "git clone --no-local <repository> <temporary-clone>; ./scripts/bootstrap.sh; ./scripts/verify.sh; git status --porcelain=v1",
+  "exit_code": 0,
+  "config_sha256": "7baa829523c35ec303ec59e41977ee7015d4c8cb1f2a445d04a331f819789e13",
+  "input_artifacts": [
+    {
+      "path": "uv.lock",
+      "sha256": "5d435ec968063c0f4c7120e8974f1e94aef4b421eac265d52e0d7d4ce8ce450e"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P002/clean-clone-verification.md",
+      "sha256": "cf01e6d0bcf1778e8c2f50b38cdfd5c1442306134513e4f0a6e0ed4bdf9c9d34"
+    }
+  ],
+  "notes": "The start timestamp is the immediately preceding implementation commit time and is therefore a conservative lower bound for the clone invocation. The new clone restored both locks, passed 40 tests with 100% measured Python source coverage and every verification gate, and ended with no versionable changes. Browser and scientific-computation evidence were not rerun in this clean-clone check."
+}

@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P001 acceptance kapısı geçti, P002 başlamaya hazır
+**Durum:** Kanonik; P002 acceptance kapısı geçti, P003 başlamaya hazır
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P001 temel altyapı tamamlandı; kullanıcıya dönük iş akışı henüz başlamadı
+**Aşama:** P002 workbench shell tamamlandı; secure ingestion ve bilimsel analiz henüz uygulanmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.
@@ -638,7 +638,7 @@ Takvim bir kalite kapısını kaldırmaz. Rights, validation, rerun veya accepta
 
 ## 15. Geliştirme Kapıları
 
-P000, 2026-07-10 tarihinde `docs/development/p000-closure.md` kaydıyla kapatılmıştır. P001 de 2026-07-10 tarihinde `provenance/evidence/P001/report.md` ile acceptance kapısını geçmiştir. P002 veya başka ticket ancak kendi Ticket ve PromptEvent kaydı açıldıktan sonra uygulanır.
+P000, 2026-07-10 tarihinde `docs/development/p000-closure.md` kaydıyla kapatılmıştır. P001 aynı tarihte `provenance/evidence/P001/report.md`, P002 ise `provenance/evidence/P002/report.md` ile acceptance kapısını geçmiştir. P003 veya başka ticket ancak kendi Ticket ve PromptEvent kaydı açıldıktan sonra uygulanır.
 
 P000 çıktıları:
 
@@ -660,6 +660,15 @@ P001 çıktıları:
 - Temiz Git klonunda tek komut bootstrap ve 24 testlik doğrulama
 - Machine-readable Ticket, PromptEvent, HumanDecision ve Run kayıtları
 - Açık sınırlamalar: Docker build/CI remote çalışması ve gerçek `stylo` parity henüz doğrulanmadı
+
+P002 çıktıları:
+
+- Doğrudan English-only Streamlit workbench shell ve üç araştırma amacı
+- Guided/Research ayrımı, merkezi 90-string registry ve beş durumlu ortak UI sözleşmesi
+- Public-safe health bilgisi ve runtime AI/analytics/login/storage yokluğu için denetimler
+- Desktop/mobile, keyboard, copy denylist ve egress-denied kabul kanıtları
+- Temiz Git klonunda 40 test, yüzde 100 ölçülen kaynak kapsamı ve sıfır versionable değişiklik
+- `lemmata.app` üzerindeki gelecekteki `Launch Stylometry` entegrasyonu ayrı ticket'a ertelendi
 
 Kilitli sıra ve ayrıntılı acceptance koşulları `docs/development/roadmap-P001-P015.md` içindedir. Kısa sıra:
 

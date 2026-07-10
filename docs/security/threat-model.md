@@ -117,6 +117,16 @@ Risk, yalnız olasılığa göre düşürülmez. Kullanıcı metni, hak ihlali v
 Buradaki `implemented`, riskin kapandığı anlamına gelmez. P001 yalnız zorunlu kontrol
 altyapısını kurmuştur; ilgili son ticket kanıtı olmadan `verified` kullanılmaz.
 
+### P002 Kontrol Durumu
+
+| Threat | Durum | P002 kontrolü | Kalan doğrulama |
+|---|---|---|---|
+| SEC-14 | `not verified` | Streamlit XSRF/CORS korumaları açık ve shell yalnız loopback üzerinde test edildi | TLS, strict Host, headers, proxy, request-size ve deployment CSRF testlerinin tamamı P014 |
+| EPI-13 | `implemented` | Merkezi claim denylisti, kapsam sınırı, insan/AI rol ayrımı ve başarısız kontrollerin P002 kanıtında saklanması | Barış structured walkthrough, contribution statement ve P015 manuscript claim audit |
+
+P002 ağ-kapalı testi production güvenlik doğrulaması değildir. SEC-14 bu nedenle
+geçmiş veya `verified` olarak işaretlenmez.
+
 ## 8. Release Kapıları
 
 ### Public Beta Kapısı

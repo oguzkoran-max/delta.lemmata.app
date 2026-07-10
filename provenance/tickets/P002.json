@@ -2,9 +2,9 @@
   "schema_version": "1.0.0",
   "ticket_id": "P002",
   "title": "English-Only Workbench Shell",
-  "status": "in-progress",
+  "status": "complete",
   "opened_at_utc": "2026-07-10T18:42:52Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-10T19:28:40Z",
   "objective": "Create the direct, accessible, English-only Delta workbench shell without implementing ingestion or stylometric computation.",
   "scope": [
     "Streamlit application entry point and workbench navigation",
@@ -26,7 +26,7 @@
   "threat_ids": ["SEC-14", "EPI-13"],
   "decision_ids": ["HD-20260710-0003", "HD-20260710-0004"],
   "prompt_event_ids": ["PE-20260710-0002"],
-  "commit_ids": [],
+  "commit_ids": ["a888e7c81e5fdae12687903de29d0728f5c7cbd5"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -34,47 +34,120 @@
     {
       "id": "P002-AC-01",
       "criterion": "The workbench shell renders at desktop and mobile viewports without text overflow, incoherent overlap, or horizontal page scrolling.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P002/browser-audit.json",
+        "provenance/evidence/P002/desktop-1440x1000.png",
+        "provenance/evidence/P002/mobile-390x844.png"
+      ]
     },
     {
       "id": "P002-AC-02",
       "criterion": "The primary workflow is keyboard reachable and interactive controls expose accessible names and state.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P002/accessibility-report.json",
+        "tests/test_webapp.py"
+      ]
     },
     {
       "id": "P002-AC-03",
       "criterion": "Rendered and registered copy contains no prohibited authorship, confidence, universal ease, no-knowledge, or unverified reproducibility claim.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P002/copy-snapshot.txt",
+        "tests/test_catalog.py",
+        "provenance/evidence/P002/browser-audit.json"
+      ]
     },
     {
       "id": "P002-AC-04",
       "criterion": "The shell loads with external network access blocked and makes no AI, analytics, login, or remote-storage request.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P002/network-trace.json",
+        "tests/test_runtime_boundary.py"
+      ]
     },
     {
       "id": "P002-AC-05",
       "criterion": "All user-facing application copy is retrieved from one English registry with no language selector or embedded Turkish/Italian locale.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "src/delta_lemmata/catalog.py",
+        "provenance/evidence/P002/copy-snapshot.txt",
+        "tests/test_catalog.py",
+        "tests/test_webapp.py"
+      ]
     },
     {
       "id": "P002-AC-06",
       "criterion": "Health and readiness output exposes the version and build identity without a system path, environment value, or secret.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "src/delta_lemmata/health.py",
+        "tests/test_health.py"
+      ]
     },
     {
       "id": "P002-AC-07",
       "criterion": "Empty, loading, error, cancelled, and complete states have a versioned shared presentation contract and shell-level tests.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "src/delta_lemmata/workbench.py",
+        "tests/test_workbench.py",
+        "tests/test_catalog.py"
+      ]
     }
   ],
-  "changed_files": [],
-  "commands": [],
+  "changed_files": [
+    "Streamlit entry point, configuration, English UI catalog, visual system, public health record, and workbench contracts",
+    "Unit, shell, runtime-boundary, accessibility-supporting, copy, and health tests",
+    "P002 Ticket, PromptEvent, HumanDecision, Run, screenshot, browser, accessibility, network, copy, failure, and clean-clone evidence"
+  ],
+  "commands": [
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first final pass stopped because webapp.py required automatic formatting after the accessibility edit.",
+      "evidence": "provenance/evidence/P002/report.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run ruff format src/delta_lemmata/webapp.py",
+      "exit_code": 0,
+      "result": "Formatted the changed application module without changing behavior.",
+      "evidence": "provenance/evidence/P002/report.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The second pass completed 40 tests at 100% coverage but the repository scan rejected a deliberate macOS home-directory test literal.",
+      "evidence": "provenance/evidence/P002/report.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "Passed format, lint, strict type, 40 tests, 100% measured source coverage, metadata, schema, repository, supply-chain, and R-lock checks.",
+      "evidence": "provenance/runs/RUN-20260710-0003.json"
+    },
+    {
+      "command": "Browser desktop/mobile DOM, screenshot, and keyboard audit",
+      "exit_code": 0,
+      "result": "Accepted 1440x1000 and 390x844 views with no recorded overflow, panel overlap, unnamed visible control, external asset, or prohibited copy; keyboard purpose selection passed.",
+      "evidence": "provenance/evidence/P002/browser-audit.json"
+    },
+    {
+      "command": "Egress-denied Streamlit smoke test and negative controls",
+      "exit_code": 0,
+      "result": "The complete shell loaded with outbound networking denied; no external process socket, DOM asset, AI, analytics, login, or remote-storage request was observed.",
+      "evidence": "provenance/evidence/P002/network-trace.json"
+    },
+    {
+      "command": "git clone --no-local <repository> <temporary-clone>; ./scripts/bootstrap.sh; ./scripts/verify.sh; git status --porcelain=v1",
+      "exit_code": 0,
+      "result": "A new clone of a888e7c restored both locks, passed 40 tests and every automated gate, and ended with no versionable changes.",
+      "evidence": "provenance/runs/RUN-20260710-0004.json"
+    }
+  ],
   "blockers": []
 }

@@ -114,7 +114,9 @@ flowchart TD
 
 ### P002: English-Only Workbench Shell
 
-**Durum:** Sıradaki ticket; henüz açılmadı.
+**Durum:** 2026-07-10 tarihinde tamamlandı. Implementation snapshot:
+`a888e7c81e5fdae12687903de29d0728f5c7cbd5`. Acceptance ve clean-clone kanıtı:
+`provenance/evidence/P002/` ve `provenance/runs/RUN-20260710-0004.json`.
 
 **Amaç:** Pazarlama landing page'i yerine doğrudan kullanılabilir, erişilebilir ve ileride yerelleştirilebilir iş istasyonu kabuğu kurmak.
 
@@ -143,6 +145,8 @@ flowchart TD
 **Sahip/denetçi:** Geliştirme ajanı uygular; Oğuz İngilizce ürün dilini onaylar.
 
 ### P003: Secure Ingestion
+
+**Durum:** Sıradaki ticket; henüz açılmadı.
 
 **Amaç:** `.txt`, `.zip` ve metadata `.csv` girdilerini çalışma alanı dışına taşmadan ve sunucuyu tüketmeden kabul etmek.
 

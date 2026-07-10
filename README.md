@@ -5,9 +5,9 @@ digital humanities research. Its supported workflows are designed to run without
 requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
-**Current stage:** P001 repository and provenance scaffold passed its acceptance
-gate. P002 is ready to start; no public analysis workflow has been implemented
-or validated yet.
+**Current stage:** P002 English-only workbench shell passed its acceptance gate
+and clean-clone rerun. P003 secure ingestion is next; no public analysis workflow
+or scientific result has been implemented or validated yet.
 
 ## Product Boundaries
 
@@ -39,7 +39,7 @@ Install the locked Python and R environments:
 ./scripts/bootstrap.sh
 ```
 
-Run the P001 verification suite:
+Run the full verification suite:
 
 ```bash
 ./scripts/verify.sh

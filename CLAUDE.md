@@ -34,10 +34,8 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 - PromptEvent, Ticket, HumanDecision, Commit, ADR ve Run ayrı kaydedilir.
 - Scholarly vibe coding kapsamında human decision/acceptance sahipliği AI implementasyon yardımından ayrı kaydedilir.
 
-## İlk P001 Prompt'u
+## Güncel Başlangıç
 
-~~~text
-P001: Repository, locks, metadata, and provenance scaffold
-
-START_HERE.md ve SESSION_HANDOFF.md dosyalarını, ardından docs/development/roadmap-P001-P015.md içindeki yalnız P001 bölümünü oku. ADR-0003 ve ADR-0008'i; CE-12/18/19/20 ile SEC-16/RP-08/RP-09 kayıtlarını incele. Mevcut Git topolojisini ve kullanıcı değişikliklerini geri almadan denetle; repository kararını ADR-0009 olarak kaydet. Önce P001 ticket, PromptEvent ve HumanDecision kayıtlarını ve uygulanacak kısa planı oluştur; sonra yalnız P001 kapsamını uygula. Gerçek testleri çalıştır, kanıtları provenance/evidence/P001 altında sakla ve SESSION_HANDOFF.md dosyasını güncelle. Daha önce kararlaştırılan ürün sorularını yeniden sorma; yalnız uygulamayı gerçekten durduran bir belirsizlik varsa sor.
-~~~
+P002 kapanmıştır. Sıradaki iş P003 Secure Ingestion'dır. İnsan tarafından gözden
+geçirilecek başlangıç şablonu `prompts/P003-start.md` içindedir. Bu şablon gerçek
+oturum mesajı yerine geçmez; gönderilen native isteğin hash'i ayrı PromptEvent olur.

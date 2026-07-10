@@ -1,8 +1,10 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-10  
-**Durum:** P001 kapandı; P002 başlamaya hazır
-**Kod:** Yalnız repository/provenance temeli var; kullanıcıya dönük iş akışı yok
+**Son güncelleme:** 2026-07-10
+
+**Durum:** P002 kapandı; P003 Secure Ingestion başlamaya hazır
+
+**Kod:** English-only workbench shell var; ingestion ve bilimsel hesaplama henüz yok
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -29,6 +31,7 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 |---|---|---|
 | Ürün adı | Delta | Burrows's Delta ve fark/değişim fikriyle uyumlu |
 | Alan adı | delta.lemmata.app | Lemmata ürün ailesi ve aynı VPS kullanımı |
+| Lemmata launch entegrasyonu | `Launch Stylometry` sonraki ayrı ticket | Canlı parent siteyi P002 kapsamına gizlice dahil etmemek ve bağımsız regression/rollback kapısı kurmak |
 | Runtime AI | v0.1'de yok | Maliyet, gizlilik, telif ve determinism |
 | Motor | R stylo | Alan standardı ve hesaplama parity olanağı |
 | Arayüz | Python ve Streamlit | Hızlı geliştirme, Lemmata tecrübesi |
@@ -166,9 +169,32 @@ Eski CLAUDE.md tarihsel arşive taşındı. Yeni sözleşme şu eski çelişkile
 - Pinokyo'yu ana edebiyat araştırması yapmak: reddedildi
 - Tam konuşma transkriptlerini her checkpoint'e kopyalamak: reddedildi
 
+## P002 Kapanış
+
+P002, 2026-07-10 tarihinde English-only Streamlit workbench shell olarak kapandı.
+İlk ekran doğrudan araştırma iş istasyonudur; Text Proximity, Group Comparison ve
+Style Over Time amaçları ile Guided/Research ayrımını gösterir. Secure ingestion
+ve scientific computation gerektiren kontroller disabled ve kapsam sınırı açık
+olarak sunulur.
+
+P002'nin kanıtı:
+
+- Merkezi English registry: 90 user-facing string, language selector yok
+- Ortak interface state sözleşmesi: empty, loading, error, cancelled, complete
+- Desktop 1440x1000 ve mobile 390x844 browser kanıtı
+- Keyboard purpose-selection testi ve sıfır unnamed visible control
+- Egress-denied shell smoke testi; gözlenen external AI/analytics request sıfır
+- 40 test, strict mypy, yüzde 100 ölçülen Python source coverage
+- `a888e7c81e5fdae12687903de29d0728f5c7cbd5` clean-clone rerun sonucu: pass
+- Sekiz ara hata/düzeltme P002 acceptance raporunda saklandı
+
+Bu kapanış secure upload, gerçek `stylo` çalışması, genel usability, production
+security veya bilimsel geçerlilik kanıtı değildir. `Launch Stylometry` parent-site
+entegrasyonu da P002 dışında bırakılmıştır.
+
 ## Açık Kanıt İşleri
 
-P001 acceptance kapısı geçti. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
+P002 acceptance kapısı geçti. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
 
 Sonraki ticket acceptance kapılarında izlenecekler:
 
@@ -179,11 +205,11 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. `prompts/P002-start.md` şablonuyla P002 Ticket ve PromptEvent kaydı açılır.
-2. Yalnız English-only Streamlit workbench shell ve UI string registry uygulanır.
-3. Disabled state'ler gerçekmiş gibi görünmeden üç analiz amacı ile Guided/Research ayrımı gösterilir.
-4. Desktop/mobile, keyboard accessibility, denylisted copy ve offline-network acceptance kanıtları üretilir.
-5. P002 geçmeden ingestion veya gerçek analiz özelliğine başlanmaz.
+1. `prompts/P003-start.md` şablonu gerçek isteğe uyarlanır; P003 Ticket ve PromptEvent açılır.
+2. `.txt`, `.zip` ve metadata `.csv` için fail-closed secure ingestion uygulanır.
+3. Zip-slip, symlink, hardlink, archive bomb, encoding, polyglot ve filename saldırı fixture'ları oluşturulur.
+4. Rejected input sonrasında payload'ın temp, log ve session state'te kalmadığı kanıtlanır.
+5. P003 geçmeden metadata/rights modeli veya gerçek analiz motoruna başlanmaz.
 
 ## Anahtar Kullanıcı İfadeleri
 
@@ -202,6 +228,10 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 > "Devam edelim."
 
 > "Her bağlam penceresi daraldığında konuşmayı sıkıştıracaksın ama konuşmalarımızdan bir şey unutmanı istemiyorum."
+
+> "FAIR ilkelerini unutma, her şeyi yaptığımız aşamalar şeffaf olmalı."
+
+> "Launch Stylometry gibi bir şey düşünürüz ama o sonraki aşama."
 
 ## Hafıza Güncelleme Kuralı
 

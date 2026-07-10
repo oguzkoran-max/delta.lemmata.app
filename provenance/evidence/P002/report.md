@@ -15,6 +15,7 @@ scope. Delta now opens directly as a workbench, exposes three research purposes,
 shows Guided and Research modes, and reserves corpus, parameter, limitation, and
 run evidence as first-class interface regions. Controls that depend on secure
 ingestion or scientific computation remain disabled and explicitly labelled.
+The implementation snapshot was then restored and verified from a new Git clone.
 
 This result does not claim that upload is safe, `stylo` runs, any result is
 scientifically valid, the service is production-secure, or the interface is
@@ -58,6 +59,19 @@ Final `./scripts/verify.sh` result:
 The command emitted an inherited `requests` dependency warning from the host
 Anaconda installation before the locked tool ran. It did not change the exit
 status or the locked project environment.
+
+## Clean-Clone Rerun
+
+Commit `a888e7c81e5fdae12687903de29d0728f5c7cbd5` was cloned with local-object
+sharing disabled. `./scripts/bootstrap.sh` restored the locked Python and R
+environments. `./scripts/verify.sh` again passed 40 tests, 100% measured Python
+source coverage, metadata and record validation, repository and supply-chain
+checks, and the R lock gate. `git status --porcelain=v1` returned no versionable
+changes after the rerun.
+
+The rerun does not add browser, production, or scientific-computation claims; it
+only demonstrates that the committed P002 source and automated checks restore in
+a fresh local clone.
 
 ## Browser and Accessibility Observations
 
@@ -113,6 +127,7 @@ responsibilities.
 - Native request hash record: `PE-20260710-0002`
 - Development ticket: `P002`
 - Test run: `RUN-20260710-0003`
+- Clean-clone rerun: `RUN-20260710-0004`
 - Exact English copy snapshot: `copy-snapshot.txt`
 - Browser geometry and visual evidence: `browser-audit.json` and two PNG files
 - Keyboard evidence: `accessibility-report.json`

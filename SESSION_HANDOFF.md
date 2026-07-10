@@ -1,87 +1,92 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-10  
-**Aşama:** P001 tamamlandı; P002 başlamaya hazır
-**Kod durumu:** Temel paket/provenance kodu var; kullanıcıya dönük ürün akışı yok
+**Güncellendi:** 2026-07-10
+
+**Aşama:** P002 tamamlandı; P003 Secure Ingestion başlamaya hazır
+
+**Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
+
 **Aktif ticket:** Yok
-**Sıradaki tek ana iş:** P002 English-Only Workbench Shell
+
+**Sıradaki tek ana iş:** P003 Secure Ingestion
 
 ## Önce Oku
 
 1. `START_HERE.md`
 2. Bu dosya
-3. Roadmap'teki yalnız P002 bölümü
-4. `decisions/ADR-0001-product-and-paper.md`
-5. `decisions/ADR-0008-scholarly-vibe-coding.md`
-6. Claim CE-01, CE-18 ve CE-20
-7. Threat SEC-14 ve EPI-13
-8. `provenance/tickets/P001.json` ve P001 acceptance raporu
+3. Roadmap'teki yalnız P003 bölümü
+4. Claim CE-14
+5. Threat SEC-01, SEC-02, SEC-03, SEC-04 ve SEC-05
+6. `provenance/tickets/P002.json`
+7. `provenance/evidence/P002/report.md`
+8. `provenance/evidence/P002/clean-clone-verification.md`
 
-## P001 Sonucu
+## P002 Sonucu
 
-- Delta, akademik-asistan kökünden bağımsız `main` branch'li ayrı bir Git repository oldu.
-- Repo topolojisi, ortam ve sürüm kararları ADR-0009'da kaydedildi.
-- Python 3.13.9 ve R 4.5.2 ortamları `uv.lock` ve `renv.lock` ile kilitlendi.
-- `stylo` 0.7.71 kilitli ana motor; Python/Streamlit orchestration katmanı olarak tanımlandı.
-- VERSION, MIT LICENSE, CITATION.cff ve CodeMeta metadata tek `0.0.0.dev0` sürümünü gösteriyor.
-- Altı versioned provenance/rights/release JSON Schema ve machine-readable örnek kayıtlar eklendi.
-- PromptEvent, HumanDecision, Ticket ve Run ayrımı gerçek P001 kaydında uygulandı.
-- CI action commit SHA'ları ve Linux amd64 container tabanı digest ile pinlendi.
-- SBOM, dependency audit, secret/path/corpus scan ve metadata consistency komutları eklendi.
-- `./scripts/bootstrap.sh` temiz Git klonunda iki ortamı yeniden kurdu.
-- `./scripts/verify.sh` temiz klonda 24 testi, strict mypy ve bütün P001 kapılarını geçti.
-- İlk implementation snapshot commit'i `26131a88a04d1d79ffe50d9eb9ee676d41c2072b`.
-- Ürün UI'si, upload, gerçek `stylo` hesaplaması ve Pinokyo corpus'u P001'de uygulanmadı.
+- Delta ilk ekranda doğrudan Streamlit workbench olarak açılıyor.
+- Text Proximity, Group Comparison ve Style Over Time ilk sınıf research purpose.
+- Guided ve Research shell seçenekleri var; çalışmayan sonraki aşamalar disabled.
+- 90 user-facing string tek English registry içinde; language selector yok.
+- Empty, loading, error, cancelled ve complete için ortak versioned contract var.
+- Health/build bilgisi allowlist kullanıyor; path veya secret-shaped build ID reddediliyor.
+- Runtime AI, analytics, login, permanent storage ve declared external endpoint yok.
+- Desktop/mobile browser geometry, keyboard, copy denylist ve egress-denied testleri geçti.
+- Otomatik doğrulama: 40 test, strict mypy, yüzde 100 measured source coverage.
+- Implementation commit `a888e7c81e5fdae12687903de29d0728f5c7cbd5` yeni klonda yeniden kuruldu ve geçti.
+- P002 Ticket, PromptEvent, iki HumanDecision, iki Run ve sekiz başarısızlık/düzeltme izi bağlı.
 
 ## Doğrulanmamış Sınırlar
 
-- Docker bu Mac'te kurulu olmadığı için container henüz build edilmedi.
-- GitHub remote olmadığı için CI sunucuda çalışmadı.
-- macOS R/Tcl-Tk, `stylo` namespace yüklemesi için XQuartz istiyor.
-- Gerçek `stylo` execution ve parity P006'nın Linux container acceptance işidir.
-- CE-12, CE-18, CE-19 ve CE-20 yalnız `implemented`; son gate'leri geçmeden `verified` denmez.
+- Upload ve archive parsing henüz yok; P003'ün konusudur.
+- Asset metadata, corpus inventory ve rights kararları P004'tür.
+- Gerçek `stylo` execution/parity P006'dır.
+- Upload-to-export no-code E2E henüz kurulmadı.
+- Screen-reader ve tam WCAG conformance değerlendirmesi yapılmadı.
+- Proxy/TLS/Host/CORS/CSRF/header ve shared-VPS isolation P014'tür.
+- General usability veya ease claim'i yoktur.
+- `lemmata.app` üzerinde `Launch Stylometry` bağlantısı eklenmedi; ayrı sonraki ticket'tır.
 
-Bu maddeler P001 sonucu içinde gizlenmiş pass değildir. İlgili sonraki ticket'lara
-aktarılmış açık doğrulama işleridir.
+Bu maddeler gizlenmiş pass değildir. Claim ve threat kayıtlarında açık kalan kapı
+olarak tutulur.
 
-## Değişmez Ürün ve Makale Sınırları
+## P003 İçin Talimat
 
-- v0.1 UI yalnız İngilizcedir; sonraki Türkçe/İtalyanca için string registry kullanılır.
-- Runtime AI, analytics, login ve permanent project storage yoktur.
-- Üç amaç Text Proximity, Group Comparison ve Style Over Time'dır.
-- No-code vaadi yalnız desteklenen akışlarda önceden R/Python öğrenme veya kod yazma
-  gereğini kaldırır; easy, intuitive, no knowledge needed veya universal usability denmez.
-- Stability confidence değildir; Delta yazar tespiti kanıtı sunmaz.
-- Pinokyo tool-first Style Over Time worked example'ıdır; ana edebiyat tezi değildir.
-- PhiloEditor sürüm/varyant karşılaştırır; Delta independent-work stylometry yapar.
-- Oğuz yöntem, claim ve acceptance sahibidir; AI ajanları implementasyon desteğidir.
-- Barış ileride structured expert walkthrough yapar; bu bir participant user study değildir.
+`prompts/P003-start.md` şablonunu gerçek oturum isteğine uyarla. Önce P003 Ticket
+ve PromptEvent aç. Sonra yalnız secure ingestion kapsamını uygula:
 
-## P002 İçin Talimat
+- `.txt`, `.zip` ve metadata `.csv`
+- content-based type, UTF-8 ve Unicode NFC validation
+- extraction öncesi archive member audit
+- size, member count, ratio, path, nesting, token ve line limits
+- server-generated asset ID ve escaped display filename
+- CSV formula, HTML, newline, path ve log injection defenses
+- content-free error code ve rejected-input cleanup
 
-`prompts/P002-start.md` içindeki şablonu gerçek oturum isteğine uyarla. Önce yeni
-P002 Ticket ve PromptEvent kaydı aç. Ardından yalnız roadmap'teki P002 shell
-kapsamını uygula. Pazarlama landing page'i yapma; ilk ekran gerçek workbench olsun.
-Henüz hesaplanmayan kontrolleri disabled ve açık etiketli tut. Ingestion, analiz
-motoru, Pinokyo verisi, deployment veya runtime AI ekleme.
+P003'te gerçek analysis, Pinokyo data, production deployment, parent-site launch
+integration, PDF/DOCX/EPUB/TEI veya OCR ekleme. Bir malicious fixture kapısı
+geçmezse P003'ü complete yapma.
 
-P002 kapanışı için desktop/mobile screenshot, keyboard accessibility, copy denylist
-ve offline network trace kanıtları gerekir. Bir kapı geçmezse P002'yi complete yapma.
+## FAIR Kapanış Disiplini
 
-## Çalışma Ağacı ve Repo Notu
+Her ticket açılışında PromptEvent, Ticket ve gerekiyorsa HumanDecision kaydı açılır.
+Her ara başarısızlık acceptance raporunda korunur. Kapanışta komutlar, Run, claim,
+threat, screenshots/fixtures ve clean-clone sonucu bağlanır. Summary-only kayıt
+native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 
-- Delta repository ayrı ve henüz remote'suzdur.
-- Akademik-asistan kök repository'si `/delta.lemmata_app/` dizinini ignore eder.
-- Kök çalışma ağacındaki Delta dışı kullanıcı değişikliklerine dokunma.
-- P001 implementation commit'i temiz klon testinden geçti.
+## P002 Kanıt Paketi
 
-## P001 Kanıt Paketi
+- `provenance/tickets/P002.json`
+- `provenance/evidence/P002/report.md`
+- `provenance/evidence/P002/browser-audit.json`
+- `provenance/evidence/P002/accessibility-report.json`
+- `provenance/evidence/P002/network-trace.json`
+- `provenance/evidence/P002/copy-snapshot.txt`
+- `provenance/evidence/P002/clean-clone-verification.md`
+- `provenance/runs/RUN-20260710-0003.json`
+- `provenance/runs/RUN-20260710-0004.json`
 
-- `provenance/tickets/P001.json`
-- `provenance/evidence/P001/report.md`
-- `provenance/evidence/P001/environment-summary.json`
-- `provenance/evidence/P001/clean-clone-verification.md`
-- `provenance/runs/RUN-20260710-0001.json`
-- `provenance/runs/RUN-20260710-0002.json`
-- `decisions/ADR-0009-repository-and-environment.md`
-- `memory/checkpoints/2026-07-10-p001-closed.md`
+## Repository Notu
+
+- Delta ayrı, remote'suz `main` repository'sidir.
+- Parent akademik-asistan repository'si Delta dizinini ignore eder.
+- Parent çalışma ağacındaki Delta dışı kullanıcı değişikliklerine dokunma.

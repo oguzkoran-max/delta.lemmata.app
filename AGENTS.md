@@ -13,7 +13,7 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P000 kapanmıştır. P001 acceptance kapısı geçmeden P002 veya başka ürün özelliğine başlama.
+- P000, P001 ve P002 kapanmıştır. P003 Ticket ve PromptEvent açılmadan ingestion koduna başlama.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.
 - Kullanıcının onayladığı soruları yeniden sorma.
 - Runtime AI, dış API, analytics, login veya kalıcı proje saklama ekleme.
