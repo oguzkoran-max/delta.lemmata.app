@@ -2,7 +2,7 @@
 
 **Son güncelleme:** 2026-07-10
 
-**Durum:** P002 kapandı; P003 Secure Ingestion başlamaya hazır
+**Durum:** P002 kapandı; bağımsız Claude audit-and-repair P003 öncesi sırada
 
 **Kod:** English-only workbench shell var; ingestion ve bilimsel hesaplama henüz yok
 
@@ -32,6 +32,7 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 | Ürün adı | Delta | Burrows's Delta ve fark/değişim fikriyle uyumlu |
 | Alan adı | delta.lemmata.app | Lemmata ürün ailesi ve aynı VPS kullanımı |
 | Lemmata launch entegrasyonu | `Launch Stylometry` sonraki ayrı ticket | Canlı parent siteyi P002 kapsamına gizlice dahil etmemek ve bağımsız regression/rollback kapısı kurmak |
+| P002 ikinci-model denetimi | Claude önce read-only denetler, sonra kanıtlı eksikleri ayrı branch'te düzeltir; Codex son denetçi | Tanı ile uygulamayı ayırmak, self-preferential bias'ı azaltmak ve kabul edilmiş baseline'ı korumak |
 | Runtime AI | v0.1'de yok | Maliyet, gizlilik, telif ve determinism |
 | Motor | R stylo | Alan standardı ve hesaplama parity olanağı |
 | Arayüz | Python ve Streamlit | Hızlı geliştirme, Lemmata tecrübesi |
@@ -196,6 +197,11 @@ entegrasyonu da P002 dışında bırakılmıştır.
 
 P002 acceptance kapısı geçti. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
 
+P003'ten önce Claude independent audit-and-repair kapısı çalıştırılacaktır. Bu kapı
+P002'nin acceptance sonucunu peşinen geçersiz kılmaz; ikinci modelin kanıtlı
+bulgularını ayrı branch ve yeni evidence paketiyle sınar. Final merge kararını
+Codex incelemesi sonrasında Oğuz verir.
+
 Sonraki ticket acceptance kapılarında izlenecekler:
 
 - Aday Collodi eserlerinin item-level source, edition ve rights audit'i
@@ -205,11 +211,11 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. `prompts/P003-start.md` şablonu gerçek isteğe uyarlanır; P003 Ticket ve PromptEvent açılır.
-2. `.txt`, `.zip` ve metadata `.csv` için fail-closed secure ingestion uygulanır.
-3. Zip-slip, symlink, hardlink, archive bomb, encoding, polyglot ve filename saldırı fixture'ları oluşturulur.
-4. Rejected input sonrasında payload'ın temp, log ve session state'te kalmadığı kanıtlanır.
-5. P003 geçmeden metadata/rights modeli veya gerçek analiz motoruna başlanmaz.
+1. Claude Code'a `prompts/P002-claude-independent-audit-and-repair.md` briefi çağrılır.
+2. Claude read-only altı mercekli denetim ve kanıtlı P002 düzeltmelerini ayrı branch'te tamamlar.
+3. Codex branch diff'ini tasarım, kod, içerik, test ve FAIR kayıtları açısından denetler.
+4. Oğuz kabul ederse merge edilir; ardından `prompts/P003-start.md` ile P003 açılır.
+5. `.txt`, `.zip` ve metadata `.csv` fail-closed secure ingestion ancak bundan sonra uygulanır.
 
 ## Anahtar Kullanıcı İfadeleri
 

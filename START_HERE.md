@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P002 tamamlandı; P003 Secure Ingestion başlamaya hazır.
+**Güncel aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair kapısı P003'ten önce çalıştırılacak.
 
 ## 1. Her Oturumda Oku
 
@@ -104,17 +104,19 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Sıradaki iş `P003: Secure Ingestion`dır. P003 henüz açılmamıştır.
+Sıradaki iş tamamlanmış P002 shell'inin bağımsız Claude denetimidir. P003 henüz
+açılmamıştır ve audit kapanmadan başlatılmaz.
 
 Başlamadan önce:
 
 1. `SESSION_HANDOFF.md` dosyasını oku.
-2. Roadmap'te yalnız P003 bölümünü oku.
-3. Claim CE-14 ile threat SEC-01/02/03/04/05 kayıtlarını oku.
-4. `provenance/tickets/P002.json`, P002 acceptance raporu ve clean-clone
-   kanıtından arayüz temelinin geçtiğini doğrula.
-5. `prompts/P003-start.md` içindeki human-reviewed şablonu gerçek oturum isteğine uyarla.
-6. P003 için yeni Ticket ve PromptEvent aç; ingestion koduna ancak bundan sonra başla.
+2. `prompts/P002-claude-independent-audit-and-repair.md` briefini eksiksiz uygula.
+3. Önce read-only multi-agent audit yap; sonra yalnız kanıtlanmış P002 eksiklerini
+   `claude/p002-independent-audit` branch'inde düzelt.
+4. P002 acceptance, browser, offline ve clean-clone kapılarını yeniden çalıştır.
+5. Main'e merge etme; branch ve evidence paketini Codex denetimine bırak.
+6. Codex audit sonucu kabul edildikten sonra `prompts/P003-start.md` ile P003 açılır.
 
-P003'te gerçek `stylo` analizi, Pinokyo corpus'u, production deployment veya
-`lemmata.app` üzerindeki gelecekteki `Launch Stylometry` bağlantısı uygulanmaz.
+Claude audit sırasında P003 ingestion, gerçek `stylo` analizi, Pinokyo corpus'u,
+production deployment veya `lemmata.app` üzerindeki gelecekteki
+`Launch Stylometry` bağlantısı uygulanmaz.

@@ -14,6 +14,7 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 ## Çalışma Kuralları
 
 - P000, P001 ve P002 kapanmıştır. P003 Ticket ve PromptEvent açılmadan ingestion koduna başlama.
+- P003'ten önce `prompts/P002-claude-independent-audit-and-repair.md` içindeki bağımsız audit kapısını tamamla; audit branch'ini main'e otomatik merge etme.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.
 - Kullanıcının onayladığı soruları yeniden sorma.
 - Runtime AI, dış API, analytics, login veya kalıcı proje saklama ekleme.

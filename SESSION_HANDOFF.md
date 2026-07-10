@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-10
 
-**Aşama:** P002 tamamlandı; P003 Secure Ingestion başlamaya hazır
+**Aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair P003'ten önce bekliyor
 
 **Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
 
-**Aktif ticket:** Yok
+**Aktif ticket:** Yok; P002 bağımsız review cycle hazırlanmış durumda
 
-**Sıradaki tek ana iş:** P003 Secure Ingestion
+**Sıradaki tek ana iş:** Claude ile P002 design/code/content independent audit and repair
 
 ## Önce Oku
 
@@ -20,6 +20,19 @@
 6. `provenance/tickets/P002.json`
 7. `provenance/evidence/P002/report.md`
 8. `provenance/evidence/P002/clean-clone-verification.md`
+
+## Şimdi Çalıştırılacak Bağımsız Denetim
+
+Claude Code'a yalnız şu mesaj gönderilir:
+
+```text
+prompts/P002-claude-independent-audit-and-repair.md dosyasını eksiksiz oku ve uygula. Önce hiçbir dosyayı değiştirmeden bağımsız çoklu-ajan denetimini tamamla; ardından yalnız kanıtlanmış P002 eksiklerini ayrı branch üzerinde düzelt, bütün test ve FAIR kapanış adımlarını çalıştır. Daha önce onaylanmış ürün kararlarını yeniden sorma; yalnız kanonik belgeler arasında çözülemeyen gerçek bir çelişki varsa dur.
+```
+
+Claude önce read-only altı mercekli denetim yapacak, sonra yalnız P002 içi kanıtlı
+P0/P1 ve düşük riskli P2 bulgularını `claude/p002-independent-audit` branch'inde
+düzeltecek. Main'e merge etmeyecek. Bulgular, before/after kanıtı, testler, clean
+clone ve commit'ler Codex'in son denetimine bırakılacak.
 
 ## P002 Sonucu
 
@@ -49,9 +62,10 @@
 Bu maddeler gizlenmiş pass değildir. Claim ve threat kayıtlarında açık kalan kapı
 olarak tutulur.
 
-## P003 İçin Talimat
+## Denetim Kabulünden Sonra P003
 
-`prompts/P003-start.md` şablonunu gerçek oturum isteğine uyarla. Önce P003 Ticket
+Codex, Claude branch'ini kabul ettikten sonra `prompts/P003-start.md` şablonunu
+gerçek oturum isteğine uyarla. Önce P003 Ticket
 ve PromptEvent aç. Sonra yalnız secure ingestion kapsamını uygula:
 
 - `.txt`, `.zip` ve metadata `.csv`

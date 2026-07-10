@@ -36,6 +36,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P002 kapanmıştır. Sıradaki iş P003 Secure Ingestion'dır. İnsan tarafından gözden
-geçirilecek başlangıç şablonu `prompts/P003-start.md` içindedir. Bu şablon gerçek
-oturum mesajı yerine geçmez; gönderilen native isteğin hash'i ayrı PromptEvent olur.
+P002 kabul edilmiştir, fakat P003'ten önce bağımsız Claude audit-and-repair kapısı
+çalıştırılacaktır. Bağlayıcı brief
+`prompts/P002-claude-independent-audit-and-repair.md` içindedir. Önce read-only
+denetim yap, sonra yalnız kanıtlı P002 eksiklerini ayrı branch'te düzelt ve main'e
+merge etmeden Codex denetimine bırak. Gönderilen native launch isteğinin hash'i
+ayrı PromptEvent olur.

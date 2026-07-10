@@ -6,8 +6,9 @@ requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
 **Current stage:** P002 English-only workbench shell passed its acceptance gate
-and clean-clone rerun. P003 secure ingestion is next; no public analysis workflow
-or scientific result has been implemented or validated yet.
+and clean-clone rerun. An independent Claude design/code/content audit is queued
+before P003 secure ingestion; no public analysis workflow or scientific result
+has been implemented or validated yet.
 
 ## Product Boundaries
 
