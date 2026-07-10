@@ -1,0 +1,93 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "RUN-20260710-0005",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P002"
+  ],
+  "started_at_utc": "2026-07-10T20:15:00Z",
+  "ended_at_utc": "2026-07-10T20:24:30Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "0788a6e94a46df984c88f65be8841e0ef9d3bb24",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "uv": "0.11.28",
+    "browser_engine": "Chromium (Playwright headless) 149.0.7827.55",
+    "browser_targets": [
+      "1440x1000",
+      "1280x800",
+      "390x844",
+      "360x800",
+      "640x800-zoom200-emulated"
+    ],
+    "toolchain_note": "Google Drive dehydrated the gitignored .tools/uv cache mid-session; restored with ./scripts/bootstrap.sh before this run."
+  },
+  "command": "./scripts/verify.sh; Playwright multi-viewport browser + zoom audit; Streamlit AppTest smoke and copy snapshot",
+  "exit_code": 0,
+  "config_sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69",
+  "input_artifacts": [
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "75be1c34eba7e2e96ed827250b19d8531f6154dd4c0633903bba64a4e12981c7"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "940da4fabd15f710de01660ce1445a8e29b7d433acdf79db0b32c0055ae1b6d1"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "712532dd38c59126dc285608df97021edcf4bd32807e7cf60275ffed542090bb"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/browser-audit.json",
+      "sha256": "44406182288b5707fe0131c446e571c2fc5e7bade7b41957eaad1dc1ec209b8a"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/smoke.json",
+      "sha256": "43489b43fe8ca98648b5d05607a1beaab69709d773c87083f998923338662ff5"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/contrast-proof.json",
+      "sha256": "633002535914d48d924fab07abba6122fcc9f5249d56ef1aaaa9cfa5bec9c1b9"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/copy-snapshot.txt",
+      "sha256": "2f5d7710868efc0f1beb533bb95f4f614ea176d1b540ed9cb264d533c7d527ab"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/network-observations.json",
+      "sha256": "9796196b7890999ecb7f19080557661729b93aaed1ef4670367dc601779af4c0"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/screenshots/desktop-1440x1000.png",
+      "sha256": "14d376da20ccde8563cfb88ac6e8de38cd971dfae2dd8d7bee9542917f76bd4d"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/screenshots/desktop-1280x800.png",
+      "sha256": "d2fed7d437c5e822411fe3659dac63ade5e0e518b9607ce7565336785d580f7a"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/screenshots/mobile-390x844.png",
+      "sha256": "ecba045b977d98c250659cdb002cbfb512ec04a11f483a4261374613caa1b33e"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/screenshots/mobile-360x800.png",
+      "sha256": "097bbef92caa572b33a81b5dff3e16f6dd42b0b884f436324a0cb11db6899e10"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/screenshots/zoom200-emulated-640x800.png",
+      "sha256": "e1221c6058063fdadf32652f5de31a49638667265d084674265c475696abfdfc"
+    }
+  ],
+  "notes": "Post-fix verification of commit 0788a6e on the claude/p002-independent-audit branch: ruff format+lint, strict mypy (7 files), 40 pytest at 100% measured source coverage, metadata/records/repository/supply-chain/R-lock. Browser audit passed at four viewports plus a 200%-zoom emulation with zero horizontal overflow, zero external assets, zero unnamed viewport-visible controls, and zero prohibited-copy hits ('p003' removed). AppTest smoke rendered with no exceptions and all future controls disabled."
+}

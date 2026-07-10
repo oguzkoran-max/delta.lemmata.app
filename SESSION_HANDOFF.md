@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-10
 
-**Aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair P003'ten önce bekliyor
+**Aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair YAPILDI (`claude/p002-independent-audit`), Codex denetimi bekliyor
 
 **Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
 
-**Aktif ticket:** Yok; P002 bağımsız review cycle hazırlanmış durumda
+**Aktif ticket:** Yok; P002 Claude bağımsız denetimi tamamlandı, Codex kabulü sonrası P003 açılır
 
-**Sıradaki tek ana iş:** Claude ile P002 design/code/content independent audit and repair
+**Sıradaki tek ana iş:** Codex, `claude/p002-independent-audit` branch'ini denetler; kabul edilirse P003 açılır
 
 ## Önce Oku
 
@@ -33,6 +33,26 @@ Claude önce read-only altı mercekli denetim yapacak, sonra yalnız P002 içi k
 P0/P1 ve düşük riskli P2 bulgularını `claude/p002-independent-audit` branch'inde
 düzeltecek. Main'e merge etmeyecek. Bulgular, before/after kanıtı, testler, clean
 clone ve commit'ler Codex'in son denetimine bırakılacak.
+
+## Claude Bağımsız Denetim Sonucu (2026-07-10, TAMAMLANDI)
+
+- **Branch:** `claude/p002-independent-audit` (main'e merge EDİLMEDİ). Commit'ler:
+  `0788a6e` (apply audit fixes) + review-evidence closure commit'i.
+- **Hüküm:** kabul, 91/100. Açık P0/P1 = 0. Altı bağımsız mercek (product,
+  visual/responsive, accessibility, python/streamlit, content/DH, security/FAIR).
+- **Uygulanan (7):** sidebar aktif satır WCAG AA kontrastı (teal 2.5→6.3:1),
+  kullanıcı metninden "P003" jargonu çıkarıldı, üç ölü accent token silindi,
+  Guided/Research metni gelecek zamana çekildi, iki disabled butona help metni,
+  paylaşımlı experiment-map helper, `runOnSave=false`.
+- **Ertelenen (Codex/owner kararı):** kullanılmayan `pydantic` bağımlılığı,
+  boundary-panel tekrarı (IA), önceki run/ticket provenance nitleri (SEC-1/3/4,
+  eski kanıt değiştirilemez), P014 egress, ve P3 kuyruğu.
+- **Kanıt:** `provenance/evidence/P002/claude-independent-review/` (report.md,
+  findings.json, fix-matrix.md, before-after.md, browser-audit.json, smoke.json,
+  contrast-proof.json, network-observations.json, clean-clone-verification.md,
+  5 screenshot). Provenance: `PE-20260710-0004`, `RUN-20260710-0005/0006`,
+  bağlı `HD-20260710-0005`. Eski P002 acceptance kanıtı değiştirilmedi.
+- **Codex'e:** report.md "For Codex to re-examine" listesindeki 5 madde.
 
 ## P002 Sonucu
 

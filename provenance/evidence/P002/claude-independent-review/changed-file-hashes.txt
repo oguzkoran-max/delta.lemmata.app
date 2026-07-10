@@ -1,0 +1,4 @@
+b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69  .streamlit/config.toml
+75be1c34eba7e2e96ed827250b19d8531f6154dd4c0633903bba64a4e12981c7  src/delta_lemmata/catalog.py
+940da4fabd15f710de01660ce1445a8e29b7d433acdf79db0b32c0055ae1b6d1  src/delta_lemmata/ui_theme.py
+712532dd38c59126dc285608df97021edcf4bd32807e7cf60275ffed542090bb  src/delta_lemmata/webapp.py
