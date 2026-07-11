@@ -9,7 +9,7 @@ import streamlit as st
 
 from delta_lemmata.catalog import text
 from delta_lemmata.health import public_health
-from delta_lemmata.ingestion import DEFAULT_LIMITS, IntakeReceipt, IntakeRole
+from delta_lemmata.ingestion import DEFAULT_LIMITS, IntakeErrorCode, IntakeReceipt, IntakeRole
 from delta_lemmata.intake_ui import (
     CORPUS_MODE_LABEL_KEYS,
     INTAKE_ERROR_MESSAGE_KEYS,
@@ -29,6 +29,9 @@ from delta_lemmata.workbench import (
     PurposeSpec,
     WorkbenchMode,
 )
+
+_UPLOAD_GENERATION_KEY = "_intake_upload_generation"
+_PENDING_ERROR_KEY = "_intake_pending_error"
 
 
 def _html(value: str) -> str:
@@ -93,7 +96,13 @@ def _render_sidebar(health: dict[str, Any], outcome: IntakeOutcome) -> None:
             color="green",
         )
         st.caption(text("sidebar.progress"))
-        st.progress(50)
+        st.markdown(
+            f'<div class="delta-progress" role="progressbar" '
+            f'aria-label="{_html(text("sidebar.progress_accessible"))}" '
+            'aria-valuemin="1" aria-valuemax="4" aria-valuenow="2">'
+            '<span class="delta-progress-fill"></span></div>',
+            unsafe_allow_html=True,
+        )
         st.markdown(_experiment_map_markup(outcome.corpus_ready), unsafe_allow_html=True)
         st.divider()
         st.markdown(f"**{text('sidebar.boundary_title')}**")
@@ -215,6 +224,9 @@ def _render_mode() -> WorkbenchMode:
 
 
 def _render_corpus_stage() -> IntakeOutcome:
+    generation = int(st.session_state.get(_UPLOAD_GENERATION_KEY, 0))
+    pending_error_value = st.session_state.pop(_PENDING_ERROR_KEY, None)
+    pending_error = None if pending_error_value is None else IntakeErrorCode(pending_error_value)
     with st.container(border=True, key="corpus_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("corpus.eyebrow"))}</div>',
@@ -245,7 +257,7 @@ def _render_corpus_stage() -> IntakeOutcome:
                 type=["txt"],
                 accept_multiple_files=True,
                 help=text("corpus.text_uploader_help"),
-                key="corpus_text_files",
+                key=f"corpus_text_files_{generation}",
             )
             corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
         else:
@@ -254,7 +266,7 @@ def _render_corpus_stage() -> IntakeOutcome:
                 type=["zip"],
                 accept_multiple_files=False,
                 help=text("corpus.archive_uploader_help"),
-                key="corpus_archive_file",
+                key=f"corpus_archive_file_{generation}",
             )
             corpus_files = () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
         uploaded_metadata = st.file_uploader(
@@ -262,7 +274,7 @@ def _render_corpus_stage() -> IntakeOutcome:
             type=["csv"],
             accept_multiple_files=False,
             help=text("corpus.metadata_uploader_help"),
-            key="metadata_file",
+            key=f"metadata_file_{generation}",
         )
         metadata_file = None if uploaded_metadata is None else _browser_upload(uploaded_metadata)
         st.caption(
@@ -275,36 +287,48 @@ def _render_corpus_stage() -> IntakeOutcome:
             )
         )
         outcome = validate_browser_uploads(mode, corpus_files, metadata_file)
-        if not outcome.has_inputs:
+        if outcome.error_code is not None:
+            st.session_state[_PENDING_ERROR_KEY] = outcome.error_code.value
+            st.session_state[_UPLOAD_GENERATION_KEY] = generation + 1
+            st.rerun()
+        display_outcome = (
+            IntakeOutcome(submitted_count=1, error_code=pending_error)
+            if pending_error is not None and not outcome.has_inputs
+            else outcome
+        )
+        if not display_outcome.has_inputs:
             st.info(text("corpus.empty"), icon=":material/upload_file:")
-        elif outcome.error_code is not None:
+        elif display_outcome.error_code is not None:
             st.error(text("corpus.error.title"), icon=":material/gpp_bad:")
-            st.caption(text(INTAKE_ERROR_MESSAGE_KEYS[outcome.error_code]))
-            st.caption(text("corpus.error.reference", code=outcome.error_code.value))
+            st.caption(text(INTAKE_ERROR_MESSAGE_KEYS[display_outcome.error_code]))
+            st.caption(text("corpus.error.reference", code=display_outcome.error_code.value))
         else:
-            st.success(
-                text(
-                    "corpus.success",
-                    uploads=outcome.submitted_count,
-                    units=outcome.corpus_units,
-                    bytes=outcome.total_bytes,
-                ),
-                icon=":material/verified_user:",
-            )
-            if outcome.metadata_ready:
+            if display_outcome.corpus_ready:
+                st.success(
+                    text(
+                        "corpus.success",
+                        uploads=display_outcome.submitted_count,
+                        units=display_outcome.corpus_units,
+                        bytes=display_outcome.total_bytes,
+                    ),
+                    icon=":material/verified_user:",
+                )
+            else:
+                st.info(text("corpus.metadata_only"), icon=":material/table_view:")
+            if display_outcome.metadata_ready:
                 st.badge(
                     text("corpus.metadata_valid"),
                     icon=":material/table_view:",
                     color="blue",
                 )
-            _render_receipts(outcome)
+            _render_receipts(display_outcome)
         st.button(
             text("corpus.continue_button"),
             disabled=True,
             help=text("corpus.continue_button_help"),
             width="stretch",
         )
-        return outcome
+        return display_outcome
 
 
 def _render_experiment_map(outcome: IntakeOutcome) -> None:

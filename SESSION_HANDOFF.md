@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P002 denetimli olarak main'e alındı; P003 Secure Ingestion açıldı
+**Aşama:** P003 Secure Ingestion uygulandı; acceptance hardening ve clean-clone kapanışı sürüyor
 
-**Kod durumu:** English-only workbench shell main üzerinde; secure ingestion henüz uygulanmadı, scientific computation yok
+**Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
 
 **Aktif ticket:** P003 Secure Ingestion (`in-progress`)
 
-**Sıradaki tek ana iş:** P003 ingestion boundary ve malicious fixture testlerini uygula
+**Sıradaki tek ana iş:** Son parser review, exact-commit clean clone, manifest ve insan kabul kapısını tamamla
 
 ## Önce Oku
 
@@ -84,7 +84,7 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
 - **Main doğrulaması:** merge sonrasında 47 test, yüzde 100 measured source coverage,
   23 provenance kaydı ve tüm otomatik kapılar geçti.
-- **Sonraki adım:** P003 secure ingestion implementation ve malicious fixture kapısı.
+- **Sonraki adım:** P003 son review, clean-clone, manifest ve insan kabul kapısı.
 
 ## P002 Sonucu
 
@@ -103,7 +103,7 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
 
 ## Doğrulanmamış Sınırlar
 
-- Upload ve archive parsing henüz yok; P003'ün konusudur.
+- P003 application intake uygulanmıştır; production retention ve proxy/host buffering P005/P014'te açıktır.
 - Asset metadata, corpus inventory ve rights kararları P004'tür.
 - Gerçek `stylo` execution/parity P006'dır.
 - Upload-to-export no-code E2E henüz kurulmadı.
@@ -115,23 +115,22 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
 Bu maddeler gizlenmiş pass değildir. Claim ve threat kayıtlarında açık kalan kapı
 olarak tutulur.
 
-## Denetim Kabulünden Sonra P003
+## P003 Uygulama Sonucu
 
-Codex, Claude branch'ini kabul ettikten sonra `prompts/P003-start.md` şablonunu
-gerçek oturum isteğine uyarla. Önce P003 Ticket
-ve PromptEvent aç. Sonra yalnız secure ingestion kapsamını uygula:
+- Explicit TXT veya ZIP corpus rolü ve ayrı metadata CSV uploader'ı var.
+- MIME verilirse rolle uyuşmak zorunda; içerik parser'ı her durumda zorunlu.
+- UTF-8/NFC, belge imzası, metin/CSV limitleri ve injection kontrolleri var.
+- Katı ZIP v1; ham EOCD/central/local tutarlılığı, no ZIP64/extra/comment,
+  canonical path, link/device/nested archive reddi ve ikinci-okuma hash kontrolü var.
+- Rejected uploader payload ve filename yeni widget anahtarıyla temizleniyor; yalnız
+  bir content-free kod bir rerun boyunca gösteriliyor.
+- 232 test ve yüzde 100 statement/branch coverage geçti; taze-süreç browser
+  harness altı viewport ve sentetik TXT/CSV/ZIP/rejection akışlarında geçti.
+- Başarısız browser paketleri ve additive path errata korunuyor.
 
-- `.txt`, `.zip` ve metadata `.csv`
-- content-based type, UTF-8 ve Unicode NFC validation
-- extraction öncesi archive member audit
-- size, member count, ratio, path, nesting, token ve line limits
-- server-generated asset ID ve escaped display filename
-- CSV formula, HTML, newline, path ve log injection defenses
-- content-free error code ve rejected-input cleanup
-
-P003'te gerçek analysis, Pinokyo data, production deployment, parent-site launch
-integration, PDF/DOCX/EPUB/TEI veya OCR ekleme. Bir malicious fixture kapısı
-geçmezse P003'ü complete yapma.
+P003'te metadata anlamı/rights, gerçek analysis, Pinokyo data, retention süreleri,
+production deployment, parent-site launch, PDF/DOCX/EPUB/TEI veya OCR ekleme.
+Exact-commit clean clone ve Oğuz acceptance olmadan ticket'ı complete yapma.
 
 ## FAIR Kapanış Disiplini
 

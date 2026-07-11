@@ -111,7 +111,7 @@ def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
     app.run()
     assert len(app.exception) == 0
     assert [message.value for message in app.error] == [
-        "The submission was rejected before intake."
+        "The submission was rejected and cleared before intake."
     ]
     assert len(app.success) == 0
     rendered = unescape("\n".join(element.value for element in app.markdown))
@@ -119,9 +119,32 @@ def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
     visible_failure = "\n".join((rendered, captions, *(message.value for message in app.error)))
     assert "not valid UTF-8 and NFC" in captions
     assert "Rejection reference: INGEST_INVALID_UTF8" in captions
-    assert "Rejected before intake" in rendered
+    assert "Intake submission rejected" in rendered
     assert "SECRET_PAYLOAD" not in visible_failure
     assert "secret-label.txt" not in visible_failure
+    assert app.file_uploader[0].value == []
+    assert app.file_uploader[1].value is None
+    session_state = repr(app.session_state.filtered_state)
+    assert "SECRET_PAYLOAD" not in session_state
+    assert "secret-label.txt" not in session_state
+
+
+def test_metadata_only_is_validated_without_claiming_corpus_readiness() -> None:
+    app = run_app()
+    app.file_uploader[1].upload(
+        "metadata.csv",
+        b"title,year\nOne,1883",
+        "text/csv",
+    ).run()
+    assert len(app.exception) == 0
+    assert len(app.success) == 0
+    assert [message.value for message in app.info] == [
+        "Metadata structure passed intake checks. Add a corpus before this stage can be ready."
+    ]
+    rendered = unescape("\n".join(element.value for element in app.markdown))
+    assert "Metadata table" in rendered
+    assert "Awaiting corpus" in rendered
+    assert "Validated for intake" not in rendered
 
 
 def test_archive_mode_validates_one_zip_and_reports_member_count() -> None:

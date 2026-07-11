@@ -20,6 +20,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
     "sidebar.progress": "Experiment map · 2 of 4",
+    "sidebar.progress_accessible": "Experiment map progress: step 2 of 4",
     "sidebar.step.purpose": "Purpose",
     "sidebar.step.corpus": "Corpus",
     "sidebar.step.parameters": "Parameters",
@@ -123,6 +124,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "· {archive_members} ZIP members · {archive_mib} MiB expanded ZIP content"
     ),
     "corpus.empty": "No files submitted. Choose a corpus format and add files when ready.",
+    "corpus.metadata_only": (
+        "Metadata structure passed intake checks. Add a corpus before this stage can be ready."
+    ),
     "corpus.success": (
         "Intake checks passed · Uploads: {uploads} · Corpus texts: {units} · Input bytes: {bytes}"
     ),
@@ -133,7 +137,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "corpus.receipt.text": "Lines: {lines} · Tokens: {tokens}",
     "corpus.receipt.archive": "TXT members: {members} · Expanded bytes: {expanded}",
     "corpus.receipt.csv": "Rows: {rows} · Columns: {columns}",
-    "corpus.error.title": "The submission was rejected before intake.",
+    "corpus.error.title": "The submission was rejected and cleared before intake.",
     "corpus.error.empty": "The selected file contains no bytes.",
     "corpus.error.limit": (
         "A versioned size, count, line, token, path, or compression limit was exceeded."
@@ -175,7 +179,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "evidence.corpus": "Corpus health",
     "evidence.corpus_state": "Awaiting corpus",
     "evidence.corpus_validated": "Validated for intake",
-    "evidence.corpus_rejected": "Rejected before intake",
+    "evidence.corpus_rejected": "Intake submission rejected",
     "evidence.parameters": "Parameter sensitivity",
     "evidence.parameters_state": "Awaiting configuration",
     "evidence.limits": "Interpretive limits",

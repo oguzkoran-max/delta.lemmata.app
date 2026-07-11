@@ -164,6 +164,55 @@ def _manifest_errors(manifest: dict[str, Any]) -> list[str]:
     return errors
 
 
+def acceptance_evidence_errors(ticket_id: str, ticket: dict[str, Any]) -> list[str]:
+    """Validate closure states and resolve acceptance evidence to repository files."""
+
+    errors: list[str] = []
+    complete = ticket["status"] == "complete"
+    for acceptance in ticket["acceptance"]:
+        acceptance_id = acceptance["id"]
+        evidence = acceptance["evidence"]
+        if complete and acceptance["status"] not in {"passed", "not-applicable"}:
+            errors.append(f"{ticket_id}: incomplete acceptance {acceptance_id}")
+        if complete and not evidence:
+            errors.append(f"{ticket_id}: acceptance has no evidence {acceptance_id}")
+        for evidence_path in evidence:
+            target = _repo_path(evidence_path)
+            if target is None:
+                errors.append(
+                    f"{ticket_id}: acceptance evidence path is not repo-relative: {evidence_path}"
+                )
+            elif not target.is_file():
+                errors.append(
+                    f"{ticket_id}: missing acceptance evidence {acceptance_id}: {evidence_path}"
+                )
+    return errors
+
+
+def reciprocal_ticket_run_errors(
+    tickets: dict[str, dict[str, Any]], runs: dict[str, dict[str, Any]]
+) -> list[str]:
+    """Require Ticket-to-Run links to be complete in both directions."""
+
+    errors: list[str] = []
+    for ticket_id, ticket in tickets.items():
+        for run_id in ticket.get("run_ids", []):
+            if run_id not in runs:
+                errors.append(f"{ticket_id}: unresolved Run {run_id}")
+            elif ticket_id not in runs[run_id]["ticket_ids"]:
+                errors.append(f"{ticket_id}: Run does not link back to Ticket {run_id}")
+    for run_id, run in runs.items():
+        for ticket_id in run["ticket_ids"]:
+            if ticket_id not in tickets:
+                errors.append(f"{run_id}: unresolved Ticket {ticket_id}")
+            elif (
+                tickets[ticket_id]["schema_version"] == "1.1.0"
+                and run_id not in tickets[ticket_id]["run_ids"]
+            ):
+                errors.append(f"{run_id}: Ticket does not link back to Run {ticket_id}")
+    return errors
+
+
 def integrity_errors() -> list[str]:
     """Return cross-record and artifact-integrity failures."""
 
@@ -179,9 +228,10 @@ def integrity_errors() -> list[str]:
         record["ticket_id"]: record for _, record in json_records(ROOT / "provenance" / "tickets")
     }
     runs = {record["run_id"]: record for _, record in json_records(ROOT / "provenance" / "runs")}
-    errors: list[str] = []
+    errors = reciprocal_ticket_run_errors(tickets, runs)
 
     for ticket_id, ticket in tickets.items():
+        errors.extend(acceptance_evidence_errors(ticket_id, ticket))
         for event_id in ticket["prompt_event_ids"]:
             if event_id not in prompt_events:
                 errors.append(f"{ticket_id}: unresolved PromptEvent {event_id}")
@@ -191,9 +241,6 @@ def integrity_errors() -> list[str]:
         for commit_id in ticket["commit_ids"]:
             if not _git_commit_exists(commit_id):
                 errors.append(f"{ticket_id}: unresolved commit {commit_id}")
-        for run_id in ticket.get("run_ids", []):
-            if run_id not in runs:
-                errors.append(f"{ticket_id}: unresolved Run {run_id}")
         for evidence_path in ticket.get("supplemental_evidence", []):
             target = _repo_path(evidence_path)
             if target is None:
@@ -203,9 +250,6 @@ def integrity_errors() -> list[str]:
 
     supersession_graph: dict[str, set[str]] = {}
     for run_id, run in runs.items():
-        for ticket_id in run["ticket_ids"]:
-            if ticket_id not in tickets:
-                errors.append(f"{run_id}: unresolved Ticket {ticket_id}")
         commit_id = run["git_commit"]
         if commit_id is not None and not _git_commit_exists(commit_id):
             errors.append(f"{run_id}: unresolved commit {commit_id}")

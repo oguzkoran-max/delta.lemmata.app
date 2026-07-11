@@ -36,9 +36,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P002 kabul edilmiştir, fakat P003'ten önce bağımsız Claude audit-and-repair kapısı
-çalıştırılacaktır. Bağlayıcı brief
-`prompts/P002-claude-independent-audit-and-repair.md` içindedir. Önce read-only
-denetim yap, sonra yalnız kanıtlı P002 eksiklerini ayrı branch'te düzelt ve main'e
-merge etmeden Codex denetimine bırak. Gönderilen native launch isteğinin hash'i
-ayrı PromptEvent olur.
+P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmıştır.
+Aktif iş yeni özellik değil; son savunmacı parser incelemesi, exact-commit clean
+clone, browser harness, checksum manifesti ve Oğuz kabulüdür. Metadata anlamı,
+rights, retention süreleri, `stylo`, Pinokyo verisi ve deployment ekleme. Kanonik
+sınır `provenance/tickets/P003.json` ile
+`provenance/evidence/P003/report.md` içindedir.

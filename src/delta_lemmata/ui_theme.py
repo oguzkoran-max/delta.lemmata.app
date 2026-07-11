@@ -56,6 +56,22 @@ footer,
   border-radius: 6px;
 }
 
+.delta-progress {
+  width: 100%;
+  height: 8px;
+  overflow: hidden;
+  margin: 0.45rem 0 0.9rem;
+  border-radius: 4px;
+  background: #f0f5f2;
+}
+
+.delta-progress-fill {
+  display: block;
+  width: 50%;
+  height: 100%;
+  background: var(--delta-teal-on-dark);
+}
+
 .delta-header {
   min-height: 72px;
   display: flex;

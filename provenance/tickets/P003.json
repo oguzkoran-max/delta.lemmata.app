@@ -7,7 +7,7 @@
   "closed_at_utc": null,
   "objective": "Accept TXT, ZIP, and metadata CSV inputs through a bounded, content-validated, fail-closed intake boundary without workspace escape, uncontrolled resource consumption, or payload leakage.",
   "scope": [
-    "Declared-role TXT, ZIP, and metadata CSV intake with extension, MIME, and content agreement",
+    "Declared-role TXT, ZIP, and metadata CSV intake with extension, supplied MIME, and content agreement",
     "Strict UTF-8 decoding and Unicode NFC validation",
     "Pre-extraction ZIP member audit and bounded streaming extraction",
     "Versioned size, member, ratio, path, token, and line limits",
@@ -41,7 +41,7 @@
   "acceptance": [
     {
       "id": "P003-AC-01",
-      "criterion": "Each upload has an explicit corpus-text, corpus-archive, or metadata-table role; extension and MIME must agree with that role, content is validated by the role-specific parser, and invalid UTF-8, non-NFC, binary, polyglot, malformed, empty, or over-limit payloads are rejected.",
+      "criterion": "Each upload has an explicit corpus-text, corpus-archive, or metadata-table role; extension and any client-supplied MIME must agree with that role, MIME absence never substitutes for content validation, and the role parser rejects invalid UTF-8, non-NFC, known binary/document signatures, ZIP masquerades, malformed, empty, or over-limit payloads.",
       "status": "pending",
       "evidence": []
     },

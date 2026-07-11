@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P002, bağımsız Claude/Codex denetimleriyle main'e alındı; P003 Secure Ingestion aktiftir.
+**Güncel aşama:** P003 Secure Ingestion ve bağımsız denetim düzeltmeleri uygulandı; clean-clone, checksum ve insan kabul kapısı aktiftir.
 
 ## 1. Her Oturumda Oku
 
@@ -72,8 +72,10 @@
 - Rights kararı corpus düzeyinde değil, her asset için ayrı tutulur.
 - Upload/analysis izni, export izni ve public redistribution izni birbirinden ayrıdır.
 - Varsayılan export raw text içermez.
-- Başarılı job'da raw ve normalized metin export sonrası silinir; hatada en çok 15 dakika tutulur.
-- Diskte export en çok 1 saat, content-free log en çok 7 gün tutulur.
+- P005/P014 hedef politikası: başarılı job'da raw ve normalized metin export
+  sonrası silinir; hatada en çok 15 dakika tutulur.
+- P005/P014 hedef politikası: diskte export en çok 1 saat, content-free log
+  en çok 7 gün tutulur. Bu süreler P003 tarafından doğrulanmış değildir.
 - Delta ve Lemmata aynı VPS'i ancak container, identity, network, volume, env, port, secret ve kaynak sınırları testle ayrılırsa paylaşır.
 - “Completely isolated” iddiası kurulmaz.
 
@@ -104,14 +106,17 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Aktif iş P003 Secure Ingestion'dır. `provenance/tickets/P003.json` ve
-`prompts/P003-codex-execution-brief.md` sınırları uygulanır.
+Aktif iş P003 Secure Ingestion kapanış kapısıdır. Kod, deterministic
+fixture/fuzz, rejected-widget cleanup, English intake UI ve fresh-process browser
+audit uygulanmıştır.
 
-1. TXT, ZIP ve metadata CSV için content-based, fail-closed intake kur.
-2. UTF-8, NFC, archive inventory, resource limit ve injection kapılarını uygula.
-3. Rejected input'un temp, state, log veya exception içinde payload bırakmadığını test et.
-4. Deterministic malicious fixtures ve bounded property/fuzz testleri çalıştır.
-5. P003 evidence ve clean-clone Run olmadan ticket'ı kapatma.
+1. Son savunmacı parser incelemesinde açık P0/P1/P2 kalmadığını doğrula.
+2. Exact implementation commit'ini temiz klonda bootstrap + full verify + browser
+   harness + wheel-policy hash ile yeniden çalıştır.
+3. Başarılı ve başarısız kanıt paketlerini dış SHA-256 manifestiyle mühürle.
+4. Ticket, Run, PromptEvent, HumanDecision, threat/claim ve handoff bağlarını
+   tamamla.
+5. Oğuz kabulü olmadan P003'ü kapatma veya P004/P005'e geçme.
 
 P003 sırasında metadata/rights modeli, retention garantisi, gerçek `stylo`, Pinokyo
 corpus'u, deployment, runtime AI veya `Launch Stylometry` entegrasyonu uygulanmaz.

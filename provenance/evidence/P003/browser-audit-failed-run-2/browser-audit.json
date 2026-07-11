@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "target_url": "http://127.0.0.1:49870",
+  "target_url": "http://127.0.0.1:65268",
   "audit_method": "Tracked Python Playwright harness with a fresh local Streamlit process.",
   "synthetic_inputs_only": true,
   "fresh_browser_context_per_viewport": true,
@@ -93,8 +93,8 @@
       },
       "progress_accessibility": {
         "count": 1,
-        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
-        "pass": true
+        "snapshot": "- progressbar \"progress\"",
+        "pass": false
       },
       "disabled_controls": [
         {
@@ -199,8 +199,8 @@
       },
       "progress_accessibility": {
         "count": 1,
-        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
-        "pass": true
+        "snapshot": "- progressbar \"progress\"",
+        "pass": false
       },
       "disabled_controls": [
         {
@@ -305,8 +305,8 @@
       },
       "progress_accessibility": {
         "count": 1,
-        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
-        "pass": true
+        "snapshot": "- progressbar \"progress\"",
+        "pass": false
       },
       "disabled_controls": [
         {
@@ -411,8 +411,8 @@
       },
       "progress_accessibility": {
         "count": 1,
-        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
-        "pass": true
+        "snapshot": "- progressbar \"progress\"",
+        "pass": false
       },
       "disabled_controls": [
         {
@@ -517,8 +517,8 @@
       },
       "progress_accessibility": {
         "count": 1,
-        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
-        "pass": true
+        "snapshot": "- progressbar \"progress\"",
+        "pass": false
       },
       "disabled_controls": [
         {
@@ -623,8 +623,8 @@
       },
       "progress_accessibility": {
         "count": 1,
-        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
-        "pass": true
+        "snapshot": "- progressbar \"progress\"",
+        "pass": false
       },
       "disabled_controls": [
         {
@@ -661,5 +661,5 @@
   "network_scope": "Browser requests observed by Playwright; not a packet capture.",
   "zoom_scope": "640px and 320px are automated CSS reflow targets, not a real browser-chrome zoom session.",
   "retention_scope": "The harness verifies Delta UI state and local requests, not Streamlit, proxy, container, or host-level retention.",
-  "result": "passed"
+  "result": "failed"
 }

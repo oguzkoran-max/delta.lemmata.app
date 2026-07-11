@@ -47,8 +47,31 @@ def request(
 
 
 def test_packaged_limit_profile_is_valid_frozen_and_versioned() -> None:
-    assert DEFAULT_LIMITS.profile_version == "ingestion-limits-v1"
-    assert DEFAULT_LIMITS.max_upload_bytes == 25 * 1024 * 1024
+    assert DEFAULT_LIMITS.model_dump() == {
+        "profile_version": "ingestion-limits-v1",
+        "max_upload_bytes": 25 * 1024 * 1024,
+        "max_batch_bytes": 50 * 1024 * 1024,
+        "max_batch_expanded_bytes": 100 * 1024 * 1024,
+        "max_batch_files": 50,
+        "max_display_label_bytes": 200,
+        "max_text_chars": 20_000_000,
+        "max_lines": 500_000,
+        "max_tokens": 3_000_000,
+        "max_token_chars": 4096,
+        "max_archive_members": 200,
+        "max_central_directory_bytes": 1024 * 1024,
+        "max_member_bytes": 10 * 1024 * 1024,
+        "max_archive_expanded_bytes": 50 * 1024 * 1024,
+        "max_compression_ratio": 100.0,
+        "max_path_depth": 3,
+        "max_path_bytes": 240,
+        "max_csv_rows": 20_000,
+        "max_csv_columns": 64,
+        "max_csv_cell_chars": 16_384,
+        "read_chunk_bytes": 65_536,
+    }
+    with pytest.raises(ValidationError):
+        DEFAULT_LIMITS.__setattr__("max_lines", 1)
     with pytest.raises(ValidationError):
         IngestionLimits.model_validate({**DEFAULT_LIMITS.model_dump(), "unknown": 1})
     with pytest.raises(ValidationError):
@@ -97,6 +120,9 @@ def test_utf8_bom_is_accepted_only_at_the_start() -> None:
         (b"<html><p>text</p></html>", IntakeErrorCode.MARKUP_DOCUMENT),
         (b"<?xml version='1.0'?><TEI/>", IntakeErrorCode.MARKUP_DOCUMENT),
         (b"<script>alert(1)</script>", IntakeErrorCode.MARKUP_DOCUMENT),
+        (b"%PDF-1.7\ntext", IntakeErrorCode.TYPE_MISMATCH),
+        (b"\xef\xbb\xbf%PDF-1.7\ntext", IntakeErrorCode.TYPE_MISMATCH),
+        (b"{\\rtf1 text}", IntakeErrorCode.TYPE_MISMATCH),
     ],
 )
 def test_invalid_text_is_rejected_content_free(data: bytes, code: IntakeErrorCode) -> None:
@@ -108,6 +134,9 @@ def test_invalid_text_is_rejected_content_free(data: bytes, code: IntakeErrorCod
         )
     except IntakeError as error:
         assert error.code is code
+        assert error.__context__ is None
+        assert error.__cause__ is None
+        assert error.__suppress_context__ is True
         assert canary not in str(error)
         assert canary not in repr(error)
         assert canary not in traceback.format_exc()
@@ -131,6 +160,21 @@ def test_non_nfc_text_and_label_are_rejected() -> None:
             id_factory=lambda: FIXED_ID,
         ),
     )
+
+
+def test_public_rejection_detaches_invalid_utf8_payload_context() -> None:
+    payload = b"SECRET_CONTEXT_CANARY\xff"
+    error = expect_code(
+        IntakeErrorCode.INVALID_UTF8,
+        lambda: validate_upload(
+            request(IntakeRole.CORPUS_TEXT, "work.txt", payload),
+            id_factory=lambda: FIXED_ID,
+        ),
+    )
+    assert error.__context__ is None
+    assert error.__cause__ is None
+    assert error.__suppress_context__ is True
+    assert "SECRET_CONTEXT_CANARY" not in "".join(traceback.format_exception(error))
 
 
 @pytest.mark.parametrize(
@@ -184,6 +228,8 @@ def test_upload_size_and_zip_masquerade_are_rejected() -> None:
         "COM¹.txt",
         ".hidden.txt",
         "work.txt\n",
+        "work\u2028name.txt",
+        "work\u2029name.txt",
     ],
 )
 def test_display_labels_are_never_paths_or_markup(name: str) -> None:
@@ -196,7 +242,19 @@ def test_display_labels_are_never_paths_or_markup(name: str) -> None:
     )
 
 
-def test_role_extension_and_mime_must_agree() -> None:
+def test_surrogate_display_label_maps_to_content_free_rejection() -> None:
+    error = expect_code(
+        IntakeErrorCode.DISPLAY_LABEL,
+        lambda: validate_upload(
+            request(IntakeRole.CORPUS_TEXT, "bad\ud800.txt", b"text"),
+            id_factory=lambda: FIXED_ID,
+        ),
+    )
+    assert error.__context__ is None
+    assert error.__cause__ is None
+
+
+def test_role_extension_and_supplied_mime_must_agree() -> None:
     expect_code(
         IntakeErrorCode.ROLE_MISMATCH,
         lambda: validate_upload(
@@ -216,6 +274,25 @@ def test_role_extension_and_mime_must_agree() -> None:
         id_factory=lambda: FIXED_ID,
     )
     assert receipt.role is IntakeRole.CORPUS_TEXT
+
+
+def test_document_signature_is_scoped_to_the_start_of_text() -> None:
+    receipt = validate_upload(
+        request(IntakeRole.CORPUS_TEXT, "work.txt", b"A literal %PDF- token in prose"),
+        id_factory=lambda: FIXED_ID,
+    )
+    assert receipt.token_count == 6
+
+
+@pytest.mark.parametrize("signature", ingestion._BINARY_DOCUMENT_SIGNATURES)
+def test_every_configured_binary_signature_is_rejected(signature: bytes) -> None:
+    expect_code(
+        IntakeErrorCode.TYPE_MISMATCH,
+        lambda: validate_upload(
+            request(IntakeRole.CORPUS_TEXT, "binary.txt", signature + b" synthetic"),
+            id_factory=lambda: FIXED_ID,
+        ),
+    )
 
 
 def test_invalid_server_id_is_rejected_without_using_the_label() -> None:
@@ -270,12 +347,22 @@ def test_malformed_csv_is_rejected(payload: bytes) -> None:
         "@formula",
         "<script>alert(1)</script>",
         "../secret",
+        "\t../secret",
         "..\\secret",
         "/etc/passwd",
+        " /etc/passwd",
+        "\u00a0/etc/passwd",
+        r" \root",
         "\\\\server\\share",
         "C:\\temp\\file",
+        " C:\\temp\\file",
+        "\u2007C:\\temp\\file",
         "file:///tmp/secret",
+        " file:///tmp/secret",
+        "\u202ffile:///tmp/secret",
         "line\nfeed",
+        "line\u2028feed",
+        "line\u2029feed",
     ],
 )
 def test_csv_injection_cells_fail_closed(value: str) -> None:
@@ -387,3 +474,53 @@ def test_batch_rejects_duplicate_ids_and_expanded_total() -> None:
             id_factory=lambda: next(ids),
         ),
     )
+
+
+def test_batch_text_budget_is_rejected_before_second_decode(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    real_decode = ingestion._decode_text
+    calls = 0
+
+    def counted_decode(data: bytes, profile: IngestionLimits) -> tuple[str, ingestion._TextStats]:
+        nonlocal calls
+        calls += 1
+        return real_decode(data, profile)
+
+    monkeypatch.setattr(ingestion, "_decode_text", counted_decode)
+    ids = iter(("0" * 32, "1" * 32))
+    error = expect_code(
+        IntakeErrorCode.BATCH_LIMIT,
+        lambda: validate_batch(
+            [
+                request(IntakeRole.CORPUS_TEXT, "one.txt", b"one"),
+                request(IntakeRole.CORPUS_TEXT, "two.txt", b"two"),
+            ],
+            limits=limits(max_batch_expanded_bytes=5),
+            id_factory=lambda: next(ids),
+        ),
+    )
+    assert calls == 1
+    assert error.__context__ is None
+
+
+def test_batch_post_validation_budget_defense_remains_fail_closed(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    receipt = validate_upload(
+        request(IntakeRole.CORPUS_TEXT, "one.txt", b"one"),
+        id_factory=lambda: FIXED_ID,
+    ).model_copy(update={"expanded_bytes": 6})
+    monkeypatch.setattr(
+        ingestion,
+        "_validated_upload",
+        lambda *_args, **_kwargs: (receipt, None),
+    )
+    error = expect_code(
+        IntakeErrorCode.BATCH_LIMIT,
+        lambda: validate_batch(
+            [request(IntakeRole.CORPUS_TEXT, "one.txt", b"one")],
+            limits=limits(max_batch_expanded_bytes=5),
+        ),
+    )
+    assert error.__context__ is None

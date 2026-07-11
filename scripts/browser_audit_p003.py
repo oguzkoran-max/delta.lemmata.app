@@ -142,9 +142,26 @@ def _audit_viewport(
         file_inputs.nth(index).is_enabled() for index in range(input_count)
     )
     accepts = [file_inputs.nth(index).get_attribute("accept") for index in range(input_count)]
+    uploader_labels = ("Corpus texts (.txt)", "Optional metadata table (.csv)")
     labels_visible = all(
-        page.get_by_text(label, exact=True).count() == 1
-        for label in ("Corpus texts (.txt)", "Optional metadata table (.csv)")
+        page.get_by_text(label, exact=True).count() == 1 for label in uploader_labels
+    )
+    labelled_regions = []
+    for label in uploader_labels:
+        region = page.get_by_role("region", name=label, exact=True)
+        labelled_regions.append(
+            {
+                "label": label,
+                "count": region.count(),
+                "file_inputs": region.locator('input[type="file"]').count()
+                if region.count() == 1
+                else 0,
+            }
+        )
+    progress = page.get_by_role("progressbar")
+    progress_snapshot = progress.aria_snapshot() if progress.count() == 1 else ""
+    progress_accessible = (
+        progress.count() == 1 and "Experiment map progress: step 2 of 4" in progress_snapshot
     )
 
     disabled_controls = []
@@ -180,6 +197,15 @@ def _audit_viewport(
             "enabled": inputs_enabled,
             "accepts": accepts,
             "visible_labels": labels_visible,
+            "labelled_regions": labelled_regions,
+            "semantic_relationships_pass": all(
+                item["count"] == 1 and item["file_inputs"] == 1 for item in labelled_regions
+            ),
+        },
+        "progress_accessibility": {
+            "count": progress.count(),
+            "snapshot": progress_snapshot,
+            "pass": progress_accessible,
         },
         "disabled_controls": disabled_controls,
         "disabled_controls_pass": all(
@@ -226,13 +252,13 @@ def _audit_interactions(
     page.get_by_text("Intake checks passed · Uploads: 2", exact=False).wait_for()
     text_summary = page.get_by_text("Lines: 1 · Tokens: 2", exact=True).count() == 1
     csv_summary = page.get_by_text("Rows: 1 · Columns: 2", exact=True).count() == 1
-    payload_not_rendered = page.get_by_text("one text", exact=True).count() == 0
+    valid_body_text = page.locator("body").inner_text()
+    payload_not_rendered = "one text" not in valid_body_text
     page.screenshot(
         path=str(output / "screenshots" / "interaction-valid-text-csv.png"), full_page=True
     )
 
     inputs = page.locator('input[type="file"]')
-    inputs.nth(1).set_input_files([])
     inputs.nth(0).set_input_files(
         {
             "name": "rejected.txt",
@@ -242,9 +268,19 @@ def _audit_interactions(
     )
     page.get_by_text("Rejection reference: INGEST_INVALID_UTF8", exact=True).wait_for()
     rejection_callout = (
-        page.get_by_text("The submission was rejected before intake.", exact=True).count() == 1
+        page.get_by_text(
+            "The submission was rejected and cleared before intake.", exact=True
+        ).count()
+        == 1
     )
-    payload_not_in_error = page.get_by_text("SECRET_BROWSER_CANARY", exact=True).count() == 0
+    body_text = page.locator("body").inner_text()
+    payload_not_in_error = "SECRET_BROWSER_CANARY" not in body_text
+    rejected_label_not_rendered = "rejected.txt" not in body_text
+    inputs = page.locator('input[type="file"]')
+    uploaded_file_counts = inputs.evaluate_all(
+        "elements => elements.map(element => element.files?.length ?? -1)"
+    )
+    rejected_uploaders_cleared = uploaded_file_counts == [0, 0]
     page.screenshot(
         path=str(output / "screenshots" / "interaction-rejected-text.png"), full_page=True
     )
@@ -280,6 +316,8 @@ def _audit_interactions(
         "payload_not_rendered": payload_not_rendered,
         "rejection_callout_pass": rejection_callout,
         "rejected_payload_not_rendered": payload_not_in_error,
+        "rejected_label_not_rendered_pass": rejected_label_not_rendered,
+        "rejected_uploaders_cleared_pass": rejected_uploaders_cleared,
         "zip_accept": zip_accept,
         "archive_summary_pass": archive_summary,
         "validated_evidence_pass": validated_evidence,
@@ -351,6 +389,8 @@ def main() -> int:
             and all(audit["heading_outline_matches"] for audit in audits)
             and all(audit["file_inputs"]["enabled"] for audit in audits)
             and all(audit["file_inputs"]["visible_labels"] for audit in audits)
+            and all(audit["file_inputs"]["semantic_relationships_pass"] for audit in audits)
+            and all(audit["progress_accessibility"]["pass"] for audit in audits)
             and all(audit["disabled_controls_pass"] for audit in audits)
             and all(value for key, value in interactions.items() if key.endswith("_pass"))
             and interactions["payload_not_rendered"]

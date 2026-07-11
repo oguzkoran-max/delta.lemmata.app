@@ -148,7 +148,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 
 ### P003: Secure Ingestion
 
-**Durum:** Aktif implementation ticket; 2026-07-11 tarihinde P002 denetimli main entegrasyonundan sonra açıldı.
+**Durum:** Implementation ve adversarial düzeltmeler tamam; exact-commit clean-clone, manifest ve insan kabul kapısı bekleniyor.
 
 **Amaç:** `.txt`, `.zip` ve metadata `.csv` girdilerini çalışma alanı dışına taşmadan ve sunucuyu tüketmeden kabul etmek.
 
@@ -156,7 +156,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 
 **Deliverable'lar:**
 
-- İçerik tabanlı tür kontrolü; UTF-8 ve Unicode NFC doğrulaması.
+- Açık rol, uzantı, varsa MIME ve rol parser'ıyla tür kontrolü; UTF-8 ve Unicode NFC doğrulaması.
 - Archive üyelerini extraction öncesi denetleyen güvenli extractor.
 - Boyut, üye sayısı, sıkıştırma oranı, path, nesting, token ve satır limitleri.
 - Sunucu üretimli asset kimliği; kullanıcı dosya adı yalnız escaped display label olur.
@@ -170,7 +170,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 - Fuzz test belirlenen çalışma süresinde crash veya workspace escape üretmez.
 - Rejected upload sonrasında temp dizin, log ve session state içinde payload kalmaz.
 
-**Kanıt:** Malicious fixture inventory, parser test raporu, fuzz özeti ve disk taraması.  
+**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar ve path errata.
 **Claim/tehdit bağlantısı:** CE-14; SEC-01, SEC-02, SEC-03, SEC-04, SEC-05.  
 **Non-goal:** PDF, DOCX, EPUB, OCR veya TEI ingestion.  
 **Sahip/denetçi:** Geliştirme ajanı uygular; P014'te bağımsız deployment testi tekrarlanır.

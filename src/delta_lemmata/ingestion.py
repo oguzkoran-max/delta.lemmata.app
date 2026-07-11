@@ -18,7 +18,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from importlib.resources import files
 from pathlib import Path, PurePosixPath
-from typing import Literal, Self
+from typing import Literal, Self, cast
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -166,6 +166,9 @@ class _CentralEntry:
     decoded_name: str
     flags: int
     compression: int
+    version_needed: int
+    modified_time: int
+    modified_date: int
     crc32: int
     compressed_size: int
     file_size: int
@@ -188,12 +191,11 @@ class ExtractedArchive:
     members: tuple[IntakeReceipt, ...]
 
     def cleanup(self) -> None:
-        if not self.workspace.exists():
-            return
         try:
-            shutil.rmtree(self.workspace)
-        except OSError:
-            raise IntakeError(IntakeErrorCode.CLEANUP_FAILED) from None
+            _cleanup_workspace(self.workspace)
+        except IntakeError as error:
+            _detach_error_context(error)
+            raise
 
     def __enter__(self) -> Self:
         return self
@@ -219,6 +221,8 @@ _ROLE_MIME = {
     ),
 }
 _ALLOWED_TEXT_CONTROLS = frozenset({"\t", "\n", "\r"})
+_UNICODE_LINE_CATEGORIES = frozenset({"Zl", "Zp"})
+_UNSAFE_LABEL_CATEGORIES = frozenset({"Cc", "Cf"}) | _UNICODE_LINE_CATEGORIES
 _BIDI_CONTROLS = frozenset(
     {
         "\u061c",
@@ -229,6 +233,19 @@ _BIDI_CONTROLS = frozenset(
     }
 )
 _MARKUP_PREFIXES = ("<!doctype", "<html", "<?xml", "<tei", "<script")
+_BINARY_DOCUMENT_SIGNATURES = (
+    b"%PDF-",
+    b"{\\rtf",
+    b"\xd0\xcf\x11\xe0\xa1\xb1\x1a\xe1",
+    b"\x1f\x8b",
+    b"7z\xbc\xaf\x27\x1c",
+    b"Rar!\x1a\x07",
+    b"\x89PNG\r\n\x1a\n",
+    b"\xff\xd8\xff",
+    b"GIF87a",
+    b"GIF89a",
+    b"SQLite format 3\x00",
+)
 _FORMULA_PREFIXES = ("=", "+", "-", "@")
 _HTML_TAG = re.compile(r"<\s*/?\s*[A-Za-z!][^>]*>")
 _DRIVE_PATH = re.compile(r"^[A-Za-z]:[\\/]")
@@ -259,6 +276,12 @@ def _reject(code: IntakeErrorCode) -> None:
     raise IntakeError(code)
 
 
+def _detach_error_context(error: IntakeError) -> None:
+    error.__context__ = None
+    error.__cause__ = None
+    error.__suppress_context__ = True
+
+
 def _token(factory: AssetIdFactory | None) -> str:
     value = factory() if factory is not None else secrets.token_hex(16)
     if re.fullmatch(r"[0-9a-f]{32}", value) is None:
@@ -280,14 +303,17 @@ def _safe_part(part: str) -> bool:
 
 
 def _validate_display_label(label: str, role: IntakeRole, limits: IngestionLimits) -> str:
-    encoded = label.encode("utf-8", errors="strict")
+    try:
+        encoded = label.encode("utf-8", errors="strict")
+    except UnicodeEncodeError:
+        _reject(IntakeErrorCode.DISPLAY_LABEL)
     if (
         not label
         or label != label.strip()
         or label != unicodedata.normalize("NFC", label)
         or len(encoded) > limits.max_display_label_bytes
         or any(character in label for character in ("/", "\\", ":", "<", ">", "\x00"))
-        or any(unicodedata.category(character) in {"Cc", "Cf"} for character in label)
+        or any(unicodedata.category(character) in _UNSAFE_LABEL_CATEGORIES for character in label)
     ):
         _reject(IntakeErrorCode.DISPLAY_LABEL)
     if not _safe_part(label):
@@ -311,6 +337,11 @@ def _looks_like_zip(data: bytes) -> bool:
     )
 
 
+def _looks_like_binary_document(data: bytes) -> bool:
+    probe = data.removeprefix(b"\xef\xbb\xbf")
+    return probe.startswith(_BINARY_DOCUMENT_SIGNATURES)
+
+
 def _validate_common(request: IncomingUpload, limits: IngestionLimits) -> str:
     label = _validate_display_label(request.display_label, request.role, limits)
     _validate_mime(request.role, request.declared_mime)
@@ -322,7 +353,7 @@ def _validate_common(request: IncomingUpload, limits: IngestionLimits) -> str:
 
 
 def _decode_text(data: bytes, limits: IngestionLimits) -> tuple[str, _TextStats]:
-    if _looks_like_zip(data):
+    if _looks_like_zip(data) or _looks_like_binary_document(data):
         _reject(IntakeErrorCode.TYPE_MISMATCH)
     try:
         text = data.decode("utf-8-sig")
@@ -356,19 +387,20 @@ def _decode_text(data: bytes, limits: IngestionLimits) -> tuple[str, _TextStats]
 
 
 def _csv_cell_is_unsafe(value: str, limits: IngestionLimits) -> bool:
-    stripped = value.lstrip(" \t")
+    stripped = value.lstrip()
     return (
         len(value) > limits.max_csv_cell_chars
         or "\n" in value
         or "\r" in value
+        or any(unicodedata.category(character) in _UNICODE_LINE_CATEGORIES for character in value)
         or bool(stripped)
         and stripped.startswith(_FORMULA_PREFIXES)
         or _HTML_TAG.search(value) is not None
-        or "../" in value
-        or "..\\" in value
-        or value.startswith(("/", "\\\\"))
-        or _DRIVE_PATH.match(value) is not None
-        or value.casefold().startswith("file:")
+        or "../" in stripped
+        or "..\\" in stripped
+        or stripped.startswith(("/", "\\"))
+        or _DRIVE_PATH.match(stripped) is not None
+        or stripped.casefold().startswith("file:")
     )
 
 
@@ -479,11 +511,11 @@ def _parse_central_entries(
         (
             signature,
             version_made,
-            _version_needed,
+            version_needed,
             flags,
             compression,
-            _modified_time,
-            _modified_date,
+            modified_time,
+            modified_date,
             crc32,
             compressed_size,
             file_size,
@@ -520,6 +552,9 @@ def _parse_central_entries(
                 decoded_name=decoded_name,
                 flags=flags,
                 compression=compression,
+                version_needed=version_needed,
+                modified_time=modified_time,
+                modified_date=modified_date,
                 crc32=crc32,
                 compressed_size=compressed_size,
                 file_size=file_size,
@@ -541,11 +576,11 @@ def _validate_local_headers(data: bytes, entries: tuple[_CentralEntry, ...], cen
             _reject(IntakeErrorCode.ARCHIVE_INVALID)
         (
             signature,
-            _version_needed,
+            version_needed,
             flags,
             compression,
-            _modified_time,
-            _modified_date,
+            modified_time,
+            modified_date,
             crc32,
             compressed_size,
             file_size,
@@ -558,8 +593,11 @@ def _validate_local_headers(data: bytes, entries: tuple[_CentralEntry, ...], cen
         data_end = data_start + compressed_size
         if (
             signature != _ZIP_LOCAL_SIGNATURE
+            or version_needed != entry.version_needed
             or flags != entry.flags
             or compression != entry.compression
+            or modified_time != entry.modified_time
+            or modified_date != entry.modified_date
             or crc32 != entry.crc32
             or compressed_size != entry.compressed_size
             or file_size != entry.file_size
@@ -581,15 +619,22 @@ def _validate_local_headers(data: bytes, entries: tuple[_CentralEntry, ...], cen
 
 def _validate_archive_path(name: str, is_directory: bool, limits: IngestionLimits) -> str:
     candidate = name[:-1] if is_directory and name.endswith("/") else name
+    try:
+        encoded = name.encode("utf-8", errors="strict")
+    except UnicodeEncodeError:
+        _reject(IntakeErrorCode.ARCHIVE_UNSAFE_PATH)
     if (
         not candidate
         or name != unicodedata.normalize("NFC", name)
         or "\\" in name
         or ":" in name
+        or "<" in name
+        or ">" in name
         or "\x00" in name
+        or any(unicodedata.category(character) in _UNSAFE_LABEL_CATEGORIES for character in name)
         or name.startswith("/")
         or "//" in name
-        or len(name.encode("utf-8")) > limits.max_path_bytes
+        or len(encoded) > limits.max_path_bytes
     ):
         _reject(IntakeErrorCode.ARCHIVE_UNSAFE_PATH)
     path = PurePosixPath(candidate)
@@ -632,7 +677,11 @@ def _read_member(archive: zipfile.ZipFile, info: zipfile.ZipInfo, limits: Ingest
     return bytes(payload)
 
 
-def _inspect_archive(data: bytes, limits: IngestionLimits) -> _ArchiveInspection:
+def _inspect_archive(
+    data: bytes,
+    limits: IngestionLimits,
+    batch_expanded_budget: int | None = None,
+) -> _ArchiveInspection:
     declared_entries, central_offset, central_size = _exact_zip_container(data, limits)
     central_entries = _parse_central_entries(
         data, declared_entries, central_offset, central_size, limits
@@ -691,6 +740,8 @@ def _inspect_archive(data: bytes, limits: IngestionLimits) -> _ArchiveInspection
             expanded_bytes += info.file_size
             if expanded_bytes > limits.max_archive_expanded_bytes:
                 _reject(IntakeErrorCode.ARCHIVE_LIMIT)
+            if batch_expanded_budget is not None and expanded_bytes > batch_expanded_budget:
+                _reject(IntakeErrorCode.BATCH_LIMIT)
             file_paths.add(normalized)
             plans.append((index, safe_path, info))
         if any(
@@ -712,6 +763,8 @@ def _inspect_archive(data: bytes, limits: IngestionLimits) -> _ArchiveInspection
             actual_expanded += len(member_data)
             if actual_expanded > limits.max_archive_expanded_bytes:
                 _reject(IntakeErrorCode.ARCHIVE_LIMIT)
+            if batch_expanded_budget is not None and actual_expanded > batch_expanded_budget:
+                _reject(IntakeErrorCode.BATCH_LIMIT)
             members.append(
                 _ArchiveMember(
                     index=index,
@@ -725,6 +778,73 @@ def _inspect_archive(data: bytes, limits: IngestionLimits) -> _ArchiveInspection
     return _ArchiveInspection(members=tuple(members), expanded_bytes=actual_expanded)
 
 
+def _validated_upload(
+    request: IncomingUpload,
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+    id_factory: AssetIdFactory | None = None,
+    batch_expanded_budget: int | None = None,
+) -> tuple[IntakeReceipt, _ArchiveInspection | None]:
+
+    label = _validate_common(request, limits)
+    asset_id = _asset_id(id_factory)
+    digest = hashlib.sha256(request.data).hexdigest()
+    extension = _ROLE_EXTENSION[request.role]
+    if request.role is IntakeRole.CORPUS_ARCHIVE:
+        inspection = _inspect_archive(request.data, limits, batch_expanded_budget)
+        return (
+            IntakeReceipt(
+                asset_id=asset_id,
+                role=request.role,
+                display_label=label,
+                storage_name=f"{asset_id}{extension}",
+                byte_size=len(request.data),
+                expanded_bytes=inspection.expanded_bytes,
+                sha256=digest,
+                member_count=len(inspection.members),
+                limit_profile=limits.profile_version,
+            ),
+            inspection,
+        )
+    if batch_expanded_budget is not None and len(request.data) > batch_expanded_budget:
+        _reject(IntakeErrorCode.BATCH_LIMIT)
+    text, text_stats = _decode_text(request.data, limits)
+    if request.role is IntakeRole.METADATA_CSV:
+        csv_stats = _validate_csv(text, text_stats, limits)
+        return (
+            IntakeReceipt(
+                asset_id=asset_id,
+                role=request.role,
+                display_label=label,
+                storage_name=f"{asset_id}{extension}",
+                byte_size=len(request.data),
+                expanded_bytes=len(request.data),
+                sha256=digest,
+                line_count=csv_stats.line_count,
+                token_count=csv_stats.token_count,
+                row_count=csv_stats.row_count,
+                column_count=csv_stats.column_count,
+                limit_profile=limits.profile_version,
+            ),
+            None,
+        )
+    return (
+        IntakeReceipt(
+            asset_id=asset_id,
+            role=request.role,
+            display_label=label,
+            storage_name=f"{asset_id}{extension}",
+            byte_size=len(request.data),
+            expanded_bytes=len(request.data),
+            sha256=digest,
+            line_count=text_stats.line_count,
+            token_count=text_stats.token_count,
+            limit_profile=limits.profile_version,
+        ),
+        None,
+    )
+
+
 def validate_upload(
     request: IncomingUpload,
     *,
@@ -733,62 +853,24 @@ def validate_upload(
 ) -> IntakeReceipt:
     """Validate one role-declared upload without writing payload bytes."""
 
-    label = _validate_common(request, limits)
-    asset_id = _asset_id(id_factory)
-    digest = hashlib.sha256(request.data).hexdigest()
-    extension = _ROLE_EXTENSION[request.role]
-    if request.role is IntakeRole.CORPUS_ARCHIVE:
-        inspection = _inspect_archive(request.data, limits)
-        return IntakeReceipt(
-            asset_id=asset_id,
-            role=request.role,
-            display_label=label,
-            storage_name=f"{asset_id}{extension}",
-            byte_size=len(request.data),
-            expanded_bytes=inspection.expanded_bytes,
-            sha256=digest,
-            member_count=len(inspection.members),
-            limit_profile=limits.profile_version,
+    try:
+        receipt, _inspection = _validated_upload(
+            request,
+            limits=limits,
+            id_factory=id_factory,
         )
-    text, text_stats = _decode_text(request.data, limits)
-    if request.role is IntakeRole.METADATA_CSV:
-        csv_stats = _validate_csv(text, text_stats, limits)
-        return IntakeReceipt(
-            asset_id=asset_id,
-            role=request.role,
-            display_label=label,
-            storage_name=f"{asset_id}{extension}",
-            byte_size=len(request.data),
-            expanded_bytes=len(request.data),
-            sha256=digest,
-            line_count=csv_stats.line_count,
-            token_count=csv_stats.token_count,
-            row_count=csv_stats.row_count,
-            column_count=csv_stats.column_count,
-            limit_profile=limits.profile_version,
-        )
-    return IntakeReceipt(
-        asset_id=asset_id,
-        role=request.role,
-        display_label=label,
-        storage_name=f"{asset_id}{extension}",
-        byte_size=len(request.data),
-        expanded_bytes=len(request.data),
-        sha256=digest,
-        line_count=text_stats.line_count,
-        token_count=text_stats.token_count,
-        limit_profile=limits.profile_version,
-    )
+    except IntakeError as error:
+        _detach_error_context(error)
+        raise
+    return receipt
 
 
-def validate_batch(
+def _validated_batch(
     requests: Sequence[IncomingUpload],
     *,
     limits: IngestionLimits = DEFAULT_LIMITS,
     id_factory: AssetIdFactory | None = None,
 ) -> tuple[IntakeReceipt, ...]:
-    """Validate an all-or-nothing upload batch without retaining payloads."""
-
     if not requests:
         _reject(IntakeErrorCode.EMPTY)
     if (
@@ -805,7 +887,13 @@ def validate_batch(
     identifiers: set[str] = set()
     expanded = 0
     for item in requests:
-        receipt = validate_upload(item, limits=limits, id_factory=id_factory)
+        remaining = limits.max_batch_expanded_bytes - expanded
+        receipt, _inspection = _validated_upload(
+            item,
+            limits=limits,
+            id_factory=id_factory,
+            batch_expanded_budget=remaining,
+        )
         if receipt.asset_id in identifiers:
             _reject(IntakeErrorCode.INTERNAL_ID)
         identifiers.add(receipt.asset_id)
@@ -816,21 +904,47 @@ def validate_batch(
     return tuple(receipts)
 
 
-def secure_extract_archive(
+def validate_batch(
+    requests: Sequence[IncomingUpload],
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+    id_factory: AssetIdFactory | None = None,
+) -> tuple[IntakeReceipt, ...]:
+    """Validate an all-or-nothing upload batch without retaining payloads."""
+
+    try:
+        return _validated_batch(requests, limits=limits, id_factory=id_factory)
+    except IntakeError as error:
+        _detach_error_context(error)
+        raise
+
+
+def _cleanup_workspace(workspace: Path) -> None:
+    if not workspace.exists():
+        return
+    try:
+        shutil.rmtree(workspace)
+    except OSError:
+        _reject(IntakeErrorCode.CLEANUP_FAILED)
+
+
+def _secure_extract_archive(
     request: IncomingUpload,
     trusted_root: Path,
     *,
     limits: IngestionLimits = DEFAULT_LIMITS,
     id_factory: AssetIdFactory | None = None,
 ) -> ExtractedArchive:
-    """Validate and extract a corpus archive into server-generated flat storage names."""
-
     if request.role is not IntakeRole.CORPUS_ARCHIVE:
         _reject(IntakeErrorCode.ROLE_MISMATCH)
     if not trusted_root.is_dir() or trusted_root.is_symlink():
         _reject(IntakeErrorCode.WORKSPACE_INVALID)
-    validate_upload(request, limits=limits, id_factory=id_factory)
-    inspection = _inspect_archive(request.data, limits)
+    _receipt, maybe_inspection = _validated_upload(
+        request,
+        limits=limits,
+        id_factory=id_factory,
+    )
+    inspection = cast(_ArchiveInspection, maybe_inspection)
     workspace = trusted_root / f"workspace_{_token(id_factory)}"
     try:
         workspace.mkdir(mode=0o700, exist_ok=False)
@@ -869,15 +983,30 @@ def secure_extract_archive(
                     )
                 )
     except IntakeError:
-        try:
-            shutil.rmtree(workspace)
-        except OSError:
-            _reject(IntakeErrorCode.CLEANUP_FAILED)
+        _cleanup_workspace(workspace)
         raise
     except (zipfile.BadZipFile, RuntimeError, NotImplementedError, OSError, EOFError):
-        try:
-            shutil.rmtree(workspace)
-        except OSError:
-            _reject(IntakeErrorCode.CLEANUP_FAILED)
+        _cleanup_workspace(workspace)
         _reject(IntakeErrorCode.EXTRACTION_FAILED)
     return ExtractedArchive(workspace=workspace, members=tuple(receipts))
+
+
+def secure_extract_archive(
+    request: IncomingUpload,
+    trusted_root: Path,
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+    id_factory: AssetIdFactory | None = None,
+) -> ExtractedArchive:
+    """Validate and extract a corpus archive into server-generated flat storage names."""
+
+    try:
+        return _secure_extract_archive(
+            request,
+            trusted_root,
+            limits=limits,
+            id_factory=id_factory,
+        )
+    except IntakeError as error:
+        _detach_error_context(error)
+        raise

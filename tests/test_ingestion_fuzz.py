@@ -124,6 +124,7 @@ def test_deterministic_text_hazard_fuzz(seed: int) -> None:
         ),
         (lambda _marker: b" \n\t ", IntakeErrorCode.TEXT_EMPTY),
         (lambda marker: b"PK\x03\x04" + marker.encode(), IntakeErrorCode.TYPE_MISMATCH),
+        (lambda marker: b"%PDF-1.7\n" + marker.encode(), IntakeErrorCode.TYPE_MISMATCH),
     )
     for case in range(CASES_PER_FAMILY):
         marker = f"TEXT_SECRET_{seed:x}_{case}"

@@ -2,9 +2,9 @@
 
 **Son güncelleme:** 2026-07-11
 
-**Durum:** P002 bağımsız Claude/Codex denetimleriyle main'e alındı; P003 Secure Ingestion aktif
+**Durum:** P003 Secure Ingestion ve denetim düzeltmeleri uygulandı; kapanış kanıtı aktif
 
-**Kod:** English-only workbench shell main üzerinde; secure ingestion geliştiriliyor, bilimsel hesaplama henüz yok
+**Kod:** English-only workbench'te TXT/ZIP/CSV secure intake var; bilimsel hesaplama henüz yok
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -198,8 +198,11 @@ entegrasyonu da P002 dışında bırakılmıştır.
 P002; Claude bağımsız denetimi, Codex düzeltmeleri, karşıt yeniden denetim ve canlı
 ürün kapısından sonra `8ef2582` merge commit'iyle main'e alındı. Açık P0/P1/P2 yoktur.
 
-P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde aktiftir. TXT, ZIP
-ve metadata CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve
+P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmıştır.
+Katı TXT/CSV/ZIP parser, versioned limits, deterministic fuzz, rejected-widget
+cleanup ve browser audit geçmektedir. Son savunmacı review, exact-commit clean
+clone, evidence manifesti ve insan kabulü kapanış için beklenir. TXT, ZIP ve
+metadata CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve
 scientific computation bu ticket'ın dışındadır.
 
 Sonraki ticket acceptance kapılarında izlenecekler:
@@ -211,12 +214,12 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. P003 Ticket'taki content-based type, UTF-8/NFC ve merkezi limit sözleşmesini uygula.
-2. ZIP inventory'yi extraction öncesi denetle; traversal, link, nested archive,
-   duplicate name ve archive bomb fixture'larını fail-closed reddet.
-3. TXT/CSV injection, content-free error ve rejected-input cleanup kapılarını kur.
-4. Deterministic fuzz, disk canary, full verify ve clean-clone kanıtını üret.
-5. Tüm P003 acceptance maddeleri geçmeden P004 veya P005'e ilerleme.
+1. P003 son parser review'unda açık P0/P1/P2 bırakma.
+2. Exact implementation commit'ini clean clone'da bootstrap, verify, browser ve
+   wheel-policy hash ile yeniden çalıştır.
+3. P003 kanıt ağacını self-reference içermeyen SHA-256 manifestiyle mühürle.
+4. Ticket, Run, PromptEvent, HumanDecision, threat, claim ve handoff bağlarını kapat.
+5. Oğuz acceptance vermeden P003'ü complete yapma veya P004/P005'e ilerleme.
 
 ## Anahtar Kullanıcı İfadeleri
 

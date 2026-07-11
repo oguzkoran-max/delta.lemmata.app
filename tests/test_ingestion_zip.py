@@ -4,6 +4,7 @@ import io
 import os
 import stat
 import struct
+import traceback
 import warnings
 import zipfile
 from collections.abc import Callable, Iterator
@@ -23,6 +24,7 @@ from delta_lemmata.ingestion import (
     IntakeErrorCode,
     IntakeRole,
     secure_extract_archive,
+    validate_batch,
     validate_upload,
 )
 
@@ -232,7 +234,10 @@ def test_local_and_central_headers_must_match_exactly() -> None:
     payload = make_zip([("work.txt", b"text")])
     central, eocd = zip_positions(payload)
     mismatches = (
+        mutate_u16(payload, 4, struct.unpack_from("<H", payload, 4)[0] ^ 1),
         mutate_u16(payload, 8, zipfile.ZIP_STORED),
+        mutate_u16(payload, 10, struct.unpack_from("<H", payload, 10)[0] ^ 1),
+        mutate_u16(payload, 12, struct.unpack_from("<H", payload, 12)[0] ^ 1),
         mutate_u32(payload, 14, 1234),
         mutate_u32(payload, eocd + 16, central - 1),
     )
@@ -262,6 +267,9 @@ def test_local_header_bounds_and_leading_gaps_are_rejected() -> None:
         decoded_name="work.txt",
         flags=0,
         compression=zipfile.ZIP_STORED,
+        version_needed=20,
+        modified_time=0,
+        modified_date=0,
         crc32=0,
         compressed_size=0,
         file_size=0,
@@ -294,6 +302,9 @@ def test_local_header_bounds_and_leading_gaps_are_rejected() -> None:
         decoded_name="work.txt",
         flags=0,
         compression=zipfile.ZIP_STORED,
+        version_needed=20,
+        modified_time=0,
+        modified_date=0,
         crc32=0,
         compressed_size=0,
         file_size=0,
@@ -313,13 +324,17 @@ def test_zipfile_constructor_failure_is_normalized(
     payload = make_zip([("work.txt", b"text")])
 
     def fail_zipfile(*_args: object, **_kwargs: object) -> None:
-        raise zipfile.BadZipFile
+        sensitive_context = "SECRET_ARCHIVE_PATH"
+        raise zipfile.BadZipFile(sensitive_context)
 
     monkeypatch.setattr(ingestion.zipfile, "ZipFile", fail_zipfile)
-    expect_code(
+    error = expect_code(
         IntakeErrorCode.ARCHIVE_INVALID,
         lambda: validate_upload(archive_request(payload), id_factory=lambda: "0" * 32),
     )
+    assert error.__context__ is None
+    assert error.__cause__ is None
+    assert "SECRET_ARCHIVE_PATH" not in "".join(traceback.format_exception(error))
 
 
 @pytest.mark.parametrize(
@@ -427,6 +442,11 @@ def test_central_comments_and_unknown_methods_are_rejected() -> None:
         "trailing.txt.",
         "__MACOSX/x.txt",
         "a/b/c/d.txt",
+        "<script>.txt",
+        "bad\nname.txt",
+        "bad\u202ename.txt",
+        "bad\u2028name.txt",
+        "bad\u2029name.txt",
     ],
 )
 def test_archive_paths_are_canonical_and_cross_platform_safe(name: str) -> None:
@@ -454,6 +474,10 @@ def test_path_byte_limit_and_non_utf8_name_are_rejected() -> None:
     expect_code(
         IntakeErrorCode.ARCHIVE_UNSAFE_PATH,
         lambda: validate_upload(archive_request(bytes(changed)), id_factory=lambda: "0" * 32),
+    )
+    expect_code(
+        IntakeErrorCode.ARCHIVE_UNSAFE_PATH,
+        lambda: ingestion._validate_archive_path("bad\ud800.txt", False, DEFAULT_LIMITS),
     )
 
 
@@ -571,6 +595,30 @@ def test_member_expanded_and_ratio_limits_are_enforced() -> None:
         )
 
 
+def test_batch_archive_budget_is_rejected_before_member_decompression(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = make_zip([("work.txt", b"four")])
+
+    def forbidden_read(*_args: object, **_kwargs: object) -> bytes:
+        raise AssertionError("archive member decompressed before batch preflight")
+
+    monkeypatch.setattr(ingestion, "_read_member", forbidden_read)
+    ids = iter(("0" * 32, "1" * 32))
+    error = expect_code(
+        IntakeErrorCode.BATCH_LIMIT,
+        lambda: validate_batch(
+            [
+                IncomingUpload(IntakeRole.CORPUS_TEXT, "one.txt", b"one"),
+                archive_request(payload),
+            ],
+            limits=limits(max_batch_expanded_bytes=6),
+            id_factory=lambda: next(ids),
+        ),
+    )
+    assert error.__context__ is None
+
+
 def test_runtime_expanded_counter_rechecks_declared_archive_size(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -589,6 +637,27 @@ def test_runtime_expanded_counter_rechecks_declared_archive_size(
             id_factory=lambda: "0" * 32,
         ),
     )
+
+
+def test_runtime_expanded_counter_rechecks_batch_budget(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    payload = make_zip([("work.txt", b"text")])
+    real_read = ingestion._read_member
+
+    def oversized_read(*args: Any, **kwargs: Any) -> bytes:
+        return real_read(*args, **kwargs) + b"x"
+
+    monkeypatch.setattr(ingestion, "_read_member", oversized_read)
+    error = expect_code(
+        IntakeErrorCode.BATCH_LIMIT,
+        lambda: validate_batch(
+            [archive_request(payload)],
+            limits=limits(max_batch_expanded_bytes=4),
+            id_factory=lambda: "0" * 32,
+        ),
+    )
+    assert error.__context__ is None
 
 
 def test_read_member_enforces_runtime_limit_and_declared_size() -> None:
@@ -675,17 +744,21 @@ def test_materialization_io_failure_removes_workspace(
     ids = id_sequence("0" * 32, "1" * 32, "2" * 32)
 
     real_open = os.open
+    sensitive_context = "SECRET_SYSTEM_PATH"
 
     def fail_open(path: os.PathLike[str] | str, *args: Any, **kwargs: Any) -> int:
         if Path(path).name.startswith("asset_"):
-            raise OSError
+            raise OSError(sensitive_context)
         return real_open(path, *args, **kwargs)
 
     monkeypatch.setattr(os, "open", fail_open)
-    expect_code(
+    error = expect_code(
         IntakeErrorCode.EXTRACTION_FAILED,
         lambda: secure_extract_archive(archive_request(payload), tmp_path, id_factory=ids),
     )
+    assert error.__context__ is None
+    assert error.__cause__ is None
+    assert sensitive_context not in "".join(traceback.format_exception(error))
     assert list(tmp_path.iterdir()) == []
 
 
@@ -729,7 +802,7 @@ def test_second_pass_hash_mismatch_is_rejected_and_cleaned(
         nonlocal calls
         calls += 1
         result = real_read(*args, **kwargs)
-        return b"changed" if calls == 3 else result
+        return b"changed" if calls == 2 else result
 
     monkeypatch.setattr(ingestion, "_read_member", changed_read)
     ids = id_sequence("0" * 32, "1" * 32)
@@ -737,7 +810,36 @@ def test_second_pass_hash_mismatch_is_rejected_and_cleaned(
         IntakeErrorCode.EXTRACTION_FAILED,
         lambda: secure_extract_archive(archive_request(payload), tmp_path, id_factory=ids),
     )
+    assert calls == 2
     assert list(tmp_path.iterdir()) == []
+
+
+def test_secure_extraction_reads_twice_and_scans_text_once(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    payload = make_zip([("work.txt", b"text")])
+    real_read = ingestion._read_member
+    real_decode = ingestion._decode_text
+    read_calls = 0
+    text_scans = 0
+
+    def counted_read(*args: Any, **kwargs: Any) -> bytes:
+        nonlocal read_calls
+        read_calls += 1
+        return real_read(*args, **kwargs)
+
+    def counted_decode(data: bytes, profile: IngestionLimits) -> tuple[str, ingestion._TextStats]:
+        nonlocal text_scans
+        text_scans += 1
+        return real_decode(data, profile)
+
+    monkeypatch.setattr(ingestion, "_read_member", counted_read)
+    monkeypatch.setattr(ingestion, "_decode_text", counted_decode)
+    ids = id_sequence("0" * 32, "1" * 32, "2" * 32)
+    bundle = secure_extract_archive(archive_request(payload), tmp_path, id_factory=ids)
+    assert read_calls == 2
+    assert text_scans == 1
+    bundle.cleanup()
 
 
 def test_cleanup_failures_use_stable_codes(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -745,7 +847,9 @@ def test_cleanup_failures_use_stable_codes(tmp_path: Path, monkeypatch: pytest.M
     workspace.mkdir()
     bundle = ExtractedArchive(workspace=workspace, members=())
     monkeypatch.setattr(ingestion.shutil, "rmtree", lambda _path: (_ for _ in ()).throw(OSError()))
-    expect_code(IntakeErrorCode.CLEANUP_FAILED, bundle.cleanup)
+    error = expect_code(IntakeErrorCode.CLEANUP_FAILED, bundle.cleanup)
+    assert error.__context__ is None
+    assert error.__cause__ is None
 
 
 def test_extraction_cleanup_failure_masks_payload_error_with_stable_code(
@@ -772,7 +876,7 @@ def test_cleanup_failure_masks_second_pass_integrity_error_with_stable_code(
         nonlocal calls
         calls += 1
         result = real_read(*args, **kwargs)
-        return b"changed" if calls == 3 else result
+        return b"changed" if calls == 2 else result
 
     monkeypatch.setattr(ingestion, "_read_member", changed_read)
     monkeypatch.setattr(
@@ -781,7 +885,9 @@ def test_cleanup_failure_masks_second_pass_integrity_error_with_stable_code(
         lambda _path: (_ for _ in ()).throw(OSError()),
     )
     ids = id_sequence("0" * 32, "1" * 32)
-    expect_code(
+    error = expect_code(
         IntakeErrorCode.CLEANUP_FAILED,
         lambda: secure_extract_archive(archive_request(payload), tmp_path, id_factory=ids),
     )
+    assert calls == 2
+    assert error.__context__ is None
