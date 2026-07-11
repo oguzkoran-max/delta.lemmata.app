@@ -1,0 +1,56 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P002",
+  "commit_under_test": "cd7d7b1094dfed40a354a2c4ff2da46b662463d2",
+  "automated_verification": {
+    "result": "passed",
+    "tests": 47,
+    "coverage_pct": 100,
+    "ruff": "passed",
+    "strict_mypy": "passed",
+    "metadata": "passed",
+    "record_validation": "passed",
+    "repository_scan": "passed",
+    "r_lock": "passed"
+  },
+  "clean_clone_replay": {
+    "result": "passed",
+    "manifest_files_verified": 18,
+    "git_status_lines": 0,
+    "run_id": "RUN-20260711-0001"
+  },
+  "browser_audit": {
+    "result": "passed",
+    "fresh_context_per_viewport": true,
+    "targets": [
+      "1440x1000",
+      "1280x800",
+      "390x844",
+      "360x800",
+      "640x800 reflow",
+      "320x800 reflow"
+    ],
+    "horizontal_overflow": false,
+    "mobile_sidebar_overlap": false,
+    "heading_outline": "one h1 followed by peer h2 sections",
+    "keyboard_purpose_selection": "passed",
+    "external_browser_hosts_observed": 0,
+    "run_id": "RUN-20260711-0002"
+  },
+  "adversarial_review": {
+    "result": "merge-ready",
+    "open_p0": 0,
+    "open_p1": 0,
+    "open_p2": 0,
+    "targeted_tests": 18,
+    "records_validated": 21,
+    "working_tree_edited_by_reviewer": false,
+    "evidence": "provenance/evidence/P002/codex-correction/adversarial-review.md"
+  },
+  "disclosed_limits": [
+    "No real browser-chrome 200% zoom result is claimed.",
+    "No manual screen-reader conformance session was run.",
+    "The browser request log is not a packet capture or production egress proof.",
+    "Streamlit controls the native file-input and sidebar-toggle accessible names."
+  ]
+}

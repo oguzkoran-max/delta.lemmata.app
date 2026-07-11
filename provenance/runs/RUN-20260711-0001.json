@@ -1,0 +1,105 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260711-0001",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": ["P002"],
+  "started_at_utc": "2026-07-11T02:46:53Z",
+  "ended_at_utc": "2026-07-11T02:47:46Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "cd7d7b1094dfed40a354a2c4ff2da46b662463d2",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "uv": "0.11.28",
+    "checkout": "git clone --no-local followed by detached checkout"
+  },
+  "command": "./scripts/replay_p002_provenance.sh cd7d7b1094dfed40a354a2c4ff2da46b662463d2",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "dbb869398851293cb681a9565516cfbde72cd8f678f8352e54ac3520c94e2d3c"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "repository root",
+    "command": "./scripts/replay_p002_provenance.sh cd7d7b1094dfed40a354a2c4ff2da46b662463d2",
+    "limitations": [
+      "Replays automated verification and Claude evidence-manifest integrity, not browser behavior.",
+      "Uses the configured Python and R package repositories during bootstrap when a local cache is unavailable."
+    ]
+  },
+  "supersedes": [
+    {
+      "run_id": "RUN-20260710-0005",
+      "fields": [
+        "config_sha256",
+        "command",
+        "automated_verification",
+        "evidence_coverage",
+        "git_commit",
+        "tested_snapshot"
+      ],
+      "reason": "RUN-20260710-0005 ended at 20:24:30Z, before its named commit was created at 20:26:34Z, so it could only describe a working-tree run. This Run uses path-qualified configuration artifacts, an executable replay command, a pre-existing full commit, and a manifest covering all 18 Claude review files."
+    },
+    {
+      "run_id": "RUN-20260710-0006",
+      "fields": ["config_sha256", "command", "clean_clone_replay"],
+      "reason": "Replaces placeholder commands with a tracked no-local clone replay against an exact full commit."
+    }
+  ],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P002/claude-independent-review.sha256",
+    "sha256": "d947e934d70bea2183a8013862e2fb45c64e9012df1b4015fe7c73ff26232394",
+    "covers": ["provenance/evidence/P002/claude-independent-review"]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "dbb869398851293cb681a9565516cfbde72cd8f678f8352e54ac3520c94e2d3c"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/replay_p002_provenance.sh",
+      "sha256": "fee0598432747f48cf5b995a630369e9eb9aee2a22370b31cfad626444ad513a"
+    },
+    {
+      "path": "scripts/validate_records.py",
+      "sha256": "c8f13177c2f5017153b48af613c8654b98a3df4a05b087c52bfdb71d97ccae92"
+    },
+    {
+      "path": "tests/test_record_integrity.py",
+      "sha256": "a9ae805d745daee6ffcb690f70c4f9118239aba273a239edc9a5eaddb91930b5"
+    },
+    {
+      "path": "provenance/evidence/P002/claude-independent-review.sha256",
+      "sha256": "d947e934d70bea2183a8013862e2fb45c64e9012df1b4015fe7c73ff26232394"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P002/codex-correction/replay.log",
+      "sha256": "7826eeac970ce5e5e568fa19842c8ad0d75ff3a3d5175aca554dd5b3503197d5"
+    }
+  ],
+  "notes": "Fresh no-local clone of the final Codex implementation commit passed 47 tests at 100% measured source coverage, every verification gate, all 18 Claude review-manifest hashes, and a clean Git status. After this replay, closure-tree Run 1.1 validation independently recomputed input hashes from this exact Git commit and output hashes from the retained artifacts."
+}

@@ -1,14 +1,14 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-10
+**Güncellendi:** 2026-07-11
 
-**Aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair YAPILDI (`claude/p002-independent-audit`), Codex denetimi bekliyor
+**Aşama:** P002 ve Claude/Codex audit düzeltmeleri tamamlandı; bağımsız son denetim `MERGE-READY`, kullanıcı kararı bekleniyor
 
 **Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
 
-**Aktif ticket:** Yok; P002 Claude bağımsız denetimi tamamlandı, Codex kabulü sonrası P003 açılır
+**Aktif ticket:** Yok; P002 düzeltme branch'i kullanıcı kabulü ve merge kararı bekliyor
 
-**Sıradaki tek ana iş:** Codex, `claude/p002-independent-audit` branch'ini denetler; kabul edilirse P003 açılır
+**Sıradaki tek ana iş:** Kullanıcı `codex/p002-audit-corrections` branch'ini inceler; kabul edilip merge edilirse P003 açılır
 
 ## Önce Oku
 
@@ -20,8 +20,10 @@
 6. `provenance/tickets/P002.json`
 7. `provenance/evidence/P002/report.md`
 8. `provenance/evidence/P002/clean-clone-verification.md`
+9. `provenance/evidence/P002/codex-correction/report.md`
+10. `provenance/evidence/P002/codex-correction/adversarial-review.md`
 
-## Şimdi Çalıştırılacak Bağımsız Denetim
+## Uygulanan Bağımsız Denetim Talimatı
 
 Claude Code'a yalnız şu mesaj gönderilir:
 
@@ -54,19 +56,47 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   bağlı `HD-20260710-0005`. Eski P002 acceptance kanıtı değiştirilmedi.
 - **Codex'e:** report.md "For Codex to re-examine" listesindeki 5 madde.
 
+## Codex Düzeltme Sonucu (2026-07-11, MERGE-READY)
+
+- **Branch:** `codex/p002-audit-corrections`, Claude branch'i üzerinden açıldı;
+  `main` hâlâ `bef9dcc` ve değiştirilmedi.
+- **Kod commit'leri:** `b53e3087` (arayüz, schema 1.1, replay/test altyapısı) ve
+  `05e7b01c` (zoom kanıtını reflow ile sınırlayan düzeltme) ve `cd7d7b10`
+  (Run artifact hash ve güvenli repository-path doğrulaması).
+- **Düzeltilen merge engelleri:** P002 Ticket artık Claude/Codex PromptEvent,
+  HumanDecision, Run, commit, ajan ve supplemental evidence bağlarını taşıyor;
+  pathless `config_sha256` Run schema 1.1'de kaldırıldı ve eski anlam kayması
+  additive errata + scoped supersession ile kaydedildi.
+- **Arayüz:** mobil sidebar `auto`, bir `h1` + eş düzey `h2` yapısı, disabled
+  nedenleri görünür ve düğme adlarında, P-ticket jargonu yok, yinelenen boundary
+  paneli genel yöntem sınırına dönüştürüldü.
+- **Doğrulama:** clean clone'da 47 test, yüzde 100 measured source coverage ve
+  tüm kapılar geçti. Altı taze Playwright context'i masaüstü, mobil, 640px ve
+  320px reflow, klavye, heading, disabled-state ve observed-request denetimini geçti.
+- **Açıkça iddia edilmeyenler:** gerçek browser-chrome yüzde 200 zoom, manuel
+  screen-reader conformance ve packet capture. Streamlit file-input/sidebar-toggle
+  adları framework sınırı olarak kayıtlı.
+- **Kanıt:** `provenance/evidence/P002/codex-correction/`,
+  `RUN-20260711-0001/0002`, `PE-20260711-0001`, `HD-20260711-0001`.
+- **Son denetim:** aynı bağımsız adversarial denetçi iki P2 düzeltmesini yeniden
+  sınadı; açık P0/P1/P2 bulmadı ve `MERGE-READY` hükmü verdi.
+- **Sonraki adım:** closure commit'inden sonra kullanıcı branch'i inceler; kullanıcı
+  onayı olmadan `main`e merge etme.
+
 ## P002 Sonucu
 
 - Delta ilk ekranda doğrudan Streamlit workbench olarak açılıyor.
 - Text Proximity, Group Comparison ve Style Over Time ilk sınıf research purpose.
 - Guided ve Research shell seçenekleri var; çalışmayan sonraki aşamalar disabled.
-- 90 user-facing string tek English registry içinde; language selector yok.
+- 94 user-facing string tek English registry içinde; language selector yok.
 - Empty, loading, error, cancelled ve complete için ortak versioned contract var.
 - Health/build bilgisi allowlist kullanıyor; path veya secret-shaped build ID reddediliyor.
 - Runtime AI, analytics, login, permanent storage ve declared external endpoint yok.
-- Desktop/mobile browser geometry, keyboard, copy denylist ve egress-denied testleri geçti.
-- Otomatik doğrulama: 40 test, strict mypy, yüzde 100 measured source coverage.
+- Desktop/mobile/reflow browser geometry, keyboard, copy denylist ve egress-denied testleri geçti.
+- Otomatik doğrulama: 47 test, strict mypy, yüzde 100 measured source coverage.
 - Implementation commit `a888e7c81e5fdae12687903de29d0728f5c7cbd5` yeni klonda yeniden kuruldu ve geçti.
-- P002 Ticket, PromptEvent, iki HumanDecision, iki Run ve sekiz başarısızlık/düzeltme izi bağlı.
+- P002 Ticket; ilgili PromptEvent, HumanDecision, Run, commit, ajan, başarısızlık,
+  errata ve supplemental evidence kayıtlarına makine-okur bağlarla bağlı.
 
 ## Doğrulanmamış Sınırlar
 

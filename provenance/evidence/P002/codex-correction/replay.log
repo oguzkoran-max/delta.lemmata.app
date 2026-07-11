@@ -1,0 +1,198 @@
+Collecting uv==0.11.28
+  Using cached uv-0.11.28-py3-none-macosx_11_0_arm64.whl.metadata (11 kB)
+Using cached uv-0.11.28-py3-none-macosx_11_0_arm64.whl (23.6 MB)
+Installing collected packages: uv
+Successfully installed uv-0.11.28
+Using CPython 3.13.9 interpreter at: /opt/anaconda3/bin/python3
+Creating virtual environment at: .venv
+   Building delta-lemmata @ file:///private/var/folders/5q/55nj8kvn1sl6y37r2xn0bwcc0000gn/T/delta-p002-replay.ZPPSMN/repository
+      Built delta-lemmata @ file:///private/var/folders/5q/55nj8kvn1sl6y37r2xn0bwcc0000gn/T/delta-p002-replay.ZPPSMN/repository
+Prepared 1 package in 834ms
+Installed 98 packages in 420ms
+ + altair==6.2.2
+ + annotated-types==0.7.0
+ + anyio==4.14.1
+ + arrow==1.4.0
+ + attrs==26.1.0
+ + blinker==1.9.0
+ + boolean-py==5.0
+ + cachecontrol==0.14.4
+ + cachetools==7.1.4
+ + certifi==2026.6.17
+ + chardet==5.2.0
+ + charset-normalizer==3.4.9
+ + click==8.4.2
+ + coverage==7.15.0
+ + cyclonedx-bom==7.3.0
+ + cyclonedx-python-lib==11.11.0
+ + defusedxml==0.7.1
+ + delta-lemmata==0.0.0.dev0 (from file:///private/var/folders/5q/55nj8kvn1sl6y37r2xn0bwcc0000gn/T/delta-p002-replay.ZPPSMN/repository)
+ + detect-secrets==1.5.0
+ + filelock==3.29.7
+ + fqdn==1.5.1
+ + gitdb==4.0.12
+ + gitpython==3.1.50
+ + greenlet==3.5.3
+ + h11==0.16.0
+ + httptools==0.8.0
+ + idna==3.18
+ + iniconfig==2.3.0
+ + isoduration==20.11.0
+ + itsdangerous==2.2.0
+ + jinja2==3.1.6
+ + jsonpointer==3.1.1
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + lark==1.3.1
+ + librt==0.13.0
+ + license-expression==30.4.4
+ + lxml==6.1.1
+ + markdown-it-py==4.2.0
+ + markupsafe==3.0.3
+ + mdurl==0.1.2
+ + msgpack==1.2.1
+ + mypy==1.20.2
+ + mypy-extensions==1.1.0
+ + narwhals==2.23.0
+ + numpy==2.5.1
+ + packageurl-python==0.17.6
+ + packaging==26.2
+ + pandas==3.0.3
+ + pathspec==1.1.1
+ + pillow==12.3.0
+ + pip==26.1.2
+ + pip-api==0.0.34
+ + pip-audit==2.10.1
+ + pip-requirements-parser==32.0.1
+ + platformdirs==4.10.0
+ + playwright==1.61.0
+ + pluggy==1.6.0
+ + protobuf==7.35.1
+ + py-serializable==2.1.0
+ + pyarrow==25.0.0
+ + pydantic==2.13.4
+ + pydantic-core==2.46.4
+ + pydeck==0.9.3
+ + pyee==13.0.1
+ + pygments==2.20.0
+ + pyparsing==3.3.2
+ + pytest==8.4.2
+ + pytest-cov==7.1.0
+ + python-dateutil==2.9.0.post0
+ + python-multipart==0.0.32
+ + pyyaml==6.0.3
+ + referencing==0.37.0
+ + requests==2.34.2
+ + rfc3339-validator==0.1.4
+ + rfc3986-validator==0.1.1
+ + rfc3987-syntax==1.1.0
+ + rich==15.0.0
+ + rpds-py==2026.6.3
+ + ruff==0.15.21
+ + six==1.17.0
+ + smmap==5.0.3
+ + sortedcontainers==2.4.0
+ + starlette==1.3.1
+ + streamlit==1.59.1
+ + tenacity==9.1.4
+ + toml==0.10.2
+ + tomli==2.4.1
+ + tomli-w==1.2.0
+ + types-jsonschema==4.26.0.20260518
+ + typing-extensions==4.16.0
+ + typing-inspection==0.4.2
+ + tzdata==2026.3
+ + uri-template==1.3.0
+ + urllib3==2.7.0
+ + uvicorn==0.51.0
+ + webcolors==25.10.0
+ + websockets==16.1
+# Bootstrapping renv 1.2.3 ---------------------------------------------------
+- Using renv 1.2.3 from global package cache
+- One or more packages recorded in the lockfile are not installed.
+- Use `renv::status()` for more details.
+The following package(s) will be updated:
+
+# CRAN -----------------------------------------------------------------------
+- ape        [* -> 5.8-1]
+- digest     [* -> 0.6.39]
+- e1071      [* -> 1.7-17]
+- jsonlite   [* -> 2.0.0]
+- pamr       [* -> 1.57]
+- proxy      [* -> 0.4-29]
+- Rcpp       [* -> 1.1.2]
+- stylo      [* -> 0.7.71]
+- tcltk2     [* -> 1.6.1]
+- tsne       [* -> 0.2-0]
+
+# Installing packages --------------------------------------------------------
+[32m✔[0m tcltk2 1.6.1                             [linked from cache]
+[32m✔[0m proxy 0.4-29                             [linked from cache]
+[32m✔[0m tsne 0.2-0                               [linked from cache]
+[32m✔[0m pamr 1.57                                [linked from cache]
+[32m✔[0m Rcpp 1.1.2                               [linked from cache]
+[32m✔[0m ape 5.8-1                                [linked from cache]
+[32m✔[0m e1071 1.7-17                             [linked from cache]
+[32m✔[0m stylo 0.7.71                             [linked from cache]
+[32m✔[0m jsonlite 2.0.0                           [linked from cache]
+[32m✔[0m digest 0.6.39                            [linked from cache]
+Successfully installed 10 packages in 8.2 milliseconds.
+No issues found -- the project is in a consistent state.
+renv-restore-ok
+bootstrap-ok uv=0.11.28
+23 files already formatted
+All checks passed!
+Success: no issues found in 7 source files
+============================= test session starts ==============================
+platform darwin -- Python 3.13.9, pytest-8.4.2, pluggy-1.6.0
+rootdir: /private/var/folders/5q/55nj8kvn1sl6y37r2xn0bwcc0000gn/T/delta-p002-replay.ZPPSMN/repository
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.1.0, anyio-4.14.1
+collected 47 items
+
+tests/test_catalog.py .....                                              [ 10%]
+tests/test_health.py ..                                                  [ 14%]
+tests/test_metadata.py ..                                                [ 19%]
+tests/test_provenance.py ....                                            [ 27%]
+tests/test_record_integrity.py ....                                      [ 36%]
+tests/test_repository_hygiene.py ..                                      [ 40%]
+tests/test_runtime_boundary.py ....                                      [ 48%]
+tests/test_schemas.py ..............                                     [ 78%]
+tests/test_supply_chain.py ....                                          [ 87%]
+tests/test_webapp.py ...                                                 [ 93%]
+tests/test_workbench.py ...                                              [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.13.9-final-0 _______________
+
+Name    Stmts   Miss Branch BrPart  Cover   Missing
+---------------------------------------------------
+TOTAL     227      0      2      0   100%
+
+7 files skipped due to complete coverage.
+============================== 47 passed in 6.71s ==============================
+metadata-ok version=0.0.0.dev0
+records-ok count=17
+repository-scan-ok
+r-lock-ok stylo-namespace-load-deferred
+verify-ok
+provenance/evidence/P002/claude-independent-review/before-after.md: OK
+provenance/evidence/P002/claude-independent-review/browser-audit.json: OK
+provenance/evidence/P002/claude-independent-review/changed-file-hashes.txt: OK
+provenance/evidence/P002/claude-independent-review/clean-clone-verification.md: OK
+provenance/evidence/P002/claude-independent-review/contrast-proof.json: OK
+provenance/evidence/P002/claude-independent-review/copy-snapshot.txt: OK
+provenance/evidence/P002/claude-independent-review/findings.json: OK
+provenance/evidence/P002/claude-independent-review/fix-matrix.md: OK
+provenance/evidence/P002/claude-independent-review/network-observations.json: OK
+provenance/evidence/P002/claude-independent-review/report.md: OK
+provenance/evidence/P002/claude-independent-review/screenshot-hashes.txt: OK
+provenance/evidence/P002/claude-independent-review/screenshots/desktop-1280x800.png: OK
+provenance/evidence/P002/claude-independent-review/screenshots/desktop-1440x1000.png: OK
+provenance/evidence/P002/claude-independent-review/screenshots/mobile-360x800.png: OK
+provenance/evidence/P002/claude-independent-review/screenshots/mobile-390x844.png: OK
+provenance/evidence/P002/claude-independent-review/screenshots/zoom200-emulated-640x800.png: OK
+provenance/evidence/P002/claude-independent-review/smoke.json: OK
+provenance/evidence/P002/claude-independent-review/test-summary.json: OK
+replay-ok commit=cd7d7b1094dfed40a354a2c4ff2da46b662463d2

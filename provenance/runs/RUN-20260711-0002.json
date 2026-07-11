@@ -1,0 +1,117 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260711-0002",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": ["P002"],
+  "started_at_utc": "2026-07-11T02:47:52Z",
+  "ended_at_utc": "2026-07-11T02:48:23Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "cd7d7b1094dfed40a354a2c4ff2da46b662463d2",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "playwright": "1.61.0",
+    "browser": "Chromium 149.0.7827.55",
+    "server": "Streamlit 1.59.1 on a dynamically allocated loopback port"
+  },
+  "command": ".venv/bin/python scripts/browser_audit.py --output provenance/evidence/P002/codex-correction",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "dbb869398851293cb681a9565516cfbde72cd8f678f8352e54ac3520c94e2d3c"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "repository root with Playwright Chromium installed",
+    "command": ".venv/bin/python scripts/browser_audit.py --output provenance/evidence/P002/codex-correction",
+    "limitations": [
+      "640px and 320px are CSS reflow targets, not real browser-chrome zoom sessions.",
+      "No manual screen-reader conformance session was run.",
+      "Observed Playwright browser requests are not a packet capture or production egress proof.",
+      "Streamlit controls the native file-input and sidebar-toggle accessible names."
+    ]
+  },
+  "supersedes": [
+    {
+      "run_id": "RUN-20260710-0005",
+      "fields": [
+        "browser_audit",
+        "keyboard_audit",
+        "disabled_control_evidence",
+        "network_observation_scope",
+        "zoom_labeling"
+      ],
+      "reason": "Uses a tracked harness, fresh context per viewport, accessibility snapshots, exact scope labels, and no claim that reflow equals real browser zoom."
+    }
+  ],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P002/codex-correction.sha256",
+    "sha256": "b77140c0ea7191ae3e11b7ffec19413ce264b8ee3bf2e98162700abd94402dd0",
+    "covers": ["provenance/evidence/P002/codex-correction"]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "dbb869398851293cb681a9565516cfbde72cd8f678f8352e54ac3520c94e2d3c"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69"
+    },
+    {
+      "path": "scripts/browser_audit.py",
+      "sha256": "13d55218b1677f74601ba03a14a2464313b15a7af85042a2ed6176dae35c0d58"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "e319d5fbd0d482d78a216035c154b807474afcf0754f1766741359815ec5b0d0"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "dad1873c8d88bae9bf01ecec7b43fba350823b2d4332199df6c7ff882651699e"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "98a033f0dedc5362de7ab2ee28cd18b11b7bb4aac15e9a39d6efff08dc195ce5"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P002/codex-correction/browser-audit.json",
+      "sha256": "efc94dac2ebcab0a60d4664808ba10828afe10aa6c3363bce2cca719ad79ce15"
+    },
+    {
+      "path": "provenance/evidence/P002/codex-correction/screenshots/desktop-1280x800.png",
+      "sha256": "bc24bc6f455278cd04b7ca66cbe63be6d7ee96cf80527e172940b96face2a6a5"
+    },
+    {
+      "path": "provenance/evidence/P002/codex-correction/screenshots/desktop-1440x1000.png",
+      "sha256": "636a8f0ec4ab5fac003f1ccf73ea01e29e69f02ae3a688bfc1090d363ad85487"
+    },
+    {
+      "path": "provenance/evidence/P002/codex-correction/screenshots/mobile-360x800.png",
+      "sha256": "fef61b31f93a3ae93b0c0af893481fc1efdac832648ee95eab56fdff04216833"
+    },
+    {
+      "path": "provenance/evidence/P002/codex-correction/screenshots/mobile-390x844.png",
+      "sha256": "08ba89e8b8cd5da1b68caf7a15d159522b3d6c668b4e2412820059331a53d1ed"
+    },
+    {
+      "path": "provenance/evidence/P002/codex-correction/screenshots/reflow-320x800.png",
+      "sha256": "e73be1462904186b3e9e4e9e556b34ccba6b98ec214cac0780fc89eab43cedd3"
+    },
+    {
+      "path": "provenance/evidence/P002/codex-correction/screenshots/reflow-640x800.png",
+      "sha256": "9332a7ea312098ffb783f02ad7ec1e8aed615233ecf5ec25bd1bfec1970a05a9"
+    }
+  ],
+  "notes": "Six fresh browser contexts passed geometry, mobile sidebar, heading outline, disabled-state reason, keyboard selection, and observed-host checks. The native file-input and sidebar-toggle naming limits and the absence of real browser zoom evidence are explicitly retained."
+}
