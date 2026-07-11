@@ -29,7 +29,7 @@
   "threat_ids": ["RP-01", "RP-02", "EPI-01", "EPI-07"],
   "decision_ids": [],
   "prompt_event_ids": ["PE-20260711-0009"],
-  "commit_ids": [],
+  "commit_ids": ["233f0b37737dd8ab017653c4af911036f5ea04ca"],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
