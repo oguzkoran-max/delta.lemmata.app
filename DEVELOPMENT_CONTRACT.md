@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P003 Secure Ingestion uygulanmış, acceptance hardening aktiftir
+**Durum:** Kanonik; P003 Secure Ingestion otomatik kapanış kanıtı tamam, insan kabulü bekleniyor
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P003 fail-closed secure ingestion son denetim ve clean-clone kapısında; bilimsel analiz henüz uygulanmadı
+**Aşama:** P003 fail-closed secure ingestion insan kabul kapısında; bilimsel analiz henüz uygulanmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.

@@ -148,7 +148,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 
 ### P003: Secure Ingestion
 
-**Durum:** Implementation ve adversarial düzeltmeler tamam; exact-commit clean-clone, manifest ve insan kabul kapısı bekleniyor.
+**Durum:** Implementation, adversarial review, exact-commit clean clone, Run ve manifest tamam; insan kabul kapısı bekleniyor.
 
 **Amaç:** `.txt`, `.zip` ve metadata `.csv` girdilerini çalışma alanı dışına taşmadan ve sunucuyu tüketmeden kabul etmek.
 
@@ -170,7 +170,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 - Fuzz test belirlenen çalışma süresinde crash veya workspace escape üretmez.
 - Rejected upload sonrasında temp dizin, log ve session state içinde payload kalmaz.
 
-**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar ve path errata.
+**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar, path errata ve clean-clone raporu; `RUN-20260711-0003` ve `provenance/evidence/P003.sha256`.
 **Claim/tehdit bağlantısı:** CE-14; SEC-01, SEC-02, SEC-03, SEC-04, SEC-05.  
 **Non-goal:** PDF, DOCX, EPUB, OCR veya TEI ingestion.  
 **Sahip/denetçi:** Geliştirme ajanı uygular; P014'te bağımsız deployment testi tekrarlanır.

@@ -98,8 +98,8 @@ no open P0, P1, or P2 in the reviewed ingestion areas.
 
 ## Remaining Closure Gates
 
-This report does not close P003. The implementation commit must still be replayed
-from a clean clone, the resulting evidence package must be sealed with a
-self-excluding SHA-256 manifest, reciprocal Ticket and Run records must be added,
-and Oğuz Koran must make the acceptance decision. P003 does not verify CE-14,
-production retention, proxy buffering, scientific analysis, or FAIR certification.
+This report does not close P003. The implementation commit has been replayed from
+a clean clone, the evidence package is sealed by an external SHA-256 manifest, and
+reciprocal Ticket/Run links are recorded in the closure metadata. Oğuz Koran must
+still make the acceptance decision. P003 does not verify CE-14, production
+retention, proxy buffering, scientific analysis, or FAIR certification.

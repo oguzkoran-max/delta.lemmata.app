@@ -201,7 +201,8 @@ P002; Claude bağımsız denetimi, Codex düzeltmeleri, karşıt yeniden denetim
 P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmıştır.
 Katı TXT/CSV/ZIP parser, versioned limits, deterministic fuzz, rejected-widget
 cleanup ve browser audit geçmektedir. Son savunmacı review, exact-commit clean
-clone, evidence manifesti ve insan kabulü kapanış için beklenir. TXT, ZIP ve
+clone, `RUN-20260711-0003` ve dış evidence manifesti tamamlandı; yalnız insan
+kabulü kapanış için beklenir. TXT, ZIP ve
 metadata CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve
 scientific computation bu ticket'ın dışındadır.
 
@@ -214,12 +215,9 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. P003 son parser review'unda açık P0/P1/P2 bırakma.
-2. Exact implementation commit'ini clean clone'da bootstrap, verify, browser ve
-   wheel-policy hash ile yeniden çalıştır.
-3. P003 kanıt ağacını self-reference içermeyen SHA-256 manifestiyle mühürle.
-4. Ticket, Run, PromptEvent, HumanDecision, threat, claim ve handoff bağlarını kapat.
-5. Oğuz acceptance vermeden P003'ü complete yapma veya P004/P005'e ilerleme.
+1. Oğuz P003'ün altı acceptance ölçütünü bağlı kanıt üzerinden inceler.
+2. Açık kabul veya ret HumanDecision olarak kaydedilir.
+3. Oğuz acceptance vermeden P003'ü complete yapma veya P004/P005'e ilerleme.
 
 ## Anahtar Kullanıcı İfadeleri
 

@@ -1,0 +1,104 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260711-0003",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": ["P003"],
+  "started_at_utc": "2026-07-11T09:48:17Z",
+  "ended_at_utc": "2026-07-11T09:51:29Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "60bb93e4554cf7fa2827014b719cc8eb427a9ada",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "streamlit": "1.59.1",
+    "playwright": "1.61.0",
+    "browser": "Chromium 149.0.7827.55"
+  },
+  "command": "./scripts/bootstrap.sh && ./scripts/verify.sh && .venv/bin/python scripts/browser_audit_p003.py --output provenance/evidence/P003/clean-clone-browser && .tools/uv/bin/uv build --wheel --out-dir /tmp/delta-p003-wheel-replay",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "src/delta_lemmata/data/ingestion-limits-v1.json",
+      "sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "fresh repository clone at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh && ./scripts/verify.sh && .venv/bin/python scripts/browser_audit_p003.py --output provenance/evidence/P003/clean-clone-browser && .tools/uv/bin/uv build --wheel --out-dir /tmp/delta-p003-wheel-replay",
+    "limitations": [
+      "The replay used the same Mac and may link locked artifacts from host pip, uv, and renv caches.",
+      "The browser harness observes Playwright requests and is not a packet capture.",
+      "The wheel build instance is recorded, but bit-for-bit wheel reproducibility was not established.",
+      "All browser payloads were synthetic; no research corpus was ingested."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P003.sha256",
+    "sha256": "bf0a4f8b150ac7bf7a85fd511a1e11ed334ff1f02425802d0f176428d458fa56",
+    "covers": ["provenance/evidence/P003"]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/bootstrap.sh",
+      "sha256": "f841b3fee16a26ac00668bf82a74c5e69a3bdd2a818688c50270d8337f1df67b"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "scripts/browser_audit_p003.py",
+      "sha256": "a21adbd01aca9859086366616c118562ae300303f48359a08f99aeebe9e7024e"
+    },
+    {
+      "path": "src/delta_lemmata/data/ingestion-limits-v1.json",
+      "sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P003/clean-clone-verification.md",
+      "sha256": "752ced3cfb466149f66d8ea06ea9e6e5943cc08be06cafcec02c229699ad3ba6"
+    },
+    {
+      "path": "provenance/evidence/P003/test-summary.json",
+      "sha256": "22cc7be5201ebf9d4cf43af15a0c59ac5caa58d21409bfe36ac3d1367a2e83e3"
+    },
+    {
+      "path": "provenance/evidence/P003/clean-clone-browser/browser-audit.json",
+      "sha256": "857569e31bfed6c27953a08e918a9b7246b1a05fc2798857120132afa64a73e6"
+    }
+  ],
+  "notes": "The canonical exact-commit replay passed through the repository bootstrap, full gate, fresh-process browser harness, and wheel policy check. Two preliminary manual bootstrap failures are retained separately. Human acceptance and production-retention claims are outside this Run."
+}

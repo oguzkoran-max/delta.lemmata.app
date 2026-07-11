@@ -138,8 +138,8 @@ geçmiş veya `verified` olarak işaretlenmez.
 | SEC-05 | `implemented: intake only` | Kontrollü display label; CSV formula, HTML, newline ve path benzeri hücre reddi; content-free hata | Analiz çıktısı ve export escaping P009/P012 |
 
 P003 ara kanıtı `provenance/evidence/P003/` altındaki parser raporu, fixture ve
-fuzz özetleri, cleanup kapsamı ile browser auditidir; temiz-klon kaydı kapanışta
-eklenecektir. Bu ara
+fuzz özetleri, cleanup kapsamı, browser audit ve exact-commit clean-clone kaydı ile
+`RUN-20260711-0003` ve dış checksum manifestidir. Bu ara
 durumlar SEC-03 veya SEC-05'in bütün release yüzeylerinde kapandığı anlamına
 gelmez. Özellikle SEC-12 ve CE-14 P005/P014/P015 kanıtı olmadan `verified`
 olarak işaretlenmez.

@@ -102,9 +102,9 @@ The evidence package includes:
   recording, and console capture;
 - retained failed attempts and additive path errata.
 
-The final test count, exact commit, Run IDs, clean-clone replay, and evidence manifest
-will be added after the implementation commit; none is claimed by this pre-closure
-report.
+The final test count and exact-commit clean-clone replay are recorded in the P003
+test summary. `RUN-20260711-0003` and the external `P003.sha256` manifest link the
+closure replay; human acceptance remains separate.
 
 ## Boundaries
 

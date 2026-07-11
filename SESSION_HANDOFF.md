@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P003 Secure Ingestion uygulandı; acceptance hardening ve clean-clone kapanışı sürüyor
+**Aşama:** P003 Secure Ingestion otomatik ve bağımsız kapıları geçti; insan kabulü bekleniyor
 
 **Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
 
 **Aktif ticket:** P003 Secure Ingestion (`in-progress`)
 
-**Sıradaki tek ana iş:** Son parser review, exact-commit clean clone, manifest ve insan kabul kapısını tamamla
+**Sıradaki tek ana iş:** Oğuz P003 acceptance kanıtını inceler ve kabul/ret kararı verir
 
 ## Önce Oku
 
@@ -84,7 +84,7 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
 - **Main doğrulaması:** merge sonrasında 47 test, yüzde 100 measured source coverage,
   23 provenance kaydı ve tüm otomatik kapılar geçti.
-- **Sonraki adım:** P003 son review, clean-clone, manifest ve insan kabul kapısı.
+- **Sonraki adım:** P003 insan kabul kapısı.
 
 ## P002 Sonucu
 
@@ -127,10 +127,14 @@ olarak tutulur.
 - 232 test ve yüzde 100 statement/branch coverage geçti; taze-süreç browser
   harness altı viewport ve sentetik TXT/CSV/ZIP/rejection akışlarında geçti.
 - Başarısız browser paketleri ve additive path errata korunuyor.
+- Exact implementation commit `60bb93e4554cf7fa2827014b719cc8eb427a9ada`,
+  canonical `bootstrap.sh` ile yeni klonda kuruldu; `RUN-20260711-0003` geçti ve
+  `provenance/evidence/P003.sha256` bütün P003 kanıtını mühürledi.
+- Bağımsız UI, güvenlik ve FAIR yeniden denetimlerinde açık P0/P1/P2 kalmadı.
 
 P003'te metadata anlamı/rights, gerçek analysis, Pinokyo data, retention süreleri,
-production deployment, parent-site launch, PDF/DOCX/EPUB/TEI veya OCR ekleme.
-Exact-commit clean clone ve Oğuz acceptance olmadan ticket'ı complete yapma.
+production deployment, parent-site launch, PDF/DOCX/EPUB/TEI veya OCR eklenmedi.
+Oğuz acceptance olmadan ticket'ı complete yapma.
 
 ## FAIR Kapanış Disiplini
 

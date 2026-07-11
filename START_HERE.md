@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P003 Secure Ingestion ve bağımsız denetim düzeltmeleri uygulandı; clean-clone, checksum ve insan kabul kapısı aktiftir.
+**Güncel aşama:** P003 Secure Ingestion kod, bağımsız denetim, exact-commit clean-clone, Run ve checksum kapılarını geçti; insan kabulü bekleniyor.
 
 ## 1. Her Oturumda Oku
 
@@ -106,17 +106,14 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Aktif iş P003 Secure Ingestion kapanış kapısıdır. Kod, deterministic
-fixture/fuzz, rejected-widget cleanup, English intake UI ve fresh-process browser
-audit uygulanmıştır.
+Aktif iş P003 Secure Ingestion insan kabul kapısıdır. Kod, deterministic
+fixture/fuzz, rejected-widget cleanup, English intake UI, adversarial review,
+exact-commit clean clone, fresh-process browser audit, Run ve dış SHA-256 manifesti
+tamamlanmıştır.
 
-1. Son savunmacı parser incelemesinde açık P0/P1/P2 kalmadığını doğrula.
-2. Exact implementation commit'ini temiz klonda bootstrap + full verify + browser
-   harness + wheel-policy hash ile yeniden çalıştır.
-3. Başarılı ve başarısız kanıt paketlerini dış SHA-256 manifestiyle mühürle.
-4. Ticket, Run, PromptEvent, HumanDecision, threat/claim ve handoff bağlarını
-   tamamla.
-5. Oğuz kabulü olmadan P003'ü kapatma veya P004/P005'e geçme.
+1. Oğuz, Ticket'taki altı acceptance ölçütünü ve bağlı kanıtı inceler.
+2. Açık P0/P1/P2 yoksa Oğuz açık kabul veya ret kararı verir.
+3. Kabul olmadan P003'ü `complete` yapma veya P004/P005'e geçme.
 
 P003 sırasında metadata/rights modeli, retention garantisi, gerçek `stylo`, Pinokyo
 corpus'u, deployment, runtime AI veya `Launch Stylometry` entegrasyonu uygulanmaz.

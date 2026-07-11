@@ -169,5 +169,21 @@
     forward links remain checked whenever present. Synthetic tests cover missing,
     one-way, reverse-only, valid, and legacy links. The full gate then passed 232
     tests at 100% statement and branch coverage.
+28. The first exact-commit clean-clone bootstrap called `uv` by name and exited 127
+    because the host does not install uv on `PATH`. The replay did not fall back to
+    an unlocked installer. It used the existing project bootstrap uv executable by
+    explicit path and created a fresh clone-local `.venv` from `uv.lock`.
+29. The first clean-clone `verify.sh` run passed formatting, lint, type, all 232
+    tests, metadata, provenance, and repository checks, then failed at the R gate
+    because clone-local packages from `renv.lock` had not yet been restored. After
+    an explicit noninteractive `renv::restore`, the unchanged source commit passed
+    the full gate, fresh-process browser audit, and wheel policy check.
+30. The canonical replay was repeated from a second untouched clone using only
+    `./scripts/bootstrap.sh` and documented project commands. Bootstrap, full
+    verification, browser audit, and wheel build all passed without source edits.
+    Two wheel builds from the same commit had different whole-file SHA-256 values,
+    so P003 does not promote them to a bit-reproducible-package claim. Both embedded
+    the exact tracked ingestion policy hash; release reproducibility remains a
+    later gate.
 
 No failed or corrected attempt is presented as passing evidence.
