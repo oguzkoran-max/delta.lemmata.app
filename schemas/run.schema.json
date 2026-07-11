@@ -17,13 +17,12 @@
     "environment",
     "command",
     "exit_code",
-    "config_sha256",
     "input_artifacts",
     "output_artifacts",
     "notes"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"enum": ["1.0.0", "1.1.0"]},
     "run_id": {"type": "string", "pattern": "^RUN-[0-9]{8}-[0-9]{4}$"},
     "run_type": {
       "type": "string",
@@ -48,16 +47,78 @@
     "command": {"type": "string", "minLength": 1},
     "exit_code": {"type": ["integer", "null"], "minimum": 0, "maximum": 255},
     "config_sha256": {
+      "description": "Deprecated pathless configuration digest retained only for 1.0.0 records.",
       "oneOf": [
         {"type": "string", "pattern": "^[0-9a-f]{64}$"},
         {"type": "null"}
       ]
+    },
+    "configuration_artifacts": {"$ref": "#/$defs/non_empty_artifacts"},
+    "replay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["level", "working_directory", "command", "limitations"],
+      "properties": {
+        "level": {"type": "string", "enum": ["full", "partial", "none"]},
+        "working_directory": {"type": "string", "minLength": 1},
+        "command": {"type": "string", "minLength": 1},
+        "limitations": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "supersedes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["run_id", "fields", "reason"],
+        "properties": {
+          "run_id": {"type": "string", "pattern": "^RUN-[0-9]{8}-[0-9]{4}$"},
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {"type": "string", "minLength": 1}
+          },
+          "reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "evidence_manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256", "covers"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "covers": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
     },
     "input_artifacts": {"$ref": "#/$defs/artifacts"},
     "output_artifacts": {"$ref": "#/$defs/artifacts"},
     "notes": {"type": "string"}
   },
   "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "1.0.0"}}},
+      "then": {"required": ["config_sha256"]}
+    },
+    {
+      "if": {"properties": {"schema_version": {"const": "1.1.0"}}},
+      "then": {
+        "required": ["configuration_artifacts", "replay", "supersedes"],
+        "not": {"required": ["config_sha256"]},
+        "properties": {
+          "git_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+        }
+      }
+    },
     {
       "if": {"properties": {"status": {"enum": ["passed", "failed", "invalidated"]}}},
       "then": {
@@ -80,6 +141,11 @@
           "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
         }
       }
+    },
+    "non_empty_artifacts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/artifacts/items"}
     }
   }
 }

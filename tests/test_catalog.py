@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from delta_lemmata.catalog import DEFAULT_LOCALE, SUPPORTED_LOCALES, UI_CATALOG, text
@@ -48,6 +49,11 @@ def test_catalog_copy_avoids_prohibited_claims() -> None:
         "completely isolated",
     )
     assert all(phrase not in copy for phrase in prohibited)
+
+
+def test_user_facing_copy_does_not_expose_development_ticket_jargon() -> None:
+    copy = "\n".join(UI_CATALOG["en"].values())
+    assert re.search(r"\bP\d{3}\b|\btickets?\b", copy, flags=re.IGNORECASE) is None
 
 
 def test_user_facing_copy_is_not_duplicated_in_app_modules() -> None:

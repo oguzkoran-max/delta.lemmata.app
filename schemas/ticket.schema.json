@@ -29,7 +29,7 @@
     "blockers"
   ],
   "properties": {
-    "schema_version": {"const": "1.0.0"},
+    "schema_version": {"enum": ["1.0.0", "1.1.0"]},
     "ticket_id": {"type": "string", "pattern": "^P[0-9]{3}$"},
     "title": {"type": "string", "minLength": 1},
     "status": {
@@ -71,6 +71,12 @@
       "uniqueItems": true,
       "items": {"type": "string", "pattern": "^[0-9a-f]{7,64}$"}
     },
+    "run_ids": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string", "pattern": "^RUN-[0-9]{8}-[0-9]{4}$"}
+    },
+    "supplemental_evidence": {"$ref": "#/$defs/string_array"},
     "human_owner": {"type": "string", "minLength": 1},
     "acceptance_owner": {"type": "string", "minLength": 1},
     "implementation_agents": {"$ref": "#/$defs/string_array"},
@@ -110,6 +116,10 @@
     "blockers": {"$ref": "#/$defs/string_array"}
   },
   "allOf": [
+    {
+      "if": {"properties": {"schema_version": {"const": "1.1.0"}}},
+      "then": {"required": ["run_ids", "supplemental_evidence"]}
+    },
     {
       "if": {"properties": {"status": {"const": "complete"}}},
       "then": {"properties": {"closed_at_utc": {"type": "string"}}}

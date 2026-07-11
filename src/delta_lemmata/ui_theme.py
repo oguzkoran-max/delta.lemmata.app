@@ -145,14 +145,6 @@ footer,
   margin-bottom: 0.8rem;
 }
 
-.delta-purpose-title {
-  color: var(--delta-ink);
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.25;
-  margin: 0.7rem 0 1rem;
-}
-
 .delta-detail-text {
   color: var(--delta-muted);
   font-size: 0.9rem;
@@ -246,6 +238,11 @@ footer,
 [data-testid="stButton"] button,
 [data-testid="stFileUploaderDropzone"] {
   border-radius: 5px;
+}
+
+[data-testid="stButton"] button {
+  min-height: 3rem;
+  white-space: normal;
 }
 
 [data-testid="stFileUploaderDropzone"] {

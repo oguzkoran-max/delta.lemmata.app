@@ -24,9 +24,24 @@ def test_shell_renders_without_exception_and_future_actions_are_disabled() -> No
     assert len(app.file_uploader) == 1
     assert app.file_uploader[0].disabled is True
     assert [(button.label, button.disabled) for button in app.button] == [
-        ("Add metadata table", True),
-        ("Continue to parameters", True),
-        ("Run analysis", True),
+        ("Add metadata - unavailable until intake is ready", True),
+        ("Continue - unavailable until corpus checks pass", True),
+        ("Run analysis - unavailable until setup is complete", True),
+    ]
+    assert "unavailable" in app.file_uploader[0].label.lower()
+    assert all("unavailable" in button.label.lower() for button in app.button)
+    captions = [caption.value for caption in app.caption]
+    assert any("Secure corpus intake must be implemented" in value for value in captions)
+    assert any("Analysis remains unavailable" in value for value in captions)
+    assert len(app.subheader) == 0
+    assert [heading.value for heading in app.header] == [
+        "Text Proximity",
+        "Choose the level of control",
+        "Add the research corpus",
+        "Experiment map",
+        "Method boundary",
+        "Evidence reserved with every run",
+        "The workspace is ready for a research purpose",
     ]
 
 
@@ -40,6 +55,8 @@ def test_purpose_and_mode_controls_update_the_visible_shell() -> None:
     captions = "\n".join(element.value for element in app.caption)
     assert "How does a writer's work-level stylistic position vary" in rendered
     assert "Chronology alone does not establish" in rendered
+    assert rendered.count("Chronology alone does not establish") == 1
+    assert "does not prove authorship, intention, influence, or causation" in captions
     assert "documented parameter grid" in captions
 
 
