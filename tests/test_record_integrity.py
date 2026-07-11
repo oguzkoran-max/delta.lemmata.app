@@ -46,3 +46,38 @@ def test_v1_1_artifact_paths_must_be_repo_relative() -> None:
     run["input_artifacts"][0]["path"] = "../pyproject.toml"
     errors = VALIDATE_RECORDS.artifact_errors(run["run_id"], run)
     assert any("path is not repo-relative" in error for error in errors)
+
+
+def test_completed_ticket_acceptance_evidence_must_resolve() -> None:
+    path = ROOT / "provenance" / "tickets" / "P002.json"
+    ticket: dict[str, Any] = json.loads(path.read_text(encoding="utf-8"))
+    ticket["acceptance"][0]["status"] = "pending"
+    ticket["acceptance"][1]["evidence"] = []
+    ticket["acceptance"][2]["evidence"] = ["../outside.json"]
+    ticket["acceptance"][3]["evidence"] = ["provenance/evidence/P002/missing.json"]
+    errors = VALIDATE_RECORDS.acceptance_evidence_errors("P002", ticket)
+    assert any("incomplete acceptance P002-AC-01" in error for error in errors)
+    assert any("acceptance has no evidence P002-AC-02" in error for error in errors)
+    assert any("path is not repo-relative" in error for error in errors)
+    assert any("missing acceptance evidence P002-AC-04" in error for error in errors)
+
+
+def test_ticket_and_run_links_must_be_reciprocal() -> None:
+    tickets = {
+        "P001": {
+            "schema_version": "1.1.0",
+            "run_ids": ["RUN-VALID", "RUN-NO-BACKLINK", "RUN-MISSING"],
+        },
+    }
+    runs = {
+        "RUN-VALID": {"ticket_ids": ["P001"]},
+        "RUN-NO-BACKLINK": {"ticket_ids": []},
+        "RUN-REVERSE-ONLY": {"ticket_ids": ["P001"]},
+        "RUN-MISSING-TICKET": {"ticket_ids": ["P404"]},
+    }
+    errors = VALIDATE_RECORDS.reciprocal_ticket_run_errors(tickets, runs)
+    assert "P001: unresolved Run RUN-MISSING" in errors
+    assert "P001: Run does not link back to Ticket RUN-NO-BACKLINK" in errors
+    assert "RUN-REVERSE-ONLY: Ticket does not link back to Run P001" in errors
+    assert "RUN-MISSING-TICKET: unresolved Ticket P404" in errors
+    assert all("RUN-VALID" not in error for error in errors)

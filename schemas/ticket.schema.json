@@ -123,6 +123,34 @@
     {
       "if": {"properties": {"status": {"const": "complete"}}},
       "then": {"properties": {"closed_at_utc": {"type": "string"}}}
+    },
+    {
+      "if": {
+        "allOf": [
+          {"properties": {"schema_version": {"const": "1.1.0"}}},
+          {"properties": {"status": {"const": "complete"}}}
+        ]
+      },
+      "then": {
+        "properties": {
+          "decision_ids": {"minItems": 1},
+          "prompt_event_ids": {"minItems": 1},
+          "commit_ids": {"minItems": 1},
+          "run_ids": {"minItems": 1},
+          "supplemental_evidence": {"minItems": 1},
+          "changed_files": {"minItems": 1},
+          "commands": {"minItems": 1},
+          "blockers": {"maxItems": 0},
+          "acceptance": {
+            "items": {
+              "properties": {
+                "status": {"enum": ["passed", "not-applicable"]},
+                "evidence": {"minItems": 1}
+              }
+            }
+          }
+        }
+      }
     }
   ],
   "$defs": {

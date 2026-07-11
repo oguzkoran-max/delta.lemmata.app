@@ -1,10 +1,10 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-10
+**Son güncelleme:** 2026-07-11
 
-**Durum:** P002 kapandı; bağımsız Claude audit-and-repair P003 öncesi sırada
+**Durum:** P003 Secure Ingestion otomatik ve insan kabul kapılarıyla tamamlandı; P004 açılışı sırada
 
-**Kod:** English-only workbench shell var; ingestion ve bilimsel hesaplama henüz yok
+**Kod:** English-only workbench'te TXT/ZIP/CSV secure intake var; bilimsel hesaplama henüz yok
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -31,6 +31,8 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 |---|---|---|
 | Ürün adı | Delta | Burrows's Delta ve fark/değişim fikriyle uyumlu |
 | Alan adı | delta.lemmata.app | Lemmata ürün ailesi ve aynı VPS kullanımı |
+| Kanonik çalışma yolu | `~/Developer/delta.lemmata_app` | Sanal ortam ve araç dosyalarını Google Drive eşitlemesinden çıkarmak |
+| GitHub origin | Özel `https://github.com/oguzkoran-max/delta.lemmata.app` | İzlenen kaynak ve Git geçmişi için uzak yedek; public release değildir |
 | Lemmata launch entegrasyonu | `Launch Stylometry` sonraki ayrı ticket | Canlı parent siteyi P002 kapsamına gizlice dahil etmemek ve bağımsız regression/rollback kapısı kurmak |
 | P002 ikinci-model denetimi | Claude önce read-only denetler, sonra kanıtlı eksikleri ayrı branch'te düzeltir; Codex son denetçi | Tanı ile uygulamayı ayırmak, self-preferential bias'ı azaltmak ve kabul edilmiş baseline'ı korumak |
 | Runtime AI | v0.1'de yok | Maliyet, gizlilik, telif ve determinism |
@@ -195,12 +197,28 @@ entegrasyonu da P002 dışında bırakılmıştır.
 
 ## Açık Kanıt İşleri
 
-P002 acceptance kapısı geçti. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
+P002; Claude bağımsız denetimi, Codex düzeltmeleri, karşıt yeniden denetim ve canlı
+ürün kapısından sonra `8ef2582` merge commit'iyle main'e alındı. Açık P0/P1/P2 yoktur.
 
-P003'ten önce Claude independent audit-and-repair kapısı çalıştırılacaktır. Bu kapı
-P002'nin acceptance sonucunu peşinen geçersiz kılmaz; ikinci modelin kanıtlı
-bulgularını ayrı branch ve yeni evidence paketiyle sınar. Final merge kararını
-Codex incelemesi sonrasında Oğuz verir.
+P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmış ve
+2026-07-11 tarihinde tamamlanmıştır. Katı TXT/CSV/ZIP parser, versioned limits,
+deterministic fuzz, rejected-widget cleanup, browser audit, exact-commit clean
+clone ve `RUN-20260711-0003` otomatik paketi geçti. Oğuz iki TXT + valid CSV,
+strict ZIP ve unsafe CSV rejection-and-clearing akışlarını elle çalıştırdı;
+`RUN-20260711-0004` ve nihai `HD-20260711-0008` ile kabul verdi. İlk kısa devam
+yanıtı ve bağımsız belirsizlik bulgusu `HD-20260711-0007` içinde ayrı tutulur. TXT, ZIP ve metadata
+CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve scientific
+computation bu ticket'ın dışındadır.
+
+İnsan kabulü ve kapanış kayıtlarını içeren `d99aa7158caa8ba78ac8b2c1810eb61d9d21b8a2`
+commit'i temiz çalışma ağacında `RUN-20260711-0005` ile yeniden doğrulandı. 232 test,
+yüzde 100 statement/branch coverage ve bütün repository, supply-chain ve R-lock
+kapıları geçti.
+
+Repository çalışma kopyası 11 Temmuz 2026'da Google Drive'dan
+`~/Developer/delta.lemmata_app` yoluna taşınmış ve özel GitHub origin'i
+eklenmiştir. Bu operasyon P003'ün implementation veya acceptance sonucunu
+değiştirmez. Karar ve doğrulama kapıları ADR-0010'da kayıtlıdır.
 
 Sonraki ticket acceptance kapılarında izlenecekler:
 
@@ -211,11 +229,9 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. Claude Code'a `prompts/P002-claude-independent-audit-and-repair.md` briefi çağrılır.
-2. Claude read-only altı mercekli denetim ve kanıtlı P002 düzeltmelerini ayrı branch'te tamamlar.
-3. Codex branch diff'ini tasarım, kod, içerik, test ve FAIR kayıtları açısından denetler.
-4. Oğuz kabul ederse merge edilir; ardından `prompts/P003-start.md` ile P003 açılır.
-5. `.txt`, `.zip` ve metadata `.csv` fail-closed secure ingestion ancak bundan sonra uygulanır.
+1. P003 kapanış kanıtı commit edilir ve doğrulanan dal `main`e alınır.
+2. P004 Metadata, Corpus Inventory, and Rights için ayrı branch, PromptEvent ve Ticket açılır.
+3. LiberLiber pilot manifesti P004 şema/rights tasarımında araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
 
 ## Anahtar Kullanıcı İfadeleri
 
@@ -238,6 +254,8 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 > "FAIR ilkelerini unutma, her şeyi yaptığımız aşamalar şeffaf olmalı."
 
 > "Launch Stylometry gibi bir şey düşünürüz ama o sonraki aşama."
+
+> "tamam devam edelim"
 
 ## Hafıza Güncelleme Kuralı
 

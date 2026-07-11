@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair kapısı P003'ten önce çalıştırılacak.
+**Güncel aşama:** P003 Secure Ingestion otomatik, bağımsız, exact-commit ve insan kabul kapılarını geçti. Sıradaki iş P004 Metadata, Corpus Inventory, and Rights ticket'ını açmaktır.
 
 ## 1. Her Oturumda Oku
 
@@ -72,8 +72,10 @@
 - Rights kararı corpus düzeyinde değil, her asset için ayrı tutulur.
 - Upload/analysis izni, export izni ve public redistribution izni birbirinden ayrıdır.
 - Varsayılan export raw text içermez.
-- Başarılı job'da raw ve normalized metin export sonrası silinir; hatada en çok 15 dakika tutulur.
-- Diskte export en çok 1 saat, content-free log en çok 7 gün tutulur.
+- P005/P014 hedef politikası: başarılı job'da raw ve normalized metin export
+  sonrası silinir; hatada en çok 15 dakika tutulur.
+- P005/P014 hedef politikası: diskte export en çok 1 saat, content-free log
+  en çok 7 gün tutulur. Bu süreler P003 tarafından doğrulanmış değildir.
 - Delta ve Lemmata aynı VPS'i ancak container, identity, network, volume, env, port, secret ve kaynak sınırları testle ayrılırsa paylaşır.
 - “Completely isolated” iddiası kurulmaz.
 
@@ -104,19 +106,20 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Sıradaki iş tamamlanmış P002 shell'inin bağımsız Claude denetimidir. P003 henüz
-açılmamıştır ve audit kapanmadan başlatılmaz.
+P003 Secure Ingestion tamamlandı. Otomatik ve adversarial paket
+`RUN-20260711-0003`, Oğuz'un TXT+CSV, ZIP ve unsafe-CSV rejection walkthrough'u
+`RUN-20260711-0004`, insan kabulü eklenmiş exact-commit kapanış doğrulaması ise
+`RUN-20260711-0005` ile kayıtlıdır. İnsan kabul kararı `HD-20260711-0008`dir;
+ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
 
-Başlamadan önce:
+Sıradaki tek iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı bir
+branch üzerinde açmaktır. P004:
 
-1. `SESSION_HANDOFF.md` dosyasını oku.
-2. `prompts/P002-claude-independent-audit-and-repair.md` briefini eksiksiz uygula.
-3. Önce read-only multi-agent audit yap; sonra yalnız kanıtlanmış P002 eksiklerini
-   `claude/p002-independent-audit` branch'inde düzelt.
-4. P002 acceptance, browser, offline ve clean-clone kapılarını yeniden çalıştır.
-5. Main'e merge etme; branch ve evidence paketini Codex denetimine bırak.
-6. Codex audit sonucu kabul edildikten sonra `prompts/P003-start.md` ile P003 açılır.
+1. her metni `work_id`, yazar, tarih, edisyon, tür, hedef kitle ve kaynakla tanımlar;
+2. upload, analysis, export ve public redistribution izinlerini ayırır;
+3. hak durumu bilinmeyen varlığı sessizce açık kabul etmez;
+4. üç kronolojik nokta ve altı bağımsız eser yoksa Style Over Time sonucunu
+   zorunlu olarak exploratory işaretler.
 
-Claude audit sırasında P003 ingestion, gerçek `stylo` analizi, Pinokyo corpus'u,
-production deployment veya `lemmata.app` üzerindeki gelecekteki
-`Launch Stylometry` bağlantısı uygulanmaz.
+P004 retention garantisi, gerçek `stylo`, Pinokyo nihai corpus'u, deployment,
+runtime AI veya `Launch Stylometry` entegrasyonu eklemez.

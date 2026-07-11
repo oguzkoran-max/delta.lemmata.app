@@ -1,0 +1,10 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P003",
+  "artifact": "browser-audit.json",
+  "artifact_sha256": "a565fc2fb25f3c52693eab268d36169a862a55c483ce6806cbc922e110e84a76",
+  "recorded_screenshot_prefix": "provenance/evidence/P003/browser-audit/screenshots/",
+  "actual_screenshot_prefix": "provenance/evidence/P003/browser-audit-failed-run-2/screenshots/",
+  "reason": "The complete failed package was moved after execution so a corrected run could use the canonical output path.",
+  "interpretation": "Each recorded screenshot maps by unchanged basename to the actual prefix. The original failed JSON is retained unchanged."
+}

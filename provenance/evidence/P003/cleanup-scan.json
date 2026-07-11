@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P003",
+  "result": "passed",
+  "scope": {
+    "included": [
+      "Fresh pytest temporary roots passed to secure_extract_archive",
+      "Delta-created workspace directories beneath those roots",
+      "Delta error string, repr, and traceback surfaces",
+      "Payload-free IntakeOutcome and IntakeReceipt representations",
+      "Rendered Streamlit widget and session state after the rejected-upload rerun"
+    ],
+    "excluded": [
+      "Streamlit upload-manager internals",
+      "Reverse-proxy request buffering",
+      "Container and host temporary storage",
+      "Swap, crash, reboot, backup, and infrastructure logs"
+    ]
+  },
+  "canaries": [
+    "SECRET_CANARY",
+    "SECRET_PAYLOAD",
+    "outside-canary.txt",
+    "SECRET_BROWSER_CANARY",
+    "SECRET_CONTEXT_CANARY",
+    "SECRET_ARCHIVE_PATH",
+    "SECRET_SYSTEM_PATH"
+  ],
+  "verified_conditions": [
+    "Archive rejection occurs before an extraction workspace is created.",
+    "Injected materialization and integrity failures remove Delta workspaces.",
+    "Cleanup failure is surfaced as a stable content-free error code.",
+    "Public rejection objects detach Python cause and context references; formatted tracebacks exclude injected payload, archive, and system-path canaries.",
+    "Zip-slip fixtures do not modify the outside disk canary.",
+    "Application outcome and receipt objects retain no payload bytes.",
+    "Rejected uploader keys rotate; the new widgets contain zero files and the old filename and payload canary are absent from visible and filtered session state."
+  ],
+  "evidence": [
+    "tests/test_ingestion_text_csv.py",
+    "tests/test_ingestion_zip.py",
+    "tests/test_ingestion_fuzz.py",
+    "tests/test_intake_ui.py",
+    "provenance/evidence/P003/browser-audit/browser-audit.json"
+  ],
+  "later_ticket_boundary": ["P005", "P014"]
+}

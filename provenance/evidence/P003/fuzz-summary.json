@@ -1,0 +1,21 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P003",
+  "result": "passed",
+  "command": "/usr/bin/time -p .venv/bin/pytest -q tests/test_ingestion_fuzz.py",
+  "exit_code": 0,
+  "pytest_tests": 16,
+  "pytest_elapsed_seconds": 0.24,
+  "wall_elapsed_seconds": 0.68,
+  "generated_malicious_cases": 1536,
+  "generated_positive_control_validations": 1152,
+  "seeds": ["0xD311A", "0x5EC003", "0xC0FFEE"],
+  "cases_per_family_per_seed": 128,
+  "failure_shrinking": false,
+  "saved_example_database": false,
+  "notes": [
+    "Runtime is recorded as evidence and is not a test threshold.",
+    "All payloads are synthetic and bounded by the versioned ingestion profile.",
+    "Known attack classes remain as fixed fixtures even when generated families pass."
+  ]
+}

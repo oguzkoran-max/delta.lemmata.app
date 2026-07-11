@@ -2,26 +2,24 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P002 ve Claude/Codex audit düzeltmeleri tamamlandı; canlı ürün kapısı geçti ve kullanıcı main entegrasyonuna devam onayı verdi
+**Aşama:** P003 Secure Ingestion bütün kabul kapılarını geçti; P004 açılışı sırada
 
-**Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
+**Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
 
-**Aktif ticket:** Yok; P002 main entegrasyonu sıradaki işlemdir
+**Aktif ticket:** Yok; P003 `complete`, P004 henüz açılmadı
 
-**Sıradaki tek ana iş:** `codex/p002-audit-corrections` main'e alınır ve temiz doğrulamadan sonra P003 açılır
+**Sıradaki tek ana iş:** Geçen exact-commit kapanış Run'ını kaydet ve P003'ü main'e al; ardından P004 ticket ve branch'ini aç
 
 ## Önce Oku
 
 1. `START_HERE.md`
 2. Bu dosya
-3. Roadmap'teki yalnız P003 bölümü
-4. Claim CE-14
-5. Threat SEC-01, SEC-02, SEC-03, SEC-04 ve SEC-05
-6. `provenance/tickets/P002.json`
-7. `provenance/evidence/P002/report.md`
-8. `provenance/evidence/P002/clean-clone-verification.md`
-9. `provenance/evidence/P002/codex-correction/report.md`
-10. `provenance/evidence/P002/codex-correction/adversarial-review.md`
+3. Roadmap'teki P004 bölümü
+4. Claim CE-09 ve CE-13
+5. Threat RP-01, RP-02, EPI-01 ve EPI-07
+6. `provenance/tickets/P003.json` kapanış sınırı
+7. `docs/methodology/pinocchio-diachronic-worked-example.md` içindeki metadata ve rights alanları
+8. P004 açıldıktan sonra yeni Ticket ve execution brief
 
 ## Uygulanan Bağımsız Denetim Talimatı
 
@@ -56,10 +54,9 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   bağlı `HD-20260710-0005`. Eski P002 acceptance kanıtı değiştirilmedi.
 - **Codex'e:** report.md "For Codex to re-examine" listesindeki 5 madde.
 
-## Codex Düzeltme Sonucu (2026-07-11, MERGE ONAYLI)
+## Codex Düzeltme Sonucu (2026-07-11, MAIN'E ALINDI)
 
-- **Branch:** `codex/p002-audit-corrections`, Claude branch'i üzerinden açıldı;
-  `main` hâlâ `bef9dcc` ve değiştirilmedi.
+- **Branch:** `codex/p002-audit-corrections`, `8ef2582` merge commit'iyle main'e alındı.
 - **Kod commit'leri:** `b53e3087` (arayüz, schema 1.1, replay/test altyapısı) ve
   `05e7b01c` (zoom kanıtını reflow ile sınırlayan düzeltme) ve `cd7d7b10`
   (Run artifact hash ve güvenli repository-path doğrulaması).
@@ -85,7 +82,9 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   Açık P0/P1/P2 yok. Güvenilmez in-app raster kanıt olarak reddedildi.
 - **Kullanıcı kararı:** `devam edelim` isteği, hemen önce açıklanan sıra kapsamında
   P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
-- **Sonraki adım:** main entegrasyonunu temiz doğrula, ardından P003'ü aç.
+- **Main doğrulaması:** merge sonrasında 47 test, yüzde 100 measured source coverage,
+  23 provenance kaydı ve tüm otomatik kapılar geçti.
+- **Tarihsel sonraki adım:** P003 insan kabul kapısıydı; bu kapı artık `HD-20260711-0008` ile tamamlandı.
 
 ## P002 Sonucu
 
@@ -104,7 +103,7 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
 
 ## Doğrulanmamış Sınırlar
 
-- Upload ve archive parsing henüz yok; P003'ün konusudur.
+- P003 application intake uygulanmıştır; production retention ve proxy/host buffering P005/P014'te açıktır.
 - Asset metadata, corpus inventory ve rights kararları P004'tür.
 - Gerçek `stylo` execution/parity P006'dır.
 - Upload-to-export no-code E2E henüz kurulmadı.
@@ -116,23 +115,31 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
 Bu maddeler gizlenmiş pass değildir. Claim ve threat kayıtlarında açık kalan kapı
 olarak tutulur.
 
-## Denetim Kabulünden Sonra P003
+## P003 Uygulama Sonucu
 
-Codex, Claude branch'ini kabul ettikten sonra `prompts/P003-start.md` şablonunu
-gerçek oturum isteğine uyarla. Önce P003 Ticket
-ve PromptEvent aç. Sonra yalnız secure ingestion kapsamını uygula:
+- Explicit TXT veya ZIP corpus rolü ve ayrı metadata CSV uploader'ı var.
+- MIME verilirse rolle uyuşmak zorunda; içerik parser'ı her durumda zorunlu.
+- UTF-8/NFC, belge imzası, metin/CSV limitleri ve injection kontrolleri var.
+- Katı ZIP v1; ham EOCD/central/local tutarlılığı, no ZIP64/extra/comment,
+  canonical path, link/device/nested archive reddi ve ikinci-okuma hash kontrolü var.
+- Rejected uploader payload ve filename yeni widget anahtarıyla temizleniyor; yalnız
+  bir content-free kod bir rerun boyunca gösteriliyor.
+- 232 test ve yüzde 100 statement/branch coverage geçti; taze-süreç browser
+  harness altı viewport ve sentetik TXT/CSV/ZIP/rejection akışlarında geçti.
+- Başarısız browser paketleri ve additive path errata korunuyor.
+- Exact implementation commit `60bb93e4554cf7fa2827014b719cc8eb427a9ada`,
+  canonical `bootstrap.sh` ile yeni klonda kuruldu; `RUN-20260711-0003` geçti ve
+  `provenance/evidence/P003.sha256` bütün P003 kanıtını mühürledi.
+- Bağımsız UI, güvenlik ve FAIR yeniden denetimlerinde açık P0/P1/P2 kalmadı.
 
-- `.txt`, `.zip` ve metadata `.csv`
-- content-based type, UTF-8 ve Unicode NFC validation
-- extraction öncesi archive member audit
-- size, member count, ratio, path, nesting, token ve line limits
-- server-generated asset ID ve escaped display filename
-- CSV formula, HTML, newline, path ve log injection defenses
-- content-free error code ve rejected-input cleanup
-
-P003'te gerçek analysis, Pinokyo data, production deployment, parent-site launch
-integration, PDF/DOCX/EPUB/TEI veya OCR ekleme. Bir malicious fixture kapısı
-geçmezse P003'ü complete yapma.
+P003'te metadata anlamı/rights, gerçek analysis, Pinokyo data, retention süreleri,
+production deployment, parent-site launch, PDF/DOCX/EPUB/TEI veya OCR eklenmedi.
+Oğuz manuel TXT+CSV, ZIP ve unsafe-CSV rejection turunu tamamladı ve
+nihai `HD-20260711-0008` ile kabul verdi. İnsan kanıtı otomatik paketi değiştirmeden
+`RUN-20260711-0004` ve ayrı checksum manifestiyle tutulur.
+İnsan kabul kayıtlarını içeren `d99aa7158caa8ba78ac8b2c1810eb61d9d21b8a2`
+exact commit'i temiz çalışma ağacında `RUN-20260711-0005` ile yeniden doğrulandı;
+232 test, yüzde 100 statement/branch coverage ve bütün repository kapıları geçti.
 
 ## FAIR Kapanış Disiplini
 
@@ -155,6 +162,14 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 
 ## Repository Notu
 
-- Delta ayrı, remote'suz `main` repository'sidir.
-- Parent akademik-asistan repository'si Delta dizinini ignore eder.
-- Parent çalışma ağacındaki Delta dışı kullanıcı değişikliklerine dokunma.
+- Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
+- `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
+  repository'sidir; bu henüz public release değildir.
+- Varsayılan uzak dal `main`; P003 kapanış commit'i doğrulandıktan sonra
+  `codex/p003-secure-ingestion` main'e alınacak ve P004 ayrı dalda açılacaktır.
+- Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
+  değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
+- Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje
+  wiki'si yeni kanonik yola işaret eder.
+- Repository taşıması P003 acceptance kanıtı değildir; P003'ün ayrı insan kabulü
+  `HD-20260711-0008` ve `RUN-20260711-0004` ile tamamlanmıştır.

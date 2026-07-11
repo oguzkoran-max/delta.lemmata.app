@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P003",
+  "source_commit": "60bb93e4554cf7fa2827014b719cc8eb427a9ada",
+  "result": "passed",
+  "started_at_utc": "2026-07-11T09:48:17Z",
+  "ended_at_utc": "2026-07-11T09:51:29Z",
+  "clean_clone": {
+    "method": "git clone --no-local --branch codex/p003-secure-ingestion",
+    "source_clean_before_install": true,
+    "source_clean_after_verify_before_generated_evidence": true,
+    "source_edits": 0,
+    "same_machine": true,
+    "global_lock_artifact_caches_used": true
+  },
+  "bootstrap": {
+    "command": "./scripts/bootstrap.sh",
+    "exit_code": 0,
+    "uv": "0.11.28",
+    "python_locked_packages": 98,
+    "r_locked_packages_restored": 10
+  },
+  "verification": {
+    "command": "./scripts/verify.sh",
+    "exit_code": 0,
+    "tests": 232,
+    "statements": 900,
+    "branches": 218,
+    "statement_coverage_percent": 100.0,
+    "branch_coverage_percent": 100.0,
+    "metadata": "passed",
+    "records": "passed",
+    "repository_scan": "passed",
+    "r_lock": "passed"
+  },
+  "browser_audit": {
+    "path": "provenance/evidence/P003/clean-clone-browser/browser-audit.json",
+    "result": "passed",
+    "synthetic_inputs_only": true,
+    "external_hosts_observed": [],
+    "console_messages": []
+  },
+  "wheel": {
+    "filename": "delta_lemmata-0.0.0.dev0-py3-none-any.whl",
+    "retained_in_repository": false,
+    "sha256": "a014c894a76afbb223ae2f1a3beefef2d8a475c0d718c95ac87db31fb3afec9f",
+    "bit_reproducible_build_verified": false,
+    "packaged_limit_profile_sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58",
+    "source_limit_profile_sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58"
+  },
+  "failed_intermediate_attempts": [
+    {
+      "command": "uv sync --frozen --all-groups",
+      "exit_code": 127,
+      "reason": "uv was not installed on the host PATH"
+    },
+    {
+      "command": "./scripts/verify.sh before explicit renv restore",
+      "exit_code": 1,
+      "reason": "clone-local R packages had not yet been restored from renv.lock"
+    }
+  ]
+}

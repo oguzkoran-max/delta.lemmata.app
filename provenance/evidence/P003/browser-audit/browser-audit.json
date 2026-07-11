@@ -1,0 +1,665 @@
+{
+  "schema_version": "1.0.0",
+  "target_url": "http://127.0.0.1:49870",
+  "audit_method": "Tracked Python Playwright harness with a fresh local Streamlit process.",
+  "synthetic_inputs_only": true,
+  "fresh_browser_context_per_viewport": true,
+  "audits": [
+    {
+      "target": "desktop-1440x1000",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "mainClientWidth": 1140,
+      "mainScrollWidth": 1140,
+      "overflowingControls": [],
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "controls_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 1000
+      },
+      "main_box": {
+        "x": 300,
+        "y": 0,
+        "width": 1140,
+        "height": 1000
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Validate the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "No analysis run yet"
+        }
+      ],
+      "heading_outline_matches": true,
+      "file_inputs": {
+        "count": 2,
+        "enabled": true,
+        "accepts": [
+          "application/streamlit,.txt",
+          "application/streamlit,.csv"
+        ],
+        "visible_labels": true,
+        "labelled_regions": [
+          {
+            "label": "Corpus texts (.txt)",
+            "count": 1,
+            "file_inputs": 1
+          },
+          {
+            "label": "Optional metadata table (.csv)",
+            "count": 1,
+            "file_inputs": 1
+          }
+        ],
+        "semantic_relationships_pass": true
+      },
+      "progress_accessibility": {
+        "count": 1,
+        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
+        "pass": true
+      },
+      "disabled_controls": [
+        {
+          "name": "Continue - corpus documentation is not connected",
+          "count": 1,
+          "disabled": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true
+        }
+      ],
+      "disabled_controls_pass": true,
+      "screenshot": "provenance/evidence/P003/browser-audit/screenshots/desktop-1440x1000.png"
+    },
+    {
+      "target": "desktop-1280x800",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "mainClientWidth": 980,
+      "mainScrollWidth": 980,
+      "overflowingControls": [],
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "controls_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 800
+      },
+      "main_box": {
+        "x": 300,
+        "y": 0,
+        "width": 980,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Validate the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "No analysis run yet"
+        }
+      ],
+      "heading_outline_matches": true,
+      "file_inputs": {
+        "count": 2,
+        "enabled": true,
+        "accepts": [
+          "application/streamlit,.txt",
+          "application/streamlit,.csv"
+        ],
+        "visible_labels": true,
+        "labelled_regions": [
+          {
+            "label": "Corpus texts (.txt)",
+            "count": 1,
+            "file_inputs": 1
+          },
+          {
+            "label": "Optional metadata table (.csv)",
+            "count": 1,
+            "file_inputs": 1
+          }
+        ],
+        "semantic_relationships_pass": true
+      },
+      "progress_accessibility": {
+        "count": 1,
+        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
+        "pass": true
+      },
+      "disabled_controls": [
+        {
+          "name": "Continue - corpus documentation is not connected",
+          "count": 1,
+          "disabled": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true
+        }
+      ],
+      "disabled_controls_pass": true,
+      "screenshot": "provenance/evidence/P003/browser-audit/screenshots/desktop-1280x800.png"
+    },
+    {
+      "target": "mobile-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "mainClientWidth": 390,
+      "mainScrollWidth": 390,
+      "overflowingControls": [],
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "controls_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 844
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Validate the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "No analysis run yet"
+        }
+      ],
+      "heading_outline_matches": true,
+      "file_inputs": {
+        "count": 2,
+        "enabled": true,
+        "accepts": [
+          "application/streamlit,.txt",
+          "application/streamlit,.csv"
+        ],
+        "visible_labels": true,
+        "labelled_regions": [
+          {
+            "label": "Corpus texts (.txt)",
+            "count": 1,
+            "file_inputs": 1
+          },
+          {
+            "label": "Optional metadata table (.csv)",
+            "count": 1,
+            "file_inputs": 1
+          }
+        ],
+        "semantic_relationships_pass": true
+      },
+      "progress_accessibility": {
+        "count": 1,
+        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
+        "pass": true
+      },
+      "disabled_controls": [
+        {
+          "name": "Continue - corpus documentation is not connected",
+          "count": 1,
+          "disabled": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true
+        }
+      ],
+      "disabled_controls_pass": true,
+      "screenshot": "provenance/evidence/P003/browser-audit/screenshots/mobile-390x844.png"
+    },
+    {
+      "target": "mobile-360x800",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "mainClientWidth": 360,
+      "mainScrollWidth": 360,
+      "overflowingControls": [],
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "controls_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 800
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Validate the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "No analysis run yet"
+        }
+      ],
+      "heading_outline_matches": true,
+      "file_inputs": {
+        "count": 2,
+        "enabled": true,
+        "accepts": [
+          "application/streamlit,.txt",
+          "application/streamlit,.csv"
+        ],
+        "visible_labels": true,
+        "labelled_regions": [
+          {
+            "label": "Corpus texts (.txt)",
+            "count": 1,
+            "file_inputs": 1
+          },
+          {
+            "label": "Optional metadata table (.csv)",
+            "count": 1,
+            "file_inputs": 1
+          }
+        ],
+        "semantic_relationships_pass": true
+      },
+      "progress_accessibility": {
+        "count": 1,
+        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
+        "pass": true
+      },
+      "disabled_controls": [
+        {
+          "name": "Continue - corpus documentation is not connected",
+          "count": 1,
+          "disabled": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true
+        }
+      ],
+      "disabled_controls_pass": true,
+      "screenshot": "provenance/evidence/P003/browser-audit/screenshots/mobile-360x800.png"
+    },
+    {
+      "target": "reflow-640x800",
+      "viewport": {
+        "width": 640,
+        "height": 800
+      },
+      "scrollWidth": 640,
+      "clientWidth": 640,
+      "mainClientWidth": 640,
+      "mainScrollWidth": 640,
+      "overflowingControls": [],
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "controls_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 800
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Validate the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "No analysis run yet"
+        }
+      ],
+      "heading_outline_matches": true,
+      "file_inputs": {
+        "count": 2,
+        "enabled": true,
+        "accepts": [
+          "application/streamlit,.txt",
+          "application/streamlit,.csv"
+        ],
+        "visible_labels": true,
+        "labelled_regions": [
+          {
+            "label": "Corpus texts (.txt)",
+            "count": 1,
+            "file_inputs": 1
+          },
+          {
+            "label": "Optional metadata table (.csv)",
+            "count": 1,
+            "file_inputs": 1
+          }
+        ],
+        "semantic_relationships_pass": true
+      },
+      "progress_accessibility": {
+        "count": 1,
+        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
+        "pass": true
+      },
+      "disabled_controls": [
+        {
+          "name": "Continue - corpus documentation is not connected",
+          "count": 1,
+          "disabled": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true
+        }
+      ],
+      "disabled_controls_pass": true,
+      "screenshot": "provenance/evidence/P003/browser-audit/screenshots/reflow-640x800.png"
+    },
+    {
+      "target": "reflow-320x800",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "mainClientWidth": 320,
+      "mainScrollWidth": 320,
+      "overflowingControls": [],
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "controls_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 800
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Validate the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "No analysis run yet"
+        }
+      ],
+      "heading_outline_matches": true,
+      "file_inputs": {
+        "count": 2,
+        "enabled": true,
+        "accepts": [
+          "application/streamlit,.txt",
+          "application/streamlit,.csv"
+        ],
+        "visible_labels": true,
+        "labelled_regions": [
+          {
+            "label": "Corpus texts (.txt)",
+            "count": 1,
+            "file_inputs": 1
+          },
+          {
+            "label": "Optional metadata table (.csv)",
+            "count": 1,
+            "file_inputs": 1
+          }
+        ],
+        "semantic_relationships_pass": true
+      },
+      "progress_accessibility": {
+        "count": 1,
+        "snapshot": "- 'progressbar \"Experiment map progress: step 2 of 4\"'",
+        "pass": true
+      },
+      "disabled_controls": [
+        {
+          "name": "Continue - corpus documentation is not connected",
+          "count": 1,
+          "disabled": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true
+        }
+      ],
+      "disabled_controls_pass": true,
+      "screenshot": "provenance/evidence/P003/browser-audit/screenshots/reflow-320x800.png"
+    }
+  ],
+  "interactions": {
+    "initial_file_input_count": 2,
+    "text_summary_pass": true,
+    "csv_summary_pass": true,
+    "payload_not_rendered": true,
+    "rejection_callout_pass": true,
+    "rejected_payload_not_rendered": true,
+    "rejected_label_not_rendered_pass": true,
+    "rejected_uploaders_cleared_pass": true,
+    "zip_accept": "application/streamlit,.zip",
+    "archive_summary_pass": true,
+    "validated_evidence_pass": true,
+    "keyboard_purpose_selection_pass": true
+  },
+  "console_messages": [],
+  "external_hosts_observed": [],
+  "network_scope": "Browser requests observed by Playwright; not a packet capture.",
+  "zoom_scope": "640px and 320px are automated CSS reflow targets, not a real browser-chrome zoom session.",
+  "retention_scope": "The harness verifies Delta UI state and local requests, not Streamlit, proxy, container, or host-level retention.",
+  "result": "passed"
+}

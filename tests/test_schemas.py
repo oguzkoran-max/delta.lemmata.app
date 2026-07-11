@@ -137,3 +137,35 @@ def test_ticket_schema_1_1_requires_run_and_supplemental_evidence_links() -> Non
     ticket["run_ids"] = ["RUN-20260710-0003"]
     ticket["supplemental_evidence"] = ["provenance/evidence/P002/report.md"]
     validate_record(ticket, SCHEMAS / "ticket.schema.json")
+
+
+def test_completed_ticket_schema_1_1_requires_populated_closure_evidence() -> None:
+    ticket = read_json(ROOT / "provenance" / "tickets" / "P002.json")
+    for field in (
+        "decision_ids",
+        "prompt_event_ids",
+        "commit_ids",
+        "run_ids",
+        "supplemental_evidence",
+        "changed_files",
+        "commands",
+    ):
+        candidate = copy.deepcopy(ticket)
+        candidate[field] = []
+        with pytest.raises(ValidationError):
+            validate_record(candidate, SCHEMAS / "ticket.schema.json")
+
+    pending = copy.deepcopy(ticket)
+    pending["acceptance"][0]["status"] = "pending"
+    with pytest.raises(ValidationError):
+        validate_record(pending, SCHEMAS / "ticket.schema.json")
+
+    no_evidence = copy.deepcopy(ticket)
+    no_evidence["acceptance"][0]["evidence"] = []
+    with pytest.raises(ValidationError):
+        validate_record(no_evidence, SCHEMAS / "ticket.schema.json")
+
+    blocked = copy.deepcopy(ticket)
+    blocked["blockers"] = ["Unresolved closure defect"]
+    with pytest.raises(ValidationError):
+        validate_record(blocked, SCHEMAS / "ticket.schema.json")

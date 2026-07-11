@@ -81,6 +81,19 @@ P002'nin `implemented` durumu tarayıcı kabuğuna ilişkindir. CE-01 için dest
 iş akışının tamamlandığı, CE-18 için production runtime'ın bütünüyle doğrulandığı
 veya CE-20 için modelin genellenebilir olduğu iddia edilmez.
 
+### P003 Claim Durum Kaydı
+
+| Claim | Durum | P003 kanıtı | Kalan kapı |
+|---|---|---|---|
+| CE-01 | `implemented: intake step only` | Browser içinden açık TXT/ZIP rolü, ayrı CSV kontrolü ve R/Python kodu gerektirmeyen secure-intake adımı | P004, P008, P009 ve P012 sonrası tam upload-to-export E2E; P015 walkthrough |
+| CE-14 | `planned; not verified` | Reddedilen dosyada Delta widget anahtarı rotasyonu, content-free hata ve Delta workspace cleanup ön kanıtı | Başarı, hata, cancel, timeout, crash, restart, proxy, host, log ve kesin süreler P005/P014/P015 |
+| CE-19 | `implemented for P003 development` | Ticket, PromptEvent, HumanDecision, exact commit, `RUN-20260711-0003/0004/0005`, başarısız denemeler, clean clone ve ayrı otomatik/insan/kapanış checksum zincirleri | P004-P015 coverage ve final disclosure audit |
+| CE-20 | `implemented for P003 development` | Scholar-owned acceptance tasarımı, çoklu ajan denetimi, kod, test, hata, sınır, clean-clone, bağımsız belirsizlik bulgusu ve nihai `HD-20260711-0008` Oğuz kabulü ayrı kaydedildi | Sonraki ticket owner coverage, Barış walkthrough'u ve P015 vaka raporu |
+
+P003 yalnız application intake sınırını kanıtlar. "Uploads are transient"
+fallback cümlesi bile production altyapısı için P005/P014 öncesinde kesin
+silme sözüne dönüştürülmez.
+
 ## 6. Claim Embargoları
 
 - CE-04 geçmeden genel `stylo parity` denmez; yalnız doğrulanan fixture adı verilir.

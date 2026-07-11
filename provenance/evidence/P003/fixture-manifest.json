@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P003",
+  "generator": {
+    "implementation": "tests/test_ingestion_fuzz.py",
+    "sha256": "83519cf77cafb0497a0fe5f5cefbd54109baa5385ad53b43215d02f19e41d106",
+    "random_source": "random.Random",
+    "seeds": ["0xD311A", "0x5EC003", "0xC0FFEE"],
+    "cases_per_family_per_seed": 128,
+    "database_or_saved_examples": false
+  },
+  "generated_families": [
+    {
+      "name": "text_hazards",
+      "kind": "malicious",
+      "cases": 384
+    },
+    {
+      "name": "csv_injection",
+      "kind": "malicious",
+      "cases": 384
+    },
+    {
+      "name": "zip_paths",
+      "kind": "malicious",
+      "cases": 384
+    },
+    {
+      "name": "raw_zip_headers",
+      "kind": "malicious",
+      "cases": 384
+    },
+    {
+      "name": "valid_text_csv_zip",
+      "kind": "positive_control",
+      "cases": 1152
+    }
+  ],
+  "fixed_fixture_sources": [
+    {
+      "path": "tests/test_ingestion_text_csv.py",
+      "sha256": "c7bd56b80d633bd36f39f4c9914ebc41fb967f066289094358cbc9753ca7ee83"
+    },
+    {
+      "path": "tests/test_ingestion_zip.py",
+      "sha256": "5090056ddbde36b81a7c793f7a09671a1df35f422a7a5d519009d70a7754447c"
+    }
+  ],
+  "limit_profile": {
+    "path": "src/delta_lemmata/data/ingestion-limits-v1.json",
+    "sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58"
+  },
+  "real_research_corpus_used": false
+}
