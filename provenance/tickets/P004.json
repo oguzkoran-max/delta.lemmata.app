@@ -172,6 +172,12 @@
       "exit_code": 2,
       "result": "The guessed convenience script did not exist; canonical record-integrity and schema pytest targets were used instead and passed 31 tests.",
       "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": "gh run watch 29170767298 --exit-status",
+      "exit_code": 0,
+      "result": "The pushed P004 domain foundation passed GitHub verify with SBOM/audit and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
     }
   ],
   "blockers": []

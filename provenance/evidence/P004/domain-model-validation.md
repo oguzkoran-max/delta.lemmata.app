@@ -144,3 +144,14 @@ scientific chart, stylometric result, legal determination, raw-text export, perm
 storage, runtime AI, or deployment claim is introduced.
 
 Implementation checkpoint: `e5b269f1614938cbf2a7066fa322d6b55d4d47d6`.
+
+## GitHub CI
+
+The pushed linkage snapshot `45921e13ce1d64603ddd7d9619b7fb8056a22f20`
+passed GitHub Actions run `29170767298`:
+
+- `verify`: success in 2m05s, including full-history checkout, locked Python/R
+  environments, source and record verification, SBOM generation, and dependency audit;
+- `container`: success in 2m37s for the canonical Linux amd64 image.
+
+Run URL: `https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29170767298`.
