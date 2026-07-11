@@ -28,13 +28,15 @@
     "HD-20260710-0003",
     "HD-20260710-0004",
     "HD-20260710-0005",
-    "HD-20260711-0001"
+    "HD-20260711-0001",
+    "HD-20260711-0002"
   ],
   "prompt_event_ids": [
     "PE-20260710-0002",
     "PE-20260710-0003",
     "PE-20260710-0004",
-    "PE-20260711-0001"
+    "PE-20260711-0001",
+    "PE-20260711-0002"
   ],
   "commit_ids": [
     "a888e7c81e5fdae12687903de29d0728f5c7cbd5",
@@ -65,7 +67,8 @@
     "provenance/evidence/P002/codex-correction/adversarial-review.md",
     "provenance/evidence/P002/codex-correction/browser-audit.json",
     "provenance/evidence/P002/codex-correction/replay.log",
-    "provenance/evidence/P002/codex-correction.sha256"
+    "provenance/evidence/P002/codex-correction.sha256",
+    "provenance/evidence/P002/live-product-review-20260711.md"
   ],
   "acceptance": [
     {
@@ -203,6 +206,12 @@
       "exit_code": 0,
       "result": "Six fresh browser contexts passed desktop, mobile, 640px and 320px reflow, heading, disabled-state, keyboard, geometry, and observed-request checks with explicit zoom and framework limits.",
       "evidence": "provenance/runs/RUN-20260711-0002.json"
+    },
+    {
+      "command": "Codex in-app browser live product review at default, 390x844, and 320x800 viewports",
+      "exit_code": 0,
+      "result": "Purpose and mode interactions, Style Over Time copy, disabled boundaries, responsive geometry, current user-facing copy, and browser console passed; an unreliable in-app raster was rejected rather than retained.",
+      "evidence": "provenance/evidence/P002/live-product-review-20260711.md"
     }
   ],
   "blockers": []

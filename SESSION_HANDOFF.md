@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P002 ve Claude/Codex audit düzeltmeleri tamamlandı; bağımsız son denetim `MERGE-READY`, kullanıcı kararı bekleniyor
+**Aşama:** P002 ve Claude/Codex audit düzeltmeleri tamamlandı; canlı ürün kapısı geçti ve kullanıcı main entegrasyonuna devam onayı verdi
 
 **Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
 
-**Aktif ticket:** Yok; P002 düzeltme branch'i kullanıcı kabulü ve merge kararı bekliyor
+**Aktif ticket:** Yok; P002 main entegrasyonu sıradaki işlemdir
 
-**Sıradaki tek ana iş:** Kullanıcı `codex/p002-audit-corrections` branch'ini inceler; kabul edilip merge edilirse P003 açılır
+**Sıradaki tek ana iş:** `codex/p002-audit-corrections` main'e alınır ve temiz doğrulamadan sonra P003 açılır
 
 ## Önce Oku
 
@@ -56,7 +56,7 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   bağlı `HD-20260710-0005`. Eski P002 acceptance kanıtı değiştirilmedi.
 - **Codex'e:** report.md "For Codex to re-examine" listesindeki 5 madde.
 
-## Codex Düzeltme Sonucu (2026-07-11, MERGE-READY)
+## Codex Düzeltme Sonucu (2026-07-11, MERGE ONAYLI)
 
 - **Branch:** `codex/p002-audit-corrections`, Claude branch'i üzerinden açıldı;
   `main` hâlâ `bef9dcc` ve değiştirilmedi.
@@ -80,8 +80,12 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   `RUN-20260711-0001/0002`, `PE-20260711-0001`, `HD-20260711-0001`.
 - **Son denetim:** aynı bağımsız adversarial denetçi iki P2 düzeltmesini yeniden
   sınadı; açık P0/P1/P2 bulmadı ve `MERGE-READY` hükmü verdi.
-- **Sonraki adım:** closure commit'inden sonra kullanıcı branch'i inceler; kullanıcı
-  onayı olmadan `main`e merge etme.
+- **Canlı ürün kapısı:** default, 390px ve 320px görünümler; üç research purpose,
+  Research mode, Style Over Time sınırı, disabled durumlar ve konsol denetlendi.
+  Açık P0/P1/P2 yok. Güvenilmez in-app raster kanıt olarak reddedildi.
+- **Kullanıcı kararı:** `devam edelim` isteği, hemen önce açıklanan sıra kapsamında
+  P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
+- **Sonraki adım:** main entegrasyonunu temiz doğrula, ardından P003'ü aç.
 
 ## P002 Sonucu
 
