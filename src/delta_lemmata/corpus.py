@@ -37,6 +37,26 @@ from delta_lemmata.inventory import (
     canonical_inventory_payload,
     inventory_sha256,
 )
+from delta_lemmata.metadata_csv import (
+    export_metadata_csv,
+    import_metadata_csv,
+    metadata_csv_field_dictionary_json,
+    metadata_csv_template,
+)
+from delta_lemmata.metadata_csv_models import (
+    CORPUS_METADATA_CSV_VERSION,
+    CORPUS_METADATA_FIELD_DICTIONARY_VERSION,
+    CSV_COLUMNS,
+    FIELD_DICTIONARY,
+    FieldRequirement,
+    MetadataCsvExportError,
+    MetadataCsvExportErrorCode,
+    MetadataCsvField,
+    MetadataCsvFieldDictionary,
+    MetadataCsvImportResult,
+    MetadataCsvIssue,
+    MetadataCsvIssueCode,
+)
 from delta_lemmata.rights import (
     ActionPermissions,
     AssetRightsRecord,
@@ -47,7 +67,11 @@ from delta_lemmata.rights import (
 )
 
 __all__ = [
+    "CORPUS_METADATA_CSV_VERSION",
+    "CORPUS_METADATA_FIELD_DICTIONARY_VERSION",
+    "CSV_COLUMNS",
     "DEFAULT_VOCABULARY",
+    "FIELD_DICTIONARY",
     "ActionPermissions",
     "AssetRecord",
     "AssetRightsRecord",
@@ -63,9 +87,17 @@ __all__ = [
     "DateMode",
     "DateValue",
     "EditionRecord",
+    "FieldRequirement",
     "InventoryBinding",
     "IssueCode",
     "IssueSeverity",
+    "MetadataCsvExportError",
+    "MetadataCsvExportErrorCode",
+    "MetadataCsvField",
+    "MetadataCsvFieldDictionary",
+    "MetadataCsvImportResult",
+    "MetadataCsvIssue",
+    "MetadataCsvIssueCode",
     "PermissionState",
     "PurposeId",
     "RightsEvidence",
@@ -82,6 +114,10 @@ __all__ = [
     "bind_inventory",
     "canonical_inventory_payload",
     "export_json_schema",
+    "export_metadata_csv",
+    "import_metadata_csv",
     "inventory_sha256",
+    "metadata_csv_field_dictionary_json",
+    "metadata_csv_template",
     "validate_inventory",
 ]

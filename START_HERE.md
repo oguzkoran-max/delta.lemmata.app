@@ -113,13 +113,20 @@ P003 Secure Ingestion tamamlandı. Otomatik ve adversarial paket
 ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
 
 Aktif iş `provenance/tickets/P004.json` kabul ölçütlerine göre P004 Metadata,
-Corpus Inventory, and Rights modelini uygulamaktır. P004:
+Corpus Inventory, and Rights akışını tamamlamaktır. Versioned domain modeli,
+purpose-aware validation, canonical inventory hash ve 58-column versioned metadata
+CSV yerel aday olarak uygulanmıştır; exact-commit Run, GitHub CI, UI ve insan kabulü
+henüz yoktur. P004:
 
 1. her metni `work_id`, yazar, tarih, edisyon, tür, hedef kitle ve kaynakla tanımlar;
 2. upload, analysis, export ve public redistribution izinlerini ayırır;
 3. hak durumu bilinmeyen varlığı sessizce açık kabul etmez;
 4. üç kronolojik nokta ve altı bağımsız eser yoksa Style Over Time sonucunu
    zorunlu olarak exploratory işaretler.
+
+Sıradaki ana uygulama işi rights questionnaire ile Upload-Describe-Review bağlantısı
+ve bilimsel sonuç gibi görünmeyen erişilebilir Corpus Review görselleridir. CSV
+kanıtı `provenance/evidence/P004/metadata-csv-validation.md` içindedir.
 
 P004 retention garantisi, gerçek `stylo`, Pinokyo nihai corpus'u, deployment,
 runtime AI veya `Launch Stylometry` entegrasyonu eklemez.

@@ -404,6 +404,27 @@ def _csv_cell_is_unsafe(value: str, limits: IngestionLimits) -> bool:
     )
 
 
+def csv_cell_is_safe(
+    value: str,
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+) -> bool:
+    """Apply the exact P003 CSV-cell policy to an already decoded scalar value."""
+
+    return (
+        value == unicodedata.normalize("NFC", value)
+        and "\ufeff" not in value
+        and all(
+            not (
+                unicodedata.category(character) == "Cc" and character not in _ALLOWED_TEXT_CONTROLS
+            )
+            and character not in _BIDI_CONTROLS
+            for character in value
+        )
+        and not _csv_cell_is_unsafe(value, limits)
+    )
+
+
 def _validate_csv(text: str, base: _TextStats, limits: IngestionLimits) -> _CsvStats:
     try:
         reader = csv.reader(io.StringIO(text, newline=""), dialect="excel", strict=True)

@@ -9,6 +9,7 @@ from pathlib import Path
 from delta_lemmata.corpus import (
     AssetRightsRecord,
     CorpusInventory,
+    MetadataCsvFieldDictionary,
     ValidationReport,
     VocabularyProfile,
     export_json_schema,
@@ -24,6 +25,10 @@ SCHEMAS = {
     "corpus-inventory.schema.json": (
         CorpusInventory,
         "https://delta.lemmata.app/schemas/corpus-inventory.schema.json",
+    ),
+    "corpus-metadata-field-dictionary.schema.json": (
+        MetadataCsvFieldDictionary,
+        ("https://delta.lemmata.app/schemas/corpus-metadata-field-dictionary.schema.json"),
     ),
     "corpus-validation-report.schema.json": (
         ValidationReport,

@@ -1,14 +1,14 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-11
+**Güncellendi:** 2026-07-12
 
 **Aşama:** P003 Secure Ingestion `main`e alındı; P004 Metadata, Corpus Inventory, and Rights aktif
 
-**Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
+**Kod durumu:** English-only workbench'te secure intake, versioned corpus domain ve 58-column metadata CSV adayı var; scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** P004 Phase 1 olarak versioned domain models, controlled vocabularies, JSON schemas ve purpose-aware validation temelini uygula; UI'yi bu contract sabitlenmeden genişletme
+**Sıradaki tek ana iş:** Yerel CSV adayını exact commit + GitHub CI ile kaydet; ardından rights questionnaire, Upload-Describe-Review state bağlantısı ve accessible Corpus Review UI'yi aynı contract üzerine kur
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
@@ -23,6 +23,12 @@ bibliyografik künye; rights eylem bazlı fail-closed; yardım katmanlıdır. Ka
 **CI durumu:** GitHub shallow-checkout kaynaklı provenance hatası `f7a75b0` ile
 düzeltildi ve `0b0b349` ile main'e alındı. Hotfix run `29167750356` ve main run
 `29167865311` verify, SBOM/audit ve container işlerinde tamamen yeşildir.
+
+**P004 CSV doğrulaması:** Ayrı rights-source kaybı, statement-only public export,
+external schema drift ve yanlış field mapping bağımsız denetimde bulunup düzeltildi.
+Son yerel ağaç 390 test ve %100 statement/branch coverage ile geçti. Exact-commit
+Run ve bu ağacın GitHub CI sonucu henüz kaydedilmedi; ayrıntı
+`provenance/evidence/P004/metadata-csv-validation.md`.
 
 ## Önce Oku
 

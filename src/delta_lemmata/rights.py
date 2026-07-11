@@ -94,13 +94,23 @@ class AssetRightsRecord(FrozenModel):
                     },
                     "then": {
                         "properties": {
+                            "evidence": {
+                                "contains": {
+                                    "type": "object",
+                                    "properties": {"evidence_type": {"const": "url"}},
+                                    "required": ["evidence_type"],
+                                },
+                                "minContains": 1,
+                            },
+                            "jurisdiction": {"type": "string", "minLength": 1},
                             "license": {"type": "string", "minLength": 1},
                             "permissions": {
                                 "properties": {"export": {"const": "permitted"}},
                                 "required": ["export"],
                             },
                             "rights_status": {"const": "verified_open"},
-                        }
+                        },
+                        "required": ["evidence", "jurisdiction", "license"],
                     },
                 },
                 {
@@ -217,8 +227,13 @@ class AssetRightsRecord(FrozenModel):
             self.rights_status is not RightsStatus.VERIFIED_OPEN
             or self.permissions.export is not PermissionState.PERMITTED
             or not self.license
+            or not self.jurisdiction
+            or not any(item.evidence_type == "url" for item in self.evidence)
         ):
-            raise ValueError("public redistribution requires verified-open export rights")
+            raise ValueError(
+                "public redistribution requires verified-open export rights, "
+                "a jurisdiction, and URL evidence"
+            )
         if self.rights_status is RightsStatus.ANALYSIS_ONLY:
             expected = (
                 PermissionState.PERMITTED,
@@ -248,6 +263,8 @@ class AssetRightsRecord(FrozenModel):
             and self.permissions.export is PermissionState.PERMITTED
             and self.permissions.public_redistribution is PermissionState.PERMITTED
             and self.license is not None
+            and self.jurisdiction is not None
+            and any(item.evidence_type == "url" for item in self.evidence)
         )
 
 

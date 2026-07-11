@@ -135,7 +135,7 @@ geçmiş veya `verified` olarak işaretlenmez.
 | SEC-02 | `verified: application intake` | Ham ZIP header ön kontrolü, canonical path, link/device/nested archive reddi, hedef oluşturmadan tam inventory | Crash/restart ve production filesystem davranışı P005/P014 |
 | SEC-03 | `implemented; partially verified` | Sürümlü member, byte, expanded byte ve ratio limitleri; streaming sayaç ve deterministic bomb fixture'ları | OS/container kota, OOM, timeout ve eşzamanlı yük P005/P014 |
 | SEC-04 | `verified: application intake` | NFC/casefold collision, reserved name, server ID, düz storage adı, `O_EXCL` ve no-follow yazma | Multi-process/container yarışı ve production volume P005/P014 |
-| SEC-05 | `implemented: intake only` | Kontrollü display label; CSV formula, HTML, newline ve path benzeri hücre reddi; content-free hata | Analiz çıktısı ve export escaping P009/P012 |
+| SEC-05 | `verified: application intake; P004 verification pending` | Kontrollü display label; CSV formula, HTML, newline ve path benzeri hücre reddi; content-free hata; P004 import ve üretilen metadata export'unun değişmeyen P003 sınırından yeniden geçmesi için implementation candidate | P004 exact-commit Run ve UI render denetimi ile analiz/sonuç export escaping P009/P012 |
 
 P003 application-intake kanıtı `provenance/evidence/P003/` altındaki parser raporu, fixture ve
 fuzz özetleri, cleanup kapsamı, browser audit ve exact-commit clean-clone kaydı ile
@@ -144,6 +144,15 @@ unsafe-CSV rejection kabulü ayrı `RUN-20260711-0004` paketindedir. Bu
 durumlar SEC-03 veya SEC-05'in bütün release yüzeylerinde kapandığı anlamına
 gelmez. Özellikle SEC-12 ve CE-14 P005/P014/P015 kanıtı olmadan `verified`
 olarak işaretlenmez.
+
+### P004 Temel Kontrol Durumu
+
+| Threat | Durum | P004 temel kontrolü | Kalan doğrulama |
+|---|---|---|---|
+| SEC-05 | `implemented; verification pending` | `corpus-metadata-csv-v1` 58 sütunla P003 limitinin altında; untrusted import ve generated export aynı P003 formül, HTML, newline ve path reddinden geçecek biçimde uygulanmış; JSON içi Unicode-escaped değerler decode sonrasında BOM, bidi, control ve NFC kontrolleri dahil aynı politikayla yeniden taranıyor; duplicate key, non-standard constant ve aşırı nesting fail-closed; hata kayıtları hücre içeriğini yankılamıyor; güvenlik sınırını aşan reversible escape yok | P004 exact-commit Run, GitHub CI ve Streamlit render/browser injection denetimi; sonuç ve FAIR paket export'u P009/P012 |
+| RP-01 | `implemented; verification pending` | Her analyzed asset CSV içinde tam `asset-rights-v2` dependency array'i taşır; rights kaynağı acquisition kaynağından farklıysa ayrı tam source kaydı korunur; aynı rights/source ID'nin çelişkili tekrarı fail-closed reddedilecek biçimde uygulanmış | P004 exact-commit Run; rights questionnaire, UI matrix ve Collodi item-level dossier P004/P013 |
+| RP-02 | `implemented; verification pending` | Upload, analysis, export ve public redistribution izinleri ayrı korunur; public redistribution için verified-open status, export izni, license, jurisdiction ve URL evidence birlikte zorunludur; statement-only claim kapıyı açamaz; çok katmanlı rights CSV round trip testi uygulanmış | P004 exact-commit Run; raw export kapısı ve public package negatif fixture'ları P012/P013 |
+| EPI-01 | `implemented; verification pending` | Exact file label + SHA-256 P003 catalog bağı, stable work/edition/source kimliği, row-aware validation ve canonical round trip uygulanmış | P004 exact-commit Run; Corpus Review düzeltme akışı, paratext ve corpus-health kontrolleri P004/P007 |
 
 ## 8. Release Kapıları
 

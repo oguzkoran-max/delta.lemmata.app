@@ -158,6 +158,24 @@
           },
           "then": {
             "properties": {
+              "evidence": {
+                "contains": {
+                  "properties": {
+                    "evidence_type": {
+                      "const": "url"
+                    }
+                  },
+                  "required": [
+                    "evidence_type"
+                  ],
+                  "type": "object"
+                },
+                "minContains": 1
+              },
+              "jurisdiction": {
+                "minLength": 1,
+                "type": "string"
+              },
               "license": {
                 "minLength": 1,
                 "type": "string"
@@ -175,7 +193,12 @@
               "rights_status": {
                 "const": "verified_open"
               }
-            }
+            },
+            "required": [
+              "evidence",
+              "jurisdiction",
+              "license"
+            ]
           }
         },
         {

@@ -357,6 +357,9 @@ def export_json_schema(model: type[BaseModel], schema_id: str) -> dict[str, Any]
     """Return one deterministic Draft 2020-12 schema for a public P004 model."""
 
     schema = model.model_json_schema(mode="validation")
+    customizer = getattr(model, "customize_public_json_schema", None)
+    if callable(customizer):
+        schema = customizer(schema)
     return {
         "$schema": _JSON_SCHEMA_DRAFT_2020_12,
         "$id": schema_id,

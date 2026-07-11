@@ -12,6 +12,7 @@ from delta_lemmata.corpus import (
     AssetRightsRecord,
     CorpusInventory,
     IssueCode,
+    MetadataCsvFieldDictionary,
     ValidationReport,
     VocabularyProfile,
     export_json_schema,
@@ -42,6 +43,7 @@ def read_first_jsonl(path: Path) -> dict[str, Any]:
         "asset-rights",
         "asset-rights-v2",
         "corpus-inventory",
+        "corpus-metadata-field-dictionary",
         "corpus-validation-report",
         "corpus-vocabularies",
         "human-decision",
@@ -115,6 +117,7 @@ def test_unknown_rights_cannot_allow_public_redistribution() -> None:
         "public_redistribution": "permitted",
     }
     permitted["evidence"] = [{"evidence_type": "url", "value": "https://example.org/rights"}]
+    permitted["jurisdiction"] = "Italy"
     validate_record(permitted, SCHEMAS / "asset-rights-v2.schema.json")
 
     no_evidence = copy.deepcopy(permitted)
@@ -137,6 +140,16 @@ def test_unknown_rights_cannot_allow_public_redistribution() -> None:
     malformed_evidence_url["evidence"][0]["value"] = "https://"
     with pytest.raises(ValidationError):
         validate_record(malformed_evidence_url, SCHEMAS / "asset-rights-v2.schema.json")
+
+    statement_only = copy.deepcopy(permitted)
+    statement_only["evidence"] = [{"evidence_type": "statement", "value": "Open claim"}]
+    with pytest.raises(ValidationError):
+        validate_record(statement_only, SCHEMAS / "asset-rights-v2.schema.json")
+
+    no_jurisdiction = copy.deepcopy(permitted)
+    no_jurisdiction["jurisdiction"] = None
+    with pytest.raises(ValidationError):
+        validate_record(no_jurisdiction, SCHEMAS / "asset-rights-v2.schema.json")
 
 
 def test_asset_rights_v1_remains_valid_only_against_its_immutable_schema() -> None:
@@ -170,6 +183,7 @@ def test_asset_rights_v1_remains_valid_only_against_its_immutable_schema() -> No
     [
         ("asset-rights-v2", AssetRightsRecord),
         ("corpus-inventory", CorpusInventory),
+        ("corpus-metadata-field-dictionary", MetadataCsvFieldDictionary),
         ("corpus-validation-report", ValidationReport),
         ("corpus-vocabularies", VocabularyProfile),
     ],
@@ -180,6 +194,24 @@ def test_p004_checked_in_schemas_match_the_canonical_models(
 ) -> None:
     schema_id = f"https://delta.lemmata.app/schemas/{schema_name}.schema.json"
     assert read_json(SCHEMAS / f"{schema_name}.schema.json") == export_json_schema(model, schema_id)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        lambda data: data["columns"][1].update(position=3),
+        lambda data: data["columns"][1].update(name=data["columns"][0]["name"]),
+    ],
+)
+def test_field_dictionary_schema_enforces_exact_ordered_v1_columns(mutation: object) -> None:
+    dictionary = read_json(
+        ROOT / "src" / "delta_lemmata" / "data" / "corpus-metadata-fields-v1.json"
+    )
+    validate_record(dictionary, SCHEMAS / "corpus-metadata-field-dictionary.schema.json")
+    assert callable(mutation)
+    mutation(dictionary)
+    with pytest.raises(ValidationError):
+        validate_record(dictionary, SCHEMAS / "corpus-metadata-field-dictionary.schema.json")
 
 
 def test_p004_inventory_schema_preserves_date_modes_and_online_source_dates() -> None:

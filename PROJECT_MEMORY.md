@@ -235,12 +235,18 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. P004 versioned domain models, controlled vocabularies ve JSON schemas uygulanır.
-2. Purpose-aware cross-field validation, stable error codes ve deterministic fixtures eklenir.
-3. Canonical inventory hash ve semantic metadata invalidation contract uygulanır.
-4. Form + CSV round trip, exact-confirmed mapping ve rights questionnaire bağlanır.
-5. Upload, Describe, Review ile corpus-description görselleri uygulanır.
-6. LiberLiber pilot manifesti araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
+P004 versioned domain models, controlled vocabularies, generated JSON schemas,
+purpose-aware cross-field validation, canonical inventory hash, semantic metadata
+invalidation ve 58-column CSV round trip 2026-07-12 yerel adayında uygulanmıştır.
+Ayrı rights-source kayıtları korunur; statement-only beyan public redistribution
+kapısını açamaz. Aday 390 test ve %100 statement/branch coverage ile geçmiştir;
+exact-commit Run ve GitHub CI kaydı henüz oluşturulmamıştır.
+
+1. CSV adayını exact commit, reciprocal Run ve GitHub CI ile kaydet.
+2. Rights questionnaire ile exact-confirmed mapping'i guided form'a bağla.
+3. Upload, Describe, Review state akışını uygula.
+4. Bilimsel sonuç gibi görünmeyen erişilebilir corpus-description görsellerini uygula.
+5. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
 
 ## Anahtar Kullanıcı İfadeleri
 

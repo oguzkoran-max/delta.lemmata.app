@@ -115,7 +115,7 @@ Cross-record validation returns stable error codes with:
 
 - severity: blocker, warning, or information;
 - entity type and stable entity identifier;
-- field path and an optional future CSV row number;
+- field path and, after CSV import, the originating row number where applicable;
 - concise English text stating what is wrong, why it matters, and how to correct it.
 
 Identity, missing relationships, unconfirmed mappings, contradictory chronology,
@@ -137,10 +137,13 @@ The checked-in foundation includes immutable Pydantic models, generated Draft 20
 schemas, versioned vocabularies, valid and invalid JSON fixtures, purpose-aware
 validation, canonical hashing, invalidation binding, and statement/branch tests.
 
+The versioned CSV template, executable field dictionary, secure parser/exporter, and
+round-trip fixtures are implemented and documented in
+`docs/development/p004-metadata-csv.md`.
+
 Still deferred inside P004:
 
-1. versioned CSV template, field dictionary, parser, and round-trip fixtures;
-2. rights questionnaire mapping;
-3. P003-to-P004 browser state integration;
-4. Corpus Review UI and non-scientific corpus-description graphics;
-5. responsive and accessibility evidence plus Oğuz Koran's human acceptance.
+1. rights questionnaire mapping;
+2. P003-to-P004 browser state integration;
+3. Corpus Review UI and non-scientific corpus-description graphics;
+4. responsive and accessibility evidence plus Oğuz Koran's human acceptance.

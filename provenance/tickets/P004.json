@@ -28,13 +28,18 @@
   "dependencies": ["P003"],
   "claim_ids": ["CE-09", "CE-13"],
   "threat_ids": ["RP-01", "RP-02", "EPI-01", "EPI-07"],
-  "decision_ids": ["HD-20260711-0009", "HD-20260711-0010"],
+  "decision_ids": [
+    "HD-20260711-0009",
+    "HD-20260711-0010",
+    "HD-20260711-0011"
+  ],
   "prompt_event_ids": [
     "PE-20260711-0009",
     "PE-20260711-0010",
     "PE-20260711-0011",
     "PE-20260711-0012",
-    "PE-20260711-0013"
+    "PE-20260711-0013",
+    "PE-20260711-0014"
   ],
   "commit_ids": [
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
@@ -50,11 +55,14 @@
     "docs/development/roadmap-P001-P015.md",
     "docs/development/p004-metadata-ux-decisions.md",
     "docs/development/p004-domain-model.md",
+    "docs/development/p004-metadata-csv.md",
+    "decisions/ADR-0011-versioned-metadata-csv.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md",
     "docs/methodology/pinocchio-diachronic-worked-example.md",
     "provenance/evidence/P004/ci-shallow-history-failure.md",
-    "provenance/evidence/P004/domain-model-validation.md"
+    "provenance/evidence/P004/domain-model-validation.md",
+    "provenance/evidence/P004/metadata-csv-validation.md"
   ],
   "acceptance": [
     {
@@ -71,7 +79,16 @@
       "id": "P004-AC-02",
       "criterion": "Versioned CSV templates and a field dictionary are accompanied by valid and invalid fixtures; validation reports identify actionable row, field, and stable error codes for missing fields, duplicate work identifiers, unmatched files, conflicting dates, and unknown controlled values.",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "docs/development/p004-metadata-csv.md",
+        "templates/corpus-metadata-v1.csv",
+        "src/delta_lemmata/data/corpus-metadata-fields-v1.json",
+        "schemas/corpus-metadata-field-dictionary.schema.json",
+        "tests/fixtures/p004/metadata-valid-v1.csv",
+        "tests/fixtures/p004/metadata-invalid-domain-v1.csv",
+        "tests/test_metadata_csv.py",
+        "provenance/evidence/P004/metadata-csv-validation.md"
+      ]
     },
     {
       "id": "P004-AC-03",
@@ -122,7 +139,8 @@
     "Human-approved Corpus workflow, purpose-aware field, teaching, and implementation-order contract",
     "Versioned corpus domain, immutable P003 catalog projection, multi-layer rights dependencies, and generated schemas",
     "Purpose-aware actionable validation, conservative chronology readiness, canonical hashing, invalidation binding, and deterministic fixtures",
-    "Retained failed attempts plus three-pass adversarial domain-model review"
+    "Retained failed attempts plus three-pass adversarial domain-model review",
+    "Candidate versioned 58-column metadata CSV, exact external field-dictionary schema, distinct rights-source preservation, evidence-gated public redistribution, P003-preserving parser/exporter, deterministic templates, row-aware diagnostics, and canonical semantic round-trip tests; recorded exact-commit verification remains pending"
   ],
   "commands": [
     {
@@ -178,6 +196,24 @@
       "exit_code": 0,
       "result": "The pushed P004 domain foundation passed GitHub verify with SBOM/audit and the canonical Linux amd64 container build.",
       "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run pytest tests/test_metadata_csv.py tests/test_corpus.py tests/test_schemas.py -q",
+      "exit_code": 0,
+      "result": "After independent review fixes, 167 focused CSV, corpus, rights, and schema tests passed.",
+      "evidence": "provenance/evidence/P004/metadata-csv-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first final-gate attempt stopped on three Ruff formatting differences; a later attempt passed 385 tests but correctly stopped at the 100% coverage gate with 99.51%. Neither partial run was treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/metadata-csv-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The final local candidate passed 390 tests, 100% of 2,097 measured statements and 542 measured branches, strict typing, schemas, metadata, provenance integrity, repository scanning, supply-chain tests, and the locked R/stylo environment.",
+      "evidence": "provenance/evidence/P004/metadata-csv-validation.md"
     }
   ],
   "blockers": []

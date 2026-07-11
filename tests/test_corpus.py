@@ -356,6 +356,7 @@ def test_verified_open_rights_can_allow_raw_public_export() -> None:
         license="CC0-1.0",
         permissions=permissions,
         evidence=(RightsEvidence(evidence_type="url", value="https://example.org/rights"),),
+        jurisdiction="Italy",
         assessed_by="Test suite",
         assessed_at_utc=datetime(2026, 7, 12, tzinfo=UTC),
     )
@@ -426,6 +427,37 @@ def test_unknown_rights_close_analysis_and_public_export() -> None:
                 "evidence": (RightsEvidence(evidence_type="statement", value="Permission note"),),
             },
             "verified-open export rights",
+        ),
+        (
+            {
+                "rights_status": RightsStatus.VERIFIED_OPEN,
+                "license": "CC0-1.0",
+                "permissions": ActionPermissions(
+                    upload=PermissionState.PERMITTED,
+                    analysis=PermissionState.PERMITTED,
+                    export=PermissionState.PERMITTED,
+                    public_redistribution=PermissionState.PERMITTED,
+                ),
+                "evidence": (RightsEvidence(evidence_type="statement", value="Open claim"),),
+                "jurisdiction": "Italy",
+            },
+            "jurisdiction, and URL evidence",
+        ),
+        (
+            {
+                "rights_status": RightsStatus.VERIFIED_OPEN,
+                "license": "CC0-1.0",
+                "permissions": ActionPermissions(
+                    upload=PermissionState.PERMITTED,
+                    analysis=PermissionState.PERMITTED,
+                    export=PermissionState.PERMITTED,
+                    public_redistribution=PermissionState.PERMITTED,
+                ),
+                "evidence": (
+                    RightsEvidence(evidence_type="url", value="https://example.org/rights"),
+                ),
+            },
+            "jurisdiction, and URL evidence",
         ),
         (
             {
@@ -994,7 +1026,8 @@ def _verified_open_rights(
             export=PermissionState.PERMITTED,
             public_redistribution=PermissionState.PERMITTED,
         ),
-        evidence=(RightsEvidence(evidence_type="statement", value="Open fixture"),),
+        evidence=(RightsEvidence(evidence_type="url", value="https://example.org/open"),),
+        jurisdiction="Italy",
         assessed_by="Test suite",
         assessed_at_utc=datetime(2026, 7, 12, tzinfo=UTC),
     )
