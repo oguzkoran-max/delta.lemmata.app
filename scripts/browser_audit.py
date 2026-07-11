@@ -282,14 +282,15 @@ def main() -> int:
             ),
             "zoom_scope": (
                 "640px and 320px are automated CSS reflow targets. They are not represented as "
-                "a real browser zoom session; real 200% zoom is recorded separately."
+                "a real browser-chrome zoom session; manual 200% zoom remains outside this "
+                "automated evidence."
             ),
             "result": "passed" if passed else "failed",
         }
         (output / "browser-audit.json").write_text(
             json.dumps(result, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
         )
-        print(json.dumps({"result": result["result"], "output": str(output)}))
+        print(json.dumps({"result": result["result"], "output": _display_path(output)}))
         return 0 if passed else 1
     finally:
         process.terminate()
