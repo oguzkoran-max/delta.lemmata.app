@@ -220,6 +220,12 @@ Repository çalışma kopyası 11 Temmuz 2026'da Google Drive'dan
 eklenmiştir. Bu operasyon P003'ün implementation veya acceptance sonucunu
 değiştirmez. Karar ve doğrulama kapıları ADR-0010'da kayıtlıdır.
 
+GitHub CI'nin varsayılan tek-commit checkout'u tarihsel provenance commit'lerini
+çözemediği için verify işi tekrar tekrar başarısız görünüyordu. `f7a75b0` hotfix'i
+verify checkout'una `fetch-depth: 0` ekledi; `0b0b349` ile main'e alındı.
+GitHub run `29167750356` ve main run `29167865311` verify, SBOM/audit ve container
+işlerinde geçti. Ayrıntı `provenance/evidence/P004/ci-shallow-history-failure.md`.
+
 Sonraki ticket acceptance kapılarında izlenecekler:
 
 - Aday Collodi eserlerinin item-level source, edition ve rights audit'i

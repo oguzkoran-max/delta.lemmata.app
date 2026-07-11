@@ -15,6 +15,10 @@ bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayr
 actions, üç seviyeli validation ve görsel Corpus Review. Ayrıntı:
 `docs/development/p004-metadata-ux-decisions.md`.
 
+**CI durumu:** GitHub shallow-checkout kaynaklı provenance hatası `f7a75b0` ile
+düzeltildi ve `0b0b349` ile main'e alındı. Hotfix run `29167750356` ve main run
+`29167865311` verify, SBOM/audit ve container işlerinde tamamen yeşildir.
+
 ## Önce Oku
 
 1. `START_HERE.md`

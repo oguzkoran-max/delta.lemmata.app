@@ -29,8 +29,15 @@
   "claim_ids": ["CE-09", "CE-13"],
   "threat_ids": ["RP-01", "RP-02", "EPI-01", "EPI-07"],
   "decision_ids": ["HD-20260711-0009"],
-  "prompt_event_ids": ["PE-20260711-0009", "PE-20260711-0010"],
-  "commit_ids": ["233f0b37737dd8ab017653c4af911036f5ea04ca"],
+  "prompt_event_ids": [
+    "PE-20260711-0009",
+    "PE-20260711-0010",
+    "PE-20260711-0011"
+  ],
+  "commit_ids": [
+    "233f0b37737dd8ab017653c4af911036f5ea04ca",
+    "fc3c2462408c20ef363b929a0550720d44bac65f"
+  ],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -41,7 +48,8 @@
     "docs/development/p004-metadata-ux-decisions.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md",
-    "docs/methodology/pinocchio-diachronic-worked-example.md"
+    "docs/methodology/pinocchio-diachronic-worked-example.md",
+    "provenance/evidence/P004/ci-shallow-history-failure.md"
   ],
   "acceptance": [
     {
@@ -90,8 +98,34 @@
   "changed_files": [
     "P004 execution brief, native PromptEvent link, and in-progress Ticket",
     "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary",
-    "Human-approved metadata interaction defaults and accessible visual Corpus Review contract"
+    "Human-approved metadata interaction defaults and accessible visual Corpus Review contract",
+    "Full-history CI checkout repair, regression test, failed-run diagnosis, and green branch/main verification"
   ],
-  "commands": [],
+  "commands": [
+    {
+      "command": "gh run view 29165815682 --log-failed",
+      "exit_code": 0,
+      "result": "The failed Linux verify job exposed 61 unresolved historical commits under the default one-commit shallow checkout; the container job passed.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The CI hotfix and post-merge main tree each passed 233 tests, 100% measured statement and branch coverage, and every local project gate.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "gh run watch 29167750356 --exit-status",
+      "exit_code": 0,
+      "result": "The isolated hotfix branch passed GitHub verify, SBOM/audit, and Linux container jobs.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "gh run watch 29167865311 --exit-status",
+      "exit_code": 0,
+      "result": "The main branch passed GitHub verify, SBOM/audit, and Linux container jobs after integration.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    }
+  ],
   "blockers": []
 }
