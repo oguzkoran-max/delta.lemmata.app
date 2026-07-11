@@ -1,0 +1,112 @@
+{
+  "profile_version": "corpus-vocabularies-v1",
+  "adaptation_statuses": [
+    "adaptation",
+    "not_applicable",
+    "original",
+    "retelling",
+    "translation",
+    "unknown"
+  ],
+  "asset_types": [
+    "annotation",
+    "derived_output",
+    "edition",
+    "markup",
+    "normalized_text",
+    "scan",
+    "transcription",
+    "underlying_work"
+  ],
+  "audiences": [
+    "adult",
+    "children",
+    "general",
+    "mixed",
+    "not_applicable",
+    "other",
+    "scholarly",
+    "unknown",
+    "young_adult"
+  ],
+  "author_kinds": [
+    "anonymous",
+    "collective",
+    "person",
+    "unknown"
+  ],
+  "authority_schemes": [
+    "isni",
+    "orcid",
+    "other",
+    "viaf",
+    "wikidata"
+  ],
+  "collection_statuses": [
+    "anthology_item",
+    "collection",
+    "compilation",
+    "independent_work",
+    "not_applicable",
+    "serial_installment",
+    "unknown"
+  ],
+  "contributor_roles": [
+    "adapter",
+    "author",
+    "compiler",
+    "editor",
+    "translator"
+  ],
+  "date_modes": [
+    "approximate",
+    "exact",
+    "range",
+    "unknown"
+  ],
+  "genres": [
+    "biography",
+    "children_fiction",
+    "criticism",
+    "essay",
+    "letters",
+    "memoir",
+    "not_applicable",
+    "novel",
+    "other",
+    "poetry",
+    "short_fiction",
+    "theatre",
+    "travel_writing",
+    "unknown"
+  ],
+  "normalization_profiles": [
+    "custom",
+    "nfc_validated_v1",
+    "none",
+    "unknown"
+  ],
+  "permission_states": [
+    "permitted",
+    "prohibited",
+    "unknown"
+  ],
+  "rights_statuses": [
+    "analysis_only",
+    "excluded",
+    "permission_required",
+    "unknown",
+    "verified_open"
+  ],
+  "source_types": [
+    "critical_edition",
+    "digital_library",
+    "institutional_repository",
+    "other",
+    "personal_transcription",
+    "print_edition",
+    "publisher_edition",
+    "unknown",
+    "web_edition"
+  ]
+}

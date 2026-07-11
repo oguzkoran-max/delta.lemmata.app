@@ -33,7 +33,8 @@
     "PE-20260711-0009",
     "PE-20260711-0010",
     "PE-20260711-0011",
-    "PE-20260711-0012"
+    "PE-20260711-0012",
+    "PE-20260711-0013"
   ],
   "commit_ids": [
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
@@ -47,17 +48,23 @@
     "prompts/P004-start.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/p004-metadata-ux-decisions.md",
+    "docs/development/p004-domain-model.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md",
     "docs/methodology/pinocchio-diachronic-worked-example.md",
-    "provenance/evidence/P004/ci-shallow-history-failure.md"
+    "provenance/evidence/P004/ci-shallow-history-failure.md",
+    "provenance/evidence/P004/domain-model-validation.md"
   ],
   "acceptance": [
     {
       "id": "P004-AC-01",
       "criterion": "A versioned schema distinguishes file, asset, independent work, edition, and source identities; documents chronology, genre, audience, adaptation, collection, and normalization fields; and rejects missing required relationships.",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "docs/development/p004-domain-model.md",
+        "schemas/corpus-inventory.schema.json",
+        "tests/test_corpus.py"
+      ]
     },
     {
       "id": "P004-AC-02",
@@ -69,19 +76,29 @@
       "id": "P004-AC-03",
       "criterion": "The rights state machine preserves verified-open, analysis-only, permission-required, unknown, and excluded states while independently recording upload, analysis, export, and public redistribution permissions; unknown or permission-required assets cannot qualify for raw public export.",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "schemas/asset-rights-v2.schema.json",
+        "tests/test_corpus.py",
+        "tests/test_schemas.py"
+      ]
     },
     {
       "id": "P004-AC-04",
       "criterion": "Canonical inventory hashing is invariant to upload order and deterministic across clean reruns, while any semantic metadata or rights change alters the hash and invalidates dependent run identity.",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "docs/development/p004-domain-model.md",
+        "tests/test_corpus.py"
+      ]
     },
     {
       "id": "P004-AC-05",
       "criterion": "Style Over Time readiness requires at least three chronology points and six independent works; smaller corpora are machine-readably and visibly forced to exploratory status without presenting the threshold as scientific sufficiency or confound removal.",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "docs/development/p004-domain-model.md",
+        "tests/test_corpus.py"
+      ]
     },
     {
       "id": "P004-AC-06",
@@ -101,7 +118,10 @@
     "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary",
     "Human-approved metadata interaction defaults and accessible visual Corpus Review contract",
     "Full-history CI checkout repair, regression test, failed-run diagnosis, and green branch/main verification",
-    "Human-approved Corpus workflow, purpose-aware field, teaching, and implementation-order contract"
+    "Human-approved Corpus workflow, purpose-aware field, teaching, and implementation-order contract",
+    "Versioned corpus domain, immutable P003 catalog projection, multi-layer rights dependencies, and generated schemas",
+    "Purpose-aware actionable validation, conservative chronology readiness, canonical hashing, invalidation binding, and deterministic fixtures",
+    "Retained failed attempts plus three-pass adversarial domain-model review"
   ],
   "commands": [
     {
@@ -127,6 +147,30 @@
       "exit_code": 0,
       "result": "The main branch passed GitHub verify, SBOM/audit, and Linux container jobs after integration.",
       "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "uv run ruff check ...",
+      "exit_code": 127,
+      "result": "The host shell had no uv executable; this invocation was retained as a failure and replaced by the repository's canonical .venv and verify commands.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "Intermediate full-gate attempts correctly stopped on Ruff formatting and then on the no-remote-endpoint source scan; neither partial run was treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The stable domain-model snapshot passed 318 tests, 100% of 1,510 measured statements and 392 measured branches, strict typing, metadata, record-integrity, repository, supply-chain, and R-lock gates.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/check_records.py",
+      "exit_code": 2,
+      "result": "The guessed convenience script did not exist; canonical record-integrity and schema pytest targets were used instead and passed 31 tests.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
     }
   ],
   "blockers": []

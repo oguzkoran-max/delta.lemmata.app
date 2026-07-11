@@ -1,0 +1,1190 @@
+{
+  "$defs": {
+    "ActionPermissions": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis": {
+          "$ref": "#/$defs/PermissionState"
+        },
+        "export": {
+          "$ref": "#/$defs/PermissionState"
+        },
+        "public_redistribution": {
+          "$ref": "#/$defs/PermissionState"
+        },
+        "upload": {
+          "$ref": "#/$defs/PermissionState"
+        }
+      },
+      "required": [
+        "upload",
+        "analysis",
+        "export",
+        "public_redistribution"
+      ],
+      "title": "ActionPermissions",
+      "type": "object"
+    },
+    "AssetId": {
+      "pattern": "^asset_[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    },
+    "AssetRecord": {
+      "additionalProperties": false,
+      "description": "One validated analyzed TXT mapped to one independent work in v0.1.",
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "edition_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Edition Id",
+          "type": "string"
+        },
+        "file_label": {
+          "minLength": 1,
+          "title": "File Label",
+          "type": "string"
+        },
+        "line_count": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Count"
+        },
+        "mapping_confirmed": {
+          "title": "Mapping Confirmed",
+          "type": "boolean"
+        },
+        "normalization_notes": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Normalization Notes"
+        },
+        "normalization_profile": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Normalization Profile",
+          "type": "string"
+        },
+        "rights_asset_ids": {
+          "items": {
+            "$ref": "#/$defs/AssetId"
+          },
+          "minItems": 1,
+          "title": "Rights Asset Ids",
+          "type": "array",
+          "uniqueItems": true
+        },
+        "rights_chain_confirmed": {
+          "title": "Rights Chain Confirmed",
+          "type": "boolean"
+        },
+        "source_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "token_count": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Token Count"
+        },
+        "work_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Work Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asset_id",
+        "file_label",
+        "content_sha256",
+        "work_id",
+        "edition_id",
+        "source_id",
+        "rights_asset_ids",
+        "rights_chain_confirmed",
+        "normalization_profile",
+        "mapping_confirmed"
+      ],
+      "title": "AssetRecord",
+      "type": "object"
+    },
+    "AssetRightsRecord": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "permissions": {
+                "properties": {
+                  "public_redistribution": {
+                    "const": "permitted"
+                  }
+                },
+                "required": [
+                  "public_redistribution"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "license": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "permissions": {
+                "properties": {
+                  "export": {
+                    "const": "permitted"
+                  }
+                },
+                "required": [
+                  "export"
+                ]
+              },
+              "rights_status": {
+                "const": "verified_open"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "rights_status": {
+                "const": "analysis_only"
+              }
+            },
+            "required": [
+              "rights_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "permissions": {
+                "properties": {
+                  "analysis": {
+                    "const": "permitted"
+                  },
+                  "export": {
+                    "const": "prohibited"
+                  },
+                  "public_redistribution": {
+                    "const": "prohibited"
+                  },
+                  "upload": {
+                    "const": "permitted"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "rights_status": {
+                "const": "excluded"
+              }
+            },
+            "required": [
+              "rights_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "permissions": {
+                "properties": {
+                  "analysis": {
+                    "const": "prohibited"
+                  },
+                  "export": {
+                    "const": "prohibited"
+                  },
+                  "public_redistribution": {
+                    "const": "prohibited"
+                  },
+                  "upload": {
+                    "const": "prohibited"
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "permissions": {
+                "anyOf": [
+                  {
+                    "properties": {
+                      "upload": {
+                        "const": "permitted"
+                      }
+                    },
+                    "required": [
+                      "upload"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "analysis": {
+                        "const": "permitted"
+                      }
+                    },
+                    "required": [
+                      "analysis"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "export": {
+                        "const": "permitted"
+                      }
+                    },
+                    "required": [
+                      "export"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "public_redistribution": {
+                        "const": "permitted"
+                      }
+                    },
+                    "required": [
+                      "public_redistribution"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "permissions"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              }
+            },
+            "required": [
+              "evidence"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "rights_status": {
+                "const": "verified_open"
+              }
+            },
+            "required": [
+              "rights_status"
+            ]
+          },
+          "then": {
+            "properties": {
+              "evidence": {
+                "minItems": 1
+              },
+              "license": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "evidence",
+              "license"
+            ]
+          }
+        }
+      ],
+      "description": "A human-confirmed record, not an automated legal conclusion.",
+      "properties": {
+        "assessed_at_utc": {
+          "format": "date-time",
+          "pattern": "(?:Z|[+-]00:00)$",
+          "title": "Assessed At Utc",
+          "type": "string"
+        },
+        "assessed_by": {
+          "minLength": 1,
+          "title": "Assessed By",
+          "type": "string"
+        },
+        "asset_id": {
+          "pattern": "^asset_[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+          "title": "Asset Id",
+          "type": "string"
+        },
+        "asset_type": {
+          "$ref": "#/$defs/AssetType"
+        },
+        "evidence": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/RightsEvidence"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "jurisdiction": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Jurisdiction"
+        },
+        "license": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "License"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        },
+        "permissions": {
+          "$ref": "#/$defs/ActionPermissions"
+        },
+        "rights_status": {
+          "$ref": "#/$defs/RightsStatus"
+        },
+        "schema_version": {
+          "const": "2.0.0",
+          "default": "2.0.0",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Source Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "asset_id",
+        "source_id",
+        "asset_type",
+        "rights_status",
+        "permissions",
+        "assessed_by",
+        "assessed_at_utc"
+      ],
+      "title": "AssetRightsRecord",
+      "type": "object"
+    },
+    "AssetType": {
+      "enum": [
+        "underlying_work",
+        "edition",
+        "scan",
+        "transcription",
+        "markup",
+        "annotation",
+        "normalized_text",
+        "derived_output"
+      ],
+      "title": "AssetType",
+      "type": "string"
+    },
+    "AuthorKind": {
+      "enum": [
+        "person",
+        "collective",
+        "anonymous",
+        "unknown"
+      ],
+      "title": "AuthorKind",
+      "type": "string"
+    },
+    "AuthorRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "author_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Author Id",
+          "type": "string"
+        },
+        "authority_identifiers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AuthorityIdentifier"
+          },
+          "title": "Authority Identifiers",
+          "type": "array"
+        },
+        "display_name": {
+          "minLength": 1,
+          "title": "Display Name",
+          "type": "string"
+        },
+        "kind": {
+          "$ref": "#/$defs/AuthorKind"
+        }
+      },
+      "required": [
+        "author_id",
+        "display_name",
+        "kind"
+      ],
+      "title": "AuthorRecord",
+      "type": "object"
+    },
+    "AuthorityIdentifier": {
+      "additionalProperties": false,
+      "properties": {
+        "scheme": {
+          "$ref": "#/$defs/AuthorityScheme"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "pattern": "^https?://[^\\s]+$",
+          "title": "Url"
+        },
+        "value": {
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scheme",
+        "value"
+      ],
+      "title": "AuthorityIdentifier",
+      "type": "object"
+    },
+    "AuthorityScheme": {
+      "enum": [
+        "viaf",
+        "wikidata",
+        "isni",
+        "orcid",
+        "other"
+      ],
+      "title": "AuthorityScheme",
+      "type": "string"
+    },
+    "ContributorRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "author_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Author Id",
+          "type": "string"
+        },
+        "role": {
+          "$ref": "#/$defs/ContributorRole"
+        }
+      },
+      "required": [
+        "author_id",
+        "role"
+      ],
+      "title": "ContributorRecord",
+      "type": "object"
+    },
+    "ContributorRole": {
+      "enum": [
+        "author",
+        "editor",
+        "translator",
+        "adapter",
+        "compiler"
+      ],
+      "title": "ContributorRole",
+      "type": "string"
+    },
+    "DateMode": {
+      "enum": [
+        "exact",
+        "approximate",
+        "range",
+        "unknown"
+      ],
+      "title": "DateMode",
+      "type": "string"
+    },
+    "DateValue": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "end_year": {
+                "type": "null"
+              },
+              "start_year": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "enum": [
+                  "exact",
+                  "approximate"
+                ]
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "end_year": {
+                "type": "null"
+              },
+              "start_year": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "start_year"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "range"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "properties": {
+              "end_year": {
+                "type": "integer"
+              },
+              "start_year": {
+                "type": "integer"
+              }
+            },
+            "required": [
+              "start_year",
+              "end_year"
+            ]
+          }
+        }
+      ],
+      "description": "A date assertion that preserves uncertainty instead of inventing precision.",
+      "properties": {
+        "display_label": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Label"
+        },
+        "end_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Year"
+        },
+        "mode": {
+          "$ref": "#/$defs/DateMode"
+        },
+        "start_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Year"
+        }
+      },
+      "required": [
+        "mode"
+      ],
+      "title": "DateValue",
+      "type": "object"
+    },
+    "EditionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "citation": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Citation"
+        },
+        "edition_date": {
+          "$ref": "#/$defs/DateValue"
+        },
+        "edition_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Edition Id",
+          "type": "string"
+        },
+        "edition_label": {
+          "minLength": 1,
+          "title": "Edition Label",
+          "type": "string"
+        },
+        "work_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Work Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "edition_id",
+        "work_id",
+        "edition_label",
+        "edition_date"
+      ],
+      "title": "EditionRecord",
+      "type": "object"
+    },
+    "PermissionState": {
+      "enum": [
+        "permitted",
+        "prohibited",
+        "unknown"
+      ],
+      "title": "PermissionState",
+      "type": "string"
+    },
+    "PurposeId": {
+      "enum": [
+        "text_proximity",
+        "group_comparison",
+        "style_over_time"
+      ],
+      "title": "PurposeId",
+      "type": "string"
+    },
+    "RightsEvidence": {
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "evidence_type": {
+            "const": "url"
+          }
+        },
+        "required": [
+          "evidence_type"
+        ]
+      },
+      "properties": {
+        "evidence_type": {
+          "enum": [
+            "url",
+            "citation",
+            "statement"
+          ],
+          "title": "Evidence Type",
+          "type": "string"
+        },
+        "value": {
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_type",
+        "value"
+      ],
+      "then": {
+        "properties": {
+          "value": {
+            "format": "uri",
+            "pattern": "^https?://[^\\s]+$"
+          }
+        }
+      },
+      "title": "RightsEvidence",
+      "type": "object"
+    },
+    "RightsStatus": {
+      "enum": [
+        "verified_open",
+        "analysis_only",
+        "permission_required",
+        "unknown",
+        "excluded"
+      ],
+      "title": "RightsStatus",
+      "type": "string"
+    },
+    "SourceRecord": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_url"
+            ]
+          },
+          "then": {
+            "required": [
+              "accessed_on"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "accessed_on": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "accessed_on"
+            ]
+          },
+          "then": {
+            "required": [
+              "source_url"
+            ]
+          }
+        }
+      ],
+      "anyOf": [
+        {
+          "properties": {
+            "source_url": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_url"
+          ]
+        },
+        {
+          "properties": {
+            "bibliographic_citation": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "bibliographic_citation"
+          ]
+        }
+      ],
+      "properties": {
+        "accessed_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accessed On"
+        },
+        "bibliographic_citation": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bibliographic Citation"
+        },
+        "edition_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Edition Id",
+          "type": "string"
+        },
+        "source_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_type": {
+          "$ref": "#/$defs/VocabularyTerm"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "format": "uri",
+              "maxLength": 2083,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "pattern": "^https?://[^\\s]+$",
+          "title": "Source Url"
+        },
+        "title": {
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_id",
+        "edition_id",
+        "source_type",
+        "title"
+      ],
+      "title": "SourceRecord",
+      "type": "object"
+    },
+    "TermKind": {
+      "enum": [
+        "controlled",
+        "custom",
+        "unknown",
+        "not_applicable"
+      ],
+      "title": "TermKind",
+      "type": "string"
+    },
+    "ValidatedFileRecord": {
+      "additionalProperties": false,
+      "description": "Stable P003 receipt projection; transient storage IDs are excluded.",
+      "properties": {
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "file_label": {
+          "minLength": 1,
+          "title": "File Label",
+          "type": "string"
+        },
+        "intake_profile": {
+          "pattern": "^ingestion-limits-v[0-9]+$",
+          "title": "Intake Profile",
+          "type": "string"
+        },
+        "status": {
+          "const": "validated-for-intake",
+          "default": "validated-for-intake",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file_label",
+        "content_sha256",
+        "intake_profile"
+      ],
+      "title": "ValidatedFileRecord",
+      "type": "object"
+    },
+    "VocabularyTerm": {
+      "additionalProperties": false,
+      "description": "A normalized chart value plus the wording shown to the researcher.",
+      "properties": {
+        "kind": {
+          "$ref": "#/$defs/TermKind"
+        },
+        "label": {
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "label",
+        "kind"
+      ],
+      "title": "VocabularyTerm",
+      "type": "object"
+    },
+    "WorkRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "adaptation": {
+          "$ref": "#/$defs/VocabularyTerm"
+        },
+        "audience": {
+          "$ref": "#/$defs/VocabularyTerm"
+        },
+        "collection": {
+          "$ref": "#/$defs/VocabularyTerm"
+        },
+        "contributors": {
+          "items": {
+            "$ref": "#/$defs/ContributorRecord"
+          },
+          "minItems": 1,
+          "title": "Contributors",
+          "type": "array"
+        },
+        "first_publication": {
+          "$ref": "#/$defs/DateValue"
+        },
+        "genre": {
+          "$ref": "#/$defs/VocabularyTerm"
+        },
+        "group_label": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Group Label"
+        },
+        "language": {
+          "pattern": "^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$",
+          "title": "Language",
+          "type": "string"
+        },
+        "title_english": {
+          "anyOf": [
+            {
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title English"
+        },
+        "title_original": {
+          "minLength": 1,
+          "title": "Title Original",
+          "type": "string"
+        },
+        "work_id": {
+          "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+          "title": "Work Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "work_id",
+        "title_original",
+        "language",
+        "contributors",
+        "first_publication",
+        "genre",
+        "audience",
+        "adaptation",
+        "collection"
+      ],
+      "title": "WorkRecord",
+      "type": "object"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/corpus-inventory.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assets": {
+      "items": {
+        "$ref": "#/$defs/AssetRecord"
+      },
+      "minItems": 1,
+      "title": "Assets",
+      "type": "array"
+    },
+    "authors": {
+      "items": {
+        "$ref": "#/$defs/AuthorRecord"
+      },
+      "minItems": 1,
+      "title": "Authors",
+      "type": "array"
+    },
+    "editions": {
+      "items": {
+        "$ref": "#/$defs/EditionRecord"
+      },
+      "minItems": 1,
+      "title": "Editions",
+      "type": "array"
+    },
+    "purpose": {
+      "$ref": "#/$defs/PurposeId"
+    },
+    "rights": {
+      "items": {
+        "$ref": "#/$defs/AssetRightsRecord"
+      },
+      "minItems": 1,
+      "title": "Rights",
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "corpus-inventory-v1",
+      "default": "corpus-inventory-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceRecord"
+      },
+      "minItems": 1,
+      "title": "Sources",
+      "type": "array"
+    },
+    "validated_files": {
+      "items": {
+        "$ref": "#/$defs/ValidatedFileRecord"
+      },
+      "minItems": 1,
+      "title": "Validated Files",
+      "type": "array"
+    },
+    "vocabulary_profile": {
+      "const": "corpus-vocabularies-v1",
+      "default": "corpus-vocabularies-v1",
+      "title": "Vocabulary Profile",
+      "type": "string"
+    },
+    "works": {
+      "items": {
+        "$ref": "#/$defs/WorkRecord"
+      },
+      "minItems": 1,
+      "title": "Works",
+      "type": "array"
+    }
+  },
+  "required": [
+    "purpose",
+    "authors",
+    "works",
+    "editions",
+    "sources",
+    "assets",
+    "validated_files",
+    "rights"
+  ],
+  "title": "CorpusInventory",
+  "type": "object"
+}

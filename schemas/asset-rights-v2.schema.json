@@ -1,0 +1,391 @@
+{
+  "$defs": {
+    "ActionPermissions": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis": {
+          "$ref": "#/$defs/PermissionState"
+        },
+        "export": {
+          "$ref": "#/$defs/PermissionState"
+        },
+        "public_redistribution": {
+          "$ref": "#/$defs/PermissionState"
+        },
+        "upload": {
+          "$ref": "#/$defs/PermissionState"
+        }
+      },
+      "required": [
+        "upload",
+        "analysis",
+        "export",
+        "public_redistribution"
+      ],
+      "title": "ActionPermissions",
+      "type": "object"
+    },
+    "AssetType": {
+      "enum": [
+        "underlying_work",
+        "edition",
+        "scan",
+        "transcription",
+        "markup",
+        "annotation",
+        "normalized_text",
+        "derived_output"
+      ],
+      "title": "AssetType",
+      "type": "string"
+    },
+    "PermissionState": {
+      "enum": [
+        "permitted",
+        "prohibited",
+        "unknown"
+      ],
+      "title": "PermissionState",
+      "type": "string"
+    },
+    "RightsEvidence": {
+      "additionalProperties": false,
+      "if": {
+        "properties": {
+          "evidence_type": {
+            "const": "url"
+          }
+        },
+        "required": [
+          "evidence_type"
+        ]
+      },
+      "properties": {
+        "evidence_type": {
+          "enum": [
+            "url",
+            "citation",
+            "statement"
+          ],
+          "title": "Evidence Type",
+          "type": "string"
+        },
+        "value": {
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_type",
+        "value"
+      ],
+      "then": {
+        "properties": {
+          "value": {
+            "format": "uri",
+            "pattern": "^https?://[^\\s]+$"
+          }
+        }
+      },
+      "title": "RightsEvidence",
+      "type": "object"
+    },
+    "RightsStatus": {
+      "enum": [
+        "verified_open",
+        "analysis_only",
+        "permission_required",
+        "unknown",
+        "excluded"
+      ],
+      "title": "RightsStatus",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/asset-rights-v2.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "permissions": {
+            "properties": {
+              "public_redistribution": {
+                "const": "permitted"
+              }
+            },
+            "required": [
+              "public_redistribution"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "license": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "permissions": {
+            "properties": {
+              "export": {
+                "const": "permitted"
+              }
+            },
+            "required": [
+              "export"
+            ]
+          },
+          "rights_status": {
+            "const": "verified_open"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rights_status": {
+            "const": "analysis_only"
+          }
+        },
+        "required": [
+          "rights_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "permissions": {
+            "properties": {
+              "analysis": {
+                "const": "permitted"
+              },
+              "export": {
+                "const": "prohibited"
+              },
+              "public_redistribution": {
+                "const": "prohibited"
+              },
+              "upload": {
+                "const": "permitted"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rights_status": {
+            "const": "excluded"
+          }
+        },
+        "required": [
+          "rights_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "permissions": {
+            "properties": {
+              "analysis": {
+                "const": "prohibited"
+              },
+              "export": {
+                "const": "prohibited"
+              },
+              "public_redistribution": {
+                "const": "prohibited"
+              },
+              "upload": {
+                "const": "prohibited"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "permissions": {
+            "anyOf": [
+              {
+                "properties": {
+                  "upload": {
+                    "const": "permitted"
+                  }
+                },
+                "required": [
+                  "upload"
+                ]
+              },
+              {
+                "properties": {
+                  "analysis": {
+                    "const": "permitted"
+                  }
+                },
+                "required": [
+                  "analysis"
+                ]
+              },
+              {
+                "properties": {
+                  "export": {
+                    "const": "permitted"
+                  }
+                },
+                "required": [
+                  "export"
+                ]
+              },
+              {
+                "properties": {
+                  "public_redistribution": {
+                    "const": "permitted"
+                  }
+                },
+                "required": [
+                  "public_redistribution"
+                ]
+              }
+            ]
+          }
+        },
+        "required": [
+          "permissions"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "minItems": 1
+          }
+        },
+        "required": [
+          "evidence"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rights_status": {
+            "const": "verified_open"
+          }
+        },
+        "required": [
+          "rights_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "evidence": {
+            "minItems": 1
+          },
+          "license": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence",
+          "license"
+        ]
+      }
+    }
+  ],
+  "description": "A human-confirmed record, not an automated legal conclusion.",
+  "properties": {
+    "assessed_at_utc": {
+      "format": "date-time",
+      "pattern": "(?:Z|[+-]00:00)$",
+      "title": "Assessed At Utc",
+      "type": "string"
+    },
+    "assessed_by": {
+      "minLength": 1,
+      "title": "Assessed By",
+      "type": "string"
+    },
+    "asset_id": {
+      "pattern": "^asset_[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+      "title": "Asset Id",
+      "type": "string"
+    },
+    "asset_type": {
+      "$ref": "#/$defs/AssetType"
+    },
+    "evidence": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RightsEvidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "jurisdiction": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Jurisdiction"
+    },
+    "license": {
+      "anyOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "License"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    },
+    "permissions": {
+      "$ref": "#/$defs/ActionPermissions"
+    },
+    "rights_status": {
+      "$ref": "#/$defs/RightsStatus"
+    },
+    "schema_version": {
+      "const": "2.0.0",
+      "default": "2.0.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_id": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+      "title": "Source Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "asset_id",
+    "source_id",
+    "asset_type",
+    "rights_status",
+    "permissions",
+    "assessed_by",
+    "assessed_at_utc"
+  ],
+  "title": "AssetRightsRecord",
+  "type": "object"
+}
