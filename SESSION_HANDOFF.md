@@ -1,14 +1,14 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-10
+**Güncellendi:** 2026-07-11
 
-**Aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair P003'ten önce bekliyor
+**Aşama:** P002 ve Claude/Codex audit düzeltmeleri tamamlandı; canlı ürün kapısı geçti ve kullanıcı main entegrasyonuna devam onayı verdi
 
 **Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
 
-**Aktif ticket:** Yok; P002 bağımsız review cycle hazırlanmış durumda
+**Aktif ticket:** Yok; P002 main entegrasyonu sıradaki işlemdir
 
-**Sıradaki tek ana iş:** Claude ile P002 design/code/content independent audit and repair
+**Sıradaki tek ana iş:** `codex/p002-audit-corrections` main'e alınır ve temiz doğrulamadan sonra P003 açılır
 
 ## Önce Oku
 
@@ -20,8 +20,10 @@
 6. `provenance/tickets/P002.json`
 7. `provenance/evidence/P002/report.md`
 8. `provenance/evidence/P002/clean-clone-verification.md`
+9. `provenance/evidence/P002/codex-correction/report.md`
+10. `provenance/evidence/P002/codex-correction/adversarial-review.md`
 
-## Şimdi Çalıştırılacak Bağımsız Denetim
+## Uygulanan Bağımsız Denetim Talimatı
 
 Claude Code'a yalnız şu mesaj gönderilir:
 
@@ -34,19 +36,71 @@ P0/P1 ve düşük riskli P2 bulgularını `claude/p002-independent-audit` branch
 düzeltecek. Main'e merge etmeyecek. Bulgular, before/after kanıtı, testler, clean
 clone ve commit'ler Codex'in son denetimine bırakılacak.
 
+## Claude Bağımsız Denetim Sonucu (2026-07-10, TAMAMLANDI)
+
+- **Branch:** `claude/p002-independent-audit` (main'e merge EDİLMEDİ). Commit'ler:
+  `0788a6e` (apply audit fixes) + review-evidence closure commit'i.
+- **Hüküm:** kabul, 91/100. Açık P0/P1 = 0. Altı bağımsız mercek (product,
+  visual/responsive, accessibility, python/streamlit, content/DH, security/FAIR).
+- **Uygulanan (7):** sidebar aktif satır WCAG AA kontrastı (teal 2.5→6.3:1),
+  kullanıcı metninden "P003" jargonu çıkarıldı, üç ölü accent token silindi,
+  Guided/Research metni gelecek zamana çekildi, iki disabled butona help metni,
+  paylaşımlı experiment-map helper, `runOnSave=false`.
+- **Ertelenen (Codex/owner kararı):** kullanılmayan `pydantic` bağımlılığı,
+  boundary-panel tekrarı (IA), önceki run/ticket provenance nitleri (SEC-1/3/4,
+  eski kanıt değiştirilemez), P014 egress, ve P3 kuyruğu.
+- **Kanıt:** `provenance/evidence/P002/claude-independent-review/` (report.md,
+  findings.json, fix-matrix.md, before-after.md, browser-audit.json, smoke.json,
+  contrast-proof.json, network-observations.json, clean-clone-verification.md,
+  5 screenshot). Provenance: `PE-20260710-0004`, `RUN-20260710-0005/0006`,
+  bağlı `HD-20260710-0005`. Eski P002 acceptance kanıtı değiştirilmedi.
+- **Codex'e:** report.md "For Codex to re-examine" listesindeki 5 madde.
+
+## Codex Düzeltme Sonucu (2026-07-11, MERGE ONAYLI)
+
+- **Branch:** `codex/p002-audit-corrections`, Claude branch'i üzerinden açıldı;
+  `main` hâlâ `bef9dcc` ve değiştirilmedi.
+- **Kod commit'leri:** `b53e3087` (arayüz, schema 1.1, replay/test altyapısı) ve
+  `05e7b01c` (zoom kanıtını reflow ile sınırlayan düzeltme) ve `cd7d7b10`
+  (Run artifact hash ve güvenli repository-path doğrulaması).
+- **Düzeltilen merge engelleri:** P002 Ticket artık Claude/Codex PromptEvent,
+  HumanDecision, Run, commit, ajan ve supplemental evidence bağlarını taşıyor;
+  pathless `config_sha256` Run schema 1.1'de kaldırıldı ve eski anlam kayması
+  additive errata + scoped supersession ile kaydedildi.
+- **Arayüz:** mobil sidebar `auto`, bir `h1` + eş düzey `h2` yapısı, disabled
+  nedenleri görünür ve düğme adlarında, P-ticket jargonu yok, yinelenen boundary
+  paneli genel yöntem sınırına dönüştürüldü.
+- **Doğrulama:** clean clone'da 47 test, yüzde 100 measured source coverage ve
+  tüm kapılar geçti. Altı taze Playwright context'i masaüstü, mobil, 640px ve
+  320px reflow, klavye, heading, disabled-state ve observed-request denetimini geçti.
+- **Açıkça iddia edilmeyenler:** gerçek browser-chrome yüzde 200 zoom, manuel
+  screen-reader conformance ve packet capture. Streamlit file-input/sidebar-toggle
+  adları framework sınırı olarak kayıtlı.
+- **Kanıt:** `provenance/evidence/P002/codex-correction/`,
+  `RUN-20260711-0001/0002`, `PE-20260711-0001`, `HD-20260711-0001`.
+- **Son denetim:** aynı bağımsız adversarial denetçi iki P2 düzeltmesini yeniden
+  sınadı; açık P0/P1/P2 bulmadı ve `MERGE-READY` hükmü verdi.
+- **Canlı ürün kapısı:** default, 390px ve 320px görünümler; üç research purpose,
+  Research mode, Style Over Time sınırı, disabled durumlar ve konsol denetlendi.
+  Açık P0/P1/P2 yok. Güvenilmez in-app raster kanıt olarak reddedildi.
+- **Kullanıcı kararı:** `devam edelim` isteği, hemen önce açıklanan sıra kapsamında
+  P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
+- **Sonraki adım:** main entegrasyonunu temiz doğrula, ardından P003'ü aç.
+
 ## P002 Sonucu
 
 - Delta ilk ekranda doğrudan Streamlit workbench olarak açılıyor.
 - Text Proximity, Group Comparison ve Style Over Time ilk sınıf research purpose.
 - Guided ve Research shell seçenekleri var; çalışmayan sonraki aşamalar disabled.
-- 90 user-facing string tek English registry içinde; language selector yok.
+- 94 user-facing string tek English registry içinde; language selector yok.
 - Empty, loading, error, cancelled ve complete için ortak versioned contract var.
 - Health/build bilgisi allowlist kullanıyor; path veya secret-shaped build ID reddediliyor.
 - Runtime AI, analytics, login, permanent storage ve declared external endpoint yok.
-- Desktop/mobile browser geometry, keyboard, copy denylist ve egress-denied testleri geçti.
-- Otomatik doğrulama: 40 test, strict mypy, yüzde 100 measured source coverage.
+- Desktop/mobile/reflow browser geometry, keyboard, copy denylist ve egress-denied testleri geçti.
+- Otomatik doğrulama: 47 test, strict mypy, yüzde 100 measured source coverage.
 - Implementation commit `a888e7c81e5fdae12687903de29d0728f5c7cbd5` yeni klonda yeniden kuruldu ve geçti.
-- P002 Ticket, PromptEvent, iki HumanDecision, iki Run ve sekiz başarısızlık/düzeltme izi bağlı.
+- P002 Ticket; ilgili PromptEvent, HumanDecision, Run, commit, ajan, başarısızlık,
+  errata ve supplemental evidence kayıtlarına makine-okur bağlarla bağlı.
 
 ## Doğrulanmamış Sınırlar
 

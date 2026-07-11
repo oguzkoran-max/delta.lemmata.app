@@ -104,3 +104,36 @@ def test_completed_ticket_requires_close_time() -> None:
     ticket["closed_at_utc"] = None
     with pytest.raises(ValidationError):
         validate_record(ticket, SCHEMAS / "ticket.schema.json")
+
+
+def test_run_schema_1_1_requires_path_qualified_configuration_and_replay() -> None:
+    run = read_json(ROOT / "provenance" / "runs" / "RUN-20260710-0005.json")
+    run["schema_version"] = "1.1.0"
+    run.pop("config_sha256")
+    run["configuration_artifacts"] = [run["input_artifacts"][0]]
+    run["replay"] = {
+        "level": "partial",
+        "working_directory": "repository root",
+        "command": "./scripts/verify.sh",
+        "limitations": ["Browser checks are separate."],
+    }
+    run["command"] = run["replay"]["command"]
+    run["supersedes"] = []
+    validate_record(run, SCHEMAS / "run.schema.json")
+
+    run["config_sha256"] = "0" * 64
+    with pytest.raises(ValidationError):
+        validate_record(run, SCHEMAS / "run.schema.json")
+
+
+def test_ticket_schema_1_1_requires_run_and_supplemental_evidence_links() -> None:
+    ticket = read_json(ROOT / "provenance" / "tickets" / "P002.json")
+    ticket["schema_version"] = "1.1.0"
+    ticket.pop("run_ids", None)
+    ticket.pop("supplemental_evidence", None)
+    with pytest.raises(ValidationError):
+        validate_record(ticket, SCHEMAS / "ticket.schema.json")
+
+    ticket["run_ids"] = ["RUN-20260710-0003"]
+    ticket["supplemental_evidence"] = ["provenance/evidence/P002/report.md"]
+    validate_record(ticket, SCHEMAS / "ticket.schema.json")

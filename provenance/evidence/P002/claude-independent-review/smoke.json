@@ -1,0 +1,43 @@
+{
+  "exceptions": [],
+  "title": [
+    "Set the research purpose"
+  ],
+  "segmented_controls": [
+    "Research purpose",
+    "Analysis mode"
+  ],
+  "buttons": [
+    {
+      "label": "Add metadata table",
+      "disabled": true
+    },
+    {
+      "label": "Continue to parameters",
+      "disabled": true
+    },
+    {
+      "label": "Run analysis",
+      "disabled": true
+    }
+  ],
+  "file_uploaders": [
+    {
+      "label": "Corpus files",
+      "disabled": true
+    }
+  ],
+  "n_selectbox": 0,
+  "n_radio": 0,
+  "catalog_key_count": 92,
+  "after_switch": {
+    "purpose_value": "style_over_time",
+    "mode_value": "research",
+    "style_over_time_question_present": true,
+    "style_over_time_boundary_present": true,
+    "research_body_substring_present": true,
+    "research_body_future_tense": true,
+    "disabled_button_help_present": false
+  },
+  "denylist_phrases_found": []
+}

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P002",
+  "review": "claude-independent-review",
+  "target_url": "http://127.0.0.1:8799/",
+  "build_id": "claude-audit-repair",
+  "audits": [
+    {
+      "viewport": {
+        "vw": 1440,
+        "vh": 1000
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "horizontalOverflow": false,
+      "externalAssets": [],
+      "visibleInViewportControlCount": 5,
+      "disabledVisibleControls": 0,
+      "unnamedVisibleControls": [],
+      "prohibitedCopyHits": [],
+      "buildMarkerPresent": true,
+      "target": "desktop-1440x1000",
+      "screenshot": "provenance/evidence/P002/claude-independent-review/screenshots/desktop-1440x1000.png"
+    },
+    {
+      "viewport": {
+        "vw": 1280,
+        "vh": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "horizontalOverflow": false,
+      "externalAssets": [],
+      "visibleInViewportControlCount": 3,
+      "disabledVisibleControls": 0,
+      "unnamedVisibleControls": [],
+      "prohibitedCopyHits": [],
+      "buildMarkerPresent": true,
+      "target": "desktop-1280x800",
+      "screenshot": "provenance/evidence/P002/claude-independent-review/screenshots/desktop-1280x800.png"
+    },
+    {
+      "viewport": {
+        "vw": 390,
+        "vh": 844
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "horizontalOverflow": false,
+      "externalAssets": [],
+      "visibleInViewportControlCount": 4,
+      "disabledVisibleControls": 0,
+      "unnamedVisibleControls": [],
+      "prohibitedCopyHits": [],
+      "buildMarkerPresent": false,
+      "target": "mobile-390x844",
+      "screenshot": "provenance/evidence/P002/claude-independent-review/screenshots/mobile-390x844.png"
+    },
+    {
+      "viewport": {
+        "vw": 360,
+        "vh": 800
+      },
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "horizontalOverflow": false,
+      "externalAssets": [],
+      "visibleInViewportControlCount": 4,
+      "disabledVisibleControls": 0,
+      "unnamedVisibleControls": [],
+      "prohibitedCopyHits": [],
+      "buildMarkerPresent": false,
+      "target": "mobile-360x800",
+      "screenshot": "provenance/evidence/P002/claude-independent-review/screenshots/mobile-360x800.png"
+    }
+  ],
+  "zoom_check": {
+    "viewport": {
+      "vw": 640,
+      "vh": 800
+    },
+    "scrollWidth": 640,
+    "clientWidth": 640,
+    "horizontalOverflow": false,
+    "externalAssets": [],
+    "visibleInViewportControlCount": 3,
+    "disabledVisibleControls": 0,
+    "unnamedVisibleControls": [],
+    "prohibitedCopyHits": [],
+    "buildMarkerPresent": false,
+    "target": "zoom200-emulated (1280px window at 200% browser zoom -> ~640 CSS px)",
+    "primary_flow_present": true
+  },
+  "result": "passed",
+  "note_build_marker": "The header build meta (version and build id) is hidden by the responsive CSS below 760px, so buildMarkerPresent is expected false at the 390 and 360 mobile viewports and in the 640px zoom emulation; it is present on desktop.",
+  "audit_method": "Headless Chromium (Playwright) DOM geometry, viewport-visible control naming, external asset URL inspection, prohibited-copy denylist scan, and screenshot capture at four viewports plus a 200%-zoom emulation.",
+  "limitations": [
+    "Not a full WCAG conformance assessment; no screen-reader session.",
+    "200% zoom is emulated by halving the CSS layout viewport (640 CSS px for a 1280px window).",
+    "Production proxy, TLS, CORS, Host, CSRF remain assigned to P014."
+  ]
+}

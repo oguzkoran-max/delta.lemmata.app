@@ -1,0 +1,24 @@
+{
+  "wcag_aa_normal_text_min": 4.5,
+  "sidebar_active_row_marker": {
+    "before": {
+      "fg": "#116f63",
+      "bg": "#1c2925",
+      "ratio": 2.5,
+      "passes_aa": false
+    },
+    "after": {
+      "fg": "#63b6a6",
+      "bg": "#1c2925",
+      "ratio": 6.3,
+      "passes_aa": true
+    }
+  },
+  "panel_active_row_marker_unchanged": {
+    "fg": "#116f63",
+    "bg": "#ffffff",
+    "ratio": 6.04,
+    "passes_aa": true
+  },
+  "note": "Only the sidebar (dark #1c2925) active-row number/state was remapped to --delta-teal-on-dark. The same rule on the white right-column panel is unchanged and already passes."
+}

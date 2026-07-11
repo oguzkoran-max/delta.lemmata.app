@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "run_id": "RUN-20260710-0006",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P002"
+  ],
+  "started_at_utc": "2026-07-10T20:28:30Z",
+  "ended_at_utc": "2026-07-10T20:30:40Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "0788a6e94a46df984c88f65be8841e0ef9d3bb24",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "r": "4.5.2",
+    "checkout_type": "new local Git clone without local object sharing, outside the Drive tree"
+  },
+  "command": "git clone --no-local <repo> <temp-clone>; git checkout 0788a6e; ./scripts/bootstrap.sh; ./scripts/verify.sh; git status --porcelain=v1",
+  "exit_code": 0,
+  "config_sha256": "b03193bc62a988e877c0abbed94013fe619c84caca16f5c7b0d4ebb5ce7dce69",
+  "input_artifacts": [
+    {
+      "path": "uv.lock",
+      "sha256": "5d435ec968063c0f4c7120e8974f1e94aef4b421eac265d52e0d7d4ce8ce450e"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P002/claude-independent-review/clean-clone-verification.md",
+      "sha256": "2df94235e52e3a1adf3ff34278d33893daef132e5c796e6d7e004f9c250f41e4"
+    }
+  ],
+  "notes": "Clean-clone rerun of the apply-fixes commit. The fresh clone restored both locks, passed 40 tests at 100% measured Python source coverage and every automated gate, and ended with an empty git status. Browser and scientific-computation evidence were not rerun in this clean-clone check."
+}

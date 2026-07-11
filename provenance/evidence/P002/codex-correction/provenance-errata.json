@@ -1,0 +1,48 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P002",
+  "recorded_at_utc": "2026-07-11T02:49:00Z",
+  "policy": "Prior records and evidence remain unchanged; corrections are additive and field-scoped.",
+  "corrections": [
+    {
+      "subject": "Claude SEC-1 config diagnosis",
+      "original_evidence": "provenance/evidence/P002/claude-independent-review/report.md",
+      "correction": "The legacy digest 7baa8295... is the SHA-256 of pyproject.toml. RUN-20260710-0005 and 0006 instead used the SHA-256 of .streamlit/config.toml, silently changing the pathless field's meaning.",
+      "resolution": "Run schema 1.1 omits the pathless field and requires configuration_artifacts with explicit paths. RUN-20260711-0001 and 0002 use that model."
+    },
+    {
+      "subject": "Claude A11Y-5 disposition",
+      "original_evidence": "provenance/evidence/P002/claude-independent-review/findings.json",
+      "correction": "Streamlit help= did not create aria-describedby on the disabled controls, and the Claude smoke artifact recorded disabled_button_help_present=false.",
+      "resolution": "Disabled button labels now contain the unavailable state and visible explanations remain in the same panels. The native file input and sidebar toggle limitations are disclosed rather than reported as fixed."
+    },
+    {
+      "subject": "Claude 200% zoom wording",
+      "original_evidence": "provenance/evidence/P002/claude-independent-review/browser-audit.json",
+      "correction": "A 640px CSS viewport is a reflow target, not proof of a real browser-chrome 200% zoom session.",
+      "resolution": "The tracked harness labels 640px and 320px as reflow tests. Manual 200% browser zoom remains outside the automated evidence."
+    },
+    {
+      "subject": "P002 audit provenance closure",
+      "original_evidence": "provenance/tickets/P002.json",
+      "correction": "The Claude PromptEvent, Runs, commits, implementation agent, and review evidence were absent from the closed Ticket.",
+      "resolution": "P002 schema 1.1 adds run_ids and supplemental_evidence; the Ticket is extended without deleting its original acceptance evidence."
+    },
+    {
+      "subject": "RUN-20260710-0005 tested-commit chronology",
+      "original_evidence": "provenance/runs/RUN-20260710-0005.json",
+      "correction": "RUN-20260710-0005 ended at 2026-07-10T20:24:30Z, while commit 0788a6e94a46df984c88f65be8841e0ef9d3bb24 was authored and committed at 2026-07-10T20:26:34Z. The run therefore tested the pre-commit working tree, not the named immutable commit.",
+      "resolution": "RUN-20260711-0001 field-scopes supersession of git_commit and tested_snapshot and performs a no-local clean-clone replay against the pre-existing commit cd7d7b1094dfed40a354a2c4ff2da46b662463d2. The historical Run remains unchanged."
+    }
+  ],
+  "unchanged_historical_records": [
+    "RUN-20260710-0001",
+    "RUN-20260710-0002",
+    "RUN-20260710-0003",
+    "RUN-20260710-0004",
+    "RUN-20260710-0005",
+    "RUN-20260710-0006",
+    "PE-20260710-0004",
+    "HD-20260710-0005"
+  ]
+}

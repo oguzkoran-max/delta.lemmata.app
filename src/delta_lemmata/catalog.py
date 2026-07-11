@@ -26,7 +26,6 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.step.evidence": "Evidence",
     "sidebar.state.active": "Active",
     "sidebar.state.locked": "Locked",
-    "sidebar.stage_badge": "P002 · Interface shell",
     "sidebar.boundary_title": "Current boundary",
     "sidebar.boundary_body": "This build does not ingest texts or calculate stylometric results.",
     "build.title": "Build information",
@@ -80,29 +79,45 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "mode.label": "Analysis mode",
     "mode.guided.label": "Guided",
     "mode.guided.body": (
-        "A constrained parameter sweep with method explanations and visible defaults."
+        "Will run a constrained parameter sweep with method explanations and visible defaults."
     ),
     "mode.research.label": "Research",
     "mode.research.body": (
-        "A documented parameter grid with explicit resource limits and complete cell reporting."
+        "Will run a documented parameter grid with explicit resource limits "
+        "and complete cell reporting."
     ),
     "mode.status": "Configuration opens after corpus validation.",
     "corpus.eyebrow": "CORPUS · STEP 2",
     "corpus.title": "Add the research corpus",
     "corpus.body": (
-        "Secure corpus intake is deliberately unavailable until the P003 validation gate passes."
+        "Secure corpus intake is deliberately unavailable until it has been "
+        "implemented and security-tested."
     ),
     "corpus.locked": "Locked for validation",
-    "corpus.uploader": "Corpus files",
+    "corpus.uploader": "Corpus files - unavailable in this preview",
     "corpus.uploader_help": (
         "The validated release will accept documented text and metadata inputs. "
         "This interface shell does not process files."
     ),
-    "corpus.metadata_button": "Add metadata table",
-    "corpus.continue_button": "Continue to parameters",
+    "corpus.disabled_reason": (
+        "These controls are unavailable in this interface preview. Secure corpus "
+        "intake must be implemented and tested before files or metadata can be added."
+    ),
+    "corpus.metadata_button": "Add metadata - unavailable until intake is ready",
+    "corpus.metadata_button_help": (
+        "Metadata import opens after secure corpus intake has been implemented and tested."
+    ),
+    "corpus.continue_button": "Continue - unavailable until corpus checks pass",
+    "corpus.continue_button_help": (
+        "Parameter configuration opens once a corpus has been loaded and checked."
+    ),
     "map.title": "Experiment map",
-    "map.body": "Each stage opens only after its own validation gate passes.",
+    "map.body": "Each stage opens only after its own checks pass.",
     "boundary.title": "Method boundary",
+    "boundary.body": (
+        "Stylometric distance describes patterns within the selected corpus. By itself, "
+        "it does not prove authorship, intention, influence, or causation."
+    ),
     "evidence.title": "Evidence reserved with every run",
     "evidence.body": "A completed experiment will keep these records visible and exportable.",
     "evidence.corpus": "Corpus health",
@@ -139,15 +154,19 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "state.complete.body": (
         "Review corpus health, sensitivity, and limits before interpreting or exporting the result."
     ),
-    "run.button": "Run analysis",
+    "run.button": "Run analysis - unavailable until setup is complete",
     "run.help": "Analysis becomes available after validated corpus intake and engine integration.",
+    "run.disabled_reason": (
+        "Analysis remains unavailable until corpus intake, parameter checks, and the "
+        "analysis engine are connected."
+    ),
     "footer.scope": (
         "Designed to remove R and Python coding from supported workflows. Method "
         "knowledge and interpretation remain the researcher's responsibility."
     ),
     "footer.fair": (
         "FAIR-oriented development record · decisions, tests, failures, and "
-        "limitations are versioned by ticket."
+        "limitations are versioned."
     ),
 }
 

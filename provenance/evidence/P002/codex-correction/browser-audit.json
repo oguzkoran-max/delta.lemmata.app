@@ -1,0 +1,626 @@
+{
+  "schema_version": "1.0.0",
+  "target_url": "http://127.0.0.1:58391",
+  "audit_method": "Tracked Python Playwright harness with a fresh local Streamlit process.",
+  "fresh_browser_context_per_viewport": true,
+  "audits": [
+    {
+      "target": "desktop-1440x1000",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "scrollWidth": 1440,
+      "clientWidth": 1440,
+      "horizontal_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 1000
+      },
+      "main_box": {
+        "x": 300,
+        "y": 0,
+        "width": 1140,
+        "height": 1000
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Add the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "The workspace is ready for a research purpose"
+        }
+      ],
+      "heading_outline_matches": true,
+      "disabled_controls": [
+        {
+          "name": "Corpus files - unavailable in this preview",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Choose File\" [disabled]",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Add metadata - unavailable until intake is ready",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Add metadata - unavailable until intake is ready\" [disabled]:\n  - paragraph: Add metadata - unavailable until intake is ready",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Continue - unavailable until corpus checks pass",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Continue - unavailable until corpus checks pass\" [disabled]:\n  - paragraph: Continue - unavailable until corpus checks pass",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Run analysis - unavailable until setup is complete\" [disabled]:\n  - paragraph: Run analysis - unavailable until setup is complete",
+          "state_and_reason_pass": true
+        }
+      ],
+      "disabled_names_and_states_pass": true,
+      "visible_disabled_reasons": {
+        "corpus": 1,
+        "run": 1
+      },
+      "visible_disabled_reasons_pass": true,
+      "screenshot": "provenance/evidence/P002/codex-correction/screenshots/desktop-1440x1000.png"
+    },
+    {
+      "target": "desktop-1280x800",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "scrollWidth": 1280,
+      "clientWidth": 1280,
+      "horizontal_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": 0,
+        "y": 0,
+        "width": 300,
+        "height": 800
+      },
+      "main_box": {
+        "x": 300,
+        "y": 0,
+        "width": 980,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Add the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "The workspace is ready for a research purpose"
+        }
+      ],
+      "heading_outline_matches": true,
+      "disabled_controls": [
+        {
+          "name": "Corpus files - unavailable in this preview",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Choose File\" [disabled]",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Add metadata - unavailable until intake is ready",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Add metadata - unavailable until intake is ready\" [disabled]:\n  - paragraph: Add metadata - unavailable until intake is ready",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Continue - unavailable until corpus checks pass",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Continue - unavailable until corpus checks pass\" [disabled]:\n  - paragraph: Continue - unavailable until corpus checks pass",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Run analysis - unavailable until setup is complete\" [disabled]:\n  - paragraph: Run analysis - unavailable until setup is complete",
+          "state_and_reason_pass": true
+        }
+      ],
+      "disabled_names_and_states_pass": true,
+      "visible_disabled_reasons": {
+        "corpus": 1,
+        "run": 1
+      },
+      "visible_disabled_reasons_pass": true,
+      "screenshot": "provenance/evidence/P002/codex-correction/screenshots/desktop-1280x800.png"
+    },
+    {
+      "target": "mobile-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "horizontal_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 844
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 390,
+        "height": 844
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Add the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "The workspace is ready for a research purpose"
+        }
+      ],
+      "heading_outline_matches": true,
+      "disabled_controls": [
+        {
+          "name": "Corpus files - unavailable in this preview",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Choose File\" [disabled]",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Add metadata - unavailable until intake is ready",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Add metadata - unavailable until intake is ready\" [disabled]:\n  - paragraph: Add metadata - unavailable until intake is ready",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Continue - unavailable until corpus checks pass",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Continue - unavailable until corpus checks pass\" [disabled]:\n  - paragraph: Continue - unavailable until corpus checks pass",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Run analysis - unavailable until setup is complete\" [disabled]:\n  - paragraph: Run analysis - unavailable until setup is complete",
+          "state_and_reason_pass": true
+        }
+      ],
+      "disabled_names_and_states_pass": true,
+      "visible_disabled_reasons": {
+        "corpus": 1,
+        "run": 1
+      },
+      "visible_disabled_reasons_pass": true,
+      "screenshot": "provenance/evidence/P002/codex-correction/screenshots/mobile-390x844.png"
+    },
+    {
+      "target": "mobile-360x800",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "scrollWidth": 360,
+      "clientWidth": 360,
+      "horizontal_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 800
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 360,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Add the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "The workspace is ready for a research purpose"
+        }
+      ],
+      "heading_outline_matches": true,
+      "disabled_controls": [
+        {
+          "name": "Corpus files - unavailable in this preview",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Choose File\" [disabled]",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Add metadata - unavailable until intake is ready",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Add metadata - unavailable until intake is ready\" [disabled]:\n  - paragraph: Add metadata - unavailable until intake is ready",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Continue - unavailable until corpus checks pass",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Continue - unavailable until corpus checks pass\" [disabled]:\n  - paragraph: Continue - unavailable until corpus checks pass",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Run analysis - unavailable until setup is complete\" [disabled]:\n  - paragraph: Run analysis - unavailable until setup is complete",
+          "state_and_reason_pass": true
+        }
+      ],
+      "disabled_names_and_states_pass": true,
+      "visible_disabled_reasons": {
+        "corpus": 1,
+        "run": 1
+      },
+      "visible_disabled_reasons_pass": true,
+      "screenshot": "provenance/evidence/P002/codex-correction/screenshots/mobile-360x800.png"
+    },
+    {
+      "target": "reflow-640x800",
+      "viewport": {
+        "width": 640,
+        "height": 800
+      },
+      "scrollWidth": 640,
+      "clientWidth": 640,
+      "horizontal_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 800
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 640,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Add the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "The workspace is ready for a research purpose"
+        }
+      ],
+      "heading_outline_matches": true,
+      "disabled_controls": [
+        {
+          "name": "Corpus files - unavailable in this preview",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Choose File\" [disabled]",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Add metadata - unavailable until intake is ready",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Add metadata - unavailable until intake is ready\" [disabled]:\n  - paragraph: Add metadata - unavailable until intake is ready",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Continue - unavailable until corpus checks pass",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Continue - unavailable until corpus checks pass\" [disabled]:\n  - paragraph: Continue - unavailable until corpus checks pass",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Run analysis - unavailable until setup is complete\" [disabled]:\n  - paragraph: Run analysis - unavailable until setup is complete",
+          "state_and_reason_pass": true
+        }
+      ],
+      "disabled_names_and_states_pass": true,
+      "visible_disabled_reasons": {
+        "corpus": 1,
+        "run": 1
+      },
+      "visible_disabled_reasons_pass": true,
+      "screenshot": "provenance/evidence/P002/codex-correction/screenshots/reflow-640x800.png"
+    },
+    {
+      "target": "reflow-320x800",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "scrollWidth": 320,
+      "clientWidth": 320,
+      "horizontal_overflow": false,
+      "sidebar_rendered": true,
+      "sidebar_box": {
+        "x": -300,
+        "y": 0,
+        "width": 1,
+        "height": 800
+      },
+      "main_box": {
+        "x": 0,
+        "y": 0,
+        "width": 320,
+        "height": 800
+      },
+      "sidebar_overlaps_main": false,
+      "mobile_initial_sidebar_clear": true,
+      "heading_outline": [
+        {
+          "level": 1,
+          "name": "Set the research purpose"
+        },
+        {
+          "level": 2,
+          "name": "Text Proximity"
+        },
+        {
+          "level": 2,
+          "name": "Choose the level of control"
+        },
+        {
+          "level": 2,
+          "name": "Add the research corpus"
+        },
+        {
+          "level": 2,
+          "name": "Experiment map"
+        },
+        {
+          "level": 2,
+          "name": "Method boundary"
+        },
+        {
+          "level": 2,
+          "name": "Evidence reserved with every run"
+        },
+        {
+          "level": 2,
+          "name": "The workspace is ready for a research purpose"
+        }
+      ],
+      "heading_outline_matches": true,
+      "disabled_controls": [
+        {
+          "name": "Corpus files - unavailable in this preview",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Choose File\" [disabled]",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Add metadata - unavailable until intake is ready",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Add metadata - unavailable until intake is ready\" [disabled]:\n  - paragraph: Add metadata - unavailable until intake is ready",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Continue - unavailable until corpus checks pass",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Continue - unavailable until corpus checks pass\" [disabled]:\n  - paragraph: Continue - unavailable until corpus checks pass",
+          "state_and_reason_pass": true
+        },
+        {
+          "name": "Run analysis - unavailable until setup is complete",
+          "count": 1,
+          "disabled": true,
+          "visible_label": true,
+          "accessibility_snapshot": "- button \"Run analysis - unavailable until setup is complete\" [disabled]:\n  - paragraph: Run analysis - unavailable until setup is complete",
+          "state_and_reason_pass": true
+        }
+      ],
+      "disabled_names_and_states_pass": true,
+      "visible_disabled_reasons": {
+        "corpus": 1,
+        "run": 1
+      },
+      "visible_disabled_reasons_pass": true,
+      "screenshot": "provenance/evidence/P002/codex-correction/screenshots/reflow-320x800.png"
+    }
+  ],
+  "keyboard_purpose_selection_pass": true,
+  "external_hosts_observed": [],
+  "network_scope": "Browser requests observed by Playwright; not a packet capture.",
+  "sidebar_toggle": {
+    "count": 1,
+    "aria_label": "",
+    "title": null,
+    "framework_limitation": "Streamlit 1.59.1 exposes no supported API for assigning a product-specific accessible name to its native sidebar toggle."
+  },
+  "file_uploader_accessibility_scope": "The disabled native file input remains named 'Choose File' by Streamlit. Its visible field label contains the unavailable state; Streamlit 1.59.1 exposes no supported API to replace the native input name.",
+  "zoom_scope": "640px and 320px are automated CSS reflow targets. They are not represented as a real browser-chrome zoom session; manual 200% zoom remains outside this automated evidence.",
+  "result": "passed"
+}

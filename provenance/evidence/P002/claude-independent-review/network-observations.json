@@ -1,0 +1,13 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P002",
+  "review": "claude-independent-review",
+  "target_url": "http://127.0.0.1:8799/",
+  "observation": "All requests observed during the loaded shell were to the loopback origin 127.0.0.1:8799 (Streamlit health, host-config, local static JS bundles, and a locally served Material Symbols woff2 font). No external host, CDN, analytics, AI, login, or remote-storage request was observed. External DOM assets: 0 at every audited viewport (see browser-audit.json).",
+  "method": "In-app browser network log inspection plus Playwright per-viewport external-asset scan.",
+  "limitations": [
+    "This is interface-shell evidence collected under a normal (non-sandboxed) local run, not a packet capture and not a production egress test.",
+    "The macOS sandbox egress-denied smoke test in the original P002 evidence (network-trace.json) remains the baseline for the closed-network claim; this review changed only CSS, copy, and one config flag and introduced no network call.",
+    "Production container/proxy egress isolation remains assigned to P014."
+  ]
+}

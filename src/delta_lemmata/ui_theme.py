@@ -8,10 +8,13 @@ APP_CSS = """
   --delta-line: #ccd6d1;
   --delta-canvas: #f4f6f5;
   --delta-paper: #ffffff;
+  /* Teal is the single accent wired into this stylesheet. Badge hues come from
+     Streamlit's named palette and the link colour lives in
+     .streamlit/config.toml, so no further accent tokens are defined here.
+     --delta-teal-on-dark is a lightened teal for the dark sidebar, where the
+     base teal fails WCAG AA contrast on #1c2925. */
   --delta-teal: #116f63;
-  --delta-coral: #c95742;
-  --delta-amber: #b17a18;
-  --delta-blue: #315f7b;
+  --delta-teal-on-dark: #63b6a6;
 }
 
 [data-testid="stAppViewContainer"] {
@@ -142,14 +145,6 @@ footer,
   margin-bottom: 0.8rem;
 }
 
-.delta-purpose-title {
-  color: var(--delta-ink);
-  font-size: 1.25rem;
-  font-weight: 700;
-  line-height: 1.25;
-  margin: 0.7rem 0 1rem;
-}
-
 .delta-detail-text {
   color: var(--delta-muted);
   font-size: 0.9rem;
@@ -195,6 +190,11 @@ footer,
   font-weight: 750;
 }
 
+[data-testid="stSidebar"] .delta-map-row.is-active .delta-map-number,
+[data-testid="stSidebar"] .delta-map-row.is-active .delta-map-state {
+  color: var(--delta-teal-on-dark);
+}
+
 .delta-evidence-row {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -238,6 +238,11 @@ footer,
 [data-testid="stButton"] button,
 [data-testid="stFileUploaderDropzone"] {
   border-radius: 5px;
+}
+
+[data-testid="stButton"] button {
+  min-height: 3rem;
+  white-space: normal;
 }
 
 [data-testid="stFileUploaderDropzone"] {

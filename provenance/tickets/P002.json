@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "1.1.0",
   "ticket_id": "P002",
   "title": "English-Only Workbench Shell",
   "status": "complete",
@@ -24,12 +24,52 @@
   "dependencies": ["P001"],
   "claim_ids": ["CE-01", "CE-18", "CE-20"],
   "threat_ids": ["SEC-14", "EPI-13"],
-  "decision_ids": ["HD-20260710-0003", "HD-20260710-0004", "HD-20260710-0005"],
-  "prompt_event_ids": ["PE-20260710-0002", "PE-20260710-0003"],
-  "commit_ids": ["a888e7c81e5fdae12687903de29d0728f5c7cbd5"],
+  "decision_ids": [
+    "HD-20260710-0003",
+    "HD-20260710-0004",
+    "HD-20260710-0005",
+    "HD-20260711-0001",
+    "HD-20260711-0002"
+  ],
+  "prompt_event_ids": [
+    "PE-20260710-0002",
+    "PE-20260710-0003",
+    "PE-20260710-0004",
+    "PE-20260711-0001",
+    "PE-20260711-0002"
+  ],
+  "commit_ids": [
+    "a888e7c81e5fdae12687903de29d0728f5c7cbd5",
+    "0788a6e94a46df984c88f65be8841e0ef9d3bb24",
+    "1787ff4880ea92e32f217673cddfe92e8ed3491a",
+    "b53e3087f1f18529ce46023a95b11d4b24ad3119",
+    "05e7b01cf7f454e0a6a6607c547246c8a85279cf",
+    "cd7d7b1094dfed40a354a2c4ff2da46b662463d2"
+  ],
+  "run_ids": [
+    "RUN-20260710-0003",
+    "RUN-20260710-0004",
+    "RUN-20260710-0005",
+    "RUN-20260710-0006",
+    "RUN-20260711-0001",
+    "RUN-20260711-0002"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
-  "implementation_agents": ["OpenAI Codex"],
+  "implementation_agents": ["OpenAI Codex", "Anthropic Claude Code / Claude Opus 4.8"],
+  "supplemental_evidence": [
+    "provenance/evidence/P002/claude-independent-review/report.md",
+    "provenance/evidence/P002/claude-independent-review.sha256",
+    "provenance/evidence/P002/codex-correction/report.md",
+    "provenance/evidence/P002/codex-correction/provenance-errata.json",
+    "provenance/evidence/P002/codex-correction/test-summary.json",
+    "provenance/evidence/P002/codex-correction/failure-log.md",
+    "provenance/evidence/P002/codex-correction/adversarial-review.md",
+    "provenance/evidence/P002/codex-correction/browser-audit.json",
+    "provenance/evidence/P002/codex-correction/replay.log",
+    "provenance/evidence/P002/codex-correction.sha256",
+    "provenance/evidence/P002/live-product-review-20260711.md"
+  ],
   "acceptance": [
     {
       "id": "P002-AC-01",
@@ -38,7 +78,10 @@
       "evidence": [
         "provenance/evidence/P002/browser-audit.json",
         "provenance/evidence/P002/desktop-1440x1000.png",
-        "provenance/evidence/P002/mobile-390x844.png"
+        "provenance/evidence/P002/mobile-390x844.png",
+        "provenance/evidence/P002/codex-correction/browser-audit.json",
+        "provenance/evidence/P002/codex-correction/screenshots/mobile-390x844.png",
+        "provenance/evidence/P002/codex-correction/screenshots/reflow-320x800.png"
       ]
     },
     {
@@ -47,7 +90,9 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P002/accessibility-report.json",
-        "tests/test_webapp.py"
+        "tests/test_webapp.py",
+        "provenance/evidence/P002/codex-correction/browser-audit.json",
+        "provenance/evidence/P002/codex-correction/report.md"
       ]
     },
     {
@@ -66,7 +111,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P002/network-trace.json",
-        "tests/test_runtime_boundary.py"
+        "tests/test_runtime_boundary.py",
+        "provenance/evidence/P002/codex-correction/browser-audit.json"
       ]
     },
     {
@@ -103,7 +149,8 @@
   "changed_files": [
     "Streamlit entry point, configuration, English UI catalog, visual system, public health record, and workbench contracts",
     "Unit, shell, runtime-boundary, accessibility-supporting, copy, and health tests",
-    "P002 Ticket, PromptEvent, HumanDecision, Run, screenshot, browser, accessibility, network, copy, failure, and clean-clone evidence"
+    "P002 Ticket, PromptEvent, HumanDecision, Run, screenshot, browser, accessibility, network, copy, failure, and clean-clone evidence",
+    "Claude review corrections: accessible disabled-state copy, mobile auto-sidebar, semantic headings, general method boundary, replayable browser and clean-clone harnesses, schema 1.1 links, errata, and evidence manifests"
   ],
   "commands": [
     {
@@ -147,6 +194,24 @@
       "exit_code": 0,
       "result": "A new clone of a888e7c restored both locks, passed 40 tests and every automated gate, and ended with no versionable changes.",
       "evidence": "provenance/runs/RUN-20260710-0004.json"
+    },
+    {
+      "command": "./scripts/replay_p002_provenance.sh cd7d7b1094dfed40a354a2c4ff2da46b662463d2",
+      "exit_code": 0,
+      "result": "A tracked no-local replay restored both language environments, passed 47 tests at 100% measured source coverage and every automated gate, verified all 18 Claude review files, and ended with a clean status; closure-tree validation then recomputed the Run artifact hashes.",
+      "evidence": "provenance/runs/RUN-20260711-0001.json"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit.py --output provenance/evidence/P002/codex-correction",
+      "exit_code": 0,
+      "result": "Six fresh browser contexts passed desktop, mobile, 640px and 320px reflow, heading, disabled-state, keyboard, geometry, and observed-request checks with explicit zoom and framework limits.",
+      "evidence": "provenance/runs/RUN-20260711-0002.json"
+    },
+    {
+      "command": "Codex in-app browser live product review at default, 390x844, and 320x800 viewports",
+      "exit_code": 0,
+      "result": "Purpose and mode interactions, Style Over Time copy, disabled boundaries, responsive geometry, current user-facing copy, and browser console passed; an unreliable in-app raster was rejected rather than retained.",
+      "evidence": "provenance/evidence/P002/live-product-review-20260711.md"
     }
   ],
   "blockers": []

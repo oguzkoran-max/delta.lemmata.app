@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P002",
+  "review": "claude-independent-review",
+  "commit_under_test": "0788a6e94a46df984c88f65be8841e0ef9d3bb24",
+  "gates": {
+    "verify_sh_post_fix": {
+      "result": "passed",
+      "tests": 40,
+      "coverage_pct": 100,
+      "run": "RUN-20260710-0005"
+    },
+    "browser_audit": {
+      "result": "passed",
+      "viewports": [
+        "1440x1000",
+        "1280x800",
+        "390x844",
+        "360x800",
+        "640x800-zoom200-emulated"
+      ],
+      "horizontal_overflow": false,
+      "external_assets": 0,
+      "unnamed_viewport_controls": 0,
+      "prohibited_copy_hits": 0
+    },
+    "keyboard_and_disabled_states": {
+      "result": "passed",
+      "source": "AppTest smoke + accessibility reviewer; all four future controls disabled; two disabled buttons now expose help text"
+    },
+    "contrast_fix": {
+      "result": "passed",
+      "before_ratio": 2.5,
+      "after_ratio": 6.3,
+      "target": 4.5,
+      "artifact": "contrast-proof.json"
+    },
+    "copy_denylist": {
+      "result": "passed",
+      "phrases_checked": 13,
+      "hits": 0
+    },
+    "external_request_inspection": {
+      "result": "passed",
+      "external_hosts": 0,
+      "note": "all assets loopback; telemetry off"
+    },
+    "clean_clone_rerun": {
+      "result": "passed",
+      "git_status_lines": 0,
+      "run": "RUN-20260710-0006"
+    }
+  },
+  "notes": "The macOS-sandbox egress-denied smoke test from the original P002 evidence (network-trace.json) was not re-executed; this review changed only CSS, copy, and one config flag and introduced no network call. Full WCAG conformance and screen-reader sessions remain out of scope (P008/P009/P015)."
+}

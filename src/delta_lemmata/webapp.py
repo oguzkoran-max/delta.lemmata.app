@@ -63,26 +63,31 @@ def _map_row(number: int, label_key: str, *, active: bool) -> str:
     )
 
 
+def _experiment_map_markup() -> str:
+    """Return the shared experiment-map markup used by the sidebar and the panel."""
+
+    return (
+        '<div class="delta-map">'
+        + _map_row(1, "sidebar.step.purpose", active=True)
+        + _map_row(2, "sidebar.step.corpus", active=False)
+        + _map_row(3, "sidebar.step.parameters", active=False)
+        + _map_row(4, "sidebar.step.evidence", active=False)
+        + "</div>"
+    )
+
+
 def _render_sidebar(health: dict[str, Any]) -> None:
     with st.sidebar:
         st.badge(
-            text("sidebar.stage_badge"),
+            text("header.stage"),
             icon=":material/construction:",
             color="green",
         )
         st.caption(text("sidebar.progress"))
         st.progress(25)
-        st.markdown(
-            '<div class="delta-map">'
-            + _map_row(1, "sidebar.step.purpose", active=True)
-            + _map_row(2, "sidebar.step.corpus", active=False)
-            + _map_row(3, "sidebar.step.parameters", active=False)
-            + _map_row(4, "sidebar.step.evidence", active=False)
-            + "</div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(_experiment_map_markup(), unsafe_allow_html=True)
         st.divider()
-        st.subheader(text("sidebar.boundary_title"))
+        st.markdown(f"**{text('sidebar.boundary_title')}**")
         st.caption(text("sidebar.boundary_body"))
         with st.expander(text("build.title"), icon=":material/info:"):
             st.markdown(f"**{text('build.readiness_label')}**")
@@ -108,9 +113,8 @@ def _render_purpose_detail(purpose: PurposeSpec) -> None:
             icon=purpose.icon,
             color=purpose.badge_color,  # type: ignore[arg-type]
         )
+        st.header(text(purpose.label_key), anchor=False)
         st.markdown(
-            '<div class="delta-purpose-title" role="heading" aria-level="2">'
-            f"{_html(text(purpose.label_key))}</div>"
             f'<div class="delta-field-label">{_html(text("purpose.question_label"))}</div>'
             f'<div class="delta-purpose-question">{_html(text(purpose.question_key))}</div>',
             unsafe_allow_html=True,
@@ -135,7 +139,7 @@ def _render_mode() -> WorkbenchMode:
         f'<div class="delta-eyebrow">{_html(text("mode.eyebrow"))}</div>',
         unsafe_allow_html=True,
     )
-    st.subheader(text("mode.title"))
+    st.header(text("mode.title"), anchor=False)
     selected = st.segmented_control(
         text("mode.label"),
         options=[mode.value for mode in WorkbenchMode],
@@ -158,7 +162,7 @@ def _render_corpus_stage() -> None:
         )
         title_column, badge_column = st.columns([2.2, 1.4], vertical_alignment="center")
         with title_column:
-            st.subheader(text("corpus.title"))
+            st.header(text("corpus.title"), anchor=False)
         with badge_column:
             st.badge(
                 text("corpus.locked"),
@@ -166,6 +170,7 @@ def _render_corpus_stage() -> None:
                 color="gray",
             )
         st.caption(text("corpus.body"))
+        st.caption(text("corpus.disabled_reason"))
         st.file_uploader(
             text("corpus.uploader"),
             type=["txt", "zip", "csv"],
@@ -178,38 +183,30 @@ def _render_corpus_stage() -> None:
         with metadata_column:
             st.button(
                 text("corpus.metadata_button"),
-                icon=":material/table_view:",
                 disabled=True,
+                help=text("corpus.metadata_button_help"),
                 width="stretch",
             )
         with continue_column:
             st.button(
                 text("corpus.continue_button"),
-                icon=":material/arrow_forward:",
                 disabled=True,
+                help=text("corpus.continue_button_help"),
                 width="stretch",
             )
 
 
 def _render_experiment_map() -> None:
     with st.container(border=True, key="experiment_map"):
-        st.subheader(text("map.title"))
+        st.header(text("map.title"), anchor=False)
         st.caption(text("map.body"))
-        st.markdown(
-            '<div class="delta-map">'
-            + _map_row(1, "sidebar.step.purpose", active=True)
-            + _map_row(2, "sidebar.step.corpus", active=False)
-            + _map_row(3, "sidebar.step.parameters", active=False)
-            + _map_row(4, "sidebar.step.evidence", active=False)
-            + "</div>",
-            unsafe_allow_html=True,
-        )
+        st.markdown(_experiment_map_markup(), unsafe_allow_html=True)
 
 
-def _render_boundary(purpose: PurposeSpec) -> None:
+def _render_boundary() -> None:
     with st.container(border=True, key="boundary_panel"):
-        st.subheader(text("boundary.title"))
-        st.caption(text(purpose.boundary_key))
+        st.header(text("boundary.title"), anchor=False)
+        st.caption(text("boundary.body"))
 
 
 def _render_evidence_panel() -> None:
@@ -220,7 +217,7 @@ def _render_evidence_panel() -> None:
         ("evidence.run", "evidence.run_state"),
     )
     with st.container(border=True, key="evidence_panel"):
-        st.subheader(text("evidence.title"))
+        st.header(text("evidence.title"), anchor=False)
         st.caption(text("evidence.body"))
         markup = "".join(
             '<div class="delta-evidence-row">'
@@ -242,11 +239,11 @@ def render_interface_state(state: InterfaceState) -> None:
             icon=presentation.icon,
             color=presentation.badge_color,  # type: ignore[arg-type]
         )
-        st.subheader(text(presentation.title_key))
+        st.header(text(presentation.title_key), anchor=False)
         st.caption(text(presentation.body_key))
+        st.caption(text("run.disabled_reason"))
         st.button(
             text("run.button"),
-            icon=":material/play_arrow:",
             disabled=True,
             help=text("run.help"),
             width="stretch",
@@ -260,7 +257,7 @@ def main() -> None:
         page_title=text("meta.page_title"),
         page_icon=text("brand.mark"),
         layout="wide",
-        initial_sidebar_state="expanded",
+        initial_sidebar_state="auto",
     )
     st.markdown(APP_CSS, unsafe_allow_html=True)
     health = dict(public_health())
@@ -292,7 +289,7 @@ def main() -> None:
 
     with right:
         _render_experiment_map()
-        _render_boundary(purpose)
+        _render_boundary()
         _render_evidence_panel()
         render_interface_state(InterfaceState.EMPTY)
 
