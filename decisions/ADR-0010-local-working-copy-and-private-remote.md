@@ -97,3 +97,26 @@ geçişleri için ortak kanonik remote eksik kalır.
   Çöp Kutusu'na başarıyla taşıdı.
 - Google Drive yeniden başlatıldı. Eski çalışma yolu yok, yeni yerel repository ve
   geri alınabilir Trash kopyası var.
+
+## Generated Environment Cleanup Follow-up
+
+Kullanıcı, Drive'ın eski yükleme kuyruğunda yalnız yeniden üretilebilir Python ve
+araç dosyaları kaldığı doğrulandıktan sonra provider Trash içindeki `.venv` ve
+`.tools` dizinlerinin kalıcı silinmesini açıkça onayladı.
+
+- Silme öncesinde iki hedefin beklenen repository kökü altında gerçek dizin olduğu,
+  symlink olmadığı ve eski kopyanın `.git/HEAD` işaretini taşıdığı doğrulandı.
+- Yeni yerel repository, yeni `.venv`, yeni `.tools`, etkin branch ve uygulama
+  health endpoint'i ayrı koruma kapıları olarak kontrol edildi.
+- Eski generated dizinlerin toplamı yaklaşık 646 MiB idi. Yalnız bu iki dizin
+  silindi; eski kaynak kodu ve `.git` provider Trash içinde korundu. Kalan eski
+  kaynak kopyası yaklaşık 49 MiB'dir.
+- Drive'ın ilk normal kapanış isteği aktif senkronizasyon onayında bekledi. Açık
+  onay penceresi `Tamam` ile kapatıldı ve uygulama temiz biçimde yeniden başlatıldı.
+- Drive'ın operasyon veritabanı yalnız salt okunur incelendi. Bekleyen kayıtların
+  okunabilen adları generated `.pyi` ve dependency dosyalarıydı; Drive'ın iç
+  veritabanı veya cache dosyaları elle değiştirilmedi.
+- Operasyon sayısı dalgalar hâlinde boşaldıktan sonra 60 saniye kesintisiz sıfır
+  kaldı. Drive arayüzü `Güncel` durumunu gösterdi.
+- Bu temizlik P003 kodunu, acceptance durumunu veya exact implementation kanıtını
+  değiştirmez.
