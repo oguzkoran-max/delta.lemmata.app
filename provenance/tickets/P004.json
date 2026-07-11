@@ -28,11 +28,12 @@
   "dependencies": ["P003"],
   "claim_ids": ["CE-09", "CE-13"],
   "threat_ids": ["RP-01", "RP-02", "EPI-01", "EPI-07"],
-  "decision_ids": ["HD-20260711-0009"],
+  "decision_ids": ["HD-20260711-0009", "HD-20260711-0010"],
   "prompt_event_ids": [
     "PE-20260711-0009",
     "PE-20260711-0010",
-    "PE-20260711-0011"
+    "PE-20260711-0011",
+    "PE-20260711-0012"
   ],
   "commit_ids": [
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
@@ -99,7 +100,8 @@
     "P004 execution brief, native PromptEvent link, and in-progress Ticket",
     "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary",
     "Human-approved metadata interaction defaults and accessible visual Corpus Review contract",
-    "Full-history CI checkout repair, regression test, failed-run diagnosis, and green branch/main verification"
+    "Full-history CI checkout repair, regression test, failed-run diagnosis, and green branch/main verification",
+    "Human-approved Corpus workflow, purpose-aware field, teaching, and implementation-order contract"
   ],
   "commands": [
     {

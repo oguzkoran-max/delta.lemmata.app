@@ -235,11 +235,12 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. P004 versioned metadata, rights state machine, canonical inventory ve validation contract uygulanır.
-2. Kabul edilen form + CSV, progressive disclosure ve Corpus Review akışı uygulanır.
-3. Timeline, composition bars, rights matrix, completeness matrix ve readiness summary yalnız corpus-description görselleri olarak eklenir.
-4. P004 determinism, negative-rights, chronology-readiness ve metadata-invalidation testleri eklenir.
-5. LiberLiber pilot manifesti araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
+1. P004 versioned domain models, controlled vocabularies ve JSON schemas uygulanır.
+2. Purpose-aware cross-field validation, stable error codes ve deterministic fixtures eklenir.
+3. Canonical inventory hash ve semantic metadata invalidation contract uygulanır.
+4. Form + CSV round trip, exact-confirmed mapping ve rights questionnaire bağlanır.
+5. Upload, Describe, Review ile corpus-description görselleri uygulanır.
+6. LiberLiber pilot manifesti araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
 
 ## Anahtar Kullanıcı İfadeleri
 

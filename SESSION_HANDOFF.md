@@ -8,12 +8,17 @@
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** P004 versioned metadata, rights, canonical inventory ve chronology-readiness contract'ını acceptance ölçütlerine göre uygula
+**Sıradaki tek ana iş:** P004 Phase 1 olarak versioned domain models, controlled vocabularies, JSON schemas ve purpose-aware validation temelini uygula; UI'yi bu contract sabitlenmeden genişletme
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
 actions, üç seviyeli validation ve görsel Corpus Review. Ayrıntı:
 `docs/development/p004-metadata-ux-decisions.md`.
+
+**Tasarım kapısı:** Üç adet 10 soruluk karar turu tamamlandı. Corpus iç akışı
+Upload, Describe, Review; metadata zorunlulukları purpose-aware; kaynak URL veya
+bibliyografik künye; rights eylem bazlı fail-closed; yardım katmanlıdır. Karar
+`HD-20260711-0010`, uygulama sırası aynı UX sözleşmesinin 7. bölümündedir.
 
 **CI durumu:** GitHub shallow-checkout kaynaklı provenance hatası `f7a75b0` ile
 düzeltildi ve `0b0b349` ile main'e alındı. Hotfix run `29167750356` ve main run
