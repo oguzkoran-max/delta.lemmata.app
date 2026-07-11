@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P002 tamamlandı; bağımsız Claude audit-and-repair kapısı P003'ten önce çalıştırılacak.
+**Güncel aşama:** P002, bağımsız Claude/Codex denetimleriyle main'e alındı; P003 Secure Ingestion aktiftir.
 
 ## 1. Her Oturumda Oku
 
@@ -104,19 +104,14 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Sıradaki iş tamamlanmış P002 shell'inin bağımsız Claude denetimidir. P003 henüz
-açılmamıştır ve audit kapanmadan başlatılmaz.
+Aktif iş P003 Secure Ingestion'dır. `provenance/tickets/P003.json` ve
+`prompts/P003-codex-execution-brief.md` sınırları uygulanır.
 
-Başlamadan önce:
+1. TXT, ZIP ve metadata CSV için content-based, fail-closed intake kur.
+2. UTF-8, NFC, archive inventory, resource limit ve injection kapılarını uygula.
+3. Rejected input'un temp, state, log veya exception içinde payload bırakmadığını test et.
+4. Deterministic malicious fixtures ve bounded property/fuzz testleri çalıştır.
+5. P003 evidence ve clean-clone Run olmadan ticket'ı kapatma.
 
-1. `SESSION_HANDOFF.md` dosyasını oku.
-2. `prompts/P002-claude-independent-audit-and-repair.md` briefini eksiksiz uygula.
-3. Önce read-only multi-agent audit yap; sonra yalnız kanıtlanmış P002 eksiklerini
-   `claude/p002-independent-audit` branch'inde düzelt.
-4. P002 acceptance, browser, offline ve clean-clone kapılarını yeniden çalıştır.
-5. Main'e merge etme; branch ve evidence paketini Codex denetimine bırak.
-6. Codex audit sonucu kabul edildikten sonra `prompts/P003-start.md` ile P003 açılır.
-
-Claude audit sırasında P003 ingestion, gerçek `stylo` analizi, Pinokyo corpus'u,
-production deployment veya `lemmata.app` üzerindeki gelecekteki
-`Launch Stylometry` bağlantısı uygulanmaz.
+P003 sırasında metadata/rights modeli, retention garantisi, gerçek `stylo`, Pinokyo
+corpus'u, deployment, runtime AI veya `Launch Stylometry` entegrasyonu uygulanmaz.

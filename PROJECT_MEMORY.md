@@ -1,10 +1,10 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-10
+**Son güncelleme:** 2026-07-11
 
-**Durum:** P002 kapandı; bağımsız Claude audit-and-repair P003 öncesi sırada
+**Durum:** P002 bağımsız Claude/Codex denetimleriyle main'e alındı; P003 Secure Ingestion aktif
 
-**Kod:** English-only workbench shell var; ingestion ve bilimsel hesaplama henüz yok
+**Kod:** English-only workbench shell main üzerinde; secure ingestion geliştiriliyor, bilimsel hesaplama henüz yok
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -195,12 +195,12 @@ entegrasyonu da P002 dışında bırakılmıştır.
 
 ## Açık Kanıt İşleri
 
-P002 acceptance kapısı geçti. Yeni bir kullanıcı kararı gerektiren açık bloklayıcı yoktur.
+P002; Claude bağımsız denetimi, Codex düzeltmeleri, karşıt yeniden denetim ve canlı
+ürün kapısından sonra `8ef2582` merge commit'iyle main'e alındı. Açık P0/P1/P2 yoktur.
 
-P003'ten önce Claude independent audit-and-repair kapısı çalıştırılacaktır. Bu kapı
-P002'nin acceptance sonucunu peşinen geçersiz kılmaz; ikinci modelin kanıtlı
-bulgularını ayrı branch ve yeni evidence paketiyle sınar. Final merge kararını
-Codex incelemesi sonrasında Oğuz verir.
+P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde aktiftir. TXT, ZIP
+ve metadata CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve
+scientific computation bu ticket'ın dışındadır.
 
 Sonraki ticket acceptance kapılarında izlenecekler:
 
@@ -211,11 +211,12 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. Claude Code'a `prompts/P002-claude-independent-audit-and-repair.md` briefi çağrılır.
-2. Claude read-only altı mercekli denetim ve kanıtlı P002 düzeltmelerini ayrı branch'te tamamlar.
-3. Codex branch diff'ini tasarım, kod, içerik, test ve FAIR kayıtları açısından denetler.
-4. Oğuz kabul ederse merge edilir; ardından `prompts/P003-start.md` ile P003 açılır.
-5. `.txt`, `.zip` ve metadata `.csv` fail-closed secure ingestion ancak bundan sonra uygulanır.
+1. P003 Ticket'taki content-based type, UTF-8/NFC ve merkezi limit sözleşmesini uygula.
+2. ZIP inventory'yi extraction öncesi denetle; traversal, link, nested archive,
+   duplicate name ve archive bomb fixture'larını fail-closed reddet.
+3. TXT/CSV injection, content-free error ve rejected-input cleanup kapılarını kur.
+4. Deterministic fuzz, disk canary, full verify ve clean-clone kanıtını üret.
+5. Tüm P003 acceptance maddeleri geçmeden P004 veya P005'e ilerleme.
 
 ## Anahtar Kullanıcı İfadeleri
 

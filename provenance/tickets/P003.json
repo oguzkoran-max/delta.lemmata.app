@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P003",
+  "title": "Secure Ingestion",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-11T07:14:10Z",
+  "closed_at_utc": null,
+  "objective": "Accept TXT, ZIP, and metadata CSV inputs through a bounded, content-validated, fail-closed intake boundary without workspace escape, uncontrolled resource consumption, or payload leakage.",
+  "scope": [
+    "Content-based TXT, ZIP, and metadata CSV type validation",
+    "Strict UTF-8 decoding and Unicode NFC validation",
+    "Pre-extraction ZIP member audit and bounded streaming extraction",
+    "Versioned size, member, ratio, path, token, and line limits",
+    "Server-generated asset identifiers and controlled display labels",
+    "CSV formula, HTML, newline, path, and log injection defenses",
+    "Content-free error codes and rejected-input cleanup",
+    "Deterministic malicious fixtures, property tests, fuzz checks, and clean-clone evidence"
+  ],
+  "non_goals": [
+    "Metadata semantics, corpus inventory, or rights decisions",
+    "Job queue, retention scheduler, or production deployment",
+    "R stylo execution or any scientific result",
+    "Pinocchio or other research corpus ingestion",
+    "PDF, DOCX, EPUB, TEI, OCR, nested archives, or general collation",
+    "Runtime AI, login, analytics, permanent project storage, or lemmata.app integration"
+  ],
+  "dependencies": ["P001"],
+  "claim_ids": ["CE-14"],
+  "threat_ids": ["SEC-01", "SEC-02", "SEC-03", "SEC-04", "SEC-05"],
+  "decision_ids": ["HD-20260711-0002"],
+  "prompt_event_ids": ["PE-20260711-0002"],
+  "commit_ids": ["8ef25826f64cb72ab39898c9598a1ed0531c600c"],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex"],
+  "supplemental_evidence": [
+    "prompts/P003-start.md",
+    "prompts/P003-codex-execution-brief.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P003-AC-01",
+      "criterion": "TXT, ZIP, and metadata CSV are identified from content, decoded as strict UTF-8 where applicable, and rejected when Unicode is not NFC or the payload is binary, polyglot, malformed, empty, or outside the declared limits.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P003-AC-02",
+      "criterion": "Zip-slip, absolute paths, drive paths, symlinks, hardlinks, nested archives, duplicate normalized names, reserved names, and archive-bomb fixtures are rejected before extraction and cannot escape the fresh destination.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P003-AC-03",
+      "criterion": "Compressed size, expanded size, member count, compression ratio, path length, line count, token count, and token length are enforced from one versioned limit profile without silent downgrade.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P003-AC-04",
+      "criterion": "Storage names and asset identifiers are server-generated; user filenames remain controlled display labels, and CSV formula, HTML, newline, path, and log injection fixtures fail closed.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P003-AC-05",
+      "criterion": "Every rejection returns a content-free stable error code, creates no analysis state, and leaves no payload in temporary directories, session state, logs, or exception output.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P003-AC-06",
+      "criterion": "Deterministic malicious fixtures, bounded property/fuzz tests, disk canary scans, full verification, and a clean-clone rerun all pass before P003 is closed.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [],
+  "commands": [],
+  "blockers": []
+}

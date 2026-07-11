@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P002 acceptance kapısı geçti, P003 başlamaya hazır
+**Durum:** Kanonik; P002 denetimli olarak main'e alındı, P003 Secure Ingestion aktiftir
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P002 workbench shell tamamlandı; secure ingestion ve bilimsel analiz henüz uygulanmadı
+**Aşama:** P003 fail-closed secure ingestion geliştiriliyor; bilimsel analiz henüz uygulanmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.

@@ -148,7 +148,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 
 ### P003: Secure Ingestion
 
-**Durum:** Sıradaki implementation ticket; P002 bağımsız audit kapısından sonra açılacak.
+**Durum:** Aktif implementation ticket; 2026-07-11 tarihinde P002 denetimli main entegrasyonundan sonra açıldı.
 
 **Amaç:** `.txt`, `.zip` ve metadata `.csv` girdilerini çalışma alanı dışına taşmadan ve sunucuyu tüketmeden kabul etmek.
 

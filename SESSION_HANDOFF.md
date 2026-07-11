@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P002 ve Claude/Codex audit düzeltmeleri tamamlandı; canlı ürün kapısı geçti ve kullanıcı main entegrasyonuna devam onayı verdi
+**Aşama:** P002 denetimli olarak main'e alındı; P003 Secure Ingestion açıldı
 
-**Kod durumu:** English-only workbench shell doğrulandı; ingestion ve scientific computation yok
+**Kod durumu:** English-only workbench shell main üzerinde; secure ingestion henüz uygulanmadı, scientific computation yok
 
-**Aktif ticket:** Yok; P002 main entegrasyonu sıradaki işlemdir
+**Aktif ticket:** P003 Secure Ingestion (`in-progress`)
 
-**Sıradaki tek ana iş:** `codex/p002-audit-corrections` main'e alınır ve temiz doğrulamadan sonra P003 açılır
+**Sıradaki tek ana iş:** P003 ingestion boundary ve malicious fixture testlerini uygula
 
 ## Önce Oku
 
@@ -17,11 +17,9 @@
 3. Roadmap'teki yalnız P003 bölümü
 4. Claim CE-14
 5. Threat SEC-01, SEC-02, SEC-03, SEC-04 ve SEC-05
-6. `provenance/tickets/P002.json`
-7. `provenance/evidence/P002/report.md`
-8. `provenance/evidence/P002/clean-clone-verification.md`
-9. `provenance/evidence/P002/codex-correction/report.md`
-10. `provenance/evidence/P002/codex-correction/adversarial-review.md`
+6. `provenance/tickets/P003.json`
+7. `prompts/P003-codex-execution-brief.md`
+8. P003'ün etkileyeceği ingestion kodu ve malicious fixture testleri
 
 ## Uygulanan Bağımsız Denetim Talimatı
 
@@ -56,10 +54,9 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   bağlı `HD-20260710-0005`. Eski P002 acceptance kanıtı değiştirilmedi.
 - **Codex'e:** report.md "For Codex to re-examine" listesindeki 5 madde.
 
-## Codex Düzeltme Sonucu (2026-07-11, MERGE ONAYLI)
+## Codex Düzeltme Sonucu (2026-07-11, MAIN'E ALINDI)
 
-- **Branch:** `codex/p002-audit-corrections`, Claude branch'i üzerinden açıldı;
-  `main` hâlâ `bef9dcc` ve değiştirilmedi.
+- **Branch:** `codex/p002-audit-corrections`, `8ef2582` merge commit'iyle main'e alındı.
 - **Kod commit'leri:** `b53e3087` (arayüz, schema 1.1, replay/test altyapısı) ve
   `05e7b01c` (zoom kanıtını reflow ile sınırlayan düzeltme) ve `cd7d7b10`
   (Run artifact hash ve güvenli repository-path doğrulaması).
@@ -85,7 +82,9 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   Açık P0/P1/P2 yok. Güvenilmez in-app raster kanıt olarak reddedildi.
 - **Kullanıcı kararı:** `devam edelim` isteği, hemen önce açıklanan sıra kapsamında
   P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
-- **Sonraki adım:** main entegrasyonunu temiz doğrula, ardından P003'ü aç.
+- **Main doğrulaması:** merge sonrasında 47 test, yüzde 100 measured source coverage,
+  23 provenance kaydı ve tüm otomatik kapılar geçti.
+- **Sonraki adım:** P003 secure ingestion implementation ve malicious fixture kapısı.
 
 ## P002 Sonucu
 
