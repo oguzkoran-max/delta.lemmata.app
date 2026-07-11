@@ -1,0 +1,56 @@
+# P003 Failures And Corrections
+
+1. The opening Ticket said TXT, CSV, and ZIP would be identified from content.
+   Independent review correctly noted that a valid CSV is also valid UTF-8 text,
+   so automatic TXT-versus-CSV inference is not a defensible security boundary.
+   P003 now requires an explicit intake role followed by extension, MIME, and
+   role-specific content validation.
+2. The opening cleanup criterion could be read as covering Streamlit internals or
+   the whole host. It is narrowed to copies, state, logs, exceptions, temporary
+   directories, and workspaces controlled by Delta. Lifecycle and infrastructure
+   retention guarantees remain P005 and P014.
+3. The first ZIP draft validated EOCD placement and used server-generated flat
+   storage names, but it still delegated local-versus-central header consistency
+   to Python `zipfile` and allowed archive/member extra fields. Independent review
+   demonstrated that `zipfile` accepts prefixed/suffixed data and conflicting raw
+   headers. The draft was not accepted. P003 ZIP v1 now raw-parses EOCD, central,
+   and local headers before `ZipFile`, requires exact ranges and matching fields,
+   rejects ZIP64, comments, extra fields, data descriptors, encryption, split
+   archives, unsupported flags/methods, and verifies member hashes again while
+   materializing server-generated names.
+4. The first fixed-fixture run passed 100 of 108 cases and failed eight. Three
+   exposed real boundary issues: `./name.txt` was canonicalized instead of rejected,
+   raw NUL names reached `ZipInfo` before path validation, and an impossible central
+   offset was reported as a resource limit rather than a malformed archive. These
+   were corrected. Three display-label failures used the right rejection with a
+   less precise code and were made explicit. Two cleanup tests had replaced the
+   process-wide `os.open`, unintentionally breaking `shutil.rmtree`; the tests now
+   fail only generated asset creation while leaving cleanup operational.
+5. The corrected fixed-fixture suite passed all 108 cases but reached only 96%
+   branch-aware coverage, so the new 100% gate rejected it. The missing paths
+   exposed two redundant conditions: aggregate compression ratio cannot exceed
+   the highest already-bounded member ratio, and the closed `IntakeRole` enum had
+   an unreachable fallback after all three roles were handled. Those conditions
+   were removed. Targeted tests were then added for truncated raw ZIP structures,
+   local-header gaps, disagreement between raw headers and `ZipFile`, runtime
+   expanded-byte rechecking, second-pass integrity failure, and cleanup failure.
+   The resulting ingestion suite passes 117 tests at 100% statement and branch
+   coverage.
+6. The first deterministic fuzz run passed all malicious families but failed two
+   valid-input assertions. The assertion treated the payload word `text` as leaked
+   because it also occurs legitimately in the `corpus_text` role name. No payload
+   was exposed. The property now inserts a case-unique marker and checks only that
+   marker against the content-free receipt representation.
+7. The first repository-wide verification stopped at the formatting gate before
+   lint, type, test, metadata, provenance, or R checks ran. Ruff required one
+   mechanical line-layout change in `tests/test_ingestion_zip.py`; the formatter
+   was applied only to the two new ingestion test files before rerunning the full
+   gate.
+8. The first staging attempt exposed that the repository-wide `data/` ignore rule
+   also hid the packaged ingestion-limit profile. The profile was not force-added.
+   Instead, `.gitignore` now has a narrow exception for
+   `src/delta_lemmata/data/ingestion-limits-v1.json`, preserving the prohibition on
+   user corpus data while ensuring the security policy exists in clean clones and
+   built distributions.
+
+No failed or corrected attempt is presented as passing evidence.

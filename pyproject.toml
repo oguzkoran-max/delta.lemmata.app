@@ -57,7 +57,7 @@ version = { file = ["VERSION"] }
 where = ["src"]
 
 [tool.setuptools.package-data]
-delta_lemmata = ["py.typed"]
+delta_lemmata = ["py.typed", "data/*.json"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -68,6 +68,7 @@ branch = true
 source = ["delta_lemmata"]
 
 [tool.coverage.report]
+fail_under = 100
 show_missing = true
 skip_covered = true
 

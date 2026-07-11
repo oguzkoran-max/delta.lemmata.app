@@ -42,6 +42,10 @@ workspaces/
 exports/
 *.zip
 
+# Versioned application policy, not user corpus data
+!src/delta_lemmata/data/
+!src/delta_lemmata/data/ingestion-limits-v1.json
+
 # Secrets
 *.pem
 *.key

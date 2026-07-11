@@ -7,7 +7,7 @@
   "closed_at_utc": null,
   "objective": "Accept TXT, ZIP, and metadata CSV inputs through a bounded, content-validated, fail-closed intake boundary without workspace escape, uncontrolled resource consumption, or payload leakage.",
   "scope": [
-    "Content-based TXT, ZIP, and metadata CSV type validation",
+    "Declared-role TXT, ZIP, and metadata CSV intake with extension, MIME, and content agreement",
     "Strict UTF-8 decoding and Unicode NFC validation",
     "Pre-extraction ZIP member audit and bounded streaming extraction",
     "Versioned size, member, ratio, path, token, and line limits",
@@ -41,7 +41,7 @@
   "acceptance": [
     {
       "id": "P003-AC-01",
-      "criterion": "TXT, ZIP, and metadata CSV are identified from content, decoded as strict UTF-8 where applicable, and rejected when Unicode is not NFC or the payload is binary, polyglot, malformed, empty, or outside the declared limits.",
+      "criterion": "Each upload has an explicit corpus-text, corpus-archive, or metadata-table role; extension and MIME must agree with that role, content is validated by the role-specific parser, and invalid UTF-8, non-NFC, binary, polyglot, malformed, empty, or over-limit payloads are rejected.",
       "status": "pending",
       "evidence": []
     },
@@ -65,7 +65,7 @@
     },
     {
       "id": "P003-AC-05",
-      "criterion": "Every rejection returns a content-free stable error code, creates no analysis state, and leaves no payload in temporary directories, session state, logs, or exception output.",
+      "criterion": "Every rejection returns a content-free stable error code, creates no analysis state, and leaves no payload copy in Delta-managed temporary directories, application session state, logs, or exception output; infrastructure-level retention remains P005/P014 evidence.",
       "status": "pending",
       "evidence": []
     },
