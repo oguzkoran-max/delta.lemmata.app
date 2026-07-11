@@ -1,0 +1,129 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260711-0005",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": ["P003"],
+  "started_at_utc": "2026-07-11T19:16:21Z",
+  "ended_at_utc": "2026-07-11T19:16:30Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "d99aa7158caa8ba78ac8b2c1810eb61d9d21b8a2",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/verify.sh",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Clean working tree at the recorded exact commit",
+    "command": "./scripts/verify.sh",
+    "limitations": [
+      "The rerun used the same Mac and may reuse locked local package caches.",
+      "The repository gate does not replay the human browser interactions.",
+      "The rerun validates P003 closure integrity, not metadata semantics, scientific computation, production retention, or deployment isolation."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P003-closure-verification.sha256",
+    "sha256": "1aed71ddc6f7bb4c33e15a1fc1c5a16b706f7e342ba10e327551ff4ae8a299f3",
+    "covers": ["provenance/evidence/P003-closure-verification"]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "provenance/tickets/P003.json",
+      "sha256": "2c60b02275dc352f9459d4aeb084a6137c089e3bb4375a5386b24ba45bcf6e0c"
+    },
+    {
+      "path": "provenance/human-decision-ledger.jsonl",
+      "sha256": "07abc9ad4feb5d18e2ff915576bbf3fdbeb7530285e21817cdf7735f1ae3567f"
+    },
+    {
+      "path": "provenance/prompt-events.jsonl",
+      "sha256": "575cd23b7b0089fce19ea4494c7a858da5ba3392cfc9dd7d11d7d6c079666664"
+    },
+    {
+      "path": "provenance/runs/RUN-20260711-0004.json",
+      "sha256": "4fedecf6960aa51c3131d9294ba79b03b407be8fa6fa97de4eabc1ce8f3ef8e9"
+    },
+    {
+      "path": "provenance/evidence/P003-human-acceptance/report.md",
+      "sha256": "05484ce7d7318088ce33a391bc31610cbaeaed9a2983fbaa279839e9e6317f43"
+    },
+    {
+      "path": "provenance/evidence/P003-human-acceptance.sha256",
+      "sha256": "960d55430ce12eef1c402f00d9f8464d90d7f99fab8a70ab8881c01809f051d7"
+    },
+    {
+      "path": "provenance/evidence/P003-acceptance-context-20260711.md",
+      "sha256": "fd0157478f568aeeda94602e68ee91cb1ebd98b8e37781394f8ea2945b6e0a32"
+    },
+    {
+      "path": "provenance/evidence/P003-closure-review.md",
+      "sha256": "edc8c916f5052e9fdf7197e34a3802ad71427be6f8b073713b64b4cef2f6f4af"
+    },
+    {
+      "path": "START_HERE.md",
+      "sha256": "09359fa5685a38adfb53526088da2419a8c657c2397309b441928bbd8b81b092"
+    },
+    {
+      "path": "SESSION_HANDOFF.md",
+      "sha256": "24be5b109e8187f3dbcc78c4d10a614aec140f929800e6ccb4b62605c720edca"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P003-closure-verification/verify.log",
+      "sha256": "9d3d602984d5980d60b5fedd7832d4c3f12d0199631b0377f7ee30bad5fbee71"
+    },
+    {
+      "path": "provenance/evidence/P003-closure-verification/run-meta.txt",
+      "sha256": "c1195cee19fb60f5af25eeeb9335e7db734f2dd46c7901e45789cfbe89e6ab2a"
+    },
+    {
+      "path": "provenance/evidence/P003-closure-verification/clean-status.txt",
+      "sha256": "ab6cae2dc47a2de4ca04f549147979d96ebcaaf6f2f3368caf30c92a23c73add"
+    },
+    {
+      "path": "provenance/evidence/P003-closure-verification/report.md",
+      "sha256": "0f300a0299aece94493624f904b5e6fde19c35b400fd535fee4c6344ca42c149"
+    }
+  ],
+  "notes": "The exact committed P003 human-acceptance closure tree passed every repository gate from a clean working tree. This Run terminates closure verification at the prior Git commit; it does not hash its own future record commit."
+}

@@ -8,7 +8,7 @@
 
 **Aktif ticket:** Yok; P003 `complete`, P004 henüz açılmadı
 
-**Sıradaki tek ana iş:** P003 kapanışını doğrula ve main'e al; ardından P004 ticket ve branch'ini aç
+**Sıradaki tek ana iş:** Geçen exact-commit kapanış Run'ını kaydet ve P003'ü main'e al; ardından P004 ticket ve branch'ini aç
 
 ## Önce Oku
 
@@ -137,6 +137,9 @@ production deployment, parent-site launch, PDF/DOCX/EPUB/TEI veya OCR eklenmedi.
 Oğuz manuel TXT+CSV, ZIP ve unsafe-CSV rejection turunu tamamladı ve
 nihai `HD-20260711-0008` ile kabul verdi. İnsan kanıtı otomatik paketi değiştirmeden
 `RUN-20260711-0004` ve ayrı checksum manifestiyle tutulur.
+İnsan kabul kayıtlarını içeren `d99aa7158caa8ba78ac8b2c1810eb61d9d21b8a2`
+exact commit'i temiz çalışma ağacında `RUN-20260711-0005` ile yeniden doğrulandı;
+232 test, yüzde 100 statement/branch coverage ve bütün repository kapıları geçti.
 
 ## FAIR Kapanış Disiplini
 

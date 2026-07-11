@@ -170,7 +170,7 @@ denetimi uygulandı; bu review eski evidence'i overwrite etmedi.
 - Fuzz test belirlenen çalışma süresinde crash veya workspace escape üretmez.
 - Rejected upload sonrasında temp dizin, log ve session state içinde payload kalmaz.
 
-**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar, path errata ve clean-clone raporu; `RUN-20260711-0003` ve `provenance/evidence/P003.sha256`. Ayrı insan kabul paketi `RUN-20260711-0004`, nihai `HD-20260711-0008`, kapsamı açıklanan kabul bağlamı ve `provenance/evidence/P003-human-acceptance.sha256` ile kayıtlıdır.
+**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar, path errata ve clean-clone raporu; `RUN-20260711-0003` ve `provenance/evidence/P003.sha256`. Ayrı insan kabul paketi `RUN-20260711-0004`, nihai `HD-20260711-0008`, kapsamı açıklanan kabul bağlamı ve `provenance/evidence/P003-human-acceptance.sha256` ile kayıtlıdır. Kapanış ağacı exact commit üzerinde `RUN-20260711-0005` ile yeniden doğrulanmıştır.
 **Claim/tehdit bağlantısı:** CE-14; SEC-01, SEC-02, SEC-03, SEC-04, SEC-05.  
 **Non-goal:** PDF, DOCX, EPUB, OCR veya TEI ingestion.  
 **Sahip/denetçi:** Geliştirme ajanı uygular; P014'te bağımsız deployment testi tekrarlanır.

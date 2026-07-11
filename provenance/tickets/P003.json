@@ -43,9 +43,14 @@
     "9c8eef2a7be34a3f72e5af8a33ea4fdb676d56aa",
     "daf3775c2a7a91273487f3e2368b6b0f051269ef",
     "b8d95df29621b3f78af30882929050e2b06b878e",
-    "60bb93e4554cf7fa2827014b719cc8eb427a9ada"
+    "60bb93e4554cf7fa2827014b719cc8eb427a9ada",
+    "d99aa7158caa8ba78ac8b2c1810eb61d9d21b8a2"
   ],
-  "run_ids": ["RUN-20260711-0003", "RUN-20260711-0004"],
+  "run_ids": [
+    "RUN-20260711-0003",
+    "RUN-20260711-0004",
+    "RUN-20260711-0005"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -60,7 +65,9 @@
     "provenance/evidence/P003-human-acceptance/report.md",
     "provenance/evidence/P003-human-acceptance.sha256",
     "provenance/evidence/P003-acceptance-context-20260711.md",
-    "provenance/evidence/P003-closure-review.md"
+    "provenance/evidence/P003-closure-review.md",
+    "provenance/evidence/P003-closure-verification/report.md",
+    "provenance/evidence/P003-closure-verification.sha256"
   ],
   "acceptance": [
     {
@@ -134,7 +141,8 @@
     "Deterministic TXT, CSV, ZIP, fuzz, cleanup, UI, schema, record-integrity, and browser tests",
     "P003 Ticket, PromptEvents, HumanDecisions, Run, successful and failed browser packages, path errata, clean-clone report, and SHA-256 manifest",
     "Threat model, claim matrix, roadmap, development contract, startup, handoff, and project memory",
-    "Human acceptance decision, manual browser Run, unchanged screenshots, report, and separate checksum manifest"
+    "Human acceptance decision, manual browser Run, unchanged screenshots, report, and separate checksum manifest",
+    "Exact-commit P003 closure verification Run, clean-status evidence, and separate checksum manifest"
   ],
   "commands": [
     {
@@ -184,6 +192,12 @@
       "exit_code": 0,
       "result": "The acceptance owner observed all three expected visible outcomes and authorized P003 closure.",
       "evidence": "provenance/runs/RUN-20260711-0004.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The exact committed human-acceptance closure tree passed 232 tests, 100% measured statement and branch coverage, record integrity, repository, supply-chain, and R-lock gates from a clean tree.",
+      "evidence": "provenance/runs/RUN-20260711-0005.json"
     }
   ],
   "blockers": []

@@ -1,0 +1,44 @@
+30 files already formatted
+All checks passed!
+Success: no issues found in 10 source files
+============================= test session starts ==============================
+platform darwin -- Python 3.13.9, pytest-8.4.2, pluggy-1.6.0
+rootdir: /Users/mac/Developer/delta.lemmata_app
+configfile: pyproject.toml
+testpaths: tests
+plugins: cov-7.1.0, anyio-4.14.1
+collected 232 items
+
+tests/test_catalog.py .....                                              [  2%]
+tests/test_health.py ..                                                  [  3%]
+tests/test_ingestion_fuzz.py ................                            [  9%]
+tests/test_ingestion_text_csv.py ....................................... [ 26%]
+............................................                             [ 45%]
+tests/test_ingestion_zip.py ............................................ [ 64%]
+.............................                                            [ 77%]
+tests/test_intake_ui.py ......                                           [ 79%]
+tests/test_metadata.py ..                                                [ 80%]
+tests/test_provenance.py ....                                            [ 82%]
+tests/test_record_integrity.py ......                                    [ 84%]
+tests/test_repository_hygiene.py ..                                      [ 85%]
+tests/test_runtime_boundary.py ....                                      [ 87%]
+tests/test_schemas.py ...............                                    [ 93%]
+tests/test_supply_chain.py ....                                          [ 95%]
+tests/test_webapp.py .......                                             [ 98%]
+tests/test_workbench.py ...                                              [100%]
+
+================================ tests coverage ================================
+_______________ coverage: platform darwin, python 3.13.9-final-0 _______________
+
+Name    Stmts   Miss Branch BrPart  Cover   Missing
+---------------------------------------------------
+TOTAL     900      0    218      0   100%
+
+9 files skipped due to complete coverage.
+Required test coverage of 100.0% reached. Total coverage: 100.00%
+============================= 232 passed in 4.80s ==============================
+metadata-ok version=0.0.0.dev0
+records-ok count=38
+repository-scan-ok
+r-lock-ok stylo-namespace-load-deferred
+verify-ok

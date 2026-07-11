@@ -108,8 +108,9 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 P003 Secure Ingestion tamamlandı. Otomatik ve adversarial paket
 `RUN-20260711-0003`, Oğuz'un TXT+CSV, ZIP ve unsafe-CSV rejection walkthrough'u
-ise `RUN-20260711-0004` ile kayıtlıdır. İnsan kabul kararı
-`HD-20260711-0008`dir; ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
+`RUN-20260711-0004`, insan kabulü eklenmiş exact-commit kapanış doğrulaması ise
+`RUN-20260711-0005` ile kayıtlıdır. İnsan kabul kararı `HD-20260711-0008`dir;
+ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
 
 Sıradaki tek iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı bir
 branch üzerinde açmaktır. P004:

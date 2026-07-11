@@ -210,6 +210,11 @@ yanıtı ve bağımsız belirsizlik bulgusu `HD-20260711-0007` içinde ayrı tut
 CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve scientific
 computation bu ticket'ın dışındadır.
 
+İnsan kabulü ve kapanış kayıtlarını içeren `d99aa7158caa8ba78ac8b2c1810eb61d9d21b8a2`
+commit'i temiz çalışma ağacında `RUN-20260711-0005` ile yeniden doğrulandı. 232 test,
+yüzde 100 statement/branch coverage ve bütün repository, supply-chain ve R-lock
+kapıları geçti.
+
 Repository çalışma kopyası 11 Temmuz 2026'da Google Drive'dan
 `~/Developer/delta.lemmata_app` yoluna taşınmış ve özel GitHub origin'i
 eklenmiştir. Bu operasyon P003'ün implementation veya acceptance sonucunu
@@ -224,7 +229,7 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. P003 kapanış commit'i bütün doğrulama kapılarından geçirilip `main`e alınır.
+1. P003 kapanış kanıtı commit edilir ve doğrulanan dal `main`e alınır.
 2. P004 Metadata, Corpus Inventory, and Rights için ayrı branch, PromptEvent ve Ticket açılır.
 3. LiberLiber pilot manifesti P004 şema/rights tasarımında araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
 
