@@ -2,24 +2,24 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P003 Secure Ingestion otomatik ve bağımsız kapıları geçti; insan kabulü bekleniyor
+**Aşama:** P003 Secure Ingestion bütün kabul kapılarını geçti; P004 açılışı sırada
 
 **Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
 
-**Aktif ticket:** P003 Secure Ingestion (`in-progress`)
+**Aktif ticket:** Yok; P003 `complete`, P004 henüz açılmadı
 
-**Sıradaki tek ana iş:** Oğuz P003 acceptance kanıtını inceler ve kabul/ret kararı verir
+**Sıradaki tek ana iş:** P003 kapanışını doğrula ve main'e al; ardından P004 ticket ve branch'ini aç
 
 ## Önce Oku
 
 1. `START_HERE.md`
 2. Bu dosya
-3. Roadmap'teki yalnız P003 bölümü
-4. Claim CE-14
-5. Threat SEC-01, SEC-02, SEC-03, SEC-04 ve SEC-05
-6. `provenance/tickets/P003.json`
-7. `prompts/P003-codex-execution-brief.md`
-8. P003'ün etkileyeceği ingestion kodu ve malicious fixture testleri
+3. Roadmap'teki P004 bölümü
+4. Claim CE-09 ve CE-13
+5. Threat RP-01, RP-02, EPI-01 ve EPI-07
+6. `provenance/tickets/P003.json` kapanış sınırı
+7. `docs/methodology/pinocchio-diachronic-worked-example.md` içindeki metadata ve rights alanları
+8. P004 açıldıktan sonra yeni Ticket ve execution brief
 
 ## Uygulanan Bağımsız Denetim Talimatı
 
@@ -84,7 +84,7 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
   P002 main entegrasyonu ve ardından ayrı P003 açılışı olarak kabul edildi.
 - **Main doğrulaması:** merge sonrasında 47 test, yüzde 100 measured source coverage,
   23 provenance kaydı ve tüm otomatik kapılar geçti.
-- **Sonraki adım:** P003 insan kabul kapısı.
+- **Tarihsel sonraki adım:** P003 insan kabul kapısıydı; bu kapı artık `HD-20260711-0008` ile tamamlandı.
 
 ## P002 Sonucu
 
@@ -134,7 +134,9 @@ olarak tutulur.
 
 P003'te metadata anlamı/rights, gerçek analysis, Pinokyo data, retention süreleri,
 production deployment, parent-site launch, PDF/DOCX/EPUB/TEI veya OCR eklenmedi.
-Oğuz acceptance olmadan ticket'ı complete yapma.
+Oğuz manuel TXT+CSV, ZIP ve unsafe-CSV rejection turunu tamamladı ve
+nihai `HD-20260711-0008` ile kabul verdi. İnsan kanıtı otomatik paketi değiştirmeden
+`RUN-20260711-0004` ve ayrı checksum manifestiyle tutulur.
 
 ## FAIR Kapanış Disiplini
 
@@ -160,11 +162,11 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
 - `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
   repository'sidir; bu henüz public release değildir.
-- Varsayılan uzak dal `main`; aktif geliştirme dalı
-  `codex/p003-secure-ingestion`dır.
+- Varsayılan uzak dal `main`; P003 kapanış commit'i doğrulandıktan sonra
+  `codex/p003-secure-ingestion` main'e alınacak ve P004 ayrı dalda açılacaktır.
 - Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
   değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
 - Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje
   wiki'si yeni kanonik yola işaret eder.
-- Bu taşıma P003'ün insan acceptance kapısını geçirmez. Oğuz kabul etmeden P003'ü
-  complete yapma.
+- Repository taşıması P003 acceptance kanıtı değildir; P003'ün ayrı insan kabulü
+  `HD-20260711-0008` ve `RUN-20260711-0004` ile tamamlanmıştır.

@@ -87,8 +87,8 @@ veya CE-20 için modelin genellenebilir olduğu iddia edilmez.
 |---|---|---|---|
 | CE-01 | `implemented: intake step only` | Browser içinden açık TXT/ZIP rolü, ayrı CSV kontrolü ve R/Python kodu gerektirmeyen secure-intake adımı | P004, P008, P009 ve P012 sonrası tam upload-to-export E2E; P015 walkthrough |
 | CE-14 | `planned; not verified` | Reddedilen dosyada Delta widget anahtarı rotasyonu, content-free hata ve Delta workspace cleanup ön kanıtı | Başarı, hata, cancel, timeout, crash, restart, proxy, host, log ve kesin süreler P005/P014/P015 |
-| CE-19 | `implemented for P003 development` | Ticket, PromptEvent, HumanDecision, exact commit, `RUN-20260711-0003`, başarısız denemeler, clean clone ve dış checksum zinciri | P004-P015 coverage ve final disclosure audit |
-| CE-20 | `in progress for P003 development` | Scholar-owned acceptance tasarımı, çoklu ajan denetimi, kod, test, hata, sınır ve clean-clone kayıtları mevcut; Oğuz kabulü henüz yok | Oğuz kabulü, sonraki ticket owner coverage, Barış walkthrough'u ve P015 vaka raporu |
+| CE-19 | `implemented for P003 development` | Ticket, PromptEvent, HumanDecision, exact commit, `RUN-20260711-0003/0004`, başarısız denemeler, clean clone ve ayrı otomatik/insan checksum zincirleri | P004-P015 coverage ve final disclosure audit |
+| CE-20 | `implemented for P003 development` | Scholar-owned acceptance tasarımı, çoklu ajan denetimi, kod, test, hata, sınır, clean-clone, bağımsız belirsizlik bulgusu ve nihai `HD-20260711-0008` Oğuz kabulü ayrı kaydedildi | Sonraki ticket owner coverage, Barış walkthrough'u ve P015 vaka raporu |
 
 P003 yalnız application intake sınırını kanıtlar. "Uploads are transient"
 fallback cümlesi bile production altyapısı için P005/P014 öncesinde kesin

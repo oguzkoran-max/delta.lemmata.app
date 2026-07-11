@@ -5,10 +5,11 @@ digital humanities research. Its supported workflows are designed to run without
 requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
-**Current stage:** P002 English-only workbench shell passed its acceptance gate
-and clean-clone rerun. An independent Claude design/code/content audit is queued
-before P003 secure ingestion; no public analysis workflow or scientific result
-has been implemented or validated yet.
+**Current stage:** P003 Secure Ingestion passed automated, adversarial,
+exact-commit clean-clone, and human acceptance gates. The English-only workbench
+can validate bounded TXT, ZIP, and structural metadata CSV inputs; metadata
+semantics, rights decisions, and scientific computation are not implemented yet.
+P004 Metadata, Corpus Inventory, and Rights is the next bounded ticket.
 
 ## Product Boundaries
 

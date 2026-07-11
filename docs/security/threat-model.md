@@ -137,9 +137,10 @@ geçmiş veya `verified` olarak işaretlenmez.
 | SEC-04 | `verified: application intake` | NFC/casefold collision, reserved name, server ID, düz storage adı, `O_EXCL` ve no-follow yazma | Multi-process/container yarışı ve production volume P005/P014 |
 | SEC-05 | `implemented: intake only` | Kontrollü display label; CSV formula, HTML, newline ve path benzeri hücre reddi; content-free hata | Analiz çıktısı ve export escaping P009/P012 |
 
-P003 ara kanıtı `provenance/evidence/P003/` altındaki parser raporu, fixture ve
+P003 application-intake kanıtı `provenance/evidence/P003/` altındaki parser raporu, fixture ve
 fuzz özetleri, cleanup kapsamı, browser audit ve exact-commit clean-clone kaydı ile
-`RUN-20260711-0003` ve dış checksum manifestidir. Bu ara
+`RUN-20260711-0003` ve dış checksum manifestidir. Oğuz'un görünür TXT/CSV, ZIP ve
+unsafe-CSV rejection kabulü ayrı `RUN-20260711-0004` paketindedir. Bu
 durumlar SEC-03 veya SEC-05'in bütün release yüzeylerinde kapandığı anlamına
 gelmez. Özellikle SEC-12 ve CE-14 P005/P014/P015 kanıtı olmadan `verified`
 olarak işaretlenmez.

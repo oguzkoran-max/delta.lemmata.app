@@ -118,7 +118,7 @@ flowchart TD
 `a888e7c81e5fdae12687903de29d0728f5c7cbd5`. Acceptance ve clean-clone kanıtı:
 `provenance/evidence/P002/` ve `provenance/runs/RUN-20260710-0004.json`.
 P003'ten önce ayrı branch üzerinde bağımsız Claude audit-and-repair ve son Codex
-denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
+denetimi uygulandı; bu review eski evidence'i overwrite etmedi.
 
 **Amaç:** Pazarlama landing page'i yerine doğrudan kullanılabilir, erişilebilir ve ileride yerelleştirilebilir iş istasyonu kabuğu kurmak.
 
@@ -148,7 +148,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 
 ### P003: Secure Ingestion
 
-**Durum:** Implementation, adversarial review, exact-commit clean clone, Run ve manifest tamam; insan kabul kapısı bekleniyor.
+**Durum:** 2026-07-11 tarihinde tamamlandı. Otomatik, adversarial, exact-commit clean-clone ve Oğuz'un manuel browser kabul kapıları geçti.
 
 **Amaç:** `.txt`, `.zip` ve metadata `.csv` girdilerini çalışma alanı dışına taşmadan ve sunucuyu tüketmeden kabul etmek.
 
@@ -170,7 +170,7 @@ denetimi uygulanacaktır; bu review eski evidence'i overwrite etmez.
 - Fuzz test belirlenen çalışma süresinde crash veya workspace escape üretmez.
 - Rejected upload sonrasında temp dizin, log ve session state içinde payload kalmaz.
 
-**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar, path errata ve clean-clone raporu; `RUN-20260711-0003` ve `provenance/evidence/P003.sha256`.
+**Kanıt:** `provenance/evidence/P003/` altında malicious fixture inventory, parser raporu, fuzz özeti, cleanup taraması, browser audit, başarısız run'lar, path errata ve clean-clone raporu; `RUN-20260711-0003` ve `provenance/evidence/P003.sha256`. Ayrı insan kabul paketi `RUN-20260711-0004`, nihai `HD-20260711-0008`, kapsamı açıklanan kabul bağlamı ve `provenance/evidence/P003-human-acceptance.sha256` ile kayıtlıdır.
 **Claim/tehdit bağlantısı:** CE-14; SEC-01, SEC-02, SEC-03, SEC-04, SEC-05.  
 **Non-goal:** PDF, DOCX, EPUB, OCR veya TEI ingestion.  
 **Sahip/denetçi:** Geliştirme ajanı uygular; P014'te bağımsız deployment testi tekrarlanır.

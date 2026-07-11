@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P003 Secure Ingestion kod, bağımsız denetim, exact-commit clean-clone, Run ve checksum kapılarını geçti; insan kabulü bekleniyor.
+**Güncel aşama:** P003 Secure Ingestion otomatik, bağımsız, exact-commit ve insan kabul kapılarını geçti. Sıradaki iş P004 Metadata, Corpus Inventory, and Rights ticket'ını açmaktır.
 
 ## 1. Her Oturumda Oku
 
@@ -106,14 +106,19 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Aktif iş P003 Secure Ingestion insan kabul kapısıdır. Kod, deterministic
-fixture/fuzz, rejected-widget cleanup, English intake UI, adversarial review,
-exact-commit clean clone, fresh-process browser audit, Run ve dış SHA-256 manifesti
-tamamlanmıştır.
+P003 Secure Ingestion tamamlandı. Otomatik ve adversarial paket
+`RUN-20260711-0003`, Oğuz'un TXT+CSV, ZIP ve unsafe-CSV rejection walkthrough'u
+ise `RUN-20260711-0004` ile kayıtlıdır. İnsan kabul kararı
+`HD-20260711-0008`dir; ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
 
-1. Oğuz, Ticket'taki altı acceptance ölçütünü ve bağlı kanıtı inceler.
-2. Açık P0/P1/P2 yoksa Oğuz açık kabul veya ret kararı verir.
-3. Kabul olmadan P003'ü `complete` yapma veya P004/P005'e geçme.
+Sıradaki tek iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı bir
+branch üzerinde açmaktır. P004:
 
-P003 sırasında metadata/rights modeli, retention garantisi, gerçek `stylo`, Pinokyo
-corpus'u, deployment, runtime AI veya `Launch Stylometry` entegrasyonu uygulanmaz.
+1. her metni `work_id`, yazar, tarih, edisyon, tür, hedef kitle ve kaynakla tanımlar;
+2. upload, analysis, export ve public redistribution izinlerini ayırır;
+3. hak durumu bilinmeyen varlığı sessizce açık kabul etmez;
+4. üç kronolojik nokta ve altı bağımsız eser yoksa Style Over Time sonucunu
+   zorunlu olarak exploratory işaretler.
+
+P004 retention garantisi, gerçek `stylo`, Pinokyo nihai corpus'u, deployment,
+runtime AI veya `Launch Stylometry` entegrasyonu eklemez.

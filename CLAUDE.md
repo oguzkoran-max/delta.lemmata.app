@@ -36,9 +36,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmıştır.
-Savunmacı parser incelemesi, exact-commit clean clone, browser harness, Run ve
-checksum manifesti tamamdır. Aktif iş yalnız Oğuz kabulüdür. Metadata anlamı,
-rights, retention süreleri, `stylo`, Pinokyo verisi veya deployment ekleme. Kanonik
-sınır `provenance/tickets/P003.json` ile
-`provenance/evidence/P003/report.md` içindedir.
+P003 Secure Ingestion otomatik, adversarial, exact-commit ve Oğuz'un manuel
+browser kabul kapılarını geçmiştir. Kanıt `provenance/tickets/P003.json`,
+`RUN-20260711-0003`, `RUN-20260711-0004` ve iki ayrı checksum manifestindedir.
+Sıradaki iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı branch
+üzerinde açmaktır. Metadata anlamı ve hak modeli P004 kapsamındadır; retention,
+`stylo`, nihai Pinokyo corpus'u ve deployment ekleme.

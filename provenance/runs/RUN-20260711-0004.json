@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260711-0004",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": ["P003"],
+  "started_at_utc": "2026-07-11T18:29:03Z",
+  "ended_at_utc": "2026-07-11T18:33:00Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "568984e7a36d5d296a4c476ff5c20c5668487693",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "streamlit": "1.59.1",
+    "browser": "Codex in-app browser, user-operated",
+    "server": "loopback 127.0.0.1"
+  },
+  "command": "Manual browser walkthrough: valid TXT plus CSV; valid strict ZIP; unsafe CSV rejection and widget clearing",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "src/delta_lemmata/data/ingestion-limits-v1.json",
+      "sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58"
+    }
+  ],
+  "replay": {
+    "level": "none",
+    "working_directory": "Local application at the recorded commit with disposable synthetic fixtures outside the repository",
+    "command": "Manual browser walkthrough: valid TXT plus CSV; valid strict ZIP; unsafe CSV rejection and widget clearing",
+    "limitations": [
+      "The interaction was performed by the human acceptance owner and is evidenced by screenshots rather than an automated browser trace.",
+      "The disposable Desktop fixture files are not retained as repository source artifacts; automated equivalent fixtures remain in the P003 test suite.",
+      "The walkthrough confirms visible acceptance behavior, not production retention, scientific computation, or deployment isolation."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P003-human-acceptance.sha256",
+    "sha256": "960d55430ce12eef1c402f00d9f8464d90d7f99fab8a70ab8881c01809f051d7",
+    "covers": ["provenance/evidence/P003-human-acceptance"]
+  },
+  "input_artifacts": [
+    {
+      "path": "app.py",
+      "sha256": "4a5e3ac6e0bcfc3616cb67f44d0af443323149f71431184f0f8fa386b6bfe0b4"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "449923c3c849862017fbfcfafeb65645ce3b7369f2b8627d17e6e9f1a44d20a7"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "ba34760103f7605888bb12c99798db8398f2287b355716c31549a17e99688124"
+    },
+    {
+      "path": "src/delta_lemmata/data/ingestion-limits-v1.json",
+      "sha256": "e473f3fb15097bfdcade400e5b6ef352ab96248a28e8b34a9b0e8e9279928f58"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P003-human-acceptance/report.md",
+      "sha256": "05484ce7d7318088ce33a391bc31610cbaeaed9a2983fbaa279839e9e6317f43"
+    },
+    {
+      "path": "provenance/evidence/P003-human-acceptance/valid-txt-metadata.png",
+      "sha256": "0264bf7b94e879a03d3140f38537632ab75da45c580b04c3e9e188d25a917a84"
+    },
+    {
+      "path": "provenance/evidence/P003-human-acceptance/valid-zip.png",
+      "sha256": "b9db194685d632a3f539fa80ea108d1d76b019d54b5eef3ebced8cd09775981a"
+    },
+    {
+      "path": "provenance/evidence/P003-human-acceptance/rejected-csv-injection.png",
+      "sha256": "acaf107f9d0d655b22b9fc478bb6a6e0db7a66453ac3e90b0b6267a35fc64b63"
+    }
+  ],
+  "notes": "The acceptance owner completed all three guided browser checks. Final contextual acceptance was recorded later as HD-20260711-0008; automated P003 evidence remains immutable and separately manifested."
+}

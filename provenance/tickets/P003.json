@@ -2,9 +2,9 @@
   "schema_version": "1.1.0",
   "ticket_id": "P003",
   "title": "Secure Ingestion",
-  "status": "in-progress",
+  "status": "complete",
   "opened_at_utc": "2026-07-11T07:14:10Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-11T19:08:49Z",
   "objective": "Accept TXT, ZIP, and metadata CSV inputs through a bounded, content-validated, fail-closed intake boundary without workspace escape, uncontrolled resource consumption, or payload leakage.",
   "scope": [
     "Declared-role TXT, ZIP, and metadata CSV intake with extension, supplied MIME, and content agreement",
@@ -27,15 +27,25 @@
   "dependencies": ["P001"],
   "claim_ids": ["CE-14"],
   "threat_ids": ["SEC-01", "SEC-02", "SEC-03", "SEC-04", "SEC-05"],
-  "decision_ids": ["HD-20260711-0002", "HD-20260711-0003"],
-  "prompt_event_ids": ["PE-20260711-0002", "PE-20260711-0003"],
+  "decision_ids": [
+    "HD-20260711-0002",
+    "HD-20260711-0003",
+    "HD-20260711-0007",
+    "HD-20260711-0008"
+  ],
+  "prompt_event_ids": [
+    "PE-20260711-0002",
+    "PE-20260711-0003",
+    "PE-20260711-0007",
+    "PE-20260711-0008"
+  ],
   "commit_ids": [
     "9c8eef2a7be34a3f72e5af8a33ea4fdb676d56aa",
     "daf3775c2a7a91273487f3e2368b6b0f051269ef",
     "b8d95df29621b3f78af30882929050e2b06b878e",
     "60bb93e4554cf7fa2827014b719cc8eb427a9ada"
   ],
-  "run_ids": ["RUN-20260711-0003"],
+  "run_ids": ["RUN-20260711-0003", "RUN-20260711-0004"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -46,23 +56,28 @@
     "provenance/evidence/P003/adversarial-review.md",
     "provenance/evidence/P003/clean-clone-verification.md",
     "provenance/evidence/P003/test-summary.json",
-    "provenance/evidence/P003.sha256"
+    "provenance/evidence/P003.sha256",
+    "provenance/evidence/P003-human-acceptance/report.md",
+    "provenance/evidence/P003-human-acceptance.sha256",
+    "provenance/evidence/P003-acceptance-context-20260711.md",
+    "provenance/evidence/P003-closure-review.md"
   ],
   "acceptance": [
     {
       "id": "P003-AC-01",
       "criterion": "Each upload has an explicit corpus-text, corpus-archive, or metadata-table role; extension and any client-supplied MIME must agree with that role, MIME absence never substitutes for content validation, and the role parser rejects invalid UTF-8, non-NFC, known binary/document signatures, ZIP masquerades, malformed, empty, or over-limit payloads.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "provenance/evidence/P003/report.md",
         "provenance/evidence/P003/fixture-manifest.json",
-        "provenance/evidence/P003/test-summary.json"
+        "provenance/evidence/P003/test-summary.json",
+        "provenance/evidence/P003-human-acceptance/report.md"
       ]
     },
     {
       "id": "P003-AC-02",
       "criterion": "Zip-slip, absolute paths, drive paths, symlinks, hardlinks, nested archives, duplicate normalized names, reserved names, and archive-bomb fixtures are rejected before extraction and cannot escape the fresh destination.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "provenance/evidence/P003/report.md",
         "provenance/evidence/P003/fixture-manifest.json",
@@ -72,7 +87,7 @@
     {
       "id": "P003-AC-03",
       "criterion": "Compressed size, expanded size, member count, compression ratio, path length, line count, token count, and token length are enforced from one versioned limit profile without silent downgrade.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "provenance/evidence/P003/report.md",
         "provenance/evidence/P003/test-summary.json",
@@ -82,32 +97,35 @@
     {
       "id": "P003-AC-04",
       "criterion": "Storage names and asset identifiers are server-generated; user filenames remain controlled display labels, and CSV formula, HTML, newline, path, and log injection fixtures fail closed.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "provenance/evidence/P003/fixture-manifest.json",
         "provenance/evidence/P003/clean-clone-browser/browser-audit.json",
-        "provenance/evidence/P003/adversarial-review.md"
+        "provenance/evidence/P003/adversarial-review.md",
+        "provenance/evidence/P003-human-acceptance/report.md"
       ]
     },
     {
       "id": "P003-AC-05",
       "criterion": "Every rejection returns a content-free stable error code, creates no analysis state, and leaves no payload copy in Delta-managed temporary directories, application session state, logs, or exception output; infrastructure-level retention remains P005/P014 evidence.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "provenance/evidence/P003/cleanup-scan.json",
         "provenance/evidence/P003/clean-clone-browser/browser-audit.json",
-        "provenance/evidence/P003/adversarial-review.md"
+        "provenance/evidence/P003/adversarial-review.md",
+        "provenance/evidence/P003-human-acceptance/report.md"
       ]
     },
     {
       "id": "P003-AC-06",
       "criterion": "Deterministic malicious fixtures, bounded property/fuzz tests, disk canary scans, full verification, and a clean-clone rerun all pass before P003 is closed.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "provenance/evidence/P003/fuzz-summary.json",
         "provenance/evidence/P003/test-summary.json",
         "provenance/evidence/P003/clean-clone-verification.md",
-        "provenance/evidence/P003.sha256"
+        "provenance/evidence/P003.sha256",
+        "provenance/evidence/P003-human-acceptance/report.md"
       ]
     }
   ],
@@ -115,7 +133,8 @@
     "Secure ingestion parser, versioned limit profile, intake UI, catalog, theme, and Streamlit integration",
     "Deterministic TXT, CSV, ZIP, fuzz, cleanup, UI, schema, record-integrity, and browser tests",
     "P003 Ticket, PromptEvents, HumanDecisions, Run, successful and failed browser packages, path errata, clean-clone report, and SHA-256 manifest",
-    "Threat model, claim matrix, roadmap, development contract, startup, handoff, and project memory"
+    "Threat model, claim matrix, roadmap, development contract, startup, handoff, and project memory",
+    "Human acceptance decision, manual browser Run, unchanged screenshots, report, and separate checksum manifest"
   ],
   "commands": [
     {
@@ -159,6 +178,12 @@
       "exit_code": 0,
       "result": "Every P003 evidence artifact matched the external manifest.",
       "evidence": "provenance/evidence/P003.sha256"
+    },
+    {
+      "command": "Manual browser walkthrough: valid TXT plus CSV; valid strict ZIP; unsafe CSV rejection and widget clearing",
+      "exit_code": 0,
+      "result": "The acceptance owner observed all three expected visible outcomes and authorized P003 closure.",
+      "evidence": "provenance/runs/RUN-20260711-0004.json"
     }
   ],
   "blockers": []

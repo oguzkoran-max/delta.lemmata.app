@@ -2,7 +2,7 @@
 
 **Son güncelleme:** 2026-07-11
 
-**Durum:** P003 Secure Ingestion ve denetim düzeltmeleri uygulandı; kapanış kanıtı aktif
+**Durum:** P003 Secure Ingestion otomatik ve insan kabul kapılarıyla tamamlandı; P004 açılışı sırada
 
 **Kod:** English-only workbench'te TXT/ZIP/CSV secure intake var; bilimsel hesaplama henüz yok
 
@@ -200,13 +200,15 @@ entegrasyonu da P002 dışında bırakılmıştır.
 P002; Claude bağımsız denetimi, Codex düzeltmeleri, karşıt yeniden denetim ve canlı
 ürün kapısından sonra `8ef2582` merge commit'iyle main'e alındı. Açık P0/P1/P2 yoktur.
 
-P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmıştır.
-Katı TXT/CSV/ZIP parser, versioned limits, deterministic fuzz, rejected-widget
-cleanup ve browser audit geçmektedir. Son savunmacı review, exact-commit clean
-clone, `RUN-20260711-0003` ve dış evidence manifesti tamamlandı; yalnız insan
-kabulü kapanış için beklenir. TXT, ZIP ve
-metadata CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve
-scientific computation bu ticket'ın dışındadır.
+P003 Secure Ingestion `codex/p003-secure-ingestion` branch'inde uygulanmış ve
+2026-07-11 tarihinde tamamlanmıştır. Katı TXT/CSV/ZIP parser, versioned limits,
+deterministic fuzz, rejected-widget cleanup, browser audit, exact-commit clean
+clone ve `RUN-20260711-0003` otomatik paketi geçti. Oğuz iki TXT + valid CSV,
+strict ZIP ve unsafe CSV rejection-and-clearing akışlarını elle çalıştırdı;
+`RUN-20260711-0004` ve nihai `HD-20260711-0008` ile kabul verdi. İlk kısa devam
+yanıtı ve bağımsız belirsizlik bulgusu `HD-20260711-0007` içinde ayrı tutulur. TXT, ZIP ve metadata
+CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve scientific
+computation bu ticket'ın dışındadır.
 
 Repository çalışma kopyası 11 Temmuz 2026'da Google Drive'dan
 `~/Developer/delta.lemmata_app` yoluna taşınmış ve özel GitHub origin'i
@@ -222,9 +224,9 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. Oğuz P003'ün altı acceptance ölçütünü bağlı kanıt üzerinden inceler.
-2. Açık kabul veya ret HumanDecision olarak kaydedilir.
-3. Oğuz acceptance vermeden P003'ü complete yapma veya P004/P005'e ilerleme.
+1. P003 kapanış commit'i bütün doğrulama kapılarından geçirilip `main`e alınır.
+2. P004 Metadata, Corpus Inventory, and Rights için ayrı branch, PromptEvent ve Ticket açılır.
+3. LiberLiber pilot manifesti P004 şema/rights tasarımında araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
 
 ## Anahtar Kullanıcı İfadeleri
 
@@ -247,6 +249,8 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 > "FAIR ilkelerini unutma, her şeyi yaptığımız aşamalar şeffaf olmalı."
 
 > "Launch Stylometry gibi bir şey düşünürüz ama o sonraki aşama."
+
+> "tamam devam edelim"
 
 ## Hafıza Güncelleme Kuralı
 
