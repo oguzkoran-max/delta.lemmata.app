@@ -120,3 +120,47 @@ araç dosyaları kaldığı doğrulandıktan sonra provider Trash içindeki `.ve
   kaldı. Drive arayüzü `Güncel` durumunu gösterdi.
 - Bu temizlik P003 kodunu, acceptance durumunu veya exact implementation kanıtını
   değiştirmez.
+
+## Provider Trash Final Closure Correction
+
+Yukarıdaki 60 saniyelik sıfır kuyruk ve `Güncel` gözlemi o anda doğruydu, fakat
+nihai kapanış için yetersiz kaldı. Sonraki gözlemde provider Trash içindeki eski
+çalışma ağacı yeni işlem dalgaları üretmeye devam etti. Bu bölüm önceki kaydı
+silmez; geçici kapanışı ve onu izleyen düzeltmeyi ardışık olarak belgeler.
+
+- `.venv` ve `.tools` sonrasında kalan `.coverage`, `.mypy_cache`,
+  `.pytest_cache`, `.ruff_cache`, `build`, `renv/library`, `__pycache__` ve
+  `src/delta_lemmata.egg-info` yolları `git check-ignore` ile yeniden üretilebilir
+  oldukları doğrulandıktan sonra eski Trash kopyasından kaldırıldı. P001 generated
+  evidence bu aşamada korundu.
+- İlk sıfır kuyruğun ardından eski `.git` nesneleri ve P001 kanıt dosyaları yeni
+  local-only create dalgaları olarak belirdi. Kök neden, yaklaşık 13 MiB'lık eski
+  repository'nin 792 dosya ve 292 dizinle hâlâ Drive'ın yönettiği provider Trash
+  alanında bulunmasıydı.
+- Normal kapanış `StopAllAccounts with SUCCESSFUL_EXIT` sonrasında tamamlanmadı.
+  Bekleyen operasyon sayısı sıfır ve `lost_and_found` boşken, yalnız takılı
+  `Google Drive --single_process` yardımcı süreci önce `TERM`, yanıt vermeyince
+  `KILL` ile kapatıldı. Yeniden başlatma 10.654 change-log girdisini yerel çalışma
+  kümesiyle uzlaştırdı; bu olay yeni Delta yüklemesi değil Drive metadata
+  reconciliation işlemiydi.
+- Provider alanından doğrudan `mv` ve ardından kontrollü `rsync` denemeleri File
+  Provider timeout'u verdi. Doğrudan taşıma hedef oluşturulmadan sonlandı; kısmi
+  `rsync` hedefi kaldırıldı. Bu başarısız denemeler eski kaynak kopyasını veya
+  kanonik repository'yi değiştirmedi.
+- Eski Trash kopyası kaldırılmadan önce
+  `~/Developer/_migration_archive/delta-lemmata-safety-20260711` altında 5,1 MiB
+  güvenlik paketi oluşturuldu. Paket, tam geçmişli 11 ref içeren ve
+  `git bundle verify` kapısını geçen `delta.lemmata_app-all-refs.bundle` dosyasını,
+  onun `03b0e84f69db188a927ca5c7194aaad2054f869b98845d3d7b3b07a74f970737`
+  SHA-256 değerini ve Git dışındaki sekiz P001 generated evidence dosyasının ayrı
+  SHA-256 manifestini içerir.
+- Kanonik `HEAD` ve özel GitHub dalı
+  `3adfca0221980ccc827d3384317bb42d4dee15f0` değerinde eşleşti; uygulama health
+  endpoint'i `ok` döndürdü. Bu kapılardan sonra yalnız provider Trash içindeki eski
+  ve artık yedek olan `delta.lemmata_app` kopyası kalıcı olarak kaldırıldı.
+- Nihai gözlemde Drive arayüzü en az altı dakika boyunca `Güncel` kaldı;
+  `operations=0` ve local-only item sayısı `0` olarak doğrulandı. Görünen son üç
+  öğe Delta'ya ait değildi ve yeşil onaylı tamamlanmış indirmelerdi.
+- Drive'ın iç SQLite kayıtları yalnız salt okunur sorgulandı. Global cache
+  temizlenmedi, hesap bağlantısı kesilmedi ve başka Drive verisi değiştirilmedi.
+  Bu operasyon P003 kodunu veya insan kabul durumunu değiştirmez.
