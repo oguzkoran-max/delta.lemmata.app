@@ -142,3 +142,5 @@ Result on the stable pre-commit snapshot:
 This evidence does not pass the full P004 Ticket. Parameters remain locked. No
 scientific chart, stylometric result, legal determination, raw-text export, permanent
 storage, runtime AI, or deployment claim is introduced.
+
+Implementation checkpoint: `e5b269f1614938cbf2a7066fa322d6b55d4d47d6`.
