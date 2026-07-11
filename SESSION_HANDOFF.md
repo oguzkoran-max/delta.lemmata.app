@@ -157,6 +157,14 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 
 ## Repository Notu
 
-- Delta ayrı, remote'suz `main` repository'sidir.
-- Parent akademik-asistan repository'si Delta dizinini ignore eder.
-- Parent çalışma ağacındaki Delta dışı kullanıcı değişikliklerine dokunma.
+- Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
+- `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
+  repository'sidir; bu henüz public release değildir.
+- Varsayılan uzak dal `main`; aktif geliştirme dalı
+  `codex/p003-secure-ingestion`dır.
+- Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
+  değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
+- Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje
+  wiki'si yeni kanonik yola işaret eder.
+- Bu taşıma P003'ün insan acceptance kapısını geçirmez. Oğuz kabul etmeden P003'ü
+  complete yapma.

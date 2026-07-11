@@ -4,6 +4,10 @@
 **Tarih:** 2026-07-10  
 **Ticket:** P001
 
+**2026-07-11 notu:** Yerel konum ve uzak repository maddeleri
+`ADR-0010-local-working-copy-and-private-remote.md` tarafından değiştirilmiştir.
+Repository sınırı, lisans, runtime ve metadata kararları geçerliliğini korur.
+
 ## Bağlam
 
 Delta klasörü kullanıcı kararıyla `AKADEMİK-ASİSTAN` altında tutulmaktadır. Üst klasör, kişisel ve akademik içeriği barındıran ayrı bir yerel Git deposudur. Delta'nın FAIR-oriented biçimde public yayımlanması planlandığı için iki geçmişin birbirine karışması hassas veri, telif ve provenance riski oluşturur.

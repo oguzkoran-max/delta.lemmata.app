@@ -31,6 +31,8 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 |---|---|---|
 | Ürün adı | Delta | Burrows's Delta ve fark/değişim fikriyle uyumlu |
 | Alan adı | delta.lemmata.app | Lemmata ürün ailesi ve aynı VPS kullanımı |
+| Kanonik çalışma yolu | `~/Developer/delta.lemmata_app` | Sanal ortam ve araç dosyalarını Google Drive eşitlemesinden çıkarmak |
+| GitHub origin | Özel `https://github.com/oguzkoran-max/delta.lemmata.app` | İzlenen kaynak ve Git geçmişi için uzak yedek; public release değildir |
 | Lemmata launch entegrasyonu | `Launch Stylometry` sonraki ayrı ticket | Canlı parent siteyi P002 kapsamına gizlice dahil etmemek ve bağımsız regression/rollback kapısı kurmak |
 | P002 ikinci-model denetimi | Claude önce read-only denetler, sonra kanıtlı eksikleri ayrı branch'te düzeltir; Codex son denetçi | Tanı ile uygulamayı ayırmak, self-preferential bias'ı azaltmak ve kabul edilmiş baseline'ı korumak |
 | Runtime AI | v0.1'de yok | Maliyet, gizlilik, telif ve determinism |
@@ -205,6 +207,11 @@ clone, `RUN-20260711-0003` ve dış evidence manifesti tamamlandı; yalnız insa
 kabulü kapanış için beklenir. TXT, ZIP ve
 metadata CSV dışındaki formatlar ile metadata anlamı, retention garantileri ve
 scientific computation bu ticket'ın dışındadır.
+
+Repository çalışma kopyası 11 Temmuz 2026'da Google Drive'dan
+`~/Developer/delta.lemmata_app` yoluna taşınmış ve özel GitHub origin'i
+eklenmiştir. Bu operasyon P003'ün implementation veya acceptance sonucunu
+değiştirmez. Karar ve doğrulama kapıları ADR-0010'da kayıtlıdır.
 
 Sonraki ticket acceptance kapılarında izlenecekler:
 
