@@ -23,6 +23,12 @@ def test_ci_actions_are_commit_pinned_and_match_lock() -> None:
         assert len(action["commit"]) == 40
 
 
+def test_ci_verify_fetches_complete_history_for_provenance() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    verify_job = workflow.split("  container:", maxsplit=1)[0]
+    assert "fetch-depth: 0" in verify_job
+
+
 def test_container_base_digest_matches_lock() -> None:
     dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
     lock = load_json(ROOT / "containers" / "base-images.lock.json")
