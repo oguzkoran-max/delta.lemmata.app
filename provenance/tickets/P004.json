@@ -14,7 +14,8 @@
     "Canonical corpus inventory and upload-order-invariant inventory hashing",
     "Metadata-change invalidation contract for dependent runs",
     "Exploratory readiness rule for fewer than three chronology points or six independent works",
-    "English-only guided corpus-documentation UI connected after the P003 secure-intake boundary"
+    "English-only guided corpus-documentation UI connected after the P003 secure-intake boundary",
+    "Accessible visual Corpus Review with a work timeline, composition bars, rights action matrix, metadata completeness matrix, and readiness summary"
   ],
   "non_goals": [
     "Automatic copyright or jurisdictional legal determination",
@@ -27,8 +28,8 @@
   "dependencies": ["P003"],
   "claim_ids": ["CE-09", "CE-13"],
   "threat_ids": ["RP-01", "RP-02", "EPI-01", "EPI-07"],
-  "decision_ids": [],
-  "prompt_event_ids": ["PE-20260711-0009"],
+  "decision_ids": ["HD-20260711-0009"],
+  "prompt_event_ids": ["PE-20260711-0009", "PE-20260711-0010"],
   "commit_ids": ["233f0b37737dd8ab017653c4af911036f5ea04ca"],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
@@ -37,6 +38,7 @@
   "supplemental_evidence": [
     "prompts/P004-start.md",
     "docs/development/roadmap-P001-P015.md",
+    "docs/development/p004-metadata-ux-decisions.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md",
     "docs/methodology/pinocchio-diachronic-worked-example.md"
@@ -77,11 +79,18 @@
       "criterion": "The English-only corpus-documentation UI explains required fields and actionable corrections without weakening P003 intake checks, retaining rejected payloads, running scientific analysis, or making automatic legal determinations.",
       "status": "pending",
       "evidence": []
+    },
+    {
+      "id": "P004-AC-07",
+      "criterion": "Corpus Review provides an accessible work timeline, composition bars, rights action matrix, metadata completeness matrix, and readiness summary with text equivalents, responsive behavior, and no placeholder or visual claim resembling a computed stylometric result.",
+      "status": "pending",
+      "evidence": []
     }
   ],
   "changed_files": [
     "P004 execution brief, native PromptEvent link, and in-progress Ticket",
-    "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary"
+    "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary",
+    "Human-approved metadata interaction defaults and accessible visual Corpus Review contract"
   ],
   "commands": [],
   "blockers": []

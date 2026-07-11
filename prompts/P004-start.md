@@ -39,9 +39,12 @@ notlarını incele. Daha önce onaylanmış ürün kararlarını yeniden sorma.
 7. Style Over Time readiness kuralını modelle: en az üç kronolojik nokta ve altı
    bağımsız eser yoksa sonuç üretme aşamasına `exploratory` zorunluluğu taşı.
    Bu eşik bilimsel yeterlilik garantisi veya confound giderimi olarak sunulmasın.
-8. İngilizce workbench'te corpus documentation adımını hiç bilmeyen kullanıcının
-   anlayacağı alan adları, kısa açıklamalar ve düzeltilebilir hatalarla bağla.
-   P003 secure intake sınırını gevşetme ve rejected payload saklama.
+8. İngilizce workbench'te form + CSV, progressive disclosure, exact eşleştirme ve
+   Corpus Review akışını `docs/development/p004-metadata-ux-decisions.md` kararlarına
+   göre bağla. Review ekranında work timeline, composition bars, rights action
+   matrix, metadata completeness matrix ve readiness summary kullan. P003 secure
+   intake sınırını gevşetme, rejected payload saklama veya P004'te stilometrik sonuç
+   grafiği taklit etme.
 9. Determinism, rights negative fixtures, schema migration, malformed CSV,
    cross-field tarih kuralları, upload-order invariance ve metadata invalidation
    testlerini ekle. Measured source için yüzde 100 statement/branch coverage

@@ -10,6 +10,11 @@
 
 **Sıradaki tek ana iş:** P004 versioned metadata, rights, canonical inventory ve chronology-readiness contract'ını acceptance ölçütlerine göre uygula
 
+**Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
+bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
+actions, üç seviyeli validation ve görsel Corpus Review. Ayrıntı:
+`docs/development/p004-metadata-ux-decisions.md`.
+
 ## Önce Oku
 
 1. `START_HERE.md`
