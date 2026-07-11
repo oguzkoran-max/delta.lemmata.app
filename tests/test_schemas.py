@@ -129,6 +129,8 @@ def test_run_schema_1_1_requires_path_qualified_configuration_and_replay() -> No
 def test_ticket_schema_1_1_requires_run_and_supplemental_evidence_links() -> None:
     ticket = read_json(ROOT / "provenance" / "tickets" / "P002.json")
     ticket["schema_version"] = "1.1.0"
+    ticket.pop("run_ids", None)
+    ticket.pop("supplemental_evidence", None)
     with pytest.raises(ValidationError):
         validate_record(ticket, SCHEMAS / "ticket.schema.json")
 

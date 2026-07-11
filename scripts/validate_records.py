@@ -9,7 +9,7 @@ import re
 import subprocess
 import sys
 from collections.abc import Iterable
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any
 
 from delta_lemmata.provenance import validate_record
@@ -57,9 +57,68 @@ def _git_commit_exists(commit_id: str) -> bool:
     return completed.returncode == 0
 
 
+def _repo_path(relative_path: str) -> Path | None:
+    path = PurePosixPath(relative_path)
+    if (
+        path.is_absolute()
+        or ".." in path.parts
+        or "\\" in relative_path
+        or ":" in relative_path
+        or path.as_posix() != relative_path
+    ):
+        return None
+    target = (ROOT / Path(*path.parts)).resolve()
+    root = ROOT.resolve()
+    if target != root and root not in target.parents:
+        return None
+    return target
+
+
+def _git_blob_sha256(commit_id: str, relative_path: str) -> str | None:
+    completed = subprocess.run(
+        ["git", "show", f"{commit_id}:{relative_path}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if completed.returncode != 0:
+        return None
+    return hashlib.sha256(completed.stdout).hexdigest()
+
+
+def artifact_errors(run_id: str, run: dict[str, Any]) -> list[str]:
+    """Validate v1.1 artifact paths and hashes against the tested commit or filesystem."""
+
+    errors: list[str] = []
+    commit_id = run["git_commit"]
+    for artifact in run["input_artifacts"]:
+        relative_path = artifact["path"]
+        if _repo_path(relative_path) is None:
+            errors.append(f"{run_id}: input artifact path is not repo-relative: {relative_path}")
+            continue
+        actual_hash = _git_blob_sha256(commit_id, relative_path)
+        if actual_hash is None:
+            errors.append(f"{run_id}: input artifact is absent from {commit_id}: {relative_path}")
+        elif actual_hash != artifact["sha256"]:
+            errors.append(f"{run_id}: input artifact hash mismatch: {relative_path}")
+
+    for artifact in run["output_artifacts"]:
+        relative_path = artifact["path"]
+        target = _repo_path(relative_path)
+        if target is None:
+            errors.append(f"{run_id}: output artifact path is not repo-relative: {relative_path}")
+        elif not target.is_file():
+            errors.append(f"{run_id}: output artifact does not exist: {relative_path}")
+        elif _sha256_file(target) != artifact["sha256"]:
+            errors.append(f"{run_id}: output artifact hash mismatch: {relative_path}")
+    return errors
+
+
 def _manifest_errors(manifest: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    manifest_path = ROOT / manifest["path"]
+    manifest_path = _repo_path(manifest["path"])
+    if manifest_path is None:
+        return [f"evidence manifest path is not repo-relative: {manifest['path']}"]
     if not manifest_path.is_file():
         return [f"evidence manifest does not exist: {manifest['path']}"]
     actual_manifest_hash = _sha256_file(manifest_path)
@@ -72,11 +131,17 @@ def _manifest_errors(manifest: dict[str, Any]) -> list[str]:
         if not separator or not re.fullmatch(r"[0-9a-f]{64}", digest):
             errors.append(f"invalid manifest line {line_number}: {manifest['path']}")
             continue
+        if _repo_path(relative_path) is None:
+            errors.append(f"manifest artifact path is not repo-relative: {relative_path}")
+            continue
         entries[relative_path] = digest
 
     expected: set[str] = set()
     for covered_path in manifest["covers"]:
-        target = ROOT / covered_path
+        target = _repo_path(covered_path)
+        if target is None:
+            errors.append(f"manifest coverage path is not repo-relative: {covered_path}")
+            continue
         if target.is_dir():
             expected.update(
                 str(path.relative_to(ROOT)) for path in target.rglob("*") if path.is_file()
@@ -130,7 +195,10 @@ def integrity_errors() -> list[str]:
             if run_id not in runs:
                 errors.append(f"{ticket_id}: unresolved Run {run_id}")
         for evidence_path in ticket.get("supplemental_evidence", []):
-            if not (ROOT / evidence_path).exists():
+            target = _repo_path(evidence_path)
+            if target is None:
+                errors.append(f"{ticket_id}: supplemental evidence path is not repo-relative")
+            elif not target.exists():
                 errors.append(f"{ticket_id}: missing supplemental evidence {evidence_path}")
 
     supersession_graph: dict[str, set[str]] = {}
@@ -143,6 +211,8 @@ def integrity_errors() -> list[str]:
             errors.append(f"{run_id}: unresolved commit {commit_id}")
         if run["schema_version"] != "1.1.0":
             continue
+
+        errors.extend(artifact_errors(run_id, run))
 
         configuration = {(item["path"], item["sha256"]) for item in run["configuration_artifacts"]}
         inputs = {(item["path"], item["sha256"]) for item in run["input_artifacts"]}
