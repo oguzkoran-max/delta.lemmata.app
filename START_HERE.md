@@ -2,7 +2,7 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P003 Secure Ingestion otomatik, bağımsız, exact-commit ve insan kabul kapılarını geçti. Sıradaki iş P004 Metadata, Corpus Inventory, and Rights ticket'ını açmaktır.
+**Güncel aşama:** P003 Secure Ingestion doğrulanarak `main`e alındı. P004 Metadata, Corpus Inventory, and Rights `codex/p004-metadata-rights` dalında aktif ve henüz kabul edilmedi.
 
 ## 1. Her Oturumda Oku
 
@@ -112,8 +112,8 @@ P003 Secure Ingestion tamamlandı. Otomatik ve adversarial paket
 `RUN-20260711-0005` ile kayıtlıdır. İnsan kabul kararı `HD-20260711-0008`dir;
 ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
 
-Sıradaki tek iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı bir
-branch üzerinde açmaktır. P004:
+Aktif iş `provenance/tickets/P004.json` kabul ölçütlerine göre P004 Metadata,
+Corpus Inventory, and Rights modelini uygulamaktır. P004:
 
 1. her metni `work_id`, yazar, tarih, edisyon, tür, hedef kitle ve kaynakla tanımlar;
 2. upload, analysis, export ve public redistribution izinlerini ayırır;

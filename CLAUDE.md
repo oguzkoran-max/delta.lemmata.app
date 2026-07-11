@@ -36,9 +36,8 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P003 Secure Ingestion otomatik, adversarial, exact-commit ve Oğuz'un manuel
-browser kabul kapılarını geçmiştir. Kanıt `provenance/tickets/P003.json`,
-`RUN-20260711-0003`, `RUN-20260711-0004` ve iki ayrı checksum manifestindedir.
-Sıradaki iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı branch
-üzerinde açmaktır. Metadata anlamı ve hak modeli P004 kapsamındadır; retention,
+P003 Secure Ingestion bütün kapıları geçerek `main`e alınmıştır. Aktif kayıt
+`provenance/tickets/P004.json`, dal `codex/p004-metadata-rights`, execution brief
+`prompts/P004-start.md` dosyasındadır. Metadata anlamı, canonical inventory,
+rights state machine ve chronology readiness P004 kapsamındadır; retention,
 `stylo`, nihai Pinokyo corpus'u ve deployment ekleme.

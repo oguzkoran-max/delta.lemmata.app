@@ -2,13 +2,13 @@
 
 **Güncellendi:** 2026-07-11
 
-**Aşama:** P003 Secure Ingestion bütün kabul kapılarını geçti; P004 açılışı sırada
+**Aşama:** P003 Secure Ingestion `main`e alındı; P004 Metadata, Corpus Inventory, and Rights aktif
 
 **Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
 
-**Aktif ticket:** Yok; P003 `complete`, P004 henüz açılmadı
+**Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Geçen exact-commit kapanış Run'ını kaydet ve P003'ü main'e al; ardından P004 ticket ve branch'ini aç
+**Sıradaki tek ana iş:** P004 versioned metadata, rights, canonical inventory ve chronology-readiness contract'ını acceptance ölçütlerine göre uygula
 
 ## Önce Oku
 
@@ -19,7 +19,7 @@
 5. Threat RP-01, RP-02, EPI-01 ve EPI-07
 6. `provenance/tickets/P003.json` kapanış sınırı
 7. `docs/methodology/pinocchio-diachronic-worked-example.md` içindeki metadata ve rights alanları
-8. P004 açıldıktan sonra yeni Ticket ve execution brief
+8. `provenance/tickets/P004.json` ve `prompts/P004-start.md`
 
 ## Uygulanan Bağımsız Denetim Talimatı
 
@@ -165,8 +165,8 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
 - `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
   repository'sidir; bu henüz public release değildir.
-- Varsayılan uzak dal `main`; P003 kapanış commit'i doğrulandıktan sonra
-  `codex/p003-secure-ingestion` main'e alınacak ve P004 ayrı dalda açılacaktır.
+- Varsayılan uzak dal `main`; P003 `d5a8118` merge commit'iyle alınmıştır.
+  Aktif geliştirme dalı `codex/p004-metadata-rights` dalıdır.
 - Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
   değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
 - Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje

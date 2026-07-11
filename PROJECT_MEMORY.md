@@ -2,7 +2,7 @@
 
 **Son güncelleme:** 2026-07-11
 
-**Durum:** P003 Secure Ingestion otomatik ve insan kabul kapılarıyla tamamlandı; P004 açılışı sırada
+**Durum:** P003 Secure Ingestion doğrulanarak `main`e alındı; P004 Metadata, Corpus Inventory, and Rights aktif
 
 **Kod:** English-only workbench'te TXT/ZIP/CSV secure intake var; bilimsel hesaplama henüz yok
 
@@ -229,9 +229,9 @@ Sonraki ticket acceptance kapılarında izlenecekler:
 
 ## Sonraki Adımlar
 
-1. P003 kapanış kanıtı commit edilir ve doğrulanan dal `main`e alınır.
-2. P004 Metadata, Corpus Inventory, and Rights için ayrı branch, PromptEvent ve Ticket açılır.
-3. LiberLiber pilot manifesti P004 şema/rights tasarımında araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
+1. P004 versioned metadata, rights state machine, canonical inventory ve validation contract uygulanır.
+2. P004 determinism, negative-rights, chronology-readiness ve metadata-invalidation testleri eklenir.
+3. LiberLiber pilot manifesti araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendirilir.
 
 ## Anahtar Kullanıcı İfadeleri
 

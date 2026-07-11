@@ -177,6 +177,8 @@ denetimi uygulandı; bu review eski evidence'i overwrite etmedi.
 
 ### P004: Metadata, Corpus Inventory, and Rights
 
+**Durum:** `in-progress`; `codex/p004-metadata-rights`, `provenance/tickets/P004.json`.
+
 **Amaç:** Her metni bilimsel bir eser ve ayrı bir hak varlığı olarak tanımlayan doğrulanabilir corpus modeli kurmak.
 
 **Bağımlılık:** P003.

@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P004",
+  "title": "Metadata, Corpus Inventory, and Rights",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-11T19:26:16Z",
+  "closed_at_utc": null,
+  "objective": "Build a versioned, fail-closed corpus model that identifies every uploaded text as a scholarly work and a separate rights asset, produces a deterministic inventory, and exposes chronology readiness without making legal or scientific sufficiency claims.",
+  "scope": [
+    "Versioned general asset metadata and Style Over Time chronology fields",
+    "Explicit file, asset, work, edition, source, genre, audience, adaptation, collection, and normalization relationships",
+    "Asset-level rights state machine with separate upload, analysis, export, and public redistribution permissions",
+    "Versioned CSV template, field dictionary, valid and invalid fixtures, and actionable row-and-field validation reports",
+    "Canonical corpus inventory and upload-order-invariant inventory hashing",
+    "Metadata-change invalidation contract for dependent runs",
+    "Exploratory readiness rule for fewer than three chronology points or six independent works",
+    "English-only guided corpus-documentation UI connected after the P003 secure-intake boundary"
+  ],
+  "non_goals": [
+    "Automatic copyright or jurisdictional legal determination",
+    "Internet corpus collection, scraping, or source-text redistribution",
+    "Job lifecycle, retention scheduler, production isolation, or deployment",
+    "R stylo execution or any scientific result",
+    "Final Pinocchio corpus analysis or a two-version collation workflow",
+    "Runtime AI, login, analytics, permanent project storage, or lemmata.app integration"
+  ],
+  "dependencies": ["P003"],
+  "claim_ids": ["CE-09", "CE-13"],
+  "threat_ids": ["RP-01", "RP-02", "EPI-01", "EPI-07"],
+  "decision_ids": [],
+  "prompt_event_ids": ["PE-20260711-0009"],
+  "commit_ids": [],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex"],
+  "supplemental_evidence": [
+    "prompts/P004-start.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md",
+    "docs/methodology/pinocchio-diachronic-worked-example.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P004-AC-01",
+      "criterion": "A versioned schema distinguishes file, asset, independent work, edition, and source identities; documents chronology, genre, audience, adaptation, collection, and normalization fields; and rejects missing required relationships.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P004-AC-02",
+      "criterion": "Versioned CSV templates and a field dictionary are accompanied by valid and invalid fixtures; validation reports identify actionable row, field, and stable error codes for missing fields, duplicate work identifiers, unmatched files, conflicting dates, and unknown controlled values.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P004-AC-03",
+      "criterion": "The rights state machine preserves verified-open, analysis-only, permission-required, unknown, and excluded states while independently recording upload, analysis, export, and public redistribution permissions; unknown or permission-required assets cannot qualify for raw public export.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P004-AC-04",
+      "criterion": "Canonical inventory hashing is invariant to upload order and deterministic across clean reruns, while any semantic metadata or rights change alters the hash and invalidates dependent run identity.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P004-AC-05",
+      "criterion": "Style Over Time readiness requires at least three chronology points and six independent works; smaller corpora are machine-readably and visibly forced to exploratory status without presenting the threshold as scientific sufficiency or confound removal.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P004-AC-06",
+      "criterion": "The English-only corpus-documentation UI explains required fields and actionable corrections without weakening P003 intake checks, retaining rejected payloads, running scientific analysis, or making automatic legal determinations.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [
+    "P004 execution brief, native PromptEvent link, and in-progress Ticket",
+    "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary"
+  ],
+  "commands": [],
+  "blockers": []
+}
