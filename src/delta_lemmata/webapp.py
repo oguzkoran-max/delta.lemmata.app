@@ -1,4 +1,4 @@
-"""English-only Streamlit workbench shell for P002."""
+"""English-only Streamlit workbench with a secure P003 intake boundary."""
 
 from __future__ import annotations
 
@@ -9,6 +9,15 @@ import streamlit as st
 
 from delta_lemmata.catalog import text
 from delta_lemmata.health import public_health
+from delta_lemmata.ingestion import DEFAULT_LIMITS, IntakeReceipt, IntakeRole
+from delta_lemmata.intake_ui import (
+    CORPUS_MODE_LABEL_KEYS,
+    INTAKE_ERROR_MESSAGE_KEYS,
+    BrowserUpload,
+    CorpusInputMode,
+    IntakeOutcome,
+    validate_browser_uploads,
+)
 from delta_lemmata.ui_theme import APP_CSS
 from delta_lemmata.workbench import (
     MODE_BODY_KEYS,
@@ -51,8 +60,7 @@ def _render_header(health: dict[str, Any]) -> None:
     )
 
 
-def _map_row(number: int, label_key: str, *, active: bool) -> str:
-    state_key = "sidebar.state.active" if active else "sidebar.state.locked"
+def _map_row(number: int, label_key: str, state_key: str, *, active: bool = False) -> str:
     active_class = " is-active" if active else ""
     return (
         f'<div class="delta-map-row{active_class}">'
@@ -63,20 +71,21 @@ def _map_row(number: int, label_key: str, *, active: bool) -> str:
     )
 
 
-def _experiment_map_markup() -> str:
+def _experiment_map_markup(corpus_ready: bool) -> str:
     """Return the shared experiment-map markup used by the sidebar and the panel."""
 
+    corpus_state = "sidebar.state.validated" if corpus_ready else "sidebar.state.active"
     return (
         '<div class="delta-map">'
-        + _map_row(1, "sidebar.step.purpose", active=True)
-        + _map_row(2, "sidebar.step.corpus", active=False)
-        + _map_row(3, "sidebar.step.parameters", active=False)
-        + _map_row(4, "sidebar.step.evidence", active=False)
+        + _map_row(1, "sidebar.step.purpose", "sidebar.state.complete")
+        + _map_row(2, "sidebar.step.corpus", corpus_state, active=not corpus_ready)
+        + _map_row(3, "sidebar.step.parameters", "sidebar.state.locked")
+        + _map_row(4, "sidebar.step.evidence", "sidebar.state.locked")
         + "</div>"
     )
 
 
-def _render_sidebar(health: dict[str, Any]) -> None:
+def _render_sidebar(health: dict[str, Any], outcome: IntakeOutcome) -> None:
     with st.sidebar:
         st.badge(
             text("header.stage"),
@@ -84,8 +93,8 @@ def _render_sidebar(health: dict[str, Any]) -> None:
             color="green",
         )
         st.caption(text("sidebar.progress"))
-        st.progress(25)
-        st.markdown(_experiment_map_markup(), unsafe_allow_html=True)
+        st.progress(50)
+        st.markdown(_experiment_map_markup(outcome.corpus_ready), unsafe_allow_html=True)
         st.divider()
         st.markdown(f"**{text('sidebar.boundary_title')}**")
         st.caption(text("sidebar.boundary_body"))
@@ -104,6 +113,57 @@ def _purpose_label(purpose_id: str) -> str:
 
 def _mode_label(mode_id: str) -> str:
     return text(MODE_LABEL_KEYS[WorkbenchMode(mode_id)])
+
+
+def _corpus_mode_label(mode_id: str) -> str:
+    return text(CORPUS_MODE_LABEL_KEYS[CorpusInputMode(mode_id)])
+
+
+def _browser_upload(upload: Any) -> BrowserUpload:
+    return BrowserUpload(
+        display_label=upload.name,
+        data=upload.getvalue(),
+        declared_mime=upload.type or None,
+    )
+
+
+def _receipt_metric(receipt: IntakeReceipt) -> str:
+    if receipt.role is IntakeRole.CORPUS_TEXT:
+        return text(
+            "corpus.receipt.text",
+            lines=receipt.line_count,
+            tokens=receipt.token_count,
+        )
+    if receipt.role is IntakeRole.CORPUS_ARCHIVE:
+        return text(
+            "corpus.receipt.archive",
+            members=receipt.member_count,
+            expanded=receipt.expanded_bytes,
+        )
+    return text(
+        "corpus.receipt.csv",
+        rows=receipt.row_count,
+        columns=receipt.column_count,
+    )
+
+
+def _render_receipts(outcome: IntakeOutcome) -> None:
+    role_keys = {
+        IntakeRole.CORPUS_TEXT: "corpus.role.text",
+        IntakeRole.CORPUS_ARCHIVE: "corpus.role.archive",
+        IntakeRole.METADATA_CSV: "corpus.role.csv",
+    }
+    markup = "".join(
+        '<div class="delta-intake-row">'
+        '<div class="delta-intake-identity">'
+        f'<span class="delta-intake-name">{_html(receipt.display_label)}</span>'
+        f'<span class="delta-intake-role">{_html(text(role_keys[receipt.role]))}</span>'
+        "</div>"
+        f'<span class="delta-intake-metric">{_html(_receipt_metric(receipt))}</span>'
+        "</div>"
+        for receipt in outcome.receipts
+    )
+    st.markdown(markup, unsafe_allow_html=True)
 
 
 def _render_purpose_detail(purpose: PurposeSpec) -> None:
@@ -154,7 +214,7 @@ def _render_mode() -> WorkbenchMode:
     return mode
 
 
-def _render_corpus_stage() -> None:
+def _render_corpus_stage() -> IntakeOutcome:
     with st.container(border=True, key="corpus_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("corpus.eyebrow"))}</div>',
@@ -165,42 +225,93 @@ def _render_corpus_stage() -> None:
             st.header(text("corpus.title"), anchor=False)
         with badge_column:
             st.badge(
-                text("corpus.locked"),
-                icon=":material/lock:",
-                color="gray",
+                text("corpus.available"),
+                icon=":material/shield:",
+                color="green",
             )
         st.caption(text("corpus.body"))
-        st.caption(text("corpus.disabled_reason"))
-        st.file_uploader(
-            text("corpus.uploader"),
-            type=["txt", "zip", "csv"],
-            accept_multiple_files=True,
-            help=text("corpus.uploader_help"),
-            disabled=True,
-            key="corpus_files",
+        selected_mode = st.segmented_control(
+            text("corpus.mode.label"),
+            options=[mode.value for mode in CorpusInputMode],
+            default=CorpusInputMode.TEXT_FILES.value,
+            format_func=_corpus_mode_label,
+            key="corpus_input_mode",
+            width="stretch",
         )
-        metadata_column, continue_column = st.columns(2)
-        with metadata_column:
-            st.button(
-                text("corpus.metadata_button"),
-                disabled=True,
-                help=text("corpus.metadata_button_help"),
-                width="stretch",
+        mode = CorpusInputMode(selected_mode or CorpusInputMode.TEXT_FILES.value)
+        if mode is CorpusInputMode.TEXT_FILES:
+            uploaded_corpus = st.file_uploader(
+                text("corpus.text_uploader"),
+                type=["txt"],
+                accept_multiple_files=True,
+                help=text("corpus.text_uploader_help"),
+                key="corpus_text_files",
             )
-        with continue_column:
-            st.button(
-                text("corpus.continue_button"),
-                disabled=True,
-                help=text("corpus.continue_button_help"),
-                width="stretch",
+            corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
+        else:
+            uploaded_archive = st.file_uploader(
+                text("corpus.archive_uploader"),
+                type=["zip"],
+                accept_multiple_files=False,
+                help=text("corpus.archive_uploader_help"),
+                key="corpus_archive_file",
             )
+            corpus_files = () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
+        uploaded_metadata = st.file_uploader(
+            text("corpus.metadata_uploader"),
+            type=["csv"],
+            accept_multiple_files=False,
+            help=text("corpus.metadata_uploader_help"),
+            key="metadata_file",
+        )
+        metadata_file = None if uploaded_metadata is None else _browser_upload(uploaded_metadata)
+        st.caption(
+            text(
+                "corpus.limits",
+                upload_mib=DEFAULT_LIMITS.max_upload_bytes // (1024 * 1024),
+                batch_files=DEFAULT_LIMITS.max_batch_files,
+                archive_members=DEFAULT_LIMITS.max_archive_members,
+                archive_mib=DEFAULT_LIMITS.max_archive_expanded_bytes // (1024 * 1024),
+            )
+        )
+        outcome = validate_browser_uploads(mode, corpus_files, metadata_file)
+        if not outcome.has_inputs:
+            st.info(text("corpus.empty"), icon=":material/upload_file:")
+        elif outcome.error_code is not None:
+            st.error(text("corpus.error.title"), icon=":material/gpp_bad:")
+            st.caption(text(INTAKE_ERROR_MESSAGE_KEYS[outcome.error_code]))
+            st.caption(text("corpus.error.reference", code=outcome.error_code.value))
+        else:
+            st.success(
+                text(
+                    "corpus.success",
+                    uploads=outcome.submitted_count,
+                    units=outcome.corpus_units,
+                    bytes=outcome.total_bytes,
+                ),
+                icon=":material/verified_user:",
+            )
+            if outcome.metadata_ready:
+                st.badge(
+                    text("corpus.metadata_valid"),
+                    icon=":material/table_view:",
+                    color="blue",
+                )
+            _render_receipts(outcome)
+        st.button(
+            text("corpus.continue_button"),
+            disabled=True,
+            help=text("corpus.continue_button_help"),
+            width="stretch",
+        )
+        return outcome
 
 
-def _render_experiment_map() -> None:
+def _render_experiment_map(outcome: IntakeOutcome) -> None:
     with st.container(border=True, key="experiment_map"):
         st.header(text("map.title"), anchor=False)
         st.caption(text("map.body"))
-        st.markdown(_experiment_map_markup(), unsafe_allow_html=True)
+        st.markdown(_experiment_map_markup(outcome.corpus_ready), unsafe_allow_html=True)
 
 
 def _render_boundary() -> None:
@@ -209,9 +320,14 @@ def _render_boundary() -> None:
         st.caption(text("boundary.body"))
 
 
-def _render_evidence_panel() -> None:
+def _render_evidence_panel(outcome: IntakeOutcome) -> None:
+    corpus_state = "evidence.corpus_state"
+    if outcome.error_code is not None:
+        corpus_state = "evidence.corpus_rejected"
+    elif outcome.corpus_ready:
+        corpus_state = "evidence.corpus_validated"
     rows = (
-        ("evidence.corpus", "evidence.corpus_state"),
+        ("evidence.corpus", corpus_state),
         ("evidence.parameters", "evidence.parameters_state"),
         ("evidence.limits", "evidence.limits_state"),
         ("evidence.run", "evidence.run_state"),
@@ -251,7 +367,7 @@ def render_interface_state(state: InterfaceState) -> None:
 
 
 def main() -> None:
-    """Render the P002 workbench shell."""
+    """Render the workbench through the implemented secure-intake boundary."""
 
     st.set_page_config(
         page_title=text("meta.page_title"),
@@ -262,7 +378,6 @@ def main() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
     health = dict(public_health())
     _render_header(health)
-    _render_sidebar(health)
 
     left, right = st.columns([1.7, 0.9], gap="large")
     with left:
@@ -285,13 +400,15 @@ def main() -> None:
         st.divider()
         _render_mode()
         st.divider()
-        _render_corpus_stage()
+        outcome = _render_corpus_stage()
 
     with right:
-        _render_experiment_map()
+        _render_experiment_map(outcome)
         _render_boundary()
-        _render_evidence_panel()
+        _render_evidence_panel(outcome)
         render_interface_state(InterfaceState.EMPTY)
+
+    _render_sidebar(health, outcome)
 
     st.divider()
     footer_left, footer_right = st.columns(2)

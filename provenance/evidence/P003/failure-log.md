@@ -52,5 +52,32 @@
    `src/delta_lemmata/data/ingestion-limits-v1.json`, preserving the prohibition on
    user corpus data while ensuring the security policy exists in clean clones and
    built distributions.
+9. The first UI formatting check ran after all Streamlit interaction tests passed
+   and requested mechanical wrapping changes in `catalog.py` and `webapp.py`.
+   Ruff formatted only those files before the repository-wide gate was rerun.
+10. The next repository-wide run passed formatting and stopped at import ordering
+    in `intake_ui.py`. Ruff's formatter does not apply its import-sorting lint
+    rule, so the safe lint autofix was run on that file before restarting the full
+    gate.
+11. The first static check of the new P003 browser harness found two screenshot
+    calls four characters over the repository line-length limit. Ruff reformatted
+    the script before any browser-audit result was collected.
+12. The first P003 browser-harness execution started a fresh server but stopped
+    before collecting a viewport result because the JavaScript geometry expression
+    closed its returned object with one extra parenthesis. The expression was
+    corrected and the incomplete run is not represented as browser evidence.
+13. The first correction matched an earlier, similar closing sequence in the
+    heading extractor rather than the geometry expression, so the second execution
+    stopped at the same syntax error. Both expressions were then corrected with
+    their full surrounding context before another run.
+14. The next browser audit completed all viewport checks but returned `failed` in
+    the ZIP interaction. The harness waited for an `Uploads: 1` string already
+    present during a Streamlit rerun and inspected the page before ZIP validation
+    finished. It also expected the input `accept` attribute to equal `.zip`, while
+    Streamlit prepends its internal `application/streamlit` value. The harness now
+    waits for the unique ZIP-member summary and checks `.zip` as one accepted item.
+    The failed JSON and screenshots are retained under
+    `provenance/evidence/P003/browser-audit-failed-run-1/`; none is presented as
+    passing evidence.
 
 No failed or corrected attempt is presented as passing evidence.

@@ -1,0 +1,40 @@
+{
+  "schema_version": "1.0.0",
+  "ticket_id": "P003",
+  "result": "passed",
+  "scope": {
+    "included": [
+      "Fresh pytest temporary roots passed to secure_extract_archive",
+      "Delta-created workspace directories beneath those roots",
+      "Delta error string, repr, and traceback surfaces",
+      "Payload-free IntakeOutcome and IntakeReceipt representations"
+    ],
+    "excluded": [
+      "Streamlit upload-manager internals",
+      "Reverse-proxy request buffering",
+      "Container and host temporary storage",
+      "Swap, crash, reboot, backup, and infrastructure logs"
+    ]
+  },
+  "canaries": [
+    "SECRET_CANARY",
+    "SECRET_PAYLOAD",
+    "outside-canary.txt",
+    "SECRET_BROWSER_CANARY"
+  ],
+  "verified_conditions": [
+    "Archive rejection occurs before an extraction workspace is created.",
+    "Injected materialization and integrity failures remove Delta workspaces.",
+    "Cleanup failure is surfaced as a stable content-free error code.",
+    "Zip-slip fixtures do not modify the outside disk canary.",
+    "Application outcome and receipt objects retain no payload bytes."
+  ],
+  "evidence": [
+    "tests/test_ingestion_text_csv.py",
+    "tests/test_ingestion_zip.py",
+    "tests/test_ingestion_fuzz.py",
+    "tests/test_intake_ui.py",
+    "provenance/evidence/P003/browser-audit/browser-audit.json"
+  ],
+  "later_ticket_boundary": ["P005", "P014"]
+}

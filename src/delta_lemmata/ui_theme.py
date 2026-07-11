@@ -219,6 +219,44 @@ footer,
   text-align: right;
 }
 
+.delta-intake-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.8rem;
+  align-items: center;
+  min-height: 54px;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--delta-line);
+}
+
+.delta-intake-row:last-child {
+  border-bottom: 0;
+}
+
+.delta-intake-identity {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.delta-intake-name {
+  overflow-wrap: anywhere;
+  color: var(--delta-ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+.delta-intake-role,
+.delta-intake-metric {
+  color: var(--delta-muted);
+  font-size: 0.76rem;
+}
+
+.delta-intake-metric {
+  text-align: right;
+}
+
 .st-key-purpose_detail,
 .st-key-corpus_stage,
 .st-key-experiment_map,
@@ -310,6 +348,15 @@ h3 {
 
   .delta-map-row {
     grid-template-columns: 24px 1fr auto;
+  }
+
+  .delta-intake-row {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .delta-intake-metric {
+    text-align: left;
   }
 }
 </style>

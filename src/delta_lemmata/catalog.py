@@ -1,6 +1,6 @@
 """Central English UI catalog.
 
-P002 intentionally ships one locale. Keeping every user-facing string here makes
+Delta currently ships one locale. Keeping every user-facing string here makes
 copy audits deterministic and leaves a clean boundary for later localization.
 """
 
@@ -16,21 +16,26 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "brand.mark": "Δ",
     "brand.name": "Delta",
     "brand.subtitle": "Stylometry workbench",
-    "header.stage": "Interface foundation",
+    "header.stage": "Secure intake",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
-    "sidebar.progress": "Experiment map · 1 of 4",
+    "sidebar.progress": "Experiment map · 2 of 4",
     "sidebar.step.purpose": "Purpose",
     "sidebar.step.corpus": "Corpus",
     "sidebar.step.parameters": "Parameters",
     "sidebar.step.evidence": "Evidence",
     "sidebar.state.active": "Active",
+    "sidebar.state.complete": "Complete",
+    "sidebar.state.validated": "Validated",
     "sidebar.state.locked": "Locked",
     "sidebar.boundary_title": "Current boundary",
-    "sidebar.boundary_body": "This build does not ingest texts or calculate stylometric results.",
+    "sidebar.boundary_body": (
+        "This build validates uploads without creating analysis state. It does not "
+        "calculate stylometric results or retain a permanent project copy."
+    ),
     "build.title": "Build information",
     "build.readiness_label": "Readiness",
-    "build.readiness_value": "Interface only",
+    "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
     "build.engine_value": "Not connected",
     "setup.eyebrow": "EXPERIMENT SETUP · STEP 1",
@@ -86,30 +91,77 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Will run a documented parameter grid with explicit resource limits "
         "and complete cell reporting."
     ),
-    "mode.status": "Configuration opens after corpus validation.",
+    "mode.status": "Configuration remains locked until corpus documentation is connected.",
     "corpus.eyebrow": "CORPUS · STEP 2",
-    "corpus.title": "Add the research corpus",
+    "corpus.title": "Validate the research corpus",
     "corpus.body": (
-        "Secure corpus intake is deliberately unavailable until it has been "
-        "implemented and security-tested."
+        "Choose the corpus role before adding files. Delta accepts UTF-8, NFC text "
+        "files or one strict ZIP archive containing text files only. A metadata CSV "
+        "is checked separately for structure and unsafe cells."
     ),
-    "corpus.locked": "Locked for validation",
-    "corpus.uploader": "Corpus files - unavailable in this preview",
-    "corpus.uploader_help": (
-        "The validated release will accept documented text and metadata inputs. "
-        "This interface shell does not process files."
+    "corpus.available": "Secure intake available",
+    "corpus.mode.label": "Corpus input format",
+    "corpus.mode.text": "Individual TXT files",
+    "corpus.mode.archive": "One ZIP archive",
+    "corpus.text_uploader": "Corpus texts (.txt)",
+    "corpus.text_uploader_help": (
+        "Add one or more plain-text files. Each file is validated independently "
+        "and again as part of the complete batch."
     ),
-    "corpus.disabled_reason": (
-        "These controls are unavailable in this interface preview. Secure corpus "
-        "intake must be implemented and tested before files or metadata can be added."
+    "corpus.archive_uploader": "Corpus archive (.zip)",
+    "corpus.archive_uploader_help": (
+        "Add one standard ZIP containing TXT files only. Nested archives, links, "
+        "ambiguous paths, extra fields, encryption, and ZIP64 are rejected."
     ),
-    "corpus.metadata_button": "Add metadata - unavailable until intake is ready",
-    "corpus.metadata_button_help": (
-        "Metadata import opens after secure corpus intake has been implemented and tested."
+    "corpus.metadata_uploader": "Optional metadata table (.csv)",
+    "corpus.metadata_uploader_help": (
+        "This stage checks CSV structure and unsafe cells only. Column meaning, corpus "
+        "matching, dates, groups, and rights are reviewed in the next stage."
     ),
-    "corpus.continue_button": "Continue - unavailable until corpus checks pass",
+    "corpus.limits": (
+        "Intake limits · {upload_mib} MiB per upload · {batch_files} files per batch "
+        "· {archive_members} ZIP members · {archive_mib} MiB expanded ZIP content"
+    ),
+    "corpus.empty": "No files submitted. Choose a corpus format and add files when ready.",
+    "corpus.success": (
+        "Intake checks passed · Uploads: {uploads} · Corpus texts: {units} · Input bytes: {bytes}"
+    ),
+    "corpus.metadata_valid": "Metadata structure validated",
+    "corpus.role.text": "Corpus text",
+    "corpus.role.archive": "Corpus archive",
+    "corpus.role.csv": "Metadata table",
+    "corpus.receipt.text": "Lines: {lines} · Tokens: {tokens}",
+    "corpus.receipt.archive": "TXT members: {members} · Expanded bytes: {expanded}",
+    "corpus.receipt.csv": "Rows: {rows} · Columns: {columns}",
+    "corpus.error.title": "The submission was rejected before intake.",
+    "corpus.error.empty": "The selected file contains no bytes.",
+    "corpus.error.limit": (
+        "A versioned size, count, line, token, path, or compression limit was exceeded."
+    ),
+    "corpus.error.role": (
+        "The selected role, extension, media type, display label, and detected content "
+        "do not agree."
+    ),
+    "corpus.error.text": (
+        "A text is empty, not valid UTF-8 and NFC, contains unsafe controls, or appears "
+        "to be markup rather than plain text."
+    ),
+    "corpus.error.csv": (
+        "The metadata table is malformed or contains a formula, markup, newline, or "
+        "path-like cell that is unsafe to retain or export."
+    ),
+    "corpus.error.archive": (
+        "The ZIP is malformed or uses an unsupported or unsafe member, path, flag, "
+        "compression feature, or nested archive."
+    ),
+    "corpus.error.internal": (
+        "Delta could not complete the intake operation safely. No analysis state was created."
+    ),
+    "corpus.error.reference": "Rejection reference: {code}",
+    "corpus.continue_button": "Continue - corpus documentation is not connected",
     "corpus.continue_button_help": (
-        "Parameter configuration opens once a corpus has been loaded and checked."
+        "Validated bytes are not enough for analysis. Corpus inventory, metadata meaning, "
+        "and rights checks must be connected before parameter configuration opens."
     ),
     "map.title": "Experiment map",
     "map.body": "Each stage opens only after its own checks pass.",
@@ -122,6 +174,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "evidence.body": "A completed experiment will keep these records visible and exportable.",
     "evidence.corpus": "Corpus health",
     "evidence.corpus_state": "Awaiting corpus",
+    "evidence.corpus_validated": "Validated for intake",
+    "evidence.corpus_rejected": "Rejected before intake",
     "evidence.parameters": "Parameter sensitivity",
     "evidence.parameters_state": "Awaiting configuration",
     "evidence.limits": "Interpretive limits",
@@ -129,9 +183,10 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "evidence.run": "Run record",
     "evidence.run_state": "Created on execution",
     "state.empty.label": "No experiment yet",
-    "state.empty.title": "The workspace is ready for a research purpose",
+    "state.empty.title": "No analysis run yet",
     "state.empty.body": (
-        "Corpus controls will open only after secure ingestion has been implemented and tested."
+        "Secure intake is available. Corpus documentation, parameter setup, and the "
+        "analysis engine remain locked until their own checks are implemented."
     ),
     "state.loading.label": "Analysis running",
     "state.loading.title": "The experiment is being calculated",
@@ -155,10 +210,13 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Review corpus health, sensitivity, and limits before interpreting or exporting the result."
     ),
     "run.button": "Run analysis - unavailable until setup is complete",
-    "run.help": "Analysis becomes available after validated corpus intake and engine integration.",
+    "run.help": (
+        "Analysis becomes available after corpus documentation, parameter validation, "
+        "and engine integration."
+    ),
     "run.disabled_reason": (
-        "Analysis remains unavailable until corpus intake, parameter checks, and the "
-        "analysis engine are connected."
+        "Analysis remains unavailable until corpus documentation, parameter checks, "
+        "and the analysis engine are connected."
     ),
     "footer.scope": (
         "Designed to remove R and Python coding from supported workflows. Method "
