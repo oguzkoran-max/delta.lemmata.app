@@ -1,20 +1,32 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-12
+**Güncellendi:** 2026-07-13
 
 **Aşama:** P004 `main`e alındı; P005 Job Lifecycle, Isolation, and Retention aktif
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
-validated-payload staging, synthetic POSIX process controller, content-free deletion
-event modeli ve honest lifecycle projection var; public analysis hâlâ kilitli ve
-scientific computation yok
+validated-payload staging, synthetic POSIX process controller, kalıcı content-free
+deletion ledger, continuous fake-clock janitor ve honest lifecycle projection var;
+public analysis hâlâ kilitli ve scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** P005 continuous janitor, startup running-job recovery,
-deletion-ledger persistence, result/export expiry ve event/tombstone purge katmanını
-test-first uygula
+**Sıradaki tek ana iş:** Mevcut in-process monitor uygulama `SIGKILL` ile kapanınca
+worker'ı geride bırakabildiği için P005 per-job guardian, owned group anchor,
+authenticated recovery evidence ve gerçek macOS/Linux parent-loss testini uygula
+
+**P005 retention checkpoint:** `0e84b10` ile SQLite deletion ledger, schema-v1
+migration, fail-closed optional workspace load, exact staged/queue/result/export
+deadlines, continuous janitor, success-before-publication cleanup ve verified-absence
+tombstone purge uygulandı. Full gate 795 test, 5.262 statement, 1.404 branch ve yüzde
+100 coverage ile geçti. Kanıt:
+`provenance/evidence/P005/retention-janitor-validation.md`.
+
+**P005 yeni P0 bulgu:** Bağımsız süreç denetimi mevcut daemon monitorün app process
+ile öldüğünü ve synthetic worker grubunun hayatta kalabildiğini doğruladı. Kalıcı
+PID/PGID sonrası `killpg` çözümü identifier reuse nedeniyle reddedildi. Guardian
+kanıtı olmadan running row `abandoned` yapılmıyor; P005-AC-06 ve ticket kapanışı açık.
 
 **P005 foundation checkpoint:** Commit'ler `bce5bb2`, `0da9a1b`, `5e1cbba` ve
 `eca5357`; full gate 769 test, 4.947 statement, 1.304 branch ve yüzde 100 coverage

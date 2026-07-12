@@ -453,3 +453,22 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   isolation P014'tür.
 - P005 kapanışı secure erase, swap/snapshot/backup, proxy buffer, CE-15 veya tam
   CE-14 production claim'i kuramaz. Final owner walkthrough P015'te kalır.
+
+## P005 Retention ve Guardian Kararı (2026-07-13)
+
+- `0e84b10` SQLite deletion ledger, schema migration, continuous janitor, exact
+  deadline sınırları, success cleanup-before-publication, result/export expiry ve
+  verified-absence tombstone purge katmanını tamamladı.
+- Full local gate 795 test, 5.262 statement, 1.404 branch ve yüzde 100 coverage ile
+  geçti. Kanıt `provenance/evidence/P005/retention-janitor-validation.md`.
+- Running startup recovery yalnız dışarıdan doğrulanmış worker-stop kanıtıyla
+  `abandoned` geçişi yapar. Kanıt yoksa row ve workspace korunur; başarı uydurulmaz.
+- Bağımsız denetim, mevcut daemon monitorün app `SIGKILL` sonrasında worker grubunu
+  geride bırakabildiğini buldu. PID/PGID persist edip restart'ta `killpg` çağırma
+  yaklaşımı identifier reuse nedeniyle reddedildi.
+- Kabul edilen sıradaki mimari yön: app-liveness pipe kullanan ayrı per-job guardian,
+  PGID reuse penceresini kapatan owned group anchor, content-free authenticated
+  recovery evidence ve gerçek macOS/Linux parent-loss testi.
+- Guardian ayrıca unattended unsuccessful cleanup deadline'ını taşıyamazsa P005-AC-06
+  açık kalır. Bu checkpoint production isolation, secure erase veya CE-14/CE-15
+  doğrulaması değildir.

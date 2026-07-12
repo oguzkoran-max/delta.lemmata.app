@@ -51,7 +51,8 @@
     "bce5bb216ee9c133c31f458298ba778d41a80a50",
     "0da9a1b6a8a324aaa73c49437801c98b3013f3ac",
     "5e1cbbaadd49215c03e6a2708927774f8a609caf",
-    "eca535773a237d304b8c12397e1295df49295d3f"
+    "eca535773a237d304b8c12397e1295df49295d3f",
+    "0e84b106b10ca979b0ebb7d5cd9b6ff5de73c2bb"
   ],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
@@ -65,6 +66,8 @@
     "provenance/evidence/P005/architecture-audit.md",
     "provenance/evidence/P005/start-validation.md",
     "provenance/evidence/P005/foundation-validation.md",
+    "provenance/evidence/P005/retention-janitor-validation.md",
+    "memory/checkpoints/2026-07-13-p005-retention.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
@@ -121,7 +124,8 @@
   ],
   "changed_files": [
     "P005 execution brief, independent four-lens architecture audit, proposed lifecycle ADR, active Ticket, and synchronized startup pointers",
-    "Lifecycle identity, policy, immutable state model, payload-free SQLite store, private workspace, validated-payload staging, synthetic process controller, deletion-event model, and conservative UI projection"
+    "Lifecycle identity, policy, immutable state model, payload-free SQLite store, private workspace, validated-payload staging, synthetic process controller, deletion-event model, and conservative UI projection",
+    "Persistent content-free deletion ledger, fail-closed optional workspace recovery, continuous fake-clock janitor, exact retention deadlines, success publication ordering, and verified-absence tombstone purge"
   ],
   "commands": [
     {
@@ -135,6 +139,12 @@
       "exit_code": 0,
       "result": "The P005 foundation checkpoint passed 769 tests, 100% of 4,947 statements and 1,304 branches, strict typing, metadata, 69 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
       "evidence": "provenance/evidence/P005/foundation-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The P005 retention checkpoint passed 795 tests, 100% of 5,262 statements and 1,404 branches, strict typing, metadata, 69 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P005/retention-janitor-validation.md"
     }
   ],
   "blockers": []
