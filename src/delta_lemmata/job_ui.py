@@ -15,11 +15,13 @@ class JobDisplayState(StrEnum):
     QUEUED = "queued"
     RUNNING = "running"
     CANCELLING = "cancelling"
+    FINALIZING = "finalizing"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     CANCELLED = "cancelled"
     TIMED_OUT = "timed_out"
     CRASHED = "crashed"
+    ABANDONED = "abandoned"
     EXPIRED = "expired"
     BUSY = "busy"
 
@@ -113,6 +115,15 @@ _STATE_COPY = {
         role=PresentationRole.STATUS,
         icon_token="circle-slash-2",
     ),
+    JobDisplayState.FINALIZING: _StateCopy(
+        label="Finalizing",
+        title="Finalizing analysis",
+        body=(
+            "The run finished. Temporary inputs are being removed before results become available."
+        ),
+        role=PresentationRole.STATUS,
+        icon_token="shield-check",
+    ),
     JobDisplayState.SUCCEEDED: _StateCopy(
         label="Succeeded",
         title="Analysis complete",
@@ -148,6 +159,13 @@ _STATE_COPY = {
         role=PresentationRole.ALERT,
         icon_token="server-crash",
     ),
+    JobDisplayState.ABANDONED: _StateCopy(
+        label="Ended",
+        title="Analysis ended",
+        body="The run ended before it could complete.",
+        role=PresentationRole.ALERT,
+        icon_token="circle-stop",
+    ),
     JobDisplayState.EXPIRED: _StateCopy(
         label="Expired",
         title="Analysis expired",
@@ -171,6 +189,7 @@ _ACTIVE_STATES = frozenset(
         JobDisplayState.QUEUED,
         JobDisplayState.RUNNING,
         JobDisplayState.CANCELLING,
+        JobDisplayState.FINALIZING,
         JobDisplayState.BUSY,
     }
 )
