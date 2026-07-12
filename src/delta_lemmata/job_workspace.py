@@ -287,52 +287,10 @@ class WorkspaceManager:
         """Open an existing fixed layout and capture fresh trusted identities."""
 
         try:
-            owner_name = self._component(owner_component)
-            job_name = self._component(job_component)
-            root_fd = self._open_root()
-            try:
-                owner_info = self._optional_stat(root_fd, owner_name)
-                if owner_info is None or not _private_directory(owner_info):
-                    _reject(WorkspaceErrorCode.INVALID_LAYOUT)
-                owner_identity = _identity(owner_info)
-                owner_fd = self._open_directory(root_fd, owner_name, owner_identity)
-                try:
-                    job_info = self._optional_stat(owner_fd, job_name)
-                    if job_info is None or not _private_directory(job_info):
-                        _reject(WorkspaceErrorCode.INVALID_LAYOUT)
-                    job_identity = _identity(job_info)
-                    job_fd = self._open_directory(owner_fd, job_name, job_identity)
-                    try:
-                        if set(os.listdir(job_fd)) != {area.value for area in WorkspaceArea}:
-                            _reject(WorkspaceErrorCode.INVALID_LAYOUT)
-                        area_identities: list[tuple[WorkspaceArea, _Identity]] = []
-                        for area in WorkspaceArea:
-                            area_fd = self._open_directory(job_fd, area.value, None)
-                            try:
-                                area_identities.append((area, _identity(os.fstat(area_fd))))
-                            finally:
-                                os.close(area_fd)
-                    finally:
-                        os.close(job_fd)
-                finally:
-                    os.close(owner_fd)
-            finally:
-                os.close(root_fd)
-            owner_path = self.root / owner_name
-            job_path = owner_path / job_name
-            return WorkspaceLayout(
-                root=self.root,
-                owner=owner_path,
-                job=job_path,
-                input=job_path / WorkspaceArea.INPUT.value,
-                work=job_path / WorkspaceArea.WORK.value,
-                result=job_path / WorkspaceArea.RESULT.value,
-                export=job_path / WorkspaceArea.EXPORT.value,
-                control=job_path / WorkspaceArea.CONTROL.value,
-                _owner_identity=owner_identity,
-                _job_identity=job_identity,
-                _area_identities=tuple(area_identities),
-            )
+            layout = self._load_optional(owner_component, job_component)
+            if layout is None:
+                _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+            return layout
         except WorkspaceError as error:
             _detach(error)
             raise
@@ -340,6 +298,72 @@ class WorkspaceManager:
             rejection = WorkspaceError(WorkspaceErrorCode.INVALID_LAYOUT)
             _detach(rejection)
             raise rejection from None
+
+    @_content_free
+    def load_optional(self, owner_component: str, job_component: str) -> WorkspaceLayout | None:
+        """Return None only when the pinned owner or job path is genuinely absent."""
+
+        try:
+            return self._load_optional(owner_component, job_component)
+        except WorkspaceError as error:
+            _detach(error)
+            raise
+        except OSError:
+            rejection = WorkspaceError(WorkspaceErrorCode.INVALID_LAYOUT)
+            _detach(rejection)
+            raise rejection from None
+
+    def _load_optional(self, owner_component: str, job_component: str) -> WorkspaceLayout | None:
+        owner_name = self._component(owner_component)
+        job_name = self._component(job_component)
+        root_fd = self._open_root()
+        try:
+            owner_info = self._optional_stat(root_fd, owner_name)
+            if owner_info is None:
+                return None
+            if not _private_directory(owner_info):
+                _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+            owner_identity = _identity(owner_info)
+            owner_fd = self._open_directory(root_fd, owner_name, owner_identity)
+            try:
+                job_info = self._optional_stat(owner_fd, job_name)
+                if job_info is None:
+                    return None
+                if not _private_directory(job_info):
+                    _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+                job_identity = _identity(job_info)
+                job_fd = self._open_directory(owner_fd, job_name, job_identity)
+                try:
+                    if set(os.listdir(job_fd)) != {area.value for area in WorkspaceArea}:
+                        _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+                    area_identities: list[tuple[WorkspaceArea, _Identity]] = []
+                    for area in WorkspaceArea:
+                        area_fd = self._open_directory(job_fd, area.value, None)
+                        try:
+                            area_identities.append((area, _identity(os.fstat(area_fd))))
+                        finally:
+                            os.close(area_fd)
+                finally:
+                    os.close(job_fd)
+            finally:
+                os.close(owner_fd)
+        finally:
+            os.close(root_fd)
+        owner_path = self.root / owner_name
+        job_path = owner_path / job_name
+        return WorkspaceLayout(
+            root=self.root,
+            owner=owner_path,
+            job=job_path,
+            input=job_path / WorkspaceArea.INPUT.value,
+            work=job_path / WorkspaceArea.WORK.value,
+            result=job_path / WorkspaceArea.RESULT.value,
+            export=job_path / WorkspaceArea.EXPORT.value,
+            control=job_path / WorkspaceArea.CONTROL.value,
+            _owner_identity=owner_identity,
+            _job_identity=job_identity,
+            _area_identities=tuple(area_identities),
+        )
 
     @_content_free
     def verify(self, layout: WorkspaceLayout) -> None:

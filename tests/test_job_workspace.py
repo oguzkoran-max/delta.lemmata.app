@@ -93,6 +93,88 @@ def test_load_and_selective_area_cleanup_preserve_result_and_layout(tmp_path: Pa
     ) == CleanupReport(0, 0, True)
 
 
+def test_optional_load_distinguishes_absence_from_a_valid_layout(tmp_path: Path) -> None:
+    workspaces = manager(tmp_path)
+    assert workspaces.load_optional(OWNER, JOB) is None
+
+    owner = tmp_path / OWNER
+    owner.mkdir(mode=0o700)
+    assert workspaces.load_optional(OWNER, JOB) is None
+
+    layout = workspaces.create(OWNER, JOB)
+    recovered = workspaces.load_optional(OWNER, JOB)
+    assert recovered == layout
+    workspaces.verify(recovered)
+
+    workspaces.cleanup(layout)
+    assert workspaces.load_optional(OWNER, JOB) is None
+
+
+def test_optional_load_fails_closed_for_unsafe_or_incomplete_entries(tmp_path: Path) -> None:
+    workspaces = manager(tmp_path)
+    external = tmp_path.parent / f"{tmp_path.name}-external"
+    external.mkdir(mode=0o700)
+    try:
+        (tmp_path / OWNER).symlink_to(external, target_is_directory=True)
+        expect_code(
+            WorkspaceErrorCode.INVALID_LAYOUT,
+            lambda: workspaces.load_optional(OWNER, JOB),
+        )
+        (tmp_path / OWNER).unlink()
+
+        owner = tmp_path / OWNER
+        owner.mkdir(mode=0o700)
+        (owner / JOB).symlink_to(external, target_is_directory=True)
+        expect_code(
+            WorkspaceErrorCode.INVALID_LAYOUT,
+            lambda: workspaces.load_optional(OWNER, JOB),
+        )
+        (owner / JOB).unlink()
+
+        incomplete = owner / JOB
+        incomplete.mkdir(mode=0o700)
+        expect_code(
+            WorkspaceErrorCode.INVALID_LAYOUT,
+            lambda: workspaces.load_optional(OWNER, JOB),
+        )
+        incomplete.rmdir()
+
+        nonprivate = owner / JOB
+        nonprivate.mkdir(mode=0o755)
+        expect_code(
+            WorkspaceErrorCode.INVALID_LAYOUT,
+            lambda: workspaces.load_optional(OWNER, JOB),
+        )
+    finally:
+        if external.exists():
+            external.rmdir()
+
+    expect_code(
+        WorkspaceErrorCode.INVALID_COMPONENT,
+        lambda: workspaces.load_optional(OWNER, "../job"),
+    )
+
+
+def test_optional_load_detaches_os_failure_and_rechecks_root(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspaces = manager(tmp_path)
+    workspaces.create(OWNER, JOB)
+
+    monkeypatch.setattr(os, "listdir", lambda _fd: (_ for _ in ()).throw(OSError("private")))
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.load_optional(OWNER, JOB),
+    )
+    monkeypatch.undo()
+
+    os.chmod(tmp_path, 0o755)
+    expect_code(
+        WorkspaceErrorCode.INVALID_ROOT,
+        lambda: workspaces.load_optional(OWNER, JOB),
+    )
+
+
 def test_load_and_selective_cleanup_fail_closed_on_invalid_layout(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

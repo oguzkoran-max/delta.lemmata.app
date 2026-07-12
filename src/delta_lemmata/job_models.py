@@ -430,7 +430,7 @@ def transition_artifact(
         raise IllegalTransitionError
     if delete_by_utc is not None:
         delete_by_utc = require_utc(delete_by_utc, field_name="delete_by_utc")
-        if delete_by_utc <= at_utc:
+        if delete_by_utc <= at_utc and delete_by_utc != current.delete_by_utc:
             raise IllegalTransitionError
         if current.delete_by_utc is not None and delete_by_utc > current.delete_by_utc:
             raise IllegalTransitionError
@@ -473,6 +473,44 @@ def publish_export(
         operation_id=operation_id,
         action=action,
         updates={"export_available": True},
+    )
+
+
+def retire_export(
+    job: JobRecord,
+    *,
+    at_utc: datetime,
+    expected_version: int,
+    operation_id: str,
+) -> JobRecord:
+    """Expire one published export while preserving the successful outcome."""
+
+    action = "export:retire"
+    if _check_operation(job, operation_id, action):
+        return job
+    _check_version(job, expected_version)
+    at_utc = require_utc(at_utc, field_name="at_utc")
+    current = job.artifacts.export
+    if (
+        not job.export_available
+        or current.state is not CleanupState.PRESENT
+        or current.delete_by_utc is None
+        or at_utc < current.delete_by_utc
+    ):
+        raise IllegalTransitionError
+    artifact_payload = job.artifacts.model_dump(mode="python")
+    artifact_payload[ArtifactKind.EXPORT.value] = ArtifactStatus(
+        state=CleanupState.VERIFIED_ABSENT,
+        verified_at_utc=at_utc,
+    )
+    return _updated(
+        job,
+        operation_id=operation_id,
+        action=action,
+        updates={
+            "artifacts": ArtifactLifecycle.model_validate(artifact_payload),
+            "export_available": False,
+        },
     )
 
 
@@ -534,6 +572,7 @@ __all__ = [
     "VersionConflictError",
     "new_staged_job",
     "publish_export",
+    "retire_export",
     "request_cancellation",
     "transition_artifact",
     "transition_execution",

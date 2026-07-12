@@ -18,6 +18,7 @@ JobReferenceDigest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 class DeletionReason(StrEnum):
     STAGED_EXPIRED = "staged_expired"
     QUEUE_EXPIRED = "queue_expired"
+    SUCCESSFUL_TERMINAL = "successful_terminal"
     UNSUCCESSFUL_TERMINAL = "unsuccessful_terminal"
     RESULT_EXPIRED = "result_expired"
     EXPORT_EXPIRED = "export_expired"

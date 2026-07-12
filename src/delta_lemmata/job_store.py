@@ -7,6 +7,7 @@ import sqlite3
 import stat
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from enum import StrEnum
 from functools import wraps
@@ -16,6 +17,7 @@ from typing import NoReturn, cast
 from pydantic import ValidationError
 
 from delta_lemmata.clock import require_utc
+from delta_lemmata.job_events import DeletionEvent
 from delta_lemmata.job_models import (
     ArtifactKind,
     CleanupState,
@@ -27,6 +29,7 @@ from delta_lemmata.job_models import (
     new_staged_job,
     publish_export,
     request_cancellation,
+    retire_export,
     transition_artifact,
     transition_execution,
 )
@@ -38,13 +41,14 @@ from delta_lemmata.session_identity import (
     SessionIdentityError,
     owner_digest,
     verify_owner_digest,
+    workspace_component,
 )
 
 JobIdFactory = Callable[[], JobId]
 
 _DATABASE_MODE = 0o600
 _BUSY_TIMEOUT_MILLISECONDS = 30_000
-_SCHEMA_VERSION = 1
+_SCHEMA_VERSION = 2
 _ZERO_DIGEST = bytes(32)
 
 _SELECT_JOB = """
@@ -77,12 +81,46 @@ CREATE TABLE IF NOT EXISTS events (
     expires_at_utc TEXT NOT NULL
 ) STRICT;
 
+CREATE TABLE IF NOT EXISTS deletion_events (
+    sequence INTEGER PRIMARY KEY,
+    event_code TEXT NOT NULL CHECK (event_code = 'JOB_ARTIFACTS_DELETED'),
+    job_reference_digest TEXT NOT NULL CHECK (length(job_reference_digest) = 64),
+    occurred_at_utc TEXT NOT NULL,
+    reason TEXT NOT NULL CHECK (
+        reason IN (
+            'staged_expired', 'queue_expired', 'successful_terminal',
+            'unsuccessful_terminal', 'result_expired', 'export_expired',
+            'owner_request', 'startup_recovery'
+        )
+    ),
+    file_count INTEGER NOT NULL CHECK (file_count >= 0),
+    byte_count INTEGER NOT NULL CHECK (byte_count >= 0),
+    policy_version TEXT NOT NULL CHECK (policy_version = 'job-policy-v1'),
+    expires_at_utc TEXT NOT NULL
+) STRICT;
+
 CREATE INDEX IF NOT EXISTS jobs_execution_queue_idx
 ON jobs (execution_state, queue_sequence);
 
 CREATE INDEX IF NOT EXISTS events_expiry_idx
 ON events (expires_at_utc);
+
+CREATE INDEX IF NOT EXISTS deletion_events_expiry_idx
+ON deletion_events (expires_at_utc);
+
+CREATE UNIQUE INDEX IF NOT EXISTS deletion_events_identity_idx
+ON deletion_events (job_reference_digest, occurred_at_utc, reason);
 """
+
+
+@dataclass(frozen=True, slots=True)
+class StorePurgeReport:
+    """Content-free counts from one bounded control-store purge."""
+
+    operational_events_deleted: int
+    deletion_events_deleted: int
+    tombstones_deleted: int
+    tombstones_blocked: int
 
 
 class JobStoreErrorCode(StrEnum):
@@ -247,7 +285,7 @@ class SQLiteJobStore:
             if journal_row[0].lower() != "wal":
                 raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE)
             version_row = cast(tuple[int], connection.execute("PRAGMA user_version").fetchone())
-            if version_row[0] not in {0, _SCHEMA_VERSION}:
+            if version_row[0] not in {0, 1, _SCHEMA_VERSION}:
                 raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE)
             connection.executescript(_SCHEMA)
             connection.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
@@ -348,6 +386,7 @@ class SQLiteJobStore:
     def _decode(row: sqlite3.Row) -> JobRecord:
         try:
             job = JobRecord.model_validate_json(cast(str, row["model_json"]))
+            JobId.from_urlsafe(job.job_id)
             deadline = (
                 None
                 if job.execution.deadline_at_utc is None
@@ -392,6 +431,36 @@ class SQLiteJobStore:
             raise JobNotAvailableError
         return self._decode(row), cast(int | None, row["queue_sequence"])
 
+    def _load_system(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        job_id: JobId | str,
+    ) -> tuple[JobRecord, int | None]:
+        parsed_id = self._coerce_job_id(job_id)
+        row = connection.execute(_SELECT_JOB, (parsed_id.to_urlsafe(),)).fetchone()
+        if row is None:
+            raise JobNotAvailableError
+        return self._decode(row), cast(int | None, row["queue_sequence"])
+
+    @staticmethod
+    def _decode_deletion_event(row: sqlite3.Row) -> DeletionEvent:
+        try:
+            return DeletionEvent.model_validate(
+                {
+                    "event_code": row["event_code"],
+                    "job_reference_digest": row["job_reference_digest"],
+                    "occurred_at_utc": row["occurred_at_utc"],
+                    "reason": row["reason"],
+                    "file_count": row["file_count"],
+                    "byte_count": row["byte_count"],
+                    "policy_version": row["policy_version"],
+                    "expires_at_utc": row["expires_at_utc"],
+                }
+            )
+        except (IndexError, TypeError, ValueError, ValidationError):
+            raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD) from None
+
     @staticmethod
     def _insert_event(
         connection: sqlite3.Connection,
@@ -414,6 +483,43 @@ class SQLiteJobStore:
         )
         row = cast(sqlite3.Row, connection.execute("SELECT last_insert_rowid()").fetchone())
         return int(row[0])
+
+    def _insert_deletion_event(
+        self,
+        connection: sqlite3.Connection,
+        *,
+        job: JobRecord,
+        event: DeletionEvent,
+        at_utc: datetime,
+    ) -> bool:
+        parsed_id = JobId.from_urlsafe(job.job_id)
+        if (
+            event.job_reference_digest != workspace_component(parsed_id)
+            or event.policy_version != job.policy_version
+            or event.occurred_at_utc != at_utc
+            or event.expires_at_utc != at_utc + timedelta(seconds=self._policy.event_ttl_seconds)
+        ):
+            _invalid_update()
+        cursor = connection.execute(
+            """
+            INSERT OR IGNORE INTO deletion_events (
+                event_code, job_reference_digest, occurred_at_utc, reason,
+                file_count, byte_count, policy_version, expires_at_utc
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                event.event_code,
+                event.job_reference_digest,
+                _timestamp(event.occurred_at_utc),
+                event.reason.value,
+                event.file_count,
+                event.byte_count,
+                event.policy_version,
+                _timestamp(event.expires_at_utc),
+            ),
+        )
+        return cursor.rowcount == 1
 
     @staticmethod
     def _insert_job(connection: sqlite3.Connection, job: JobRecord) -> None:
@@ -526,6 +632,16 @@ class SQLiteJobStore:
             elif action == "export:publish":
                 expected = publish_export(
                     previous,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
+                )
+            elif action == "export:retire":
+                verified_at = updated.artifacts.export.verified_at_utc
+                if verified_at is None:
+                    _invalid_update()
+                expected = retire_export(
+                    previous,
+                    at_utc=verified_at,
                     expected_version=previous.version,
                     operation_id=operation.operation_id,
                 )
@@ -770,6 +886,170 @@ class SQLiteJobStore:
 
     save_job = compare_and_swap
 
+    @_content_free
+    def list_jobs_for_maintenance(self) -> tuple[JobRecord, ...]:
+        """Return payload-free snapshots for the trusted local janitor only."""
+
+        with self._read_connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT job_id, owner_digest, execution_state, deadline_at_utc,
+                       queue_sequence, version, model_json
+                FROM jobs
+                ORDER BY job_id ASC
+                """
+            ).fetchall()
+            return tuple(self._decode(row) for row in rows)
+
+    @_content_free
+    def maintenance_compare_and_swap(
+        self,
+        *,
+        job_id: JobId | str,
+        expected_version: int,
+        updated: JobRecord,
+        at_utc: datetime,
+        deletion_event: DeletionEvent | None = None,
+    ) -> JobRecord:
+        """Persist one validated janitor transition without a retained capability."""
+
+        at_utc = require_utc(at_utc, field_name="at_utc")
+        if not isinstance(updated, JobRecord) or (
+            deletion_event is not None and not isinstance(deletion_event, DeletionEvent)
+        ):
+            _invalid_update()
+        with self._immediate() as connection:
+            previous, queue_sequence = self._load_system(connection, job_id=job_id)
+            if updated == previous:
+                if deletion_event is not None:
+                    _invalid_update()
+                return previous
+            if previous.version != expected_version:
+                raise VersionConflictError
+            self._validate_successor(previous, updated)
+            if deletion_event is not None:
+                self._insert_deletion_event(
+                    connection,
+                    job=previous,
+                    event=deletion_event,
+                    at_utc=at_utc,
+                )
+            next_queue_sequence = (
+                queue_sequence if updated.execution.state is ExecutionState.QUEUED else None
+            )
+            self._insert_event(
+                connection,
+                job=updated,
+                event_code="JOB_UPDATED",
+                at_utc=at_utc,
+            )
+            self._write_job(
+                connection,
+                previous=previous,
+                updated=updated,
+                queue_sequence=next_queue_sequence,
+            )
+            return updated
+
+    @_content_free
+    def list_deletion_events(self) -> tuple[DeletionEvent, ...]:
+        """Read the bounded content-free deletion ledger for local evidence."""
+
+        with self._read_connection() as connection:
+            rows = connection.execute(
+                """
+                SELECT event_code, job_reference_digest, occurred_at_utc, reason,
+                       file_count, byte_count, policy_version, expires_at_utc
+                FROM deletion_events
+                ORDER BY sequence ASC
+                """
+            ).fetchall()
+            return tuple(self._decode_deletion_event(row) for row in rows)
+
+    @_content_free
+    def record_deletion_event(
+        self,
+        *,
+        job_id: JobId | str,
+        event: DeletionEvent,
+        at_utc: datetime,
+    ) -> bool:
+        """Idempotently append a verified deletion fact without changing job state."""
+
+        at_utc = require_utc(at_utc, field_name="at_utc")
+        if not isinstance(event, DeletionEvent):
+            _invalid_update()
+        with self._immediate() as connection:
+            job, _queue_sequence = self._load_system(connection, job_id=job_id)
+            return self._insert_deletion_event(
+                connection,
+                job=job,
+                event=event,
+                at_utc=at_utc,
+            )
+
+    @_content_free
+    def purge_expired(
+        self,
+        *,
+        at_utc: datetime,
+        workspace_absent_job_ids: frozenset[str],
+    ) -> StorePurgeReport:
+        """Purge expired events and fully cleaned terminal tombstones atomically."""
+
+        at_utc = require_utc(at_utc, field_name="at_utc")
+        if not isinstance(workspace_absent_job_ids, frozenset):
+            _invalid_update()
+        timestamp = _timestamp(at_utc)
+        with self._immediate() as connection:
+            operational = connection.execute(
+                "DELETE FROM events WHERE expires_at_utc <= ?",
+                (timestamp,),
+            ).rowcount
+            deletion = connection.execute(
+                "DELETE FROM deletion_events WHERE expires_at_utc <= ?",
+                (timestamp,),
+            ).rowcount
+            rows = connection.execute(
+                """
+                SELECT job_id, owner_digest, execution_state, deadline_at_utc,
+                       queue_sequence, version, model_json
+                FROM jobs
+                WHERE execution_state = 'terminal'
+                ORDER BY job_id ASC
+                """
+            ).fetchall()
+            deletable: list[str] = []
+            blocked = 0
+            for row in rows:
+                job = self._decode(row)
+                if job.tombstone_expires_at_utc is None or job.tombstone_expires_at_utc > at_utc:
+                    continue
+                states = tuple(job.artifacts.for_kind(kind).state for kind in ArtifactKind)
+                if (
+                    job.job_id not in workspace_absent_job_ids
+                    or job.export_available
+                    or any(
+                        state not in {CleanupState.NOT_CREATED, CleanupState.VERIFIED_ABSENT}
+                        for state in states
+                    )
+                ):
+                    blocked += 1
+                    continue
+                deletable.append(job.job_id)
+            tombstones = 0
+            for identifier in deletable:
+                tombstones += connection.execute(
+                    "DELETE FROM jobs WHERE job_id = ?",
+                    (identifier,),
+                ).rowcount
+            return StorePurgeReport(
+                operational_events_deleted=operational,
+                deletion_events_deleted=deletion,
+                tombstones_deleted=tombstones,
+                tombstones_blocked=blocked,
+            )
+
 
 __all__ = [
     "JobAdmissionRejectedError",
@@ -778,4 +1058,5 @@ __all__ = [
     "JobStoreError",
     "JobStoreErrorCode",
     "SQLiteJobStore",
+    "StorePurgeReport",
 ]

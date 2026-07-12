@@ -163,14 +163,14 @@ def test_private_wal_schema_json_round_trip_and_canary_scan(tmp_path: Path) -> N
         anchor.close()
 
     with closing(sqlite3.connect(database_file)) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone() == (1,)
+        assert connection.execute("PRAGMA user_version").fetchone() == (2,)
         table_names = {
             cast(str, row[0])
             for row in connection.execute(
                 "SELECT name FROM sqlite_schema WHERE type = 'table' ORDER BY name"
             )
         }
-        assert table_names == {"events", "jobs"}
+        assert table_names == {"deletion_events", "events", "jobs"}
         columns = {
             table: [cast(str, row[1]) for row in connection.execute(f"PRAGMA table_info({table})")]
             for table in table_names
@@ -784,7 +784,7 @@ def test_configuration_file_identity_and_identifier_failures_are_content_free(
 
     future = tmp_path / "future.sqlite3"
     with closing(sqlite3.connect(future)) as connection:
-        connection.execute("PRAGMA user_version = 2")
+        connection.execute("PRAGMA user_version = 3")
         connection.commit()
     expect_store_error(
         JobStoreErrorCode.INVALID_DATABASE,

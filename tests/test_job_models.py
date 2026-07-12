@@ -24,6 +24,7 @@ from delta_lemmata.job_models import (
     new_staged_job,
     publish_export,
     request_cancellation,
+    retire_export,
     transition_artifact,
     transition_execution,
 )
@@ -635,6 +636,47 @@ def test_artifact_creation_direct_cleanup_and_retry_from_failed_to_pending() -> 
     assert pending.artifacts.input.state is CleanupState.PENDING
 
 
+def test_cleanup_retry_preserves_an_expired_absolute_deadline() -> None:
+    job = _terminal(TerminalOutcome.FAILED)
+    deadline = NOW + timedelta(seconds=5)
+    in_progress = transition_artifact(
+        job,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.IN_PROGRESS,
+        at_utc=NOW + timedelta(seconds=4),
+        delete_by_utc=deadline,
+        expected_version=job.version,
+        operation_id=_operation(25),
+    )
+    failed = transition_artifact(
+        in_progress,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.FAILED,
+        at_utc=deadline,
+        delete_by_utc=deadline,
+        expected_version=in_progress.version,
+        operation_id=_operation(26),
+    )
+    retry = transition_artifact(
+        failed,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.IN_PROGRESS,
+        at_utc=deadline + timedelta(seconds=1),
+        delete_by_utc=deadline,
+        expected_version=failed.version,
+        operation_id=_operation(27),
+    )
+    absent = transition_artifact(
+        retry,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.VERIFIED_ABSENT,
+        at_utc=deadline + timedelta(seconds=1),
+        expected_version=retry.version,
+        operation_id=_operation(28),
+    )
+    assert absent.artifacts.input.state is CleanupState.VERIFIED_ABSENT
+
+
 def test_artifact_transition_rejects_stale_illegal_and_invalid_deadlines() -> None:
     job = _job()
     with pytest.raises(VersionConflictError):
@@ -735,6 +777,106 @@ def test_success_export_requires_verified_input_and_work_cleanup() -> None:
         )
         is published
     )
+
+
+def test_published_export_retires_only_at_its_deadline_and_is_idempotent() -> None:
+    job = _terminal()
+    deadline = NOW + timedelta(hours=1)
+    for number, kind in enumerate((ArtifactKind.WORK, ArtifactKind.EXPORT), start=10):
+        job = transition_artifact(
+            job,
+            kind=kind,
+            target=CleanupState.PRESENT,
+            at_utc=NOW + timedelta(seconds=number),
+            delete_by_utc=deadline,
+            expected_version=job.version,
+            operation_id=_operation(number),
+        )
+    for number, kind in enumerate((ArtifactKind.INPUT, ArtifactKind.WORK), start=12):
+        job = transition_artifact(
+            job,
+            kind=kind,
+            target=CleanupState.VERIFIED_ABSENT,
+            at_utc=NOW + timedelta(seconds=number),
+            expected_version=job.version,
+            operation_id=_operation(number),
+        )
+    published = publish_export(
+        job,
+        expected_version=job.version,
+        operation_id=_operation(14),
+    )
+    retired = retire_export(
+        published,
+        at_utc=deadline,
+        expected_version=published.version,
+        operation_id=_operation(15),
+    )
+    assert retired.outcome == published.outcome
+    assert retired.export_available is False
+    assert retired.artifacts.export.state is CleanupState.VERIFIED_ABSENT
+    assert retired.artifacts.export.verified_at_utc == deadline
+    assert (
+        retire_export(
+            retired,
+            at_utc=deadline,
+            expected_version=published.version,
+            operation_id=_operation(15),
+        )
+        is retired
+    )
+
+
+def test_export_retirement_rejects_stale_early_unpublished_or_missing_deadline() -> None:
+    job = _terminal()
+    with pytest.raises(VersionConflictError):
+        retire_export(
+            job,
+            at_utc=NOW + timedelta(hours=1),
+            expected_version=0,
+            operation_id=_operation(15),
+        )
+    with pytest.raises(IllegalTransitionError):
+        retire_export(
+            job,
+            at_utc=NOW + timedelta(hours=1),
+            expected_version=job.version,
+            operation_id=_operation(15),
+        )
+
+    deadline = NOW + timedelta(hours=1)
+    payload = job.model_dump(mode="python")
+    payload["export_available"] = True
+    payload["artifacts"]["input"] = ArtifactStatus(
+        state=CleanupState.VERIFIED_ABSENT,
+        verified_at_utc=NOW + timedelta(seconds=4),
+    )
+    payload["artifacts"]["work"] = ArtifactStatus(
+        state=CleanupState.VERIFIED_ABSENT,
+        verified_at_utc=NOW + timedelta(seconds=4),
+    )
+    payload["artifacts"]["export"] = ArtifactStatus(
+        state=CleanupState.PRESENT,
+        delete_by_utc=deadline,
+    )
+    published = JobRecord.model_validate(payload)
+    with pytest.raises(IllegalTransitionError):
+        retire_export(
+            published,
+            at_utc=deadline - timedelta(microseconds=1),
+            expected_version=published.version,
+            operation_id=_operation(16),
+        )
+    invalid_export = published.artifacts.export.model_copy(update={"delete_by_utc": None})
+    invalid_artifacts = published.artifacts.model_copy(update={"export": invalid_export})
+    invalid_published = published.model_copy(update={"artifacts": invalid_artifacts})
+    with pytest.raises(IllegalTransitionError):
+        retire_export(
+            invalid_published,
+            at_utc=deadline,
+            expected_version=published.version,
+            operation_id=_operation(17),
+        )
 
 
 def test_export_publication_fails_closed_for_stale_unready_or_already_available() -> None:
