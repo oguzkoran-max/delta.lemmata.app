@@ -2,18 +2,17 @@
 
 **Güncellendi:** 2026-07-12
 
-**Aşama:** P003 Secure Ingestion `main`e alındı; P004 Metadata, Corpus Inventory, and Rights aktif
+**Aşama:** P004 Metadata, Corpus Inventory, and Rights teknik olarak tamamlandı; P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
 
 **Kod durumu:** English-only workbench'te secure intake, versioned corpus domain,
 58-column metadata CSV, individual-TXT veya member-catalog'lu ZIP Guided Upload ->
 Describe -> Review, selectable timeline, exact correction routing ve hash-bound
 final documentation confirmation adayı var; scientific computation yok
 
-**Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
+**Aktif ticket:** Yok; P004 kapanış commit'i doğrulanıp `main`e alındıktan sonra P005 açılacak
 
-**Sıradaki tek ana iş:** Otomatik kabul provasının exact-commit kanıtını
-provenance-link commit'inde mühürle, GitHub CI'yi doğrula ve yalnız yeşil CI
-sonrasında P004 teknik kapanışını kaydet
+**Sıradaki tek ana iş:** P004 kapanış ağacını doğrula ve `main`e al; ardından P005'i
+tek aktif ticket olarak açıp lifecycle/retention sözleşmesini uygula
 
 **İnsan kabul sırası değişikliği:** Oğuz `HD-20260712-0002` ile ara testleri
 Codex'in yürütmesini, ortak walkthrough'un ürün hazır olduğunda yapılmasını istedi.
@@ -32,7 +31,10 @@ Kanıt: `provenance/evidence/P004/automated-acceptance-rehearsal-validation.md`.
 Implementation commit `9f3124a`, fresh `--no-hardlinks` detached clone'da
 committed lockfile'lardan yeniden kuruldu; aynı 468-test full gate ve expanded
 browser audit tamamen geçti, clone temiz kaldı. `RUN-20260712-0005` ile exact
-report/checksum paketi bu sonucu kaydeder. GitHub CI henüz son açık teknik kapıdır.
+report/checksum paketi bu sonucu kaydeder. Provenance-link commit `c8ae4c2`, GitHub
+CI run `29207801898` içinde verify, SBOM/dependency audit ve Linux amd64 container
+işlerinde geçti. `HD-20260712-0002` uyarınca P004 repeatable teknik kapıları
+tamamlandı; final owner walkthrough P015'te açık kalır.
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights

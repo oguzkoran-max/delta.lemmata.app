@@ -2,9 +2,9 @@
   "schema_version": "1.1.0",
   "ticket_id": "P004",
   "title": "Metadata, Corpus Inventory, and Rights",
-  "status": "in-progress",
+  "status": "complete",
   "opened_at_utc": "2026-07-11T19:26:16Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-12T20:32:06Z",
   "objective": "Build a versioned, fail-closed corpus model that identifies every uploaded text as a scholarly work and a separate rights asset, produces a deterministic inventory, and exposes chronology readiness without making legal or scientific sufficiency claims.",
   "scope": [
     "Versioned general asset metadata and Style Over Time chronology fields",
@@ -61,7 +61,8 @@
     "PE-20260712-0007",
     "PE-20260712-0008",
     "PE-20260712-0009",
-    "PE-20260712-0010"
+    "PE-20260712-0010",
+    "PE-20260712-0011"
   ],
   "commit_ids": [
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
@@ -78,7 +79,8 @@
     "5d95ce4b10fd88ab73bfe26f69a5fbcca293ef43",
     "374e2d04a3c28029c69b9311fa0f3118f4bedbce",
     "9864db45dd3b9491dfbe514dfc7fb1e1d358f907",
-    "9f3124a65216fd1c0f6d459cfe6a3049f51baa07"
+    "9f3124a65216fd1c0f6d459cfe6a3049f51baa07",
+    "c8ae4c213ae762ab646bb69db587e37d8baec1d2"
   ],
   "run_ids": [
     "RUN-20260711-0006",
@@ -178,13 +180,14 @@
     "provenance/runs/RUN-20260712-0005.json",
     "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
     "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit.sha256",
-    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/browser-audit/browser-audit.json"
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
   ],
   "acceptance": [
     {
       "id": "P004-AC-01",
       "criterion": "A versioned schema distinguishes file, asset, independent work, edition, and source identities; documents chronology, genre, audience, adaptation, collection, and normalization fields; and rejects missing required relationships.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "docs/development/p004-domain-model.md",
         "schemas/corpus-inventory.schema.json",
@@ -193,13 +196,15 @@
         "src/delta_lemmata/corpus_workflow.py",
         "tests/test_ingestion_zip.py",
         "tests/test_corpus_workflow.py",
-        "provenance/evidence/P004/guided-zip-member-catalog-validation.md"
+        "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     },
     {
       "id": "P004-AC-02",
       "criterion": "Versioned CSV templates and a field dictionary are accompanied by valid and invalid fixtures; validation reports identify actionable row, field, and stable error codes for missing fields, duplicate work identifiers, unmatched files, conflicting dates, and unknown controlled values.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "docs/development/p004-metadata-csv.md",
         "templates/corpus-metadata-v1.csv",
@@ -208,41 +213,49 @@
         "tests/fixtures/p004/metadata-valid-v1.csv",
         "tests/fixtures/p004/metadata-invalid-domain-v1.csv",
         "tests/test_metadata_csv.py",
-        "provenance/evidence/P004/metadata-csv-validation.md"
+        "provenance/evidence/P004/metadata-csv-validation.md",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     },
     {
       "id": "P004-AC-03",
       "criterion": "The rights state machine preserves verified-open, analysis-only, permission-required, unknown, and excluded states while independently recording upload, analysis, export, and public redistribution permissions; unknown or permission-required assets cannot qualify for raw public export.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "schemas/asset-rights-v2.schema.json",
         "tests/test_corpus.py",
-        "tests/test_schemas.py"
+        "tests/test_schemas.py",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     },
     {
       "id": "P004-AC-04",
       "criterion": "Canonical inventory hashing is invariant to upload order and deterministic across clean reruns, while any semantic metadata or rights change alters the hash and invalidates dependent run identity.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "docs/development/p004-domain-model.md",
-        "tests/test_corpus.py"
+        "tests/test_corpus.py",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     },
     {
       "id": "P004-AC-05",
       "criterion": "Style Over Time readiness requires at least three chronology points and six independent works; smaller corpora are machine-readably and visibly forced to exploratory status without presenting the threshold as scientific sufficiency or confound removal.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "docs/development/p004-domain-model.md",
-        "tests/test_corpus.py"
+        "tests/test_corpus.py",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     },
     {
       "id": "P004-AC-06",
       "criterion": "The English-only corpus-documentation UI explains required fields and actionable corrections without weakening P003 intake checks, retaining rejected payloads, running scientific analysis, or making automatic legal determinations.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "src/delta_lemmata/corpus_workflow.py",
         "src/delta_lemmata/webapp.py",
@@ -278,13 +291,16 @@
         "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
         "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
         "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
-        "provenance/evidence/P004/exact-family-language-weave-ci.md"
+        "provenance/evidence/P004/exact-family-language-weave-ci.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     },
     {
       "id": "P004-AC-07",
       "criterion": "Corpus Review provides an accessible work timeline, composition bars, rights action matrix, metadata completeness matrix, and readiness summary with text equivalents, responsive behavior, and no placeholder or visual claim resembling a computed stylometric result.",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
         "src/delta_lemmata/ui_theme.py",
         "src/delta_lemmata/webapp.py",
@@ -316,7 +332,10 @@
         "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
         "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
         "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
-        "provenance/evidence/P004/exact-family-language-weave-ci.md"
+        "provenance/evidence/P004/exact-family-language-weave-ci.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
       ]
     }
   ],
@@ -345,7 +364,9 @@
     "Exact live-sibling CSS token extraction, LDA-native surface retention, two-row Language Weave teaching figure, non-result signal legend, compact accessible method descriptions, exact teal/purple/amber parameter bands, six retained responsive attempts, full passing screenshot set, strengthened computed-token browser oracles, and exact-commit clean-clone verification; P004 human acceptance remains pending",
     "Exact-family provenance-link commit 9864db4 passed GitHub CI run 29204391922 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; only Oğuz Koran human acceptance remains open",
     "Owner-directed automated acceptance rehearsal, expanded fail-closed rights correction browser journey, stable selectbox/render/confirmation/download oracles, eleven disclosed failed harness iterations, final six-viewport Guided TXT + rights correction + ZIP pass, and a repeated 468-test full repository gate; exact-commit, CI, and technical closure remain pending",
-    "Exact automated-rehearsal implementation commit 9f3124a was rebuilt in a fresh no-hardlinks detached clone, passed 468 tests at full measured coverage plus every repository gate and the expanded six-viewport TXT, rights-correction, download, and ZIP browser audit, and remained clean; GitHub CI and technical closure remain pending"
+    "Exact automated-rehearsal implementation commit 9f3124a was rebuilt in a fresh no-hardlinks detached clone, passed 468 tests at full measured coverage plus every repository gate and the expanded six-viewport TXT, rights-correction, download, and ZIP browser audit, and remained clean; GitHub CI and technical closure remain pending",
+    "Automated-rehearsal provenance-link commit c8ae4c2 passed GitHub CI run 29207801898 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; under HD-20260712-0002 all P004 repeatable technical gates are passed and P004 is complete, while final product-ready owner, Safari, VoiceOver, scientific, usability, and deployment gates remain outside this closure",
+    "P004 closure synchronized START_HERE, the development contract, roadmap, session handoff, project memory, and threat-control status so future Codex or Claude sessions cannot revive the superseded in-progress state"
   ],
   "commands": [
     {
@@ -683,6 +704,18 @@
       "exit_code": 0,
       "result": "The corrected provenance-link candidate passed 468 tests, 100% of 3,174 statements and 880 branches, Ruff, strict typing, metadata, 67 provenance records, repository and supply-chain scans, and the locked R/stylo environment.",
       "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "gh run watch 29207801898 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit c8ae4c2 passed source, metadata, schema, and record verification; SBOM generation and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The synchronized P004 closure candidate passed 468 tests, 100% of 3,174 statements and 880 branches, metadata, 68 provenance records, repository and supply-chain scans, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
     }
   ],
   "blockers": []

@@ -2,7 +2,7 @@
 
 **Son güncelleme:** 2026-07-12
 
-**Durum:** P003 Secure Ingestion doğrulanarak `main`e alındı; P004 Metadata, Corpus Inventory, and Rights aktif
+**Durum:** P004 Metadata, Corpus Inventory, and Rights tamamlandı; P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
 
 **Kod:** English-only workbench'te secure intake, versioned corpus documentation,
 individual TXT ve member-catalog'lu ZIP guided flow, selectable Review timeline,
@@ -408,4 +408,12 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   clone temiz kaldı.
 - Exact report, browser JSON ve checksum manifesti
   `provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/` altında
-  bağlıdır. Sıradaki tek kapı provenance-link commit'i için GitHub CI'dir.
+  bağlıdır.
+- Provenance-link commit `c8ae4c2`, GitHub CI run `29207801898` içinde verify,
+  SBOM/dependency audit ve canonical Linux amd64 container işlerinde geçti.
+- `HD-20260712-0002` uyarınca yedi P004 acceptance ölçütü teknik kanıtla geçti ve
+  Ticket complete oldu. Bu kapanış Safari, VoiceOver, genel kullanılabilirlik,
+  bilimsel `stylo`, deployment veya final ürün kabulü değildir; ortak owner
+  walkthrough P015'te yapılacaktır.
+- Sıradaki tek iş P005 lifecycle, session isolation, bounded queue, cancellation,
+  crash/restart cleanup ve retention modelidir.
