@@ -59,7 +59,7 @@ def new_deletion_event(
     reason: DeletionReason,
     file_count: int,
     byte_count: int,
-    policy_version: str,
+    policy_version: Literal["job-policy-v1"],
     event_ttl_seconds: int,
 ) -> DeletionEvent:
     """Create one deletion fact from typed, content-free values only."""
