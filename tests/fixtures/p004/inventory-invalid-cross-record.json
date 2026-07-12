@@ -1,0 +1,116 @@
+{
+  "schema_version": "corpus-inventory-v1",
+  "vocabulary_profile": "corpus-vocabularies-v1",
+  "purpose": "group_comparison",
+  "authors": [
+    {
+      "author_id": "fixture_author",
+      "display_name": "Fixture Author",
+      "kind": "person",
+      "authority_identifiers": []
+    }
+  ],
+  "works": [
+    {
+      "work_id": "fixture_work",
+      "title_original": "Invalid fixture work",
+      "language": "it",
+      "contributors": [
+        {
+          "author_id": "fixture_author",
+          "role": "author"
+        }
+      ],
+      "first_publication": {
+        "mode": "exact",
+        "start_year": 1883
+      },
+      "genre": {
+        "value": "unknown",
+        "label": "Unknown",
+        "kind": "unknown"
+      },
+      "audience": {
+        "value": "general",
+        "label": "General",
+        "kind": "controlled"
+      },
+      "adaptation": {
+        "value": "original",
+        "label": "Original",
+        "kind": "controlled"
+      },
+      "collection": {
+        "value": "independent_work",
+        "label": "Independent work",
+        "kind": "controlled"
+      }
+    }
+  ],
+  "editions": [
+    {
+      "edition_id": "fixture_edition",
+      "work_id": "different_work",
+      "edition_label": "Contradictory edition",
+      "edition_date": {
+        "mode": "exact",
+        "start_year": 1800
+      }
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "fixture_source",
+      "edition_id": "fixture_edition",
+      "source_type": {
+        "value": "digital_library",
+        "label": "Digital library",
+        "kind": "controlled"
+      },
+      "title": "Synthetic invalid source",
+      "bibliographic_citation": "Synthetic invalid fixture"
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "asset_invalid_fixture",
+      "file_label": "invalid_fixture.txt",
+      "content_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "work_id": "fixture_work",
+      "edition_id": "fixture_edition",
+      "source_id": "fixture_source",
+      "rights_asset_ids": [
+        "asset_invalid_fixture"
+      ],
+      "rights_chain_confirmed": false,
+      "normalization_profile": "unknown",
+      "mapping_confirmed": false
+    }
+  ],
+  "validated_files": [
+    {
+      "file_label": "invalid_fixture.txt",
+      "content_sha256": "2222222222222222222222222222222222222222222222222222222222222222",
+      "intake_profile": "ingestion-limits-v1",
+      "status": "validated-for-intake"
+    }
+  ],
+  "rights": [
+    {
+      "schema_version": "2.0.0",
+      "asset_id": "asset_invalid_fixture",
+      "source_id": "different_source",
+      "asset_type": "transcription",
+      "rights_status": "permission_required",
+      "permissions": {
+        "upload": "unknown",
+        "analysis": "prohibited",
+        "export": "prohibited",
+        "public_redistribution": "unknown"
+      },
+      "evidence": [],
+      "assessed_by": "Delta test suite",
+      "assessed_at_utc": "2026-07-12T00:00:00Z"
+    }
+  ]
+}

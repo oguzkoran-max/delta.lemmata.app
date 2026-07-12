@@ -1,0 +1,271 @@
+{
+  "$defs": {
+    "CorpusReadiness": {
+      "additionalProperties": false,
+      "properties": {
+        "blocker_count": {
+          "minimum": 0,
+          "title": "Blocker Count",
+          "type": "integer"
+        },
+        "chronology_point_count": {
+          "minimum": 0,
+          "title": "Chronology Point Count",
+          "type": "integer"
+        },
+        "exploratory": {
+          "title": "Exploratory",
+          "type": "boolean"
+        },
+        "independent_work_count": {
+          "minimum": 0,
+          "title": "Independent Work Count",
+          "type": "integer"
+        },
+        "information_count": {
+          "minimum": 0,
+          "title": "Information Count",
+          "type": "integer"
+        },
+        "rights_restriction_count": {
+          "minimum": 0,
+          "title": "Rights Restriction Count",
+          "type": "integer"
+        },
+        "style_over_time_minimum_met": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Style Over Time Minimum Met"
+        },
+        "threshold_is_sufficiency_claim": {
+          "const": false,
+          "default": false,
+          "title": "Threshold Is Sufficiency Claim",
+          "type": "boolean"
+        },
+        "warning_count": {
+          "minimum": 0,
+          "title": "Warning Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "independent_work_count",
+        "chronology_point_count",
+        "blocker_count",
+        "warning_count",
+        "information_count",
+        "rights_restriction_count",
+        "style_over_time_minimum_met",
+        "exploratory"
+      ],
+      "title": "CorpusReadiness",
+      "type": "object"
+    },
+    "EntityType": {
+      "enum": [
+        "inventory",
+        "author",
+        "work",
+        "edition",
+        "source",
+        "validated_file",
+        "asset",
+        "rights"
+      ],
+      "type": "string"
+    },
+    "IssueCode": {
+      "enum": [
+        "META_DUPLICATE_AUTHOR_ID",
+        "META_DUPLICATE_WORK_ID",
+        "META_DUPLICATE_EDITION_ID",
+        "META_DUPLICATE_SOURCE_ID",
+        "META_DUPLICATE_ASSET_ID",
+        "META_DUPLICATE_RIGHTS_ASSET_ID",
+        "META_DUPLICATE_FILE_LABEL",
+        "META_DUPLICATE_VALIDATED_FILE",
+        "META_FILE_REFERENCE_MISSING",
+        "META_FILE_HASH_MISMATCH",
+        "META_UNMAPPED_VALIDATED_FILE",
+        "META_AUTHOR_REFERENCE_MISSING",
+        "META_AUTHOR_ROLE_REQUIRED",
+        "META_WORK_REFERENCE_MISSING",
+        "META_EDITION_REFERENCE_MISSING",
+        "META_SOURCE_REFERENCE_MISSING",
+        "META_ASSET_REFERENCE_MISSING",
+        "META_RIGHTS_REFERENCE_MISSING",
+        "META_RIGHTS_CHAIN_SELF_MISSING",
+        "META_RIGHTS_CHAIN_UNCONFIRMED",
+        "META_RIGHTS_DEPENDENCY_MISSING",
+        "META_RELATIONSHIP_CONFLICT",
+        "META_FILE_MAPPING_UNCONFIRMED",
+        "META_WORK_ASSET_MISSING",
+        "META_MULTIPLE_ASSETS_PER_WORK",
+        "META_GROUP_LABEL_REQUIRED",
+        "META_CHRONOLOGY_REQUIRED",
+        "META_WORK_COUNT_EXPLORATORY",
+        "META_CHRONOLOGY_POINTS_EXPLORATORY",
+        "META_STYLE_AUTHOR_SET_MIXED",
+        "META_STYLE_LANGUAGE_MIXED",
+        "META_DATE_RANGE_REVERSED",
+        "META_EDITION_DATE_UNKNOWN",
+        "META_EDITION_PRECEDES_PUBLICATION",
+        "META_DATE_ORDER_UNCERTAIN",
+        "META_CONTROLLED_TERM_UNKNOWN",
+        "META_CONFOUND_METADATA_UNKNOWN",
+        "META_NORMALIZATION_PROFILE_UNKNOWN",
+        "META_NORMALIZATION_DETAILS_REQUIRED",
+        "RIGHTS_UPLOAD_PERMISSION_REQUIRED",
+        "RIGHTS_ANALYSIS_PERMISSION_REQUIRED",
+        "RIGHTS_STATUS_UNRESOLVED",
+        "RIGHTS_SOURCE_CONFLICT",
+        "RIGHTS_SOURCE_REFERENCE_MISSING"
+      ],
+      "title": "IssueCode",
+      "type": "string"
+    },
+    "IssueSeverity": {
+      "enum": [
+        "blocker",
+        "warning",
+        "information"
+      ],
+      "title": "IssueSeverity",
+      "type": "string"
+    },
+    "PurposeId": {
+      "enum": [
+        "text_proximity",
+        "group_comparison",
+        "style_over_time"
+      ],
+      "title": "PurposeId",
+      "type": "string"
+    },
+    "ValidationIssue": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/IssueCode"
+        },
+        "entity_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Entity Id"
+        },
+        "entity_type": {
+          "$ref": "#/$defs/EntityType"
+        },
+        "field_path": {
+          "minLength": 1,
+          "title": "Field Path",
+          "type": "string"
+        },
+        "how_to_fix": {
+          "minLength": 1,
+          "title": "How To Fix",
+          "type": "string"
+        },
+        "message": {
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "message_key": {
+          "pattern": "^corpus\\.validation\\.[a-z0-9_.-]+$",
+          "title": "Message Key",
+          "type": "string"
+        },
+        "row_number": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Row Number"
+        },
+        "severity": {
+          "$ref": "#/$defs/IssueSeverity"
+        },
+        "why_it_matters": {
+          "minLength": 1,
+          "title": "Why It Matters",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "entity_type",
+        "entity_id",
+        "field_path",
+        "message_key",
+        "message",
+        "why_it_matters",
+        "how_to_fix"
+      ],
+      "title": "ValidationIssue",
+      "type": "object"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/corpus-validation-report.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "blocked": {
+      "title": "Blocked",
+      "type": "boolean"
+    },
+    "inventory_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Inventory Sha256",
+      "type": "string"
+    },
+    "issues": {
+      "items": {
+        "$ref": "#/$defs/ValidationIssue"
+      },
+      "title": "Issues",
+      "type": "array"
+    },
+    "purpose": {
+      "$ref": "#/$defs/PurposeId"
+    },
+    "readiness": {
+      "$ref": "#/$defs/CorpusReadiness"
+    },
+    "schema_version": {
+      "const": "corpus-validation-v1",
+      "default": "corpus-validation-v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "inventory_sha256",
+    "purpose",
+    "blocked",
+    "issues",
+    "readiness"
+  ],
+  "title": "ValidationReport",
+  "type": "object"
+}

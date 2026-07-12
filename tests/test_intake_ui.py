@@ -87,6 +87,12 @@ def test_archive_mode_counts_members_and_rejects_multiple_archives() -> None:
     assert outcome.corpus_ready is True
     assert outcome.metadata_ready is False
     assert outcome.corpus_units == 2
+    receipt = outcome.receipts[0]
+    assert [member.display_label for member in receipt.archive_members] == [
+        "one.txt",
+        "two.txt",
+    ]
+    assert all(not hasattr(member, "data") for member in receipt.archive_members)
 
     rejected = validate_browser_uploads(
         CorpusInputMode.ZIP_ARCHIVE,

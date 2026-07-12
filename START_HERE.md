@@ -2,7 +2,9 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P003 Secure Ingestion otomatik, bağımsız, exact-commit ve insan kabul kapılarını geçti. Sıradaki iş P004 Metadata, Corpus Inventory, and Rights ticket'ını açmaktır.
+**Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights teknik kabul
+kapılarıyla tamamlandı. Sıradaki tek ticket P005 Job Lifecycle, Isolation, and
+Retention'dır; bilimsel `stylo` hesaplaması henüz uygulanmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -106,20 +108,14 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-P003 Secure Ingestion tamamlandı. Otomatik ve adversarial paket
-`RUN-20260711-0003`, Oğuz'un TXT+CSV, ZIP ve unsafe-CSV rejection walkthrough'u
-`RUN-20260711-0004`, insan kabulü eklenmiş exact-commit kapanış doğrulaması ise
-`RUN-20260711-0005` ile kayıtlıdır. İnsan kabul kararı `HD-20260711-0008`dir;
-ilk kısa devam yanıtı `HD-20260711-0007` olarak ayrı tutulur.
+P004 complete durumundadır. Domain/CSV, Guided TXT ve ZIP, fail-closed rights,
+selectable Corpus Review, exact correction, hash-bound confirmation, exact-commit
+clean-clone ve GitHub CI kapıları geçti. Kapanış `RUN-20260712-0005`,
+`HD-20260712-0002` ve
+`provenance/evidence/P004/automated-acceptance-rehearsal-ci.md` ile kayıtlıdır.
+Final owner walkthrough P015 ürün-hazır kapısında ayrıca yapılacaktır; P004 kapanışı
+Safari, VoiceOver, genel usability, bilimsel sonuç veya deployment iddiası değildir.
 
-Sıradaki tek iş P004 Metadata, Corpus Inventory, and Rights ticket'ını ayrı bir
-branch üzerinde açmaktır. P004:
-
-1. her metni `work_id`, yazar, tarih, edisyon, tür, hedef kitle ve kaynakla tanımlar;
-2. upload, analysis, export ve public redistribution izinlerini ayırır;
-3. hak durumu bilinmeyen varlığı sessizce açık kabul etmez;
-4. üç kronolojik nokta ve altı bağımsız eser yoksa Style Over Time sonucunu
-   zorunlu olarak exploratory işaretler.
-
-P004 retention garantisi, gerçek `stylo`, Pinokyo nihai corpus'u, deployment,
-runtime AI veya `Launch Stylometry` entegrasyonu eklemez.
+Sıradaki iş P005'i tek aktif ticket olarak açıp job workspace, session ownership,
+queue, cancellation, timeout, crash/restart cleanup ve retention sözleşmesini
+uygulamaktır. Hedef süreler bu aşamada test edilmeden ürün vaadi yapılmaz.

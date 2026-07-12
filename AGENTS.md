@@ -13,7 +13,7 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P000, P001, P002 ve P003 kapanmıştır. P004 Ticket ve PromptEvent açılmadan metadata/rights koduna başlama.
+- P000, P001, P002 ve P003 kapanmıştır. P004 Ticket ve PromptEvent açıktır; yalnız `provenance/tickets/P004.json` sınırında çalış.
 - P003 otomatik ve insan kabul kanıtını metadata, retention, `stylo` veya production kanıtı gibi genişletme.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.
 - Kullanıcının onayladığı soruları yeniden sorma.

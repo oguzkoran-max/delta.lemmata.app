@@ -15,7 +15,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "meta.page_title": "Delta · Stylometry workbench",
     "brand.mark": "Δ",
     "brand.name": "Delta",
-    "brand.subtitle": "Stylometry workbench",
+    "brand.subtitle": "A Lemmata stylometry workbench",
     "header.stage": "Secure intake",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
@@ -29,53 +29,109 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.state.complete": "Complete",
     "sidebar.state.validated": "Validated",
     "sidebar.state.locked": "Locked",
-    "sidebar.boundary_title": "Current boundary",
-    "sidebar.boundary_body": (
-        "This build validates uploads without creating analysis state. It does not "
-        "calculate stylometric results or retain a permanent project copy."
+    "sidebar.badge": "Corpus setup",
+    "sidebar.guide_title": "Start here",
+    "sidebar.guide_body": (
+        "Delta checks and documents your corpus before any analysis settings appear."
     ),
-    "build.title": "Build information",
+    "sidebar.guide.question": "Choose a research question",
+    "sidebar.guide.corpus": "Upload and document the texts",
+    "sidebar.guide.parameters": "Review parameters before analysis",
+    "sidebar.parameters_title": "Why parameters come later",
+    "sidebar.parameters_body": (
+        "Stylometric settings depend on the size and structure of your corpus. "
+        "Delta checks the texts first, then explains the available choices."
+    ),
+    "build.title": "Technical status",
     "build.readiness_label": "Readiness",
     "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
     "build.engine_value": "Not connected",
-    "setup.eyebrow": "EXPERIMENT SETUP · STEP 1",
-    "setup.title": "Set the research purpose",
+    "setup.eyebrow": "COMPARE HOW TEXTS ARE WRITTEN",
+    "setup.title": "Discover patterns in writing style.",
     "setup.intro": (
-        "Begin with the question. Delta keeps corpus checks, parameter choices, "
-        "interpretive limits, and a rerun record beside the eventual result."
+        "Stylometry compares measurable patterns in language use across texts, such as "
+        "how often common words recur. Delta compares texts, groups, and change over time "
+        "without writing R or Python."
     ),
-    "purpose.label": "Research purpose",
+    "setup.corpus_scope": (
+        "Every comparison is relative to your corpus. Delta documents the texts before "
+        "method settings appear."
+    ),
+    "setup.trace.kicker": "WHAT STYLOMETRY NOTICES",
+    "setup.trace.title": "Small choices become visible when they repeat.",
+    "setup.trace.body": ("Delta compares patterns across documented texts, not isolated words."),
+    "setup.trace.caption": "Illustration only · no corpus analysed",
+    "setup.trace.row_a_label": "Illustrative text A",
+    "setup.trace.row_a": "the and of but with",
+    "setup.trace.row_b_label": "Illustrative text B",
+    "setup.trace.row_b": "and the with yet of",
+    "setup.trace.legend": "Signals that can be compared",
+    "setup.trace.common_words": "Common words",
+    "setup.trace.punctuation": "Punctuation",
+    "setup.trace.rhythm": "Sentence rhythm",
+    "setup.trace.vocabulary": "Vocabulary",
+    "setup.method_label": "How stylometry works",
+    "setup.method.observe.title": "Observe",
+    "setup.method.observe.body": "Recurring language features",
+    "setup.method.compare.title": "Compare",
+    "setup.method.compare.body": "Across documented texts",
+    "setup.method.interpret.title": "Interpret",
+    "setup.method.interpret.body": "With context and limits",
+    "setup.method.caption": "Conceptual workflow · not an analysis result",
+    "parameters.orientation_title": "How parameters will work",
+    "parameters.orientation_body": (
+        "Usable settings depend on text length, feature count, and corpus structure. "
+        "Delta checks the corpus before exposing them."
+    ),
+    "parameters.guided.title": "Guided mode",
+    "parameters.guided.body": (
+        "Tests 100, 300, 500, and 1,000 MFW. Its fixed reference is 500 MFW, "
+        "0% culling, whole text, and Classic Delta; this is not a 'best setting'."
+    ),
+    "parameters.research.title": "Research mode",
+    "parameters.research.body": (
+        "Offers bounded MFW, culling, segmentation, and distance choices, then "
+        "compares up to 24 documented combinations instead of hiding sensitivity."
+    ),
+    "parameters.status.title": "Current status",
+    "parameters.status.body": (
+        "Controls stay locked until corpus-health checks and the R stylo engine are "
+        "connected. No stylometric analysis is running in this build."
+    ),
+    "purpose.guidance": "Understand this research path",
+    "purpose.label": "What do you want to investigate?",
     "purpose.badge": "Selected purpose",
-    "purpose.question_label": "Working question",
-    "purpose.use_label": "Use this when",
-    "purpose.boundary_label": "Interpretive boundary",
-    "purpose.text_proximity.label": "Text Proximity",
+    "purpose.question_label": "Question",
+    "purpose.use_label": "Why use it",
+    "purpose.boundary_label": "Do not conclude",
+    "purpose.text_proximity.label": "Compare Texts",
     "purpose.text_proximity.question": (
-        "Which known texts are stylistically nearest to a focal text?"
+        "Which texts show more similar recurring language patterns within this corpus?"
     ),
-    "purpose.text_proximity.use": "You have one focal text and a documented comparison corpus.",
+    "purpose.text_proximity.use": (
+        "Explore relative similarity or place one focal text beside documented comparison texts."
+    ),
     "purpose.text_proximity.boundary": (
-        "Proximity is not proof of authorship and does not implement open-set rejection."
+        "Nearer does not mean the same author, influence, intention, or authenticity."
     ),
-    "purpose.group_comparison.label": "Group Comparison",
+    "purpose.group_comparison.label": "Compare Groups",
     "purpose.group_comparison.question": (
-        "How does stylistic structure differ across labelled groups of works?"
+        "Do documented groups show different recurring stylistic patterns?"
     ),
     "purpose.group_comparison.use": (
-        "You need to compare groups defined by author, genre, period, audience, or "
-        "another recorded category."
+        "Compare works grouped by author, genre, period, audience, or another recorded category."
     ),
     "purpose.group_comparison.boundary": (
         "Observed separation may reflect corpus balance, genre, period, source, or edition effects."
     ),
-    "purpose.style_over_time.label": "Style Over Time",
+    "purpose.style_over_time.label": "Trace Style Over Time",
     "purpose.style_over_time.question": (
-        "How does a writer's work-level stylistic position vary across a dated corpus?"
+        "How does one writer's stylistic position vary across dated independent works?"
     ),
     "purpose.style_over_time.use": (
-        "You have several independently dated works and enough metadata to inspect "
-        "chronological confounds."
+        "Explore a documented sequence of independently dated works while keeping "
+        "edition, genre, audience, and source differences visible."
     ),
     "purpose.style_over_time.boundary": (
         "Chronology alone does not establish ageing, maturation, a turning point, or causation."
@@ -93,13 +149,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "and complete cell reporting."
     ),
     "mode.status": "Configuration remains locked until corpus documentation is connected.",
-    "corpus.eyebrow": "CORPUS · STEP 2",
-    "corpus.title": "Validate the research corpus",
-    "corpus.body": (
-        "Choose the corpus role before adding files. Delta accepts UTF-8, NFC text "
-        "files or one strict ZIP archive containing text files only. A metadata CSV "
-        "is checked separately for structure and unsafe cells."
-    ),
+    "corpus.eyebrow": "CORPUS · UPLOAD",
+    "corpus.title": "Upload the research corpus",
+    "corpus.body": ("Add UTF-8, NFC TXT files or one strict ZIP. Metadata CSV is optional."),
     "corpus.available": "Secure intake available",
     "corpus.mode.label": "Corpus input format",
     "corpus.mode.text": "Individual TXT files",
@@ -130,13 +182,17 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "corpus.success": (
         "Intake checks passed · Uploads: {uploads} · Corpus texts: {units} · Input bytes: {bytes}"
     ),
-    "corpus.metadata_valid": "Metadata structure validated",
+    "corpus.metadata_valid": "File safety checked · metadata meaning not reviewed",
+    "corpus.metadata_advanced": "Advanced · import a versioned metadata CSV",
     "corpus.role.text": "Corpus text",
     "corpus.role.archive": "Corpus archive",
+    "corpus.role.member": "Corpus text from ZIP",
     "corpus.role.csv": "Metadata table",
     "corpus.receipt.text": "Lines: {lines} · Tokens: {tokens}",
     "corpus.receipt.archive": "TXT members: {members} · Expanded bytes: {expanded}",
+    "corpus.receipt.member": "Lines: {lines} · Tokens: {tokens} · SHA-256 {digest}",
     "corpus.receipt.csv": "Rows: {rows} · Columns: {columns}",
+    "corpus.archive_catalog": "Validated ZIP member catalog",
     "corpus.error.title": "The submission was rejected and cleared before intake.",
     "corpus.error.empty": "The selected file contains no bytes.",
     "corpus.error.limit": (
@@ -162,10 +218,196 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Delta could not complete the intake operation safely. No analysis state was created."
     ),
     "corpus.error.reference": "Rejection reference: {code}",
-    "corpus.continue_button": "Continue - corpus documentation is not connected",
+    "corpus.continue_button": "Continue to describe the corpus",
     "corpus.continue_button_help": (
-        "Validated bytes are not enough for analysis. Corpus inventory, metadata meaning, "
-        "and rights checks must be connected before parameter configuration opens."
+        "Delta will retain only the validated file catalog and will clear the uploaded "
+        "browser payload before opening corpus documentation."
+    ),
+    "corpus.zip_ready": (
+        "Each validated TXT member will open as a separate work in corpus documentation."
+    ),
+    "flow.progress_accessible": "Experiment progress: corpus documentation is active",
+    "flow.stage.upload": "Upload",
+    "flow.stage.describe": "Describe",
+    "flow.stage.review": "Review",
+    "flow.locked": "Locked",
+    "describe.eyebrow": "CORPUS · DESCRIBE",
+    "describe.title": "Describe what each text represents",
+    "describe.body": (
+        "Confirm work, chronology, edition, source, and rights information. Suggested "
+        "titles and identifiers remain editable or visibly generated; Delta makes no "
+        "automatic scholarly or legal determination."
+    ),
+    "describe.back": "Start again with different files",
+    "describe.import_title": "Advanced metadata import",
+    "describe.import_ready": (
+        "The versioned CSV was parsed and domain-checked against the validated files."
+    ),
+    "describe.import_blocked": (
+        "The CSV passed file-safety checks but cannot yet produce a complete inventory."
+    ),
+    "describe.import_review": "Review imported metadata",
+    "describe.guided_title": "Guided metadata editor",
+    "describe.guided_body": (
+        "Complete the visible fields for every TXT. Unknown remains an explicit value; "
+        "Delta never invents a date, source, permission, or classification."
+    ),
+    "describe.work_heading": "{index}. {file_label}",
+    "describe.file_metric": "{lines} lines · {tokens} tokens · SHA-256 {digest}",
+    "describe.title_original": "Original work title",
+    "describe.author_name": "Primary author name",
+    "describe.author_kind": "Author type",
+    "describe.language": "Text language (BCP 47)",
+    "describe.publication_mode": "First-publication certainty",
+    "describe.publication_start": "First-publication year",
+    "describe.publication_end": "End year",
+    "describe.edition_label": "Analyzed edition label",
+    "describe.edition_mode": "Analyzed-edition date certainty",
+    "describe.edition_start": "Analyzed-edition year",
+    "describe.edition_end": "Edition end year",
+    "describe.genre": "Genre",
+    "describe.audience": "Audience",
+    "describe.adaptation": "Adaptation status",
+    "describe.collection": "Collection status",
+    "describe.group_label": "Group label",
+    "describe.source_type": "Source type",
+    "describe.source_title": "Source title",
+    "describe.source_url": "Source URL",
+    "describe.source_citation": "Bibliographic citation",
+    "describe.source_accessed": "Date accessed",
+    "describe.rights_heading": "Rights questionnaire",
+    "describe.rights_help": (
+        "Choose the documented state for this analyzed text. Delta records your answer "
+        "and keeps unresolved actions closed; it does not issue a legal opinion."
+    ),
+    "describe.rights_status": "Documented rights state",
+    "describe.rights.unknown": "Unknown · keep every action closed",
+    "describe.rights.permission_required": "Permission required · unresolved",
+    "describe.rights.analysis_only": (
+        "Analysis only · permit upload and analysis, prohibit text export"
+    ),
+    "describe.rights.verified_open": (
+        "Researcher-documented open · requires URL, license, and jurisdiction"
+    ),
+    "describe.rights.excluded": "Exclude · prohibit every action",
+    "describe.rights_license": "License or public-domain statement",
+    "describe.rights_jurisdiction": "Jurisdiction",
+    "describe.rights_notes": "Rights notes",
+    "describe.build_review": "Build corpus review",
+    "describe.build_error": "Review these fields before continuing: {fields}",
+    "describe.correction_guided": (
+        "The selected work is open below. Review the highlighted {field_path} field."
+    ),
+    "describe.correction_here": "Correction target: {field_path}",
+    "describe.correction_csv": (
+        "This inventory came from CSV. Correct {field_path} for work_id {work_id} in "
+        "the source CSV, then start again with the corrected file."
+    ),
+    "describe.correction_csv_boundary": (
+        "Delta no longer retains the uploaded CSV bytes, so it cannot silently rewrite "
+        "or prefill that source file."
+    ),
+    "describe.year_error": "{field} must be a year from 1 to 9999.",
+    "describe.csv_issue": "Row {row} · {field} · {code}",
+    "review.eyebrow": "CORPUS · REVIEW",
+    "review.title": "Review the documented corpus",
+    "review.body": (
+        "Inspect blockers, chronology, rights, and the exact exportable inventory before "
+        "any parameter configuration is allowed."
+    ),
+    "review.ready": (
+        "Corpus documentation has no blockers. Parameter setup remains locked until "
+        "the analysis engine and its checks are connected."
+    ),
+    "review.blocked": (
+        "Corpus documentation contains blockers. Return to Describe and correct them; "
+        "no analysis state has been created."
+    ),
+    "review.edit": "Edit metadata",
+    "review.start_over": "Start over",
+    "review.metric.works": "Independent works",
+    "review.metric.chronology": "Chronology points",
+    "review.metric.blockers": "Blockers",
+    "review.metric.warnings": "Warnings",
+    "review.metric.rights": "Rights restrictions",
+    "review.composition_title": "Corpus composition",
+    "review.composition_body": (
+        "Counts describe the metadata documented for this inventory. They do not measure "
+        "style, representativeness, balance, or scholarly quality."
+    ),
+    "review.composition_table": "Corpus composition data",
+    "review.completeness_title": "Metadata completeness matrix",
+    "review.completeness_body": (
+        "Completeness states describe documentation, not research quality, scientific "
+        "validity, or permission to analyze or redistribute a text."
+    ),
+    "review.completeness_fields": "Review fields",
+    "review.completeness_no_field": "No correction field",
+    "review.timeline_title": "Work timeline",
+    "review.timeline_body": (
+        "One entry per independent work. This is corpus chronology, not a stylistic trajectory."
+    ),
+    "review.timeline_selector": "Select a documented work on the chronology",
+    "review.timeline_table": "Work timeline data",
+    "review.timeline_unknown": "Unknown date",
+    "review.timeline_unresolved": "Unresolved",
+    "review.timeline_conflict": "Conflict",
+    "review.corrections_title": "Correction shortcuts",
+    "review.corrections_body": (
+        "Choose a documented warning, missing field, or conflict to return to its exact "
+        "work and metadata section."
+    ),
+    "review.corrections_label": "Metadata field to correct",
+    "review.corrections_edit": "Edit selected field",
+    "review.rights_title": "Rights action matrix",
+    "review.rights_body": (
+        "These states reproduce the researcher's documentation; they are not legal approval."
+    ),
+    "review.issues_title": "Actionable corpus checks",
+    "review.issue_why": "Why it matters",
+    "review.issue_fix": "How to correct it",
+    "review.no_issues": "No corpus-documentation issues were reported.",
+    "review.confirmation_title": "Final corpus confirmation",
+    "review.confirmation_body": (
+        "One confirmation covers this exact inventory hash. Any rebuilt metadata or rights "
+        "record requires confirmation again."
+    ),
+    "review.confirmation_checkbox": (
+        "I reviewed the file-to-work mappings and the documented rights records."
+    ),
+    "review.confirmation_help": (
+        "This records review of documentation only. It is not legal approval or a claim of "
+        "scientific sufficiency."
+    ),
+    "review.confirmation_recorded": "Confirmation recorded for this inventory.",
+    "review.confirmation_required": (
+        "Final corpus confirmation is still required before a future parameter stage can open."
+    ),
+    "review.confirmation_blocked": (
+        "Resolve every corpus blocker before final confirmation can be recorded."
+    ),
+    "review.downloads_title": "Download the documentation package",
+    "review.download_metadata": "Download metadata CSV",
+    "review.download_inventory": "Download canonical inventory JSON",
+    "review.download_validation": "Download validation report JSON",
+    "review.download_composition": "Download composition CSV",
+    "review.download_completeness": "Download completeness CSV",
+    "review.export_unavailable": (
+        "The metadata CSV cannot be generated safely from the current inventory."
+    ),
+    "review.review_export_unavailable": (
+        "The review CSV files cannot be generated safely from the current projection."
+    ),
+    "review.projection_unavailable": (
+        "This review no longer matches the documented inventory. Return to Describe and "
+        "rebuild it before continuing."
+    ),
+    "review.analysis_locked": (
+        "No stylometric analysis has run. Parameters and the analysis engine remain locked."
+    ),
+    "review.analysis_locked_confirmation": (
+        "No stylometric analysis has run. Final corpus confirmation, parameters, and the "
+        "analysis engine remain locked."
     ),
     "map.title": "Experiment map",
     "map.body": "Each stage opens only after its own checks pass.",

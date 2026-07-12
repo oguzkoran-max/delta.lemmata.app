@@ -1,0 +1,110 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260712-0005",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P004"
+  ],
+  "started_at_utc": "2026-07-12T20:11:46Z",
+  "ended_at_utc": "2026-07-12T20:14:24Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "9f3124a65216fd1c0f6d459cfe6a3049f51baa07",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output ../delta-p004-auto-exact-9f3124a-output",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh --no-hardlinks local clone detached at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output ../delta-p004-auto-exact-9f3124a-output",
+    "limitations": [
+      "The clean clone used the same Mac and may reuse locked Python and R package caches.",
+      "The browser run used Chromium rather than Safari or VoiceOver.",
+      "Only synthetic in-memory corpus inputs were used.",
+      "General learnability, scientific computation, calibrated stability, production isolation, retention enforcement, deployment, and final owner acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit.sha256",
+    "sha256": "c69e11cfe735b23260265900ceb2f22abf80d3b5036cc32f302fa69eb8c36aee",
+    "covers": [
+      "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit"
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "scripts/browser_audit_p004.py",
+      "sha256": "ab9cb3d0d9ded1b8661d9c5c1049a0caa2edccb97341e86fdc931c2389511a1a"
+    },
+    {
+      "path": "prompts/P004-automated-acceptance-rehearsal.md",
+      "sha256": "911ed3562b259f4e0935b7e4c8dd0e62d87f9a426160a9840ea5deee77545c50"
+    },
+    {
+      "path": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+      "sha256": "2dfd15ec25c3195ac11acfae044ffaf0e9a5fce2f775d81e2086a4a5f3fcaed6"
+    },
+    {
+      "path": "provenance/tickets/P004.json",
+      "sha256": "6decdd2af16c252497e1e6981c9037abbf1c16c5d23571be47322d9b81f93541"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+      "sha256": "0be39a3743b0f261062feac01e5b1cdad473aa407c5b5fe85788437a3370dc91"
+    },
+    {
+      "path": "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/browser-audit/browser-audit.json",
+      "sha256": "f5e40afb53ab2443d2e18738881892a9ba70c366501cb12ab85b475636392134"
+    }
+  ],
+  "notes": "The automated acceptance-rehearsal implementation commit was reconstructed in a fresh detached clone and passed dependency bootstrap, every repository gate, the expanded fail-closed rights correction journey, and the complete six-viewport TXT/ZIP browser audit. Duplicate exact-run screenshots were omitted because the committed passing candidate already retains the full 25-image visual set. GitHub CI and P004 technical closure remain separately gated; this run is not final owner acceptance."
+}

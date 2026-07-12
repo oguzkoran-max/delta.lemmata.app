@@ -1,0 +1,154 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260711-0006",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": ["P004"],
+  "started_at_utc": "2026-07-11T23:53:04Z",
+  "ended_at_utc": "2026-07-11T23:53:40Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "8dd85c1d3cd454c3b1a8227122ff73e136da87b0",
+  "environment": {
+    "os": "macOS 26.5.1",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/verify.sh",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Clean working tree at the recorded exact commit",
+    "command": "./scripts/verify.sh",
+    "limitations": [
+      "The recorded run used the canonical already-bootstrapped workspace rather than a fresh clone.",
+      "The same Mac may reuse locked local package caches.",
+      "The run does not cover the deferred Streamlit metadata workflow or browser behavior.",
+      "No real research corpus or scientific stylometric computation was used."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P004/metadata-csv-exact-commit.sha256",
+    "sha256": "6f6dbc33ee966fa1827b8ffa5e449dd9791d721a23854240266cf4573224614f",
+    "covers": ["provenance/evidence/P004/metadata-csv-exact-commit"]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "src/delta_lemmata/metadata_csv.py",
+      "sha256": "876d0540dbe79a7b950417f799d405cd180841c6fb0127affbbacbfde4dab0b4"
+    },
+    {
+      "path": "src/delta_lemmata/metadata_csv_models.py",
+      "sha256": "3bc64fef44e50097dba0a2a59a04befac220589654ac06e51769851c76e9361f"
+    },
+    {
+      "path": "src/delta_lemmata/data/corpus-metadata-fields-v1.json",
+      "sha256": "2630d0d7451c2554e63e86d1e28326eb69a2ac0461abc22d97ead85397d2e9ab"
+    },
+    {
+      "path": "src/delta_lemmata/rights.py",
+      "sha256": "3a37547057ae91ee5d8fd5a7b31e643fc97bc401a2e2afe4748b0f22e5e4f2ee"
+    },
+    {
+      "path": "src/delta_lemmata/ingestion.py",
+      "sha256": "0fdb17d3fc467d46f8da64f4955b2f2d3e7b21e27ba6eb18e3d9d12eb5362b35"
+    },
+    {
+      "path": "templates/corpus-metadata-v1.csv",
+      "sha256": "0dd3c3ed5ce97b6d5397a3020fa7ef30fd3e329839b8d0992a0694a7c78ce577"
+    },
+    {
+      "path": "schemas/corpus-metadata-field-dictionary.schema.json",
+      "sha256": "bafc18bd4dc1d471ef9fc1c071e9c02b00b1d2b40109672c771c36c30c823310"
+    },
+    {
+      "path": "schemas/asset-rights-v2.schema.json",
+      "sha256": "611143845c9455ff38de2d841503b279703ca38793eaa120df7115418762cf57"
+    },
+    {
+      "path": "schemas/corpus-inventory.schema.json",
+      "sha256": "32fb0a7b7aa194ce98b89356a5eed429a2a0e9c9d10692250d5cfa637f77902f"
+    },
+    {
+      "path": "tests/test_metadata_csv.py",
+      "sha256": "6df2859b5e8391a51af059807307c91eb9f946e8e2f9d17e107712d45027927e"
+    },
+    {
+      "path": "tests/test_corpus.py",
+      "sha256": "7b10935e81b5e4b9f30b504ecb2e24b7fb7b05a655e7bf42c61dd2f56fa31754"
+    },
+    {
+      "path": "tests/test_schemas.py",
+      "sha256": "c940b859af7aa7f8e000dff5259a0e7298dc11a42c670199bac9ce469c1fc099"
+    },
+    {
+      "path": "decisions/ADR-0011-versioned-metadata-csv.md",
+      "sha256": "a05bfc0d19c58a31d497144b5bb36185e1e7fe3e5fe753a3671e57553fef0427"
+    },
+    {
+      "path": "docs/development/p004-metadata-csv.md",
+      "sha256": "cf363ad10712bc07c7c3727ee50e1b13deb15ee27d5bfebfd3ffa2a2cc66c44b"
+    },
+    {
+      "path": "docs/security/threat-model.md",
+      "sha256": "2d665ee69c15cbf77acd1e53ede7ea0f3ff0389d41a090c8ceecd3f8a894c94b"
+    },
+    {
+      "path": "provenance/evidence/P004/metadata-csv-validation.md",
+      "sha256": "bb3f6c7c27a093d8da97ff1c36cfab578b1dcfc4befa64abd10dacddbd99b807"
+    },
+    {
+      "path": "provenance/tickets/P004.json",
+      "sha256": "87f483fe2a153a5d25a0773634c6247626fe4ab28a408424a43e90993a281518"
+    },
+    {
+      "path": "provenance/human-decision-ledger.jsonl",
+      "sha256": "cb5c946ac1f636212eedc14f98bee605adaf28f1b5a4b32979eaf5e6bc889ad3"
+    },
+    {
+      "path": "provenance/prompt-events.jsonl",
+      "sha256": "bfd58bc41b5eb6ce94ef887392c9d7a3e2da9c91d5b85e0e673741f0b4af294d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P004/metadata-csv-exact-commit/report.md",
+      "sha256": "8a8b16813605533d2c7ad34b955aedc63bc9044e513d09b7603fb260aede6537"
+    }
+  ],
+  "notes": "The clean committed P004 metadata CSV implementation passed every repository gate. This Run terminates at the recorded implementation commit and does not hash its own future provenance-link commit. UI, browser, scientific, deployment, retention, and human-acceptance claims remain outside scope."
+}

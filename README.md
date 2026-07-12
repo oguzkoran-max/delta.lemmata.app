@@ -6,10 +6,11 @@ requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
 **Current stage:** P003 Secure Ingestion passed automated, adversarial,
-exact-commit clean-clone, and human acceptance gates. The English-only workbench
-can validate bounded TXT, ZIP, and structural metadata CSV inputs; metadata
-semantics, rights decisions, and scientific computation are not implemented yet.
-P004 Metadata, Corpus Inventory, and Rights is the next bounded ticket.
+exact-commit clean-clone, and human acceptance gates and is merged into `main`.
+P004 Metadata, Corpus Inventory, and Rights is active on its own branch. The
+English-only workbench can validate bounded TXT, ZIP, and structural metadata CSV
+inputs; P004 metadata semantics and rights decisions are not implemented yet, and
+scientific computation remains out of scope.
 
 ## Product Boundaries
 

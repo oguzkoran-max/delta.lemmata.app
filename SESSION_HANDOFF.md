@@ -1,14 +1,147 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-11
+**Güncellendi:** 2026-07-12
 
-**Aşama:** P003 Secure Ingestion bütün kabul kapılarını geçti; P004 açılışı sırada
+**Aşama:** P004 Metadata, Corpus Inventory, and Rights teknik olarak tamamlandı; P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
 
-**Kod durumu:** English-only workbench'te TXT/ZIP/CSV secure intake var; scientific computation yok
+**Kod durumu:** English-only workbench'te secure intake, versioned corpus domain,
+58-column metadata CSV, individual-TXT veya member-catalog'lu ZIP Guided Upload ->
+Describe -> Review, selectable timeline, exact correction routing ve hash-bound
+final documentation confirmation adayı var; scientific computation yok
 
-**Aktif ticket:** Yok; P003 `complete`, P004 henüz açılmadı
+**Aktif ticket:** Yok; P004 kapanış commit'i doğrulanıp `main`e alındıktan sonra P005 açılacak
 
-**Sıradaki tek ana iş:** Geçen exact-commit kapanış Run'ını kaydet ve P003'ü main'e al; ardından P004 ticket ve branch'ini aç
+**Sıradaki tek ana iş:** P004 kapanış ağacını doğrula ve `main`e al; ardından P005'i
+tek aktif ticket olarak açıp lifecycle/retention sözleşmesini uygula
+
+**İnsan kabul sırası değişikliği:** Oğuz `HD-20260712-0002` ile ara testleri
+Codex'in yürütmesini, ortak walkthrough'un ürün hazır olduğunda yapılmasını istedi.
+Bu karar P004'ü kendiliğinden kabul etmez; automated technical closure ancak expanded
+browser, full repository, exact-commit ve CI kapıları geçerse ilerleyebilir. Safari,
+VoiceOver, bilimsel sonuç ve final release kabulü bu otomatik kanıttan türetilmez.
+
+**P004 otomatik kabul provası:** Tracked browser harness'a permission-required
+blocker, exact rights correction, guided-value restoration, analysis-only action
+matrix ve post-correction confirmation turu eklendi. On bir başarısız harness/oracle
+iterasyonu raporlandı; on ikinci final koşum altı viewport, Guided TXT, rights
+correction, Review/download ve two-member ZIP akışlarında, sıfır external host,
+sıfır console error, sıfır payload echo ve sıfır overflow ile geçti. Working-tree
+full gate 468 test, 3.174 statement, 880 branch ve yüzde 100 coverage ile yeşildir.
+Kanıt: `provenance/evidence/P004/automated-acceptance-rehearsal-validation.md`.
+Implementation commit `9f3124a`, fresh `--no-hardlinks` detached clone'da
+committed lockfile'lardan yeniden kuruldu; aynı 468-test full gate ve expanded
+browser audit tamamen geçti, clone temiz kaldı. `RUN-20260712-0005` ile exact
+report/checksum paketi bu sonucu kaydeder. Provenance-link commit `c8ae4c2`, GitHub
+CI run `29207801898` içinde verify, SBOM/dependency audit ve Linux amd64 container
+işlerinde geçti. `HD-20260712-0002` uyarınca P004 repeatable teknik kapıları
+tamamlandı; final owner walkthrough P015'te açık kalır.
+
+**Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
+bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
+actions, üç seviyeli validation ve görsel Corpus Review. Ayrıntı:
+`docs/development/p004-metadata-ux-decisions.md`.
+
+**Tasarım kapısı:** Üç adet 10 soruluk karar turu tamamlandı. Corpus iç akışı
+Upload, Describe, Review; metadata zorunlulukları purpose-aware; kaynak URL veya
+bibliyografik künye; rights eylem bazlı fail-closed; yardım katmanlıdır. Karar
+`HD-20260711-0010`, uygulama sırası aynı UX sözleşmesinin 7. bölümündedir.
+
+**CI durumu:** GitHub shallow-checkout kaynaklı provenance hatası `f7a75b0` ile
+düzeltildi ve `0b0b349` ile main'e alındı. Hotfix run `29167750356` ve main run
+`29167865311` verify, SBOM/audit ve container işlerinde tamamen yeşildir.
+
+**P004 CSV doğrulaması:** Ayrı rights-source kaybı, statement-only public export,
+external schema drift ve yanlış field mapping bağımsız denetimde bulunup düzeltildi.
+`8dd85c1` temiz yerel ağaçta 390 test ve %100 statement/branch coverage ile geçti;
+`RUN-20260711-0006` bunu kaydeder. GitHub CI `29172847800` verify, SBOM/audit ve
+Linux container işlerinde geçti; ayrıntı
+`provenance/evidence/P004/metadata-csv-validation.md`.
+
+**P004 Guided UI doğrulaması:** Individual TXT Upload -> Describe -> Review akışı,
+payload-free catalog, deterministic rights questionnaire, timeline, Rights Action
+Matrix, readiness counters ve üç documentation download uygulanmıştır. Fresh-process
+Playwright altı viewport'ta geçti; `./scripts/verify.sh` 418 test ve yüzde 100
+statement/branch coverage ile yeşildir. Kanıt:
+`provenance/evidence/P004/guided-corpus-workflow-validation.md`.
+
+**P004 Review projection doğrulaması:** Beş composition boyutu ve yedi sütunlu
+Metadata Completeness Matrix tek immutable projection'dan üretilir; görsel, semantic
+table ve iki P003-validated CSV aynı anahtarları taşır. İlk focus failure ve otomatik
+geçmesine rağmen manuel olarak reddedilen clipped-count görüntüsü korunmuştur.
+Passing fresh-process Playwright altı Review viewport'unda key parity, work x 7
+matrix, keyboard focus, no overflow, no external host ve no payload echo kapılarını
+geçti. Full aday 457 test ve yüzde 100 statement/branch coverage ile geçti. Kanıt:
+`provenance/evidence/P004/review-projection-validation.md`.
+
+**P004 Timeline/correction/confirmation doğrulaması:** Timeline artık canonical
+projection üzerinde seçilebilir; matrix field path'leri exact guided work/section'a
+veya source CSV `work_id` + field düzeltmesine yönlenir; guided metadata Review
+dönüşünde payload-free state ile korunur. Mapping/rights acknowledgement inventory
+SHA-256'ya bağlıdır, blocker varsa disabled ve rebuild ile invalidated olur. Mobil
+custom header örtüşmesi manuel görüntü denetiminde bulunup düzeltildi. Final aday
+464 test, 3.132 statement, 868 branch ve yüzde 100 coverage ile; fresh-process
+Playwright altı viewport, keyboard confirmation, no overflow, no egress ve no
+payload echo ile geçti. Kanıt:
+`provenance/evidence/P004/timeline-correction-confirmation-validation.md`. P004 kabul
+edilmedi; GitHub CI ve human acceptance açıktır.
+
+**P004 Guided ZIP doğrulaması:** P003'ün zaten güvenli intake sırasında hesapladığı
+member label, SHA-256, byte, line, token ve limit profile değerleri immutable,
+payload-free receipt olarak P004'e açıldı. ZIP yeniden parse veya extract edilmiyor;
+individual TXT ve ZIP member aynı deterministic catalog'a giriyor. Upload member
+catalog'u görünür, iki member iki guided form ve iki Review work satırı üretiyor;
+payload ve storage adları Describe state'ine taşınmıyor. Individual-TXT regression
+ile iki-member ZIP fresh-process Playwright'ta geçti. Full aday 467 test, 3.165
+statement, 878 branch ve yüzde 100 coverage ile yeşildir. Dört başarısız
+harness/oracle koşusu korunmuştur. Kanıt:
+`provenance/evidence/P004/guided-zip-member-catalog-validation.md`. P004 kabul
+edilmedi; GitHub CI ve human acceptance açıktır.
+
+**P004 exact-commit doğrulaması:** Birleşik Guided UI implementation commit'i
+`c82740d` yeni bir `--no-hardlinks` klona alındı ve detached HEAD üzerinde committed
+Python/R lockfile'larından bootstrap edildi. `./scripts/verify.sh` 467 test, 3.165
+statement, 878 branch ve yüzde 100 coverage ile geçti; aynı klonda fresh-process
+individual-TXT + two-member ZIP browser audit de tamamen geçti. Klon koşumlardan
+sonra temiz kaldı. `RUN-20260712-0001` ve
+`provenance/evidence/P004/guided-ui-exact-commit/report.md` bu kapıyı kaydeder.
+Provenance-link commit'i `4c3bb8a` GitHub CI run `29190917436` üzerinde verify,
+SBOM/audit ve canonical Linux amd64 container işlerinde geçti. Kanıt:
+`provenance/evidence/P004/guided-ui-ci.md`. Yalnız Oğuz insan kabulü açıktır.
+
+**P004 beginner-first entry revizyonu:** İlk Purpose/Upload yüzeyi artık stilometriyi
+ölçülebilir dil kullanım örüntülerinin corpus-relative karşılaştırılması olarak
+tanımlar; Observe -> Compare -> Interpret haritasını analiz sonucu olmadığını
+belirterek gösterir; Compare Texts, Compare Groups ve Trace Style Over Time için
+Question, Why use it ve Do not conclude açıklamalarını görünür tutar. Sahte sonuç
+grafiği, AI, analiz veya yeni storage katmanı eklenmedi. Mobile yöntem adımları
+satırlara dönüştürüldü, dekoratif token alanı gizlendi ve 320px first-action görünür
+hale geldi. Final fresh-process audit altı viewport ile individual-TXT ve two-member
+ZIP regression'ı geçti; başarısız denemeler saklandı. Kanıt:
+`provenance/evidence/P004/entry-experience-redesign-validation.md`. Repository-wide
+gate 467 test, 3.167 statement, 880 branch ve yüzde 100 coverage ile geçti.
+Implementation commit `b538807`, `RUN-20260712-0002` ile fresh no-hardlinks
+detached clone'da aynı full gate ve browser audit'ten geçti; clone temiz kaldı. CI
+run `29192912269`, provenance-link commit `26a04e3` için verify, SBOM/dependency
+audit ve Linux amd64 container işlerinde geçti. Yalnız revize insan kabulü açıktır.
+
+**P004 Lemmata aile paleti ve parametre yönlendirmesi:** Canlı `lemmata.app` ve
+`lda.lemmata.app` denetiminden koyu yeşil eylem, açık gri canvas/sidebar ve soft
+mint öğretici yüzeyler Delta'ya taşındı. Koyu `Current boundary` sidebar'ı Start
+here, üç adım, neden-parametreler-sonra açıklaması ve collapsed Technical status'a
+dönüştü. Ana akış Guided 100/300/500/1000 MFW, sabit 500 MFW + yüzde 0 culling +
+whole text + Classic Delta referansı ve bounded Research Mode'un en fazla 24
+belgeli kombinasyonunu açıklar; gerçek kontroller P006/P007/P008 tamamlanmadan
+kilitli kalır. İlk browser koşusu parameter-placement ve mobil sidebar oracle'ında
+fail olarak saklandı; ikinci koşu altı viewport, computed palette, kontrast, TXT/ZIP,
+no-overflow, no-egress ve clean console kapılarında geçti. İlk full gate formatting
+üzerinde durdu; format sonrasında 468 test, 3.171 statement, 880 branch ve yüzde
+100 coverage ile geçti. Kanıt:
+`provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
+Exact implementation commit `54e479d`, `RUN-20260712-0003` ile fresh
+no-hardlinks detached clone'da bootstrap, 468 test, yüzde 100 coverage ve aynı
+browser audit'inden geçti; clone temiz kaldı. Provenance-link commit `5d95ce4`,
+GitHub CI run `29201459098` içinde verify, SBOM/dependency audit ve Linux amd64
+container işlerinde geçti. Yalnız insan kabulü açıktır.
 
 ## Önce Oku
 
@@ -19,7 +152,7 @@
 5. Threat RP-01, RP-02, EPI-01 ve EPI-07
 6. `provenance/tickets/P003.json` kapanış sınırı
 7. `docs/methodology/pinocchio-diachronic-worked-example.md` içindeki metadata ve rights alanları
-8. P004 açıldıktan sonra yeni Ticket ve execution brief
+8. `provenance/tickets/P004.json` ve `prompts/P004-start.md`
 
 ## Uygulanan Bağımsız Denetim Talimatı
 
@@ -165,11 +298,28 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
 - `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
   repository'sidir; bu henüz public release değildir.
-- Varsayılan uzak dal `main`; P003 kapanış commit'i doğrulandıktan sonra
-  `codex/p003-secure-ingestion` main'e alınacak ve P004 ayrı dalda açılacaktır.
+- Varsayılan uzak dal `main`; P003 `d5a8118` merge commit'iyle alınmıştır.
+  Aktif geliştirme dalı `codex/p004-metadata-rights` dalıdır.
 - Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
   değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
 - Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje
   wiki'si yeni kanonik yola işaret eder.
 - Repository taşıması P003 acceptance kanıtı değildir; P003'ün ayrı insan kabulü
   `HD-20260711-0008` ve `RUN-20260711-0004` ile tamamlanmıştır.
+
+## Aktif P004 Tasarım Checkpoint (2026-07-12)
+
+- Exact sibling palette ve Language Weave implementation localde tamamlandı.
+- Passing browser evidence:
+  `provenance/evidence/P004/exact-family-language-weave-attempt-6/`.
+- Validation report:
+  `provenance/evidence/P004/exact-family-language-weave-validation.md`.
+- Full local gate: 468 test, 3.174 statement, 880 branch, yüzde 100 coverage.
+- Exact commit `374e2d0`, `RUN-20260712-0004` ile fresh no-hardlinks clone'da
+  bootstrap, full gate ve browser audit'ten geçti; clone temiz kaldı.
+- Provenance-link commit `9864db4`, GitHub CI run `29204391922` içinde Linux
+  verify, SBOM/dependency audit ve canonical amd64 container işlerinde geçti.
+- Attempts 1-5 machine-readable failure olarak korunuyor; yalnız final attempt
+  full screenshot setini taşıyor.
+- Scientific analysis, parameter controls, Safari, VoiceOver ve P004 human
+  acceptance hâlâ açık. Sonraki iş: Oğuz'un revised walkthrough'u.

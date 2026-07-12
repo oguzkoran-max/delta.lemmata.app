@@ -1,0 +1,124 @@
+{
+  "schema_version": "corpus-inventory-v1",
+  "vocabulary_profile": "corpus-vocabularies-v1",
+  "purpose": "text_proximity",
+  "authors": [
+    {
+      "author_id": "carlo_collodi",
+      "display_name": "Carlo Collodi",
+      "kind": "person",
+      "authority_identifiers": []
+    }
+  ],
+  "works": [
+    {
+      "work_id": "collodi_fixture_1883",
+      "title_original": "Fixture opera",
+      "language": "it",
+      "contributors": [
+        {
+          "author_id": "carlo_collodi",
+          "role": "author"
+        }
+      ],
+      "first_publication": {
+        "mode": "exact",
+        "start_year": 1883
+      },
+      "genre": {
+        "value": "novel",
+        "label": "Novel",
+        "kind": "controlled"
+      },
+      "audience": {
+        "value": "general",
+        "label": "General",
+        "kind": "controlled"
+      },
+      "adaptation": {
+        "value": "original",
+        "label": "Original",
+        "kind": "controlled"
+      },
+      "collection": {
+        "value": "independent_work",
+        "label": "Independent work",
+        "kind": "controlled"
+      }
+    }
+  ],
+  "editions": [
+    {
+      "edition_id": "collodi_fixture_edition",
+      "work_id": "collodi_fixture_1883",
+      "edition_label": "Synthetic test edition",
+      "edition_date": {
+        "mode": "exact",
+        "start_year": 1884
+      },
+      "citation": "Synthetic fixture citation"
+    }
+  ],
+  "sources": [
+    {
+      "source_id": "collodi_fixture_source",
+      "edition_id": "collodi_fixture_edition",
+      "source_type": {
+        "value": "digital_library",
+        "label": "Digital library",
+        "kind": "controlled"
+      },
+      "title": "Synthetic fixture source",
+      "bibliographic_citation": "Synthetic fixture citation"
+    }
+  ],
+  "assets": [
+    {
+      "asset_id": "asset_collodi_fixture",
+      "file_label": "collodi_fixture.txt",
+      "content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "work_id": "collodi_fixture_1883",
+      "edition_id": "collodi_fixture_edition",
+      "source_id": "collodi_fixture_source",
+      "rights_asset_ids": [
+        "asset_collodi_fixture"
+      ],
+      "rights_chain_confirmed": true,
+      "normalization_profile": "nfc_validated_v1",
+      "mapping_confirmed": true,
+      "line_count": 10,
+      "token_count": 100
+    }
+  ],
+  "validated_files": [
+    {
+      "file_label": "collodi_fixture.txt",
+      "content_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "intake_profile": "ingestion-limits-v1",
+      "status": "validated-for-intake"
+    }
+  ],
+  "rights": [
+    {
+      "schema_version": "2.0.0",
+      "asset_id": "asset_collodi_fixture",
+      "source_id": "collodi_fixture_source",
+      "asset_type": "transcription",
+      "rights_status": "analysis_only",
+      "permissions": {
+        "upload": "permitted",
+        "analysis": "permitted",
+        "export": "prohibited",
+        "public_redistribution": "prohibited"
+      },
+      "evidence": [
+        {
+          "evidence_type": "citation",
+          "value": "Synthetic fixture evidence"
+        }
+      ],
+      "assessed_by": "Delta test suite",
+      "assessed_at_utc": "2026-07-12T00:00:00Z"
+    }
+  ]
+}

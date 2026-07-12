@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P003 Secure Ingestion bütün kabul kapılarını geçti, P004 açılışı sırada
+**Durum:** Kanonik; P004 Metadata, Corpus Inventory, and Rights tamamlandı, P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P003 fail-closed secure ingestion tamamlandı; metadata/rights ve bilimsel analiz henüz uygulanmadı
+**Aşama:** P005 job lifecycle ve retention sınırı açılıyor; bilimsel analiz henüz uygulanmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.

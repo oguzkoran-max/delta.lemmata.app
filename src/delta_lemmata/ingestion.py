@@ -20,7 +20,7 @@ from importlib.resources import files
 from pathlib import Path, PurePosixPath
 from typing import Literal, Self, cast
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class IntakeRole(StrEnum):
@@ -105,6 +105,20 @@ DEFAULT_LIMITS = IngestionLimits.model_validate_json(
 )
 
 
+class ArchiveMemberReceipt(BaseModel):
+    """Payload-free summary of one validated TXT member inside an accepted ZIP."""
+
+    model_config = ConfigDict(extra="forbid", frozen=True)
+
+    display_label: str = Field(min_length=1)
+    byte_size: int = Field(gt=0)
+    sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    line_count: int = Field(ge=1)
+    token_count: int = Field(ge=1)
+    limit_profile: str
+    status: Literal["validated-for-intake"] = "validated-for-intake"
+
+
 class IntakeReceipt(BaseModel):
     """Content-free result safe to retain or render after validation."""
 
@@ -122,8 +136,20 @@ class IntakeReceipt(BaseModel):
     row_count: int | None = Field(default=None, ge=1)
     column_count: int | None = Field(default=None, ge=2)
     member_count: int | None = Field(default=None, ge=1)
+    archive_members: tuple[ArchiveMemberReceipt, ...] = ()
     limit_profile: str
     status: Literal["validated-for-intake"] = "validated-for-intake"
+
+    @model_validator(mode="after")
+    def require_consistent_archive_catalog(self) -> Self:
+        if self.role is IntakeRole.CORPUS_ARCHIVE:
+            if self.member_count != len(self.archive_members) or not self.archive_members:
+                raise ValueError("archive receipt requires its complete member catalog")
+            if any(member.limit_profile != self.limit_profile for member in self.archive_members):
+                raise ValueError("archive member limit profile must match its archive")
+        elif self.archive_members:
+            raise ValueError("only archive receipts can contain archive members")
+        return self
 
 
 @dataclass(frozen=True, slots=True)
@@ -401,6 +427,27 @@ def _csv_cell_is_unsafe(value: str, limits: IngestionLimits) -> bool:
         or stripped.startswith(("/", "\\"))
         or _DRIVE_PATH.match(stripped) is not None
         or stripped.casefold().startswith("file:")
+    )
+
+
+def csv_cell_is_safe(
+    value: str,
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+) -> bool:
+    """Apply the exact P003 CSV-cell policy to an already decoded scalar value."""
+
+    return (
+        value == unicodedata.normalize("NFC", value)
+        and "\ufeff" not in value
+        and all(
+            not (
+                unicodedata.category(character) == "Cc" and character not in _ALLOWED_TEXT_CONTROLS
+            )
+            and character not in _BIDI_CONTROLS
+            for character in value
+        )
+        and not _csv_cell_is_unsafe(value, limits)
     )
 
 
@@ -792,6 +839,26 @@ def _validated_upload(
     extension = _ROLE_EXTENSION[request.role]
     if request.role is IntakeRole.CORPUS_ARCHIVE:
         inspection = _inspect_archive(request.data, limits, batch_expanded_budget)
+        archive_members = tuple(
+            sorted(
+                (
+                    ArchiveMemberReceipt(
+                        display_label=member.display_label,
+                        byte_size=member.file_size,
+                        sha256=member.sha256,
+                        line_count=member.line_count,
+                        token_count=member.token_count,
+                        limit_profile=limits.profile_version,
+                    )
+                    for member in inspection.members
+                ),
+                key=lambda member: (
+                    member.display_label.casefold(),
+                    member.display_label,
+                    member.sha256,
+                ),
+            )
+        )
         return (
             IntakeReceipt(
                 asset_id=asset_id,
@@ -802,6 +869,7 @@ def _validated_upload(
                 expanded_bytes=inspection.expanded_bytes,
                 sha256=digest,
                 member_count=len(inspection.members),
+                archive_members=archive_members,
                 limit_profile=limits.profile_version,
             ),
             inspection,

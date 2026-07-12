@@ -1,0 +1,134 @@
+{
+  "$id": "https://delta.lemmata.app/schemas/corpus-vocabularies.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "adaptation_statuses": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Adaptation Statuses",
+      "type": "array"
+    },
+    "asset_types": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Asset Types",
+      "type": "array"
+    },
+    "audiences": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Audiences",
+      "type": "array"
+    },
+    "author_kinds": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Author Kinds",
+      "type": "array"
+    },
+    "authority_schemes": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Authority Schemes",
+      "type": "array"
+    },
+    "collection_statuses": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Collection Statuses",
+      "type": "array"
+    },
+    "contributor_roles": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Contributor Roles",
+      "type": "array"
+    },
+    "date_modes": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Date Modes",
+      "type": "array"
+    },
+    "genres": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Genres",
+      "type": "array"
+    },
+    "normalization_profiles": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Normalization Profiles",
+      "type": "array"
+    },
+    "permission_states": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Permission States",
+      "type": "array"
+    },
+    "profile_version": {
+      "const": "corpus-vocabularies-v1",
+      "title": "Profile Version",
+      "type": "string"
+    },
+    "rights_statuses": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Rights Statuses",
+      "type": "array"
+    },
+    "source_types": {
+      "items": {
+        "type": "string"
+      },
+      "minItems": 1,
+      "title": "Source Types",
+      "type": "array"
+    }
+  },
+  "required": [
+    "profile_version",
+    "adaptation_statuses",
+    "asset_types",
+    "audiences",
+    "author_kinds",
+    "authority_schemes",
+    "collection_statuses",
+    "contributor_roles",
+    "date_modes",
+    "genres",
+    "normalization_profiles",
+    "permission_states",
+    "rights_statuses",
+    "source_types"
+  ],
+  "title": "VocabularyProfile",
+  "type": "object"
+}

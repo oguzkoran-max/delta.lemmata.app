@@ -1,0 +1,722 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P004",
+  "title": "Metadata, Corpus Inventory, and Rights",
+  "status": "complete",
+  "opened_at_utc": "2026-07-11T19:26:16Z",
+  "closed_at_utc": "2026-07-12T20:32:06Z",
+  "objective": "Build a versioned, fail-closed corpus model that identifies every uploaded text as a scholarly work and a separate rights asset, produces a deterministic inventory, and exposes chronology readiness without making legal or scientific sufficiency claims.",
+  "scope": [
+    "Versioned general asset metadata and Style Over Time chronology fields",
+    "Explicit file, asset, work, edition, source, genre, audience, adaptation, collection, and normalization relationships",
+    "Asset-level rights state machine with separate upload, analysis, export, and public redistribution permissions",
+    "Versioned CSV template, field dictionary, valid and invalid fixtures, and actionable row-and-field validation reports",
+    "Canonical corpus inventory and upload-order-invariant inventory hashing",
+    "Metadata-change invalidation contract for dependent runs",
+    "Exploratory readiness rule for fewer than three chronology points or six independent works",
+    "English-only guided corpus-documentation UI connected after the P003 secure-intake boundary",
+    "Accessible visual Corpus Review with a work timeline, composition bars, rights action matrix, metadata completeness matrix, and readiness summary"
+  ],
+  "non_goals": [
+    "Automatic copyright or jurisdictional legal determination",
+    "Internet corpus collection, scraping, or source-text redistribution",
+    "Job lifecycle, retention scheduler, production isolation, or deployment",
+    "R stylo execution or any scientific result",
+    "Final Pinocchio corpus analysis or a two-version collation workflow",
+    "Runtime AI, login, analytics, permanent project storage, or lemmata.app integration"
+  ],
+  "dependencies": [
+    "P003"
+  ],
+  "claim_ids": [
+    "CE-09",
+    "CE-13"
+  ],
+  "threat_ids": [
+    "RP-01",
+    "RP-02",
+    "EPI-01",
+    "EPI-07"
+  ],
+  "decision_ids": [
+    "HD-20260711-0009",
+    "HD-20260711-0010",
+    "HD-20260711-0011",
+    "HD-20260712-0001",
+    "HD-20260712-0002"
+  ],
+  "prompt_event_ids": [
+    "PE-20260711-0009",
+    "PE-20260711-0010",
+    "PE-20260711-0011",
+    "PE-20260711-0012",
+    "PE-20260711-0013",
+    "PE-20260711-0014",
+    "PE-20260712-0001",
+    "PE-20260712-0002",
+    "PE-20260712-0003",
+    "PE-20260712-0004",
+    "PE-20260712-0005",
+    "PE-20260712-0006",
+    "PE-20260712-0007",
+    "PE-20260712-0008",
+    "PE-20260712-0009",
+    "PE-20260712-0010",
+    "PE-20260712-0011"
+  ],
+  "commit_ids": [
+    "233f0b37737dd8ab017653c4af911036f5ea04ca",
+    "fc3c2462408c20ef363b929a0550720d44bac65f",
+    "e5b269f1614938cbf2a7066fa322d6b55d4d47d6",
+    "8dd85c1d3cd454c3b1a8227122ff73e136da87b0",
+    "dc0000852e2df6a337ace81b368b86f305247516",
+    "c82740d9953a215b29edbe8d911de751c188b837",
+    "4c3bb8ae0bf7690a64122613c58f80d7a831d6c4",
+    "a7560fcaa266145fac8aa9b3d5507a9a2d89a33a",
+    "b538807799b83cae718c0c7888e28741bed56f66",
+    "26a04e344344c47e297f464c8e4aea53e2adc1b8",
+    "54e479d1075f3c73ee4a707090e3c43e10488085",
+    "5d95ce4b10fd88ab73bfe26f69a5fbcca293ef43",
+    "374e2d04a3c28029c69b9311fa0f3118f4bedbce",
+    "9864db45dd3b9491dfbe514dfc7fb1e1d358f907",
+    "9f3124a65216fd1c0f6d459cfe6a3049f51baa07",
+    "c8ae4c213ae762ab646bb69db587e37d8baec1d2"
+  ],
+  "run_ids": [
+    "RUN-20260711-0006",
+    "RUN-20260712-0001",
+    "RUN-20260712-0002",
+    "RUN-20260712-0003",
+    "RUN-20260712-0004",
+    "RUN-20260712-0005"
+  ],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "OpenAI Codex"
+  ],
+  "supplemental_evidence": [
+    "prompts/P004-start.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/development/p004-metadata-ux-decisions.md",
+    "docs/development/p004-domain-model.md",
+    "docs/development/p004-metadata-csv.md",
+    "decisions/ADR-0011-versioned-metadata-csv.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md",
+    "docs/methodology/pinocchio-diachronic-worked-example.md",
+    "provenance/evidence/P004/ci-shallow-history-failure.md",
+    "provenance/evidence/P004/domain-model-validation.md",
+    "provenance/evidence/P004/metadata-csv-validation.md",
+    "provenance/evidence/P004/metadata-csv-exact-commit/report.md",
+    "provenance/evidence/P004/metadata-csv-exact-commit.sha256",
+    "provenance/evidence/P004/metadata-csv-ci.md",
+    "scripts/browser_audit_p004.py",
+    "provenance/evidence/P004/lemmata-live-comparative-audit-2026-07-12.md",
+    "provenance/evidence/P004/guided-corpus-workflow-validation.md",
+    "provenance/evidence/P004/browser-audit-guided-flow-2026-07-12/browser-audit.json",
+    "src/delta_lemmata/review_projection.py",
+    "tests/test_review_projection.py",
+    "provenance/evidence/P004/review-projection-validation.md",
+    "provenance/evidence/P004/browser-audit-review-projection-failed-focus-2026-07-12/browser-audit.json",
+    "provenance/evidence/P004/browser-audit-review-projection-failed-visual-2026-07-12/browser-audit.json",
+    "provenance/evidence/P004/browser-audit-review-projection-2026-07-12/browser-audit.json",
+    "memory/checkpoints/2026-07-12-p004-timeline-correction-confirmation.md",
+    "provenance/evidence/P004/timeline-correction-confirmation-validation.md",
+    "provenance/evidence/P004/browser-audit-timeline-confirmation-failed-interaction-2026-07-12/failure.txt",
+    "provenance/evidence/P004/browser-audit-timeline-confirmation-passed-before-header-fix-2026-07-12/browser-audit.json",
+    "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/browser-audit.json",
+    "memory/checkpoints/2026-07-12-p004-guided-zip-member-catalog.md",
+    "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
+    "provenance/evidence/P004/browser-audit-guided-zip-failed-expander-2026-07-12/failure.txt",
+    "provenance/evidence/P004/browser-audit-guided-zip-failed-rights-select-2026-07-12/failure.txt",
+    "provenance/evidence/P004/browser-audit-guided-zip-failed-mobile-oracle-2026-07-12/browser-audit.json",
+    "provenance/evidence/P004/browser-audit-guided-zip-geometry-2026-07-12/browser-audit.json",
+    "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+    "provenance/runs/RUN-20260712-0001.json",
+    "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+    "provenance/evidence/P004/guided-ui-exact-commit.sha256",
+    "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/guided-ui-provenance-link-validation.md",
+    "provenance/evidence/P004/guided-ui-ci.md",
+    "memory/checkpoints/2026-07-12-p004-exact-ci.md",
+    "prompts/P004-entry-experience-redesign.md",
+    "provenance/evidence/P004/entry-experience-redesign-validation.md",
+    "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json",
+    "memory/checkpoints/2026-07-12-p004-entry-experience-redesign.md",
+    "provenance/runs/RUN-20260712-0002.json",
+    "provenance/evidence/P004/entry-experience-exact-commit/report.md",
+    "provenance/evidence/P004/entry-experience-exact-commit.sha256",
+    "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/entry-experience-ci.md",
+    "prompts/P004-family-palette-and-parameter-orientation.md",
+    "memory/checkpoints/2026-07-12-p004-family-palette-parameters.md",
+    "provenance/evidence/P004/family-palette-parameter-orientation-validation.md",
+    "provenance/evidence/P004/family-palette-parameter-orientation-attempt-1/browser-audit.json",
+    "provenance/evidence/P004/family-palette-parameter-orientation-attempt-2/browser-audit.json",
+    "provenance/runs/RUN-20260712-0003.json",
+    "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md",
+    "provenance/evidence/P004/family-palette-parameter-exact-commit.sha256",
+    "provenance/evidence/P004/family-palette-parameter-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/family-palette-parameter-ci.md",
+    "prompts/P004-exact-family-language-weave.md",
+    "memory/checkpoints/2026-07-12-p004-exact-family-language-weave.md",
+    "provenance/evidence/P004/exact-family-language-weave-validation.md",
+    "provenance/evidence/P004/exact-family-language-weave-attempt-1/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-attempt-2/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-attempt-3/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-attempt-4/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-attempt-5/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
+    "provenance/runs/RUN-20260712-0004.json",
+    "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
+    "provenance/evidence/P004/exact-family-language-weave-exact-commit.sha256",
+    "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-ci.md",
+    "prompts/P004-automated-acceptance-rehearsal.md",
+    "memory/checkpoints/2026-07-12-p004-automated-acceptance-rehearsal.md",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12/browser-audit.json",
+    "provenance/runs/RUN-20260712-0005.json",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit.sha256",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P004-AC-01",
+      "criterion": "A versioned schema distinguishes file, asset, independent work, edition, and source identities; documents chronology, genre, audience, adaptation, collection, and normalization fields; and rejects missing required relationships.",
+      "status": "passed",
+      "evidence": [
+        "docs/development/p004-domain-model.md",
+        "schemas/corpus-inventory.schema.json",
+        "tests/test_corpus.py",
+        "src/delta_lemmata/ingestion.py",
+        "src/delta_lemmata/corpus_workflow.py",
+        "tests/test_ingestion_zip.py",
+        "tests/test_corpus_workflow.py",
+        "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    },
+    {
+      "id": "P004-AC-02",
+      "criterion": "Versioned CSV templates and a field dictionary are accompanied by valid and invalid fixtures; validation reports identify actionable row, field, and stable error codes for missing fields, duplicate work identifiers, unmatched files, conflicting dates, and unknown controlled values.",
+      "status": "passed",
+      "evidence": [
+        "docs/development/p004-metadata-csv.md",
+        "templates/corpus-metadata-v1.csv",
+        "src/delta_lemmata/data/corpus-metadata-fields-v1.json",
+        "schemas/corpus-metadata-field-dictionary.schema.json",
+        "tests/fixtures/p004/metadata-valid-v1.csv",
+        "tests/fixtures/p004/metadata-invalid-domain-v1.csv",
+        "tests/test_metadata_csv.py",
+        "provenance/evidence/P004/metadata-csv-validation.md",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    },
+    {
+      "id": "P004-AC-03",
+      "criterion": "The rights state machine preserves verified-open, analysis-only, permission-required, unknown, and excluded states while independently recording upload, analysis, export, and public redistribution permissions; unknown or permission-required assets cannot qualify for raw public export.",
+      "status": "passed",
+      "evidence": [
+        "schemas/asset-rights-v2.schema.json",
+        "tests/test_corpus.py",
+        "tests/test_schemas.py",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    },
+    {
+      "id": "P004-AC-04",
+      "criterion": "Canonical inventory hashing is invariant to upload order and deterministic across clean reruns, while any semantic metadata or rights change alters the hash and invalidates dependent run identity.",
+      "status": "passed",
+      "evidence": [
+        "docs/development/p004-domain-model.md",
+        "tests/test_corpus.py",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    },
+    {
+      "id": "P004-AC-05",
+      "criterion": "Style Over Time readiness requires at least three chronology points and six independent works; smaller corpora are machine-readably and visibly forced to exploratory status without presenting the threshold as scientific sufficiency or confound removal.",
+      "status": "passed",
+      "evidence": [
+        "docs/development/p004-domain-model.md",
+        "tests/test_corpus.py",
+        "provenance/runs/RUN-20260712-0005.json",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    },
+    {
+      "id": "P004-AC-06",
+      "criterion": "The English-only corpus-documentation UI explains required fields and actionable corrections without weakening P003 intake checks, retaining rejected payloads, running scientific analysis, or making automatic legal determinations.",
+      "status": "passed",
+      "evidence": [
+        "src/delta_lemmata/corpus_workflow.py",
+        "src/delta_lemmata/webapp.py",
+        "tests/test_corpus_workflow.py",
+        "tests/test_webapp.py",
+        "tests/test_webapp_workflow.py",
+        "provenance/evidence/P004/guided-corpus-workflow-validation.md",
+        "provenance/evidence/P004/browser-audit-guided-flow-2026-07-12/browser-audit.json",
+        "src/delta_lemmata/review_projection.py",
+        "tests/test_review_projection.py",
+        "provenance/evidence/P004/review-projection-validation.md",
+        "provenance/evidence/P004/browser-audit-review-projection-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/timeline-correction-confirmation-validation.md",
+        "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
+        "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+        "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/guided-ui-ci.md",
+        "prompts/P004-entry-experience-redesign.md",
+        "provenance/evidence/P004/entry-experience-redesign-validation.md",
+        "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/entry-experience-exact-commit/report.md",
+        "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/entry-experience-ci.md",
+        "prompts/P004-family-palette-and-parameter-orientation.md",
+        "provenance/evidence/P004/family-palette-parameter-orientation-validation.md",
+        "provenance/evidence/P004/family-palette-parameter-orientation-attempt-2/browser-audit.json",
+        "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md",
+        "provenance/evidence/P004/family-palette-parameter-exact-commit/browser-audit/browser-audit.json",
+        "prompts/P004-exact-family-language-weave.md",
+        "provenance/evidence/P004/exact-family-language-weave-validation.md",
+        "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
+        "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
+        "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/exact-family-language-weave-ci.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    },
+    {
+      "id": "P004-AC-07",
+      "criterion": "Corpus Review provides an accessible work timeline, composition bars, rights action matrix, metadata completeness matrix, and readiness summary with text equivalents, responsive behavior, and no placeholder or visual claim resembling a computed stylometric result.",
+      "status": "passed",
+      "evidence": [
+        "src/delta_lemmata/ui_theme.py",
+        "src/delta_lemmata/webapp.py",
+        "src/delta_lemmata/review_projection.py",
+        "tests/test_review_projection.py",
+        "tests/test_webapp_workflow.py",
+        "provenance/evidence/P004/guided-corpus-workflow-validation.md",
+        "provenance/evidence/P004/browser-audit-guided-flow-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/review-projection-validation.md",
+        "provenance/evidence/P004/browser-audit-review-projection-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/timeline-correction-confirmation-validation.md",
+        "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
+        "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+        "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/guided-ui-ci.md",
+        "provenance/evidence/P004/entry-experience-redesign-validation.md",
+        "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/entry-experience-exact-commit/report.md",
+        "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/entry-experience-ci.md",
+        "provenance/evidence/P004/family-palette-parameter-orientation-validation.md",
+        "provenance/evidence/P004/family-palette-parameter-orientation-attempt-2/browser-audit.json",
+        "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md",
+        "provenance/evidence/P004/family-palette-parameter-exact-commit/browser-audit/browser-audit.json",
+        "prompts/P004-exact-family-language-weave.md",
+        "provenance/evidence/P004/exact-family-language-weave-validation.md",
+        "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
+        "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
+        "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/exact-family-language-weave-ci.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+        "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+      ]
+    }
+  ],
+  "changed_files": [
+    "P004 execution brief, native PromptEvent link, and in-progress Ticket",
+    "Startup, handoff, roadmap, threat, contract, and project-memory pointers for the active P004 boundary",
+    "Human-approved metadata interaction defaults and accessible visual Corpus Review contract",
+    "Full-history CI checkout repair, regression test, failed-run diagnosis, and green branch/main verification",
+    "Human-approved Corpus workflow, purpose-aware field, teaching, and implementation-order contract",
+    "Versioned corpus domain, immutable P003 catalog projection, multi-layer rights dependencies, and generated schemas",
+    "Purpose-aware actionable validation, conservative chronology readiness, canonical hashing, invalidation binding, and deterministic fixtures",
+    "Retained failed attempts plus three-pass adversarial domain-model review",
+    "Versioned 58-column metadata CSV, exact external field-dictionary schema, distinct rights-source preservation, evidence-gated public redistribution, P003-preserving parser/exporter, deterministic templates, row-aware diagnostics, and canonical semantic round-trip tests; clean exact-commit local verification and GitHub CI are recorded while P004 UI and human acceptance remain pending",
+    "Payload-free individual-TXT Upload-Describe-Review workflow, canonical guided inventory adapter, deterministic rights questionnaire, source and chronology editor, Style Over Time author/language blockers, semantic timeline, rights matrix, readiness counters, documentation downloads, compact responsive layout, retained browser failures, and six-viewport Playwright evidence; composition bars, completeness matrix, guided ZIP, explicit confirmation, exact-commit verification, and human acceptance remain pending",
+    "Hash-bound payload-free Review projection, five work-count composition dimensions, work-by-seven documentation completeness matrix, explicit interpretation boundaries, semantic tables, two P003-validated CSV equivalents, keyboard-focusable scroll regions, retained focus and visual failures, manual screenshot correction, and six-viewport key-parity Playwright evidence",
+    "Chronologically selectable hash-bound timeline, exact guided-section and source-CSV correction routing, payload-free guided-input restoration, inventory-hash-bound mapping and rights confirmation, mobile custom-header repair, retained browser and coverage failures, and final six-viewport keyboard/visual evidence",
+    "Immutable P003-validated ZIP member receipts, deterministic individual-TXT and ZIP-member projection into one payload-free corpus catalog, visible pre-Continue member summaries, two-member guided Describe and Review flow, nested safe-path CSV compatibility, retained browser-oracle failures, and final individual-TXT regression plus ZIP Playwright evidence",
+    "Exact implementation commit c82740d was restored in a fresh no-hardlinks detached clone, bootstrapped from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete fresh-process individual-TXT and two-member ZIP browser audit",
+    "Provenance-link commit 4c3bb8a passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's human acceptance remains open for P004",
+    "Beginner-first Purpose and Upload entry surface with a concrete stylometry definition, explicit corpus-relative boundary, semantic Observe-Compare-Interpret map, plain-language research paths, visible question/use/non-conclusion guidance, responsive 320px repair, strengthened AppTest and six-viewport TXT/ZIP browser oracles, retained failed runs, and no fake scientific result",
+    "Exact entry implementation commit b538807 was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete six-viewport individual-TXT and two-member ZIP browser audit",
+    "Entry provenance-link commit 26a04e3 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open",
+    "Lemmata-family soft palette, beginner Start here sidebar, collapsed technical status, explicit Guided 100/300/500/1000 MFW and fixed-anchor explanation, future bounded Research controls, post-Upload parameter sequencing, computed-style and contrast browser oracles, retained placement/oracle and formatting failures, and unchanged TXT/ZIP flows without fake sliders or scientific results",
+    "Exact family-palette implementation commit 54e479d was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 468 tests at full measured coverage plus the complete computed-palette six-viewport individual-TXT and two-member ZIP browser audit",
+    "Palette provenance-link commit 5d95ce4 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open",
+    "Exact live-sibling CSS token extraction, LDA-native surface retention, two-row Language Weave teaching figure, non-result signal legend, compact accessible method descriptions, exact teal/purple/amber parameter bands, six retained responsive attempts, full passing screenshot set, strengthened computed-token browser oracles, and exact-commit clean-clone verification; P004 human acceptance remains pending",
+    "Exact-family provenance-link commit 9864db4 passed GitHub CI run 29204391922 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; only Oğuz Koran human acceptance remains open",
+    "Owner-directed automated acceptance rehearsal, expanded fail-closed rights correction browser journey, stable selectbox/render/confirmation/download oracles, eleven disclosed failed harness iterations, final six-viewport Guided TXT + rights correction + ZIP pass, and a repeated 468-test full repository gate; exact-commit, CI, and technical closure remain pending",
+    "Exact automated-rehearsal implementation commit 9f3124a was rebuilt in a fresh no-hardlinks detached clone, passed 468 tests at full measured coverage plus every repository gate and the expanded six-viewport TXT, rights-correction, download, and ZIP browser audit, and remained clean; GitHub CI and technical closure remain pending",
+    "Automated-rehearsal provenance-link commit c8ae4c2 passed GitHub CI run 29207801898 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; under HD-20260712-0002 all P004 repeatable technical gates are passed and P004 is complete, while final product-ready owner, Safari, VoiceOver, scientific, usability, and deployment gates remain outside this closure",
+    "P004 closure synchronized START_HERE, the development contract, roadmap, session handoff, project memory, and threat-control status so future Codex or Claude sessions cannot revive the superseded in-progress state"
+  ],
+  "commands": [
+    {
+      "command": "gh run view 29165815682 --log-failed",
+      "exit_code": 0,
+      "result": "The failed Linux verify job exposed 61 unresolved historical commits under the default one-commit shallow checkout; the container job passed.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The CI hotfix and post-merge main tree each passed 233 tests, 100% measured statement and branch coverage, and every local project gate.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "gh run watch 29167750356 --exit-status",
+      "exit_code": 0,
+      "result": "The isolated hotfix branch passed GitHub verify, SBOM/audit, and Linux container jobs.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "gh run watch 29167865311 --exit-status",
+      "exit_code": 0,
+      "result": "The main branch passed GitHub verify, SBOM/audit, and Linux container jobs after integration.",
+      "evidence": "provenance/evidence/P004/ci-shallow-history-failure.md"
+    },
+    {
+      "command": "uv run ruff check ...",
+      "exit_code": 127,
+      "result": "The host shell had no uv executable; this invocation was retained as a failure and replaced by the repository's canonical .venv and verify commands.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "Intermediate full-gate attempts correctly stopped on Ruff formatting and then on the no-remote-endpoint source scan; neither partial run was treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The stable domain-model snapshot passed 318 tests, 100% of 1,510 measured statements and 392 measured branches, strict typing, metadata, record-integrity, repository, supply-chain, and R-lock gates.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/check_records.py",
+      "exit_code": 2,
+      "result": "The guessed convenience script did not exist; canonical record-integrity and schema pytest targets were used instead and passed 31 tests.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": "gh run watch 29170767298 --exit-status",
+      "exit_code": 0,
+      "result": "The pushed P004 domain foundation passed GitHub verify with SBOM/audit and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/domain-model-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run pytest tests/test_metadata_csv.py tests/test_corpus.py tests/test_schemas.py -q",
+      "exit_code": 0,
+      "result": "After independent review fixes, 167 focused CSV, corpus, rights, and schema tests passed.",
+      "evidence": "provenance/evidence/P004/metadata-csv-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first final-gate attempt stopped on three Ruff formatting differences; a later attempt passed 385 tests but correctly stopped at the 100% coverage gate with 99.51%. Neither partial run was treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/metadata-csv-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The final local candidate passed 390 tests, 100% of 2,097 measured statements and 542 measured branches, strict typing, schemas, metadata, provenance integrity, repository scanning, supply-chain tests, and the locked R/stylo environment.",
+      "evidence": "provenance/evidence/P004/metadata-csv-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The clean exact implementation commit 8dd85c1d3cd454c3b1a8227122ff73e136da87b0 passed 390 tests, 100% measured statement and branch coverage, and every repository gate.",
+      "evidence": "provenance/evidence/P004/metadata-csv-exact-commit/report.md"
+    },
+    {
+      "command": "gh run view 29172847800 --json conclusion,databaseId,headSha,status,url,jobs",
+      "exit_code": 0,
+      "result": "The exact implementation commit passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/metadata-csv-ci.md"
+    },
+    {
+      "command": "gh run watch 29173125607 --exit-status",
+      "exit_code": 0,
+      "result": "The reciprocal provenance-link commit passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/metadata-csv-ci.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-guided-flow-2026-07-12",
+      "exit_code": 1,
+      "result": "Four iterative browser attempts exposed a stale keyboard oracle, uploader placement, a visible mobile sidebar control, hidden-file-input false positives, a Streamlit skeleton race, 320 px step-label overlap, and a final 0.53 px threshold miss. All attempts are retained and none is treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/guided-corpus-workflow-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-guided-flow-2026-07-12",
+      "exit_code": 0,
+      "result": "The final fresh-process Playwright run passed six desktop, mobile, and reflow viewports plus the keyboard-driven individual-TXT Upload-Describe-Review flow, with no payload echo, external host, console error, or page overflow.",
+      "evidence": "provenance/evidence/P004/browser-audit-guided-flow-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": ".tools/uv/bin/uv run pytest --cov=delta_lemmata --cov-report=term-missing",
+      "exit_code": 0,
+      "result": "The guided-workflow candidate passed 418 tests with 100% coverage of 2,519 statements and 644 branches.",
+      "evidence": "provenance/evidence/P004/guided-corpus-workflow-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The current uncommitted P004 guided-UI candidate passed 418 tests, full measured statement and branch coverage, strict typing, schema and provenance checks, repository scan, and the locked R/stylo environment. Exact-commit and CI verification remain pending.",
+      "evidence": "provenance/evidence/P004/guided-corpus-workflow-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-review-audit",
+      "exit_code": 1,
+      "result": "The first expanded Review audit passed data parity, matrix shape, downloads, responsive layout, egress, console, and payload checks but failed the keyboard focus-outline oracle; it is retained and not treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/browser-audit-review-projection-failed-focus-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-review-audit-3",
+      "exit_code": 0,
+      "result": "The automated run passed, but manual screenshot inspection found clipped visible composition counts. The run was rejected, retained, and used to strengthen the layout oracle before final evidence generation.",
+      "evidence": "provenance/evidence/P004/browser-audit-review-projection-failed-visual-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first canonical checkpoint gate stopped on two Ruff formatting differences before the remaining gates; it is not treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/review-projection-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The current uncommitted Review-projection candidate passed strict typing, 457 tests, 100% of 2,984 statements and 830 branches, metadata and provenance checks, repository scanning, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/review-projection-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-review-projection-2026-07-12",
+      "exit_code": 0,
+      "result": "The final fresh-process browser audit passed visual/table/CSV key parity, per-dimension denominators, work-by-seven matrix shape, visible status text, three focusable table regions, five downloads, six responsive Review viewports, and no external host, console issue, source-text echo, or page overflow.",
+      "evidence": "provenance/evidence/P004/browser-audit-review-projection-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12",
+      "exit_code": 1,
+      "result": "The first expanded timeline/confirmation run stopped because Playwright's native checkbox action was intercepted by Streamlit's visible label. The partial run is retained and was replaced with keyboard focus plus Space.",
+      "evidence": "provenance/evidence/P004/browser-audit-timeline-confirmation-failed-interaction-2026-07-12/failure.txt"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12",
+      "exit_code": 0,
+      "result": "The final fresh-process audit passed timeline selection/table parity, keyboard confirmation, four focusable data regions, five downloads, unoccluded branding, six responsive Review viewports, and no external host, console issue, source-text echo, or page overflow.",
+      "evidence": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "Intermediate complete-gate attempts stopped first on two Ruff formatting differences and then after 462 passing tests at the mandatory 100% coverage threshold with 99.75%. Neither partial run is treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/timeline-correction-confirmation-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The current uncommitted combined P004 UI candidate passed 464 tests, 100% of 3,132 statements and 868 branches, strict typing, schemas, metadata and provenance integrity, repository and supply-chain scans, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/timeline-correction-confirmation-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-guided-zip-2026-07-12",
+      "exit_code": 1,
+      "result": "Four retained harness and oracle attempts exposed an incorrect Streamlit expander locator, a redundant collapsed-form rights interaction, and two offscreen-header false negatives after functional ZIP checks had passed. None is treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/guided-zip-member-catalog-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-guided-zip-2026-07-12",
+      "exit_code": 0,
+      "result": "The final fresh-process audit passed the full individual-TXT regression and a two-member ZIP Upload-Describe-Review flow, including payload absence, deterministic catalog labels and digests, two work rows, visible unknown-rights blocking, responsive mobile layouts, clean console, and no observed external host.",
+      "evidence": "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The current uncommitted guided-ZIP candidate passed 467 tests, 100% of 3,165 measured statements and 878 branches, Ruff, strict typing, schemas, metadata and provenance integrity, repository and supply-chain scans, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/guided-zip-member-catalog-validation.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "A fresh no-hardlinks clone detached at exact implementation commit c82740d restored the committed Python and R environments and passed 467 tests, 100% of 3,165 statements and 878 branches, and every canonical repository gate while remaining clean.",
+      "evidence": "provenance/evidence/P004/guided-ui-exact-commit/report.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-exact-browser-c82740d",
+      "exit_code": 0,
+      "result": "The same detached exact-commit clone passed the fresh-process individual-TXT regression, two-member ZIP workflow, six Upload and six Review viewports, payload-absence, keyboard, download, no-egress, and console-clean checks.",
+      "evidence": "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first provenance-link gate retained 466 passing tests and full measured coverage but correctly stopped because RUN-20260712-0001 command and replay.command were not textually identical. The Run fields were aligned without changing application code.",
+      "evidence": "provenance/evidence/P004/guided-ui-provenance-link-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected provenance-link tree passed 467 tests, 100% of 3,165 statements and 878 branches, 55 record-integrity entries, and every canonical repository gate.",
+      "evidence": "provenance/evidence/P004/guided-ui-provenance-link-validation.md"
+    },
+    {
+      "command": "gh run watch 29190917436 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit 4c3bb8a passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/guided-ui-ci.md"
+    },
+    {
+      "command": "python -m pytest tests/test_webapp.py tests/test_catalog.py -q; .tools/uv/bin/uv run pytest tests/test_webapp.py tests/test_catalog.py -q",
+      "exit_code": 1,
+      "result": "The host-Python attempt could not import the project package; the first locked-environment retry then exposed three stale Streamlit widget-tree failures caused by moving Upload outside its stable column path. The layout tree was repaired and the same focused suite later passed 15 tests.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-entry-redesign-2026-07-12",
+      "exit_code": 1,
+      "result": "Four retained browser candidates exposed an over-strict uploader threshold, a superseded copy candidate, an obsolete content oracle, a 320px first-action miss, and a stale narrow-screen H1 expectation. None is treated as final passing evidence.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12",
+      "exit_code": 0,
+      "result": "The final fresh-process audit passed six entry and Review viewports plus individual-TXT and two-member ZIP regressions, keyboard purpose selection, semantic entry and method regions, first-action visibility, no overflow, no fake result, no payload echo, no egress, and a clean console.",
+      "evidence": "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "Two intermediate full gates stopped first on the Streamlit column-gap literal type and then on the formatter after that type correction. Neither partial run is treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The final uncommitted entry candidate passed 467 tests, 100% of 3,167 measured statements and 880 branches, strict typing, metadata, 57 provenance records, repository scanning, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-entry-exact-browser-b538807",
+      "exit_code": 0,
+      "result": "A fresh no-hardlinks clone detached at exact implementation commit b538807 rebuilt the committed Python and R environments, passed 467 tests with 100% of 3,167 statements and 880 branches, passed the complete six-viewport individual-TXT and two-member ZIP browser audit, and remained clean.",
+      "evidence": "provenance/evidence/P004/entry-experience-exact-commit/report.md"
+    },
+    {
+      "command": "gh run watch 29192912269 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit 26a04e3 passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/entry-experience-ci.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/family-palette-parameter-orientation-attempt-1",
+      "exit_code": 1,
+      "result": "The first fresh-process palette candidate passed computed color, contrast, semantic parameter, TXT, ZIP, no-egress, no-console, and no-overflow checks but failed because detailed parameter guidance delayed the 1280x800 Upload hint and the mobile oracle incorrectly required hidden sidebar content.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-orientation-validation.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/family-palette-parameter-orientation-attempt-2",
+      "exit_code": 0,
+      "result": "The corrected fresh-process candidate passed six Upload and six Review viewports, computed family colors, no-gradient and WCAG AA text-contrast oracles, semantic sidebar and parameter regions, first-action and next-stage hints, individual-TXT and two-member ZIP regressions, and no overflow, egress, payload echo, or console issue.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-orientation-attempt-2/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first repository-wide palette gate stopped on two Ruff formatting differences before executing the full verification and is not treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-orientation-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "After formatting, the complete candidate passed 468 tests, 100% of 3,171 measured statements and 880 branches, strict typing, metadata, schema, provenance, repository, supply-chain, and locked R/stylo gates.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-orientation-validation.md"
+    },
+    {
+      "command": "git rev-parse HEAD from /tmp before clone creation",
+      "exit_code": 128,
+      "result": "The first exact-commit wrapper used the wrong working directory and stopped before clone creation; no execution evidence was produced.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-palette-exact-browser-54e479d",
+      "exit_code": 0,
+      "result": "A fresh no-hardlinks clone detached at exact implementation commit 54e479d rebuilt the committed Python and R environments, passed 468 tests with full measured coverage and every repository gate, passed the computed-palette six-viewport TXT/ZIP browser audit, and remained clean.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md"
+    },
+    {
+      "command": "gh run watch 29201459098 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit 5d95ce4 passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-ci.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12",
+      "exit_code": 0,
+      "result": "The final fresh-process rehearsal passed six responsive viewports, Guided TXT, fail-closed permission-required rights, exact correction to analysis-only, payload-free value restoration, rights action matrix, inventory-bound confirmation, five downloads, and strict two-member ZIP with no overflow, external host, payload echo, or console error.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The expanded automated-acceptance candidate passed 468 tests, 100% of 3,174 measured statements and 880 branches, Ruff, strict typing, metadata, 63 provenance records, repository and supply-chain scans, and the locked R/stylo environment.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output ../delta-p004-auto-exact-9f3124a-output",
+      "exit_code": 0,
+      "result": "A fresh no-hardlinks clone detached at exact implementation commit 9f3124a rebuilt the committed Python and R environments, passed 468 tests with 100% of 3,174 statements and 880 branches plus every repository gate, passed the expanded six-viewport Guided TXT, fail-closed rights correction, download, and strict ZIP browser audit, and remained clean.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first provenance-link gate passed application checks but record integrity rejected a differing replay command and its placeholder; the Run was corrected before any pass was claimed.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The second provenance-link gate passed all 468 tests and record integrity, then repository hygiene rejected personal macOS absolute paths in the Run, Ticket, and exact report; paths and dependent checksums were normalized.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected provenance-link candidate passed 468 tests, 100% of 3,174 statements and 880 branches, Ruff, strict typing, metadata, 67 provenance records, repository and supply-chain scans, and the locked R/stylo environment.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "gh run watch 29207801898 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit c8ae4c2 passed source, metadata, schema, and record verification; SBOM generation and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The synchronized P004 closure candidate passed 468 tests, 100% of 3,174 statements and 880 branches, metadata, 68 provenance records, repository and supply-chain scans, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-ci.md"
+    }
+  ],
+  "blockers": []
+}

@@ -1,0 +1,1406 @@
+{
+  "$defs": {
+    "FieldRequirement": {
+      "enum": [
+        "required",
+        "conditional",
+        "optional"
+      ],
+      "title": "FieldRequirement",
+      "type": "string"
+    },
+    "MetadataCsvField": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_values": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Values",
+          "type": "array"
+        },
+        "description": {
+          "minLength": 1,
+          "title": "Description",
+          "type": "string"
+        },
+        "example": {
+          "title": "Example",
+          "type": "string"
+        },
+        "name": {
+          "pattern": "^[a-z][a-z0-9_]*$",
+          "title": "Name",
+          "type": "string"
+        },
+        "position": {
+          "minimum": 1,
+          "title": "Position",
+          "type": "integer"
+        },
+        "requirement": {
+          "$ref": "#/$defs/FieldRequirement"
+        },
+        "section": {
+          "enum": [
+            "version",
+            "mapping",
+            "work",
+            "contributors",
+            "chronology",
+            "classification",
+            "edition",
+            "source",
+            "normalization",
+            "rights",
+            "intake"
+          ],
+          "title": "Section",
+          "type": "string"
+        },
+        "value_format": {
+          "minLength": 1,
+          "title": "Value Format",
+          "type": "string"
+        },
+        "why_it_matters": {
+          "minLength": 1,
+          "title": "Why It Matters",
+          "type": "string"
+        }
+      },
+      "required": [
+        "position",
+        "name",
+        "section",
+        "requirement",
+        "value_format",
+        "description",
+        "why_it_matters",
+        "example"
+      ],
+      "title": "MetadataCsvField",
+      "type": "object"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/corpus-metadata-field-dictionary.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "columns": {
+      "items": false,
+      "maxItems": 58,
+      "minItems": 58,
+      "prefixItems": [
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "csv_schema_version"
+                },
+                "position": {
+                  "const": 1
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "inventory_schema_version"
+                },
+                "position": {
+                  "const": 2
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "vocabulary_profile"
+                },
+                "position": {
+                  "const": 3
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "purpose"
+                },
+                "position": {
+                  "const": 4
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "file_label"
+                },
+                "position": {
+                  "const": 5
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "content_sha256"
+                },
+                "position": {
+                  "const": 6
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "asset_id"
+                },
+                "position": {
+                  "const": 7
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "work_id"
+                },
+                "position": {
+                  "const": 8
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "title_original"
+                },
+                "position": {
+                  "const": 9
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "title_english"
+                },
+                "position": {
+                  "const": 10
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "language"
+                },
+                "position": {
+                  "const": 11
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "primary_author_id"
+                },
+                "position": {
+                  "const": 12
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "primary_author_name"
+                },
+                "position": {
+                  "const": 13
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "primary_author_kind"
+                },
+                "position": {
+                  "const": 14
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "primary_author_authorities_json"
+                },
+                "position": {
+                  "const": 15
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "additional_contributors_json"
+                },
+                "position": {
+                  "const": 16
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "first_publication_mode"
+                },
+                "position": {
+                  "const": 17
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "first_publication_start_year"
+                },
+                "position": {
+                  "const": 18
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "first_publication_end_year"
+                },
+                "position": {
+                  "const": 19
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "first_publication_label"
+                },
+                "position": {
+                  "const": 20
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "group_label"
+                },
+                "position": {
+                  "const": 21
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "genre_value"
+                },
+                "position": {
+                  "const": 22
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "genre_label"
+                },
+                "position": {
+                  "const": 23
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "genre_kind"
+                },
+                "position": {
+                  "const": 24
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "audience_value"
+                },
+                "position": {
+                  "const": 25
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "audience_label"
+                },
+                "position": {
+                  "const": 26
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "audience_kind"
+                },
+                "position": {
+                  "const": 27
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "adaptation_value"
+                },
+                "position": {
+                  "const": 28
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "adaptation_label"
+                },
+                "position": {
+                  "const": 29
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "adaptation_kind"
+                },
+                "position": {
+                  "const": 30
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "collection_value"
+                },
+                "position": {
+                  "const": 31
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "collection_label"
+                },
+                "position": {
+                  "const": 32
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "collection_kind"
+                },
+                "position": {
+                  "const": 33
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_id"
+                },
+                "position": {
+                  "const": 34
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_label"
+                },
+                "position": {
+                  "const": 35
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_date_mode"
+                },
+                "position": {
+                  "const": 36
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_date_start_year"
+                },
+                "position": {
+                  "const": 37
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_date_end_year"
+                },
+                "position": {
+                  "const": 38
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_date_label"
+                },
+                "position": {
+                  "const": 39
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "edition_citation"
+                },
+                "position": {
+                  "const": 40
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_id"
+                },
+                "position": {
+                  "const": 41
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_type_value"
+                },
+                "position": {
+                  "const": 42
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_type_label"
+                },
+                "position": {
+                  "const": 43
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_type_kind"
+                },
+                "position": {
+                  "const": 44
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_title"
+                },
+                "position": {
+                  "const": 45
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_url"
+                },
+                "position": {
+                  "const": 46
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_bibliographic_citation"
+                },
+                "position": {
+                  "const": 47
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "source_accessed_on"
+                },
+                "position": {
+                  "const": 48
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "normalization_profile"
+                },
+                "position": {
+                  "const": 49
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "normalization_notes"
+                },
+                "position": {
+                  "const": 50
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "mapping_confirmed"
+                },
+                "position": {
+                  "const": 51
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "rights_chain_confirmed"
+                },
+                "position": {
+                  "const": 52
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "line_count"
+                },
+                "position": {
+                  "const": 53
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "token_count"
+                },
+                "position": {
+                  "const": 54
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "intake_profile"
+                },
+                "position": {
+                  "const": 55
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "intake_status"
+                },
+                "position": {
+                  "const": 56
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "rights_sources_json"
+                },
+                "position": {
+                  "const": 57
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        },
+        {
+          "allOf": [
+            {
+              "$ref": "#/$defs/MetadataCsvField"
+            },
+            {
+              "properties": {
+                "name": {
+                  "const": "rights_records_json"
+                },
+                "position": {
+                  "const": 58
+                }
+              },
+              "required": [
+                "position",
+                "name"
+              ],
+              "type": "object"
+            }
+          ]
+        }
+      ],
+      "title": "Columns",
+      "type": "array"
+    },
+    "csv_schema_version": {
+      "const": "corpus-metadata-csv-v1",
+      "title": "Csv Schema Version",
+      "type": "string"
+    },
+    "inventory_schema_version": {
+      "const": "corpus-inventory-v1",
+      "title": "Inventory Schema Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "corpus-metadata-field-dictionary-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "vocabulary_profile": {
+      "const": "corpus-vocabularies-v1",
+      "title": "Vocabulary Profile",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "csv_schema_version",
+    "inventory_schema_version",
+    "vocabulary_profile",
+    "columns"
+  ],
+  "title": "MetadataCsvFieldDictionary",
+  "type": "object"
+}

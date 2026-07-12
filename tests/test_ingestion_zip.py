@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import io
 import os
 import stat
@@ -13,15 +14,18 @@ from types import SimpleNamespace
 from typing import Any, cast
 
 import pytest
+from pydantic import ValidationError
 
 import delta_lemmata.ingestion as ingestion
 from delta_lemmata.ingestion import (
     DEFAULT_LIMITS,
+    ArchiveMemberReceipt,
     ExtractedArchive,
     IncomingUpload,
     IngestionLimits,
     IntakeError,
     IntakeErrorCode,
+    IntakeReceipt,
     IntakeRole,
     secure_extract_archive,
     validate_batch,
@@ -87,7 +91,7 @@ def id_sequence(*values: str) -> Callable[[], str]:
 
 
 def test_valid_archive_is_preflighted_and_content_free() -> None:
-    payload = make_zip([("author/one.txt", b"one text\n"), ("author/two.txt", b"two text\n")])
+    payload = make_zip([("author/two.txt", b"two text\n"), ("author/one.txt", b"one text\n")])
     receipt = validate_upload(
         archive_request(payload),
         id_factory=lambda: "0" * 32,
@@ -96,7 +100,44 @@ def test_valid_archive_is_preflighted_and_content_free() -> None:
     assert receipt.member_count == 2
     assert receipt.expanded_bytes == 18
     assert receipt.storage_name == f"asset_{'0' * 32}.zip"
+    assert [member.display_label for member in receipt.archive_members] == [
+        "author/one.txt",
+        "author/two.txt",
+    ]
+    assert receipt.archive_members[0] == ArchiveMemberReceipt(
+        display_label="author/one.txt",
+        byte_size=9,
+        sha256=hashlib.sha256(b"one text\n").hexdigest(),
+        line_count=1,
+        token_count=2,
+        limit_profile=DEFAULT_LIMITS.profile_version,
+    )
     assert "one text" not in repr(receipt)
+
+
+def test_archive_receipt_rejects_incomplete_or_misattached_member_catalogs() -> None:
+    receipt = validate_upload(
+        archive_request(make_zip([("work.txt", b"text")])),
+        id_factory=lambda: "0" * 32,
+    )
+    data = receipt.model_dump(mode="json")
+    with pytest.raises(ValidationError, match="complete member catalog"):
+        IntakeReceipt.model_validate({**data, "archive_members": []})
+
+    wrong_profile = [dict(data["archive_members"][0])]
+    wrong_profile[0]["limit_profile"] = "ingestion-limits-v2"
+    with pytest.raises(ValidationError, match="limit profile"):
+        IntakeReceipt.model_validate({**data, "archive_members": wrong_profile})
+
+    with pytest.raises(ValidationError, match="only archive receipts"):
+        IntakeReceipt.model_validate(
+            {
+                **data,
+                "role": IntakeRole.CORPUS_TEXT.value,
+                "storage_name": f"asset_{'0' * 32}.txt",
+                "member_count": None,
+            }
+        )
 
 
 def test_valid_directory_inventory_is_not_materialized(tmp_path: Path) -> None:

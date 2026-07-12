@@ -177,6 +177,11 @@ denetimi uygulandı; bu review eski evidence'i overwrite etmedi.
 
 ### P004: Metadata, Corpus Inventory, and Rights
 
+**Durum:** 2026-07-12 tarihinde tamamlandı. Working-tree, exact-commit clean-clone,
+expanded Chromium ve GitHub CI teknik kapıları geçti; final ürün walkthrough'u
+`HD-20260712-0002` uyarınca P015'e ayrıldı. Kanonik kayıt:
+`provenance/tickets/P004.json`.
+
 **Amaç:** Her metni bilimsel bir eser ve ayrı bir hak varlığı olarak tanımlayan doğrulanabilir corpus modeli kurmak.
 
 **Bağımlılık:** P003.
