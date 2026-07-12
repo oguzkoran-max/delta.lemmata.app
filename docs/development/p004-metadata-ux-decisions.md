@@ -385,7 +385,22 @@ retained separately. Full verification passed 467 tests and 100% of 3,165
 statements and 878 branches. Evidence:
 `../../provenance/evidence/P004/guided-zip-member-catalog-validation.md`.
 
-The local functional P004 implementation is complete. P004 remains open for an
-exact-commit clean-clone and GitHub CI record plus Oğuz Koran's terminology,
-negative-rights, correction, timeline, confirmation, ZIP, Safari, and VoiceOver
-walkthrough.
+The local functional P004 implementation is complete. P004 remains open for GitHub
+CI plus Oğuz Koran's terminology, negative-rights, correction, timeline,
+confirmation, ZIP, Safari, and VoiceOver walkthrough.
+
+## 14. Exact-Commit Clean-Clone Verification
+
+The combined implementation was committed as `c82740d` and cloned into a new local
+directory with `--no-hardlinks`. The clone was detached at that exact SHA, restored
+from the committed Python and R lockfiles, and remained clean before and after all
+checks. Canonical verification passed 467 tests with 100% of 3,165 statements and
+878 branches. The complete fresh-process browser audit also passed the
+individual-TXT regression, two-member ZIP workflow, six Upload and six Review
+viewports, payload-absence, keyboard, download, no-egress, and console-clean gates.
+
+The additive FAIR record is `RUN-20260712-0001`; its report and checksum-bound
+browser bundle are under
+`../../provenance/evidence/P004/guided-ui-exact-commit/`. This closes the local
+exact-commit gate without claiming GitHub CI, Safari or VoiceOver acceptance,
+scientific computation, legal determination, or P004 human acceptance.

@@ -1,0 +1,166 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260712-0001",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P004"
+  ],
+  "started_at_utc": "2026-07-12T11:11:03Z",
+  "ended_at_utc": "2026-07-12T11:16:05Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "c82740d9953a215b29edbe8d911de751c188b837",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-exact-browser-c82740d",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh --no-hardlinks local clone detached at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-exact-browser-c82740d",
+    "limitations": [
+      "The clean clone used the same Mac and may reuse locked Python and R package caches.",
+      "The browser run used Chromium rather than Safari or VoiceOver.",
+      "Only synthetic in-memory corpus inputs were used.",
+      "Scientific computation, production isolation, retention enforcement, deployment, and human acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P004/guided-ui-exact-commit.sha256",
+    "sha256": "fd854f5b2974fa13039a2651f4df01d1d6ebd5046b8dbddc1b344757b8274781",
+    "covers": [
+      "provenance/evidence/P004/guided-ui-exact-commit"
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "scripts/browser_audit_p004.py",
+      "sha256": "40bcbf1a5a1bc3794b1337738325fbd64a82aeb8d4ff112355c91dbbd417835f"
+    },
+    {
+      "path": "src/delta_lemmata/ingestion.py",
+      "sha256": "ddb67bfbd1852ee15fac81c17569db6ad92becee8e727b0559734ad1f1c2b850"
+    },
+    {
+      "path": "src/delta_lemmata/corpus_workflow.py",
+      "sha256": "3272384b2b146d795835f5fc77daae13c0c5a13c3c05430176931d97f093b378"
+    },
+    {
+      "path": "src/delta_lemmata/review_projection.py",
+      "sha256": "85ffe6c4b94c7fd961199a58dc512e7046a7e6d8525fa8e571012c2118d80534"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "6aab1b9e00c147e7182eda656c789e298659303bb36357905a5ee82044f21151"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "b55970fa28e9334c112d65f3613be6993e7533f076535c59a496f864691fd6bf"
+    },
+    {
+      "path": "tests/test_ingestion_zip.py",
+      "sha256": "69826c9dddc6ba566bd1bb13e526a6cf35c678b2719f6c3fefb3ef0263b6f4d5"
+    },
+    {
+      "path": "tests/test_corpus_workflow.py",
+      "sha256": "11521172005ed02aab93cf13fdb83b450f19294ee8f10b8c95876597e86b490e"
+    },
+    {
+      "path": "tests/test_review_projection.py",
+      "sha256": "c3c2d5eecd28da128c784583578af3a00635e67193efe59d54734dbbc685d440"
+    },
+    {
+      "path": "tests/test_webapp.py",
+      "sha256": "4be6cd2a33470d837945fd5ab613534cb17416316aa1c9bbab8ddc5c9bdf06a9"
+    },
+    {
+      "path": "tests/test_webapp_workflow.py",
+      "sha256": "32e0a765312c6885fcf8a5a251c7c3b78d3143bacfe3a75fcd88a9b4203fcfdf"
+    },
+    {
+      "path": "docs/development/p004-metadata-ux-decisions.md",
+      "sha256": "d1487ca9ac2e1768ed18e81484044c59edcf2bc06bbf4e635847f770e534ee97"
+    },
+    {
+      "path": "docs/security/threat-model.md",
+      "sha256": "841524dcecab15fe2c5ee50f32e0984a232e0286073cccd57a0a2749715645a2"
+    },
+    {
+      "path": "provenance/evidence/P004/guided-corpus-workflow-validation.md",
+      "sha256": "0300ae41bccfaa36d43f39f59c2899ec7909ffacdd5bc4a08fb1b9bf7061d655"
+    },
+    {
+      "path": "provenance/evidence/P004/review-projection-validation.md",
+      "sha256": "aba3f1a2b8794cea85bfbdac5886a535b361334f883c36fbad48239ebcac5047"
+    },
+    {
+      "path": "provenance/evidence/P004/timeline-correction-confirmation-validation.md",
+      "sha256": "09e8e09c6f75db5bcba1122a3cbc64ae7bb5e840f65b0ffc9de9e5b6f7544405"
+    },
+    {
+      "path": "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
+      "sha256": "807125b66756f02a5f29f94a58f364e7d82f6ca4d9645d59df4c508fa75ba3a3"
+    },
+    {
+      "path": "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+      "sha256": "db4fe77faa044b9128bd6889901ff2924666474eae4213d19fce36f70346803f"
+    },
+    {
+      "path": "provenance/tickets/P004.json",
+      "sha256": "2a0972aa6ec2c34e486f35a79d049acebdf38ddc94fe48ab2f5eaf85f779c936"
+    },
+    {
+      "path": "provenance/prompt-events.jsonl",
+      "sha256": "23a3f2606f9d4959f128fc4881becf4b295115066b2ed6c77a90c303b48e45e1"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+      "sha256": "7a399f721476e8f5c458c23bf47add2fef4aacebb070ebb0d73045a8cca9c5f5"
+    },
+    {
+      "path": "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
+      "sha256": "3a84bcfcd569b196c2b3ec8965cb3f05480f3266a749cd192b9768b3e625a5df"
+    }
+  ],
+  "notes": "A fresh detached clone of the exact P004 guided-UI implementation commit passed dependency bootstrap, every repository gate, and the complete synthetic individual-TXT plus two-member ZIP browser audit. The run terminates at the recorded implementation commit and does not hash its own later provenance-link commit. Human acceptance and later P005-P015 boundaries remain open."
+}

@@ -11,8 +11,8 @@ final documentation confirmation adayı var; scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Birleşik P004 UI adayını exact commit üzerinde clean clone
-ve GitHub CI ile doğrula; ardından Oğuz'un insan kabul turunu yürüt
+**Sıradaki tek ana iş:** Exact implementation commit `c82740d` için GitHub CI'yi
+doğrula; ardından Oğuz'un insan kabul turunu yürüt
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
@@ -61,7 +61,7 @@ custom header örtüşmesi manuel görüntü denetiminde bulunup düzeltildi. Fi
 Playwright altı viewport, keyboard confirmation, no overflow, no egress ve no
 payload echo ile geçti. Kanıt:
 `provenance/evidence/P004/timeline-correction-confirmation-validation.md`. P004 kabul
-edilmedi; exact-commit/CI ve human acceptance açıktır.
+edilmedi; GitHub CI ve human acceptance açıktır.
 
 **P004 Guided ZIP doğrulaması:** P003'ün zaten güvenli intake sırasında hesapladığı
 member label, SHA-256, byte, line, token ve limit profile değerleri immutable,
@@ -73,7 +73,16 @@ ile iki-member ZIP fresh-process Playwright'ta geçti. Full aday 467 test, 3.165
 statement, 878 branch ve yüzde 100 coverage ile yeşildir. Dört başarısız
 harness/oracle koşusu korunmuştur. Kanıt:
 `provenance/evidence/P004/guided-zip-member-catalog-validation.md`. P004 kabul
-edilmedi; exact-commit/CI ve human acceptance açıktır.
+edilmedi; GitHub CI ve human acceptance açıktır.
+
+**P004 exact-commit doğrulaması:** Birleşik Guided UI implementation commit'i
+`c82740d` yeni bir `--no-hardlinks` klona alındı ve detached HEAD üzerinde committed
+Python/R lockfile'larından bootstrap edildi. `./scripts/verify.sh` 467 test, 3.165
+statement, 878 branch ve yüzde 100 coverage ile geçti; aynı klonda fresh-process
+individual-TXT + two-member ZIP browser audit de tamamen geçti. Klon koşumlardan
+sonra temiz kaldı. `RUN-20260712-0001` ve
+`provenance/evidence/P004/guided-ui-exact-commit/report.md` bu kapıyı kaydeder.
+GitHub CI ve Oğuz insan kabulü hâlâ açıktır.
 
 ## Önce Oku
 

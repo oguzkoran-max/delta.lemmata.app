@@ -50,9 +50,10 @@
     "fc3c2462408c20ef363b929a0550720d44bac65f",
     "e5b269f1614938cbf2a7066fa322d6b55d4d47d6",
     "8dd85c1d3cd454c3b1a8227122ff73e136da87b0",
-    "dc0000852e2df6a337ace81b368b86f305247516"
+    "dc0000852e2df6a337ace81b368b86f305247516",
+    "c82740d9953a215b29edbe8d911de751c188b837"
   ],
-  "run_ids": ["RUN-20260711-0006"],
+  "run_ids": ["RUN-20260711-0006", "RUN-20260712-0001"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -93,7 +94,12 @@
     "provenance/evidence/P004/browser-audit-guided-zip-failed-rights-select-2026-07-12/failure.txt",
     "provenance/evidence/P004/browser-audit-guided-zip-failed-mobile-oracle-2026-07-12/browser-audit.json",
     "provenance/evidence/P004/browser-audit-guided-zip-geometry-2026-07-12/browser-audit.json",
-    "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json"
+    "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+    "provenance/runs/RUN-20260712-0001.json",
+    "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+    "provenance/evidence/P004/guided-ui-exact-commit.sha256",
+    "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/guided-ui-provenance-link-validation.md"
   ],
   "acceptance": [
     {
@@ -173,7 +179,9 @@
         "provenance/evidence/P004/timeline-correction-confirmation-validation.md",
         "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/browser-audit.json",
         "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
-        "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json"
+        "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+        "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json"
       ]
     },
     {
@@ -193,7 +201,9 @@
         "provenance/evidence/P004/timeline-correction-confirmation-validation.md",
         "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/browser-audit.json",
         "provenance/evidence/P004/guided-zip-member-catalog-validation.md",
-        "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json"
+        "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
+        "provenance/evidence/P004/guided-ui-exact-commit/report.md",
+        "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json"
       ]
     }
   ],
@@ -210,7 +220,8 @@
     "Payload-free individual-TXT Upload-Describe-Review workflow, canonical guided inventory adapter, deterministic rights questionnaire, source and chronology editor, Style Over Time author/language blockers, semantic timeline, rights matrix, readiness counters, documentation downloads, compact responsive layout, retained browser failures, and six-viewport Playwright evidence; composition bars, completeness matrix, guided ZIP, explicit confirmation, exact-commit verification, and human acceptance remain pending",
     "Hash-bound payload-free Review projection, five work-count composition dimensions, work-by-seven documentation completeness matrix, explicit interpretation boundaries, semantic tables, two P003-validated CSV equivalents, keyboard-focusable scroll regions, retained focus and visual failures, manual screenshot correction, and six-viewport key-parity Playwright evidence",
     "Chronologically selectable hash-bound timeline, exact guided-section and source-CSV correction routing, payload-free guided-input restoration, inventory-hash-bound mapping and rights confirmation, mobile custom-header repair, retained browser and coverage failures, and final six-viewport keyboard/visual evidence",
-    "Immutable P003-validated ZIP member receipts, deterministic individual-TXT and ZIP-member projection into one payload-free corpus catalog, visible pre-Continue member summaries, two-member guided Describe and Review flow, nested safe-path CSV compatibility, retained browser-oracle failures, and final individual-TXT regression plus ZIP Playwright evidence; local functional P004 is complete while exact-commit/CI and human acceptance remain pending"
+    "Immutable P003-validated ZIP member receipts, deterministic individual-TXT and ZIP-member projection into one payload-free corpus catalog, visible pre-Continue member summaries, two-member guided Describe and Review flow, nested safe-path CSV compatibility, retained browser-oracle failures, and final individual-TXT regression plus ZIP Playwright evidence",
+    "Exact implementation commit c82740d was restored in a fresh no-hardlinks detached clone, bootstrapped from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete fresh-process individual-TXT and two-member ZIP browser audit; GitHub CI and human acceptance remain pending"
   ],
   "commands": [
     {
@@ -398,6 +409,30 @@
       "exit_code": 0,
       "result": "The current uncommitted guided-ZIP candidate passed 467 tests, 100% of 3,165 measured statements and 878 branches, Ruff, strict typing, schemas, metadata and provenance integrity, repository and supply-chain scans, and the locked R/stylo boundary.",
       "evidence": "provenance/evidence/P004/guided-zip-member-catalog-validation.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "A fresh no-hardlinks clone detached at exact implementation commit c82740d restored the committed Python and R environments and passed 467 tests, 100% of 3,165 statements and 878 branches, and every canonical repository gate while remaining clean.",
+      "evidence": "provenance/evidence/P004/guided-ui-exact-commit/report.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-exact-browser-c82740d",
+      "exit_code": 0,
+      "result": "The same detached exact-commit clone passed the fresh-process individual-TXT regression, two-member ZIP workflow, six Upload and six Review viewports, payload-absence, keyboard, download, no-egress, and console-clean checks.",
+      "evidence": "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first provenance-link gate retained 466 passing tests and full measured coverage but correctly stopped because RUN-20260712-0001 command and replay.command were not textually identical. The Run fields were aligned without changing application code.",
+      "evidence": "provenance/evidence/P004/guided-ui-provenance-link-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected provenance-link tree passed 467 tests, 100% of 3,165 statements and 878 branches, 55 record-integrity entries, and every canonical repository gate.",
+      "evidence": "provenance/evidence/P004/guided-ui-provenance-link-validation.md"
     }
   ],
   "blockers": []

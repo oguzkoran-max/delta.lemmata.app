@@ -285,7 +285,15 @@ Playwright individual-TXT regression + two-member ZIP, mobile no-overflow, visib
 unknown-rights blocker, no payload echo, no egress ve clean console kapılarında
 geçti. P004 acceptance verilmemiştir.
 
-1. Birleşik P004 UI adayını exact-commit clean clone ve GitHub CI ile doğrula.
+Birleşik Guided UI implementation commit'i `c82740d` aynı gün yeni bir
+`--no-hardlinks` detached klonda committed Python/R lockfile'larından bootstrap
+edildi. `./scripts/verify.sh` 467 test, 3.165 statement, 878 branch ve yüzde 100
+coverage ile; fresh-process browser audit individual-TXT regression ve two-member
+ZIP akışında geçti. Klon testlerden sonra temiz kaldı. Exact-commit kayıtları
+`RUN-20260712-0001` ve
+`provenance/evidence/P004/guided-ui-exact-commit/report.md` içindedir.
+
+1. `c82740d` implementation ve provenance-link commit'lerinin GitHub CI sonucunu doğrula.
 2. Oğuz terminology/negative-rights/correction/timeline/confirmation/ZIP, Safari ve VoiceOver walkthrough'unu tamamlasın.
 3. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
 
