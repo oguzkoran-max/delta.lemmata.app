@@ -56,7 +56,8 @@
     "c82740d9953a215b29edbe8d911de751c188b837",
     "4c3bb8ae0bf7690a64122613c58f80d7a831d6c4",
     "a7560fcaa266145fac8aa9b3d5507a9a2d89a33a",
-    "b538807799b83cae718c0c7888e28741bed56f66"
+    "b538807799b83cae718c0c7888e28741bed56f66",
+    "26a04e344344c47e297f464c8e4aea53e2adc1b8"
   ],
   "run_ids": ["RUN-20260711-0006", "RUN-20260712-0001", "RUN-20260712-0002"],
   "human_owner": "Oğuz Koran",
@@ -114,7 +115,8 @@
     "provenance/runs/RUN-20260712-0002.json",
     "provenance/evidence/P004/entry-experience-exact-commit/report.md",
     "provenance/evidence/P004/entry-experience-exact-commit.sha256",
-    "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json"
+    "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/entry-experience-ci.md"
   ],
   "acceptance": [
     {
@@ -202,7 +204,8 @@
         "provenance/evidence/P004/entry-experience-redesign-validation.md",
         "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json",
         "provenance/evidence/P004/entry-experience-exact-commit/report.md",
-        "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json"
+        "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/entry-experience-ci.md"
       ]
     },
     {
@@ -229,7 +232,8 @@
         "provenance/evidence/P004/entry-experience-redesign-validation.md",
         "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json",
         "provenance/evidence/P004/entry-experience-exact-commit/report.md",
-        "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json"
+        "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/entry-experience-ci.md"
       ]
     }
   ],
@@ -250,7 +254,8 @@
     "Exact implementation commit c82740d was restored in a fresh no-hardlinks detached clone, bootstrapped from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete fresh-process individual-TXT and two-member ZIP browser audit",
     "Provenance-link commit 4c3bb8a passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's human acceptance remains open for P004",
     "Beginner-first Purpose and Upload entry surface with a concrete stylometry definition, explicit corpus-relative boundary, semantic Observe-Compare-Interpret map, plain-language research paths, visible question/use/non-conclusion guidance, responsive 320px repair, strengthened AppTest and six-viewport TXT/ZIP browser oracles, retained failed runs, and no fake scientific result",
-    "Exact entry implementation commit b538807 was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete six-viewport individual-TXT and two-member ZIP browser audit"
+    "Exact entry implementation commit b538807 was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete six-viewport individual-TXT and two-member ZIP browser audit",
+    "Entry provenance-link commit 26a04e3 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open"
   ],
   "commands": [
     {
@@ -504,6 +509,12 @@
       "exit_code": 0,
       "result": "A fresh no-hardlinks clone detached at exact implementation commit b538807 rebuilt the committed Python and R environments, passed 467 tests with 100% of 3,167 statements and 880 branches, passed the complete six-viewport individual-TXT and two-member ZIP browser audit, and remained clean.",
       "evidence": "provenance/evidence/P004/entry-experience-exact-commit/report.md"
+    },
+    {
+      "command": "gh run watch 29192912269 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit 26a04e3 passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/entry-experience-ci.md"
     }
   ],
   "blockers": []

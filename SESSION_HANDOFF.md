@@ -99,7 +99,8 @@ ZIP regression'ı geçti; başarısız denemeler saklandı. Kanıt:
 gate 467 test, 3.167 statement, 880 branch ve yüzde 100 coverage ile geçti.
 Implementation commit `b538807`, `RUN-20260712-0002` ile fresh no-hardlinks
 detached clone'da aynı full gate ve browser audit'ten geçti; clone temiz kaldı. CI
-bağı ve revize insan kabulü bu checkpoint'in açık kapılarıdır.
+run `29192912269`, provenance-link commit `26a04e3` için verify, SBOM/dependency
+audit ve Linux amd64 container işlerinde geçti. Yalnız revize insan kabulü açıktır.
 
 ## Önce Oku
 

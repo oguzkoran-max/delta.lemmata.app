@@ -89,6 +89,8 @@ amaç düğmesi görünür alana alındı. Full yöntem ve başarısızlık kayd
 general usability veya P004 acceptance iddiası değildir. Implementation commit
 `b538807`, `RUN-20260712-0002` ile fresh no-hardlinks detached clone'da yeniden
 kuruldu; 467 test, full measured coverage ve complete browser audit geçti.
+Provenance-link commit `26a04e3`, GitHub CI run `29192912269` içinde verify,
+SBOM/dependency audit ve Linux amd64 container işlerinde geçti.
 
 ## Ürün Tezi
 

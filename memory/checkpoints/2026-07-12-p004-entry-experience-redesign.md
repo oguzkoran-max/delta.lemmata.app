@@ -27,6 +27,8 @@
   coverage; typing, metadata, 57 kayıt, repository scan ve R lock geçti.
 - Exact commit `b538807`, `RUN-20260712-0002` ile temiz no-hardlinks detached
   klonda aynı full gate ve browser audit'ten geçti; klon temiz kaldı.
+- Provenance-link commit `26a04e3`, GitHub CI run `29192912269` içinde verify,
+  SBOM/dependency audit ve Linux amd64 container işlerinde geçti.
 
 ## Saklanan Başarısızlıklar
 
@@ -43,4 +45,4 @@ Safari/keyboard/VoiceOver walkthrough ayrı kapılardır.
 
 ## Sıradaki Tek İş
 
-CI sonucunu bağla ve ardından Oğuz'un adım adım insan kabul turunu başlat.
+Oğuz'un adım adım insan kabul turunu başlat.
