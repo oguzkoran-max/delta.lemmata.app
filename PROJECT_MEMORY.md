@@ -2,7 +2,7 @@
 
 **Son güncelleme:** 2026-07-12
 
-**Durum:** P004 Metadata, Corpus Inventory, and Rights tamamlandı; P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
+**Durum:** P004 `main`e alındı; P005 Job Lifecycle, Isolation, and Retention aktif
 
 **Kod:** English-only workbench'te secure intake, versioned corpus documentation,
 individual TXT ve member-catalog'lu ZIP guided flow, selectable Review timeline,
@@ -383,8 +383,9 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
 - Provenance-link commit `9864db4`, GitHub CI run `29204391922` içinde Linux
   verify, SBOM/dependency audit ve canonical amd64 container işlerinde geçti.
 - Ajan raporları 10k bütçeyi aştığı için independent approval değildir.
-- P004 hâlâ Oğuz'un revised human walkthrough ve açık kabul/ret kararı için
-  in-progress durumundadır.
+- Bu checkpointte P004 revised human walkthrough için in-progress idi. Sonraki
+  `HD-20260712-0002`, exact-commit ve CI kanıtı P004'ü teknik olarak kapattı; final
+  product-ready owner walkthrough P015'e taşındı.
 
 ## P004 Otomatik Kabul Provası Kararı (2026-07-12)
 
@@ -417,3 +418,31 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   walkthrough P015'te yapılacaktır.
 - Sıradaki tek iş P005 lifecycle, session isolation, bounded queue, cancellation,
   crash/restart cleanup ve retention modelidir.
+
+## P005 Job Lifecycle Baseline (2026-07-12)
+
+- P004 merge commit `d13e63c`, main CI `29208223198` üzerinde verify,
+  SBOM/dependency audit ve Linux amd64 container kapılarından geçti.
+- P005 branch `codex/p005-job-lifecycle`, Ticket
+  `provenance/tickets/P005.json`, brief `prompts/P005-start.md`.
+- Dört read-only ajan security, lifecycle/retention, accessible UX ve FAIR/claim
+  sınırlarını bağımsız inceledi. Ortak P0 bulguları
+  `provenance/evidence/P005/architecture-audit.md` içinde birleştirildi.
+- Job ID ownership değildir. Server-generated session capability ayrı tutulur ve
+  SQLite control store yalnız keyed owner digest ile content-free state saklar.
+- Execution outcome, cancel request ve artifact cleanup orthogonal state'tir.
+  Cleanup terminal sonucu silmez; illegal veya yarışan ikinci terminal outcome
+  compare-and-swap ile reddedilir.
+- P005 bir session-owned staged input API hazırlar: session başına bir, global dört,
+  absolute bir saat TTL. P004 public UI payload-free kalır; bağlantı P008'de yapılır.
+- Queue bir running ve en fazla üç queued job'dur. Queue/staging reddi job ID,
+  workspace, process veya event ayırmaz. Queued deadline 15 dakikadır.
+- Startup recovery yanında sürekli deadline-driven janitor gerekir. Success export
+  ancak raw/normalized cleanup doğrulandıktan sonra görünür; failure/cancel/timeout/
+  crash/abandon en geç 15 dakika, result/export bir saat, content-free events yedi
+  gün içinde application-managed namespace'ten silinir.
+- P005 sentetik finite-limit worker ile process control mekanizmasını doğrular.
+  Gerçek R/stylo worker ve parity P006, production resource sayıları ve host
+  isolation P014'tür.
+- P005 kapanışı secure erase, swap/snapshot/backup, proxy buffer, CE-15 veya tam
+  CE-14 production claim'i kuramaz. Final owner walkthrough P015'te kalır.

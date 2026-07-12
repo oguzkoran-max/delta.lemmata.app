@@ -1,0 +1,127 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P005",
+  "title": "Job Lifecycle, Isolation, and Retention",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-12T20:47:57Z",
+  "closed_at_utc": null,
+  "objective": "Run each future analysis through a bounded, session-owned, cancellable, crash-recoverable, and time-limited application workspace without exposing payloads, allocating resources after rejection, or claiming production isolation before deployment evidence.",
+  "scope": [
+    "Versioned queue, staging, retention, and mandatory worker-limit policy",
+    "Separate cryptographic session capability and job identifier with non-enumerating ownership checks",
+    "Payload-free transactional SQLite control store with optimistic state transitions and expiry",
+    "Orthogonal execution outcome, cancellation, artifact lifecycle, and deletion evidence",
+    "Session-owned staged input API with bounded absolute expiry, not yet connected to the public P004 flow",
+    "Server-generated input, work, result, export, and control workspaces with confinement and verified cleanup",
+    "One-running and three-queued atomic FIFO admission with zero-allocation rejection",
+    "Generic fixed-argv process controller with finite resource profile, timeout, cancellation, process-group termination, and reap",
+    "Startup recovery and continuous deadline-driven janitor for staged, queued, terminal, export, and log artifacts",
+    "Content-free operational events, deletion ledger, canary scans, accessible lifecycle projection, and exact-commit evidence"
+  ],
+  "non_goals": [
+    "R stylo execution, computational parity, preprocessing, or any scientific result",
+    "Public Start analysis activation or P004 Upload-Describe-Review payload connection before P006 and P008",
+    "Production CPU, RAM, PID, disk, or timeout numbers before P014 load evidence",
+    "Container, cgroup, seccomp, AppArmor, no-new-privileges, egress, proxy, TLS, host, swap, snapshot, backup, or reboot guarantees",
+    "Delta-LDA production isolation, Lemmata load testing, deployment, or rollback",
+    "Secure or forensic erasure, browser-download deletion, or complete CE-14/CE-15 verification",
+    "Distributed queue, multiple workers, user accounts, login, analytics, runtime AI, or permanent project history"
+  ],
+  "dependencies": [
+    "P003",
+    "P004"
+  ],
+  "claim_ids": [
+    "CE-14",
+    "CE-15"
+  ],
+  "threat_ids": [
+    "SEC-07",
+    "SEC-09",
+    "SEC-11",
+    "SEC-12",
+    "SEC-13"
+  ],
+  "decision_ids": [],
+  "prompt_event_ids": [
+    "PE-20260712-0011"
+  ],
+  "commit_ids": [],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "OpenAI Codex"
+  ],
+  "supplemental_evidence": [
+    "prompts/P005-start.md",
+    "decisions/ADR-0012-job-lifecycle-retention.md",
+    "provenance/evidence/P005/architecture-audit.md",
+    "provenance/evidence/P005/start-validation.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P005-AC-01",
+      "criterion": "A versioned policy and deterministic state model separate execution outcome, cancellation, artifact lifecycle, immutable deadlines, and deletion evidence; every illegal or conflicting transition fails closed while repeated operations are idempotent.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-02",
+      "criterion": "Session capability and job ID are independently generated with at least 256 bits of entropy; every status, cancel, result, export, and cleanup operation enforces server-side ownership, and unauthorized versus unknown requests expose no existence oracle.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-03",
+      "criterion": "Staging and queue admission enforce one staged or active job per session, at most four staged leases, one running job, and three queued jobs transactionally; any rejected submission allocates no identifier, workspace, process, queue slot, or event.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-04",
+      "criterion": "Job workspaces use only trusted roots and server identifiers, apply private modes, reject symlink, hardlink, path, and rename-swap attacks, and never alter an external canary during materialization or cleanup.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-05",
+      "criterion": "A generic fixture worker cannot start without finite wall, CPU, RAM, and PID limits; timeout and idempotent cancellation terminate and reap the complete tested process tree, and completion races produce one terminal outcome without publishing partial output.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-06",
+      "criterion": "Success publishes export only after verified raw and normalized cleanup; failure, cancellation, timeout, crash, abandonment, staged expiry, queue expiry, result/export expiry, event expiry, and restart orphan recovery meet their versioned deadlines under a fake clock and a continuously running janitor.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-07",
+      "criterion": "SQLite, WAL, event logs, deletion ledger, errors, DOM, session state, other sessions, results, and exports contain no canary corpus, filename, scholarly metadata, absolute path, stdout/stderr, or traceback; user-facing lifecycle projections remain accessible and do not activate or imitate scientific analysis.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P005-AC-08",
+      "criterion": "Concurrency, race, crash, OOM, process-tree, retention, canary, browser-boundary, clean-clone, Linux CI, SBOM, and canonical container gates pass with full measured source coverage, while P014-only production limits remain explicitly unverified.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [
+    "P005 execution brief, independent four-lens architecture audit, proposed lifecycle ADR, active Ticket, and synchronized startup pointers"
+  ],
+  "commands": [
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The P005 start package passed 468 tests, 100% of 3,174 statements and 880 branches, strict typing, metadata, 69 provenance records, repository and supply-chain scans, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P005/start-validation.md"
+    }
+  ],
+  "blockers": []
+}

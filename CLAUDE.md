@@ -36,8 +36,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P003 Secure Ingestion bütün kapıları geçerek `main`e alınmıştır. Aktif kayıt
-`provenance/tickets/P004.json`, dal `codex/p004-metadata-rights`, execution brief
-`prompts/P004-start.md` dosyasındadır. Metadata anlamı, canonical inventory,
-rights state machine ve chronology readiness P004 kapsamındadır; retention,
-`stylo`, nihai Pinokyo corpus'u ve deployment ekleme.
+P004 Metadata, Corpus Inventory, and Rights bütün teknik kapıları geçerek `main`e
+alınmıştır. Aktif kayıt `provenance/tickets/P005.json`, dal
+`codex/p005-job-lifecycle`, execution brief `prompts/P005-start.md` dosyasındadır.
+Session ownership, bounded queue, process lifecycle ve application-managed
+retention P005 kapsamındadır; gerçek `stylo`, production isolation, secure erase,
+nihai Pinokyo corpus'u veya deployment ekleme.

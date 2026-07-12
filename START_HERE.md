@@ -2,9 +2,9 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights teknik kabul
-kapılarıyla tamamlandı. Sıradaki tek ticket P005 Job Lifecycle, Isolation, and
-Retention'dır; bilimsel `stylo` hesaplaması henüz uygulanmadı.
+**Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights `main`e alındı. P005
+Job Lifecycle, Isolation, and Retention `codex/p005-job-lifecycle` dalında aktiftir;
+bilimsel `stylo` hesaplaması henüz uygulanmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -116,6 +116,12 @@ clean-clone ve GitHub CI kapıları geçti. Kapanış `RUN-20260712-0005`,
 Final owner walkthrough P015 ürün-hazır kapısında ayrıca yapılacaktır; P004 kapanışı
 Safari, VoiceOver, genel usability, bilimsel sonuç veya deployment iddiası değildir.
 
-Sıradaki iş P005'i tek aktif ticket olarak açıp job workspace, session ownership,
-queue, cancellation, timeout, crash/restart cleanup ve retention sözleşmesini
-uygulamaktır. Hedef süreler bu aşamada test edilmeden ürün vaadi yapılmaz.
+Aktif iş `provenance/tickets/P005.json` kabul ölçütlerine göre session-owned job
+workspace, transactional SQLite control store, one-running/three-queued admission,
+cancellation/timeout, process-tree cleanup, restart recovery ve retention
+sözleşmesini uygulamaktır. `prompts/P005-start.md`, ADR-0012 ve
+`provenance/evidence/P005/architecture-audit.md` önce okunur.
+
+P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
+analysis, gerçek R/stylo, production limitleri, secure erase veya Delta-LDA host
+isolation iddiası P005'e eklenmez.

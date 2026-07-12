@@ -13,8 +13,9 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P000, P001, P002 ve P003 kapanmıştır. P004 Ticket ve PromptEvent açıktır; yalnız `provenance/tickets/P004.json` sınırında çalış.
-- P003 otomatik ve insan kabul kanıtını metadata, retention, `stylo` veya production kanıtı gibi genişletme.
+- P000-P004 kapanmıştır. P005 Ticket açıktır; yalnız `provenance/tickets/P005.json` sınırında çalış.
+- P003/P004 kanıtını production retention, gerçek `stylo` veya host isolation kanıtı gibi genişletme.
+- P005'te application-managed deletion ile secure erase, snapshot, swap, backup veya production isolation iddiasını karıştırma.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.
 - Kullanıcının onayladığı soruları yeniden sorma.
 - Runtime AI, dış API, analytics, login veya kalıcı proje saklama ekleme.
