@@ -522,6 +522,28 @@ def test_completion_detected_after_usage_sample_wins_deterministically(
     )
 
 
+def test_memory_sample_and_settlement_are_platform_independent(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = controller(tmp_path, "success")
+    process = cast(
+        subprocess.Popen[bytes],
+        Mock(poll=Mock(side_effect=(None, None))),
+    )
+    monkeypatch.setattr(
+        process_control,
+        "_process_group_usage",
+        Mock(return_value=(1, runner._limits.memory_bytes + 1)),
+    )
+    winner = runner._choose_winner(process, 123, time.monotonic() + 1)
+    assert winner is process_control._Winner.MEMORY_LIMIT
+
+    monkeypatch.setattr(runner, "_terminate_and_reap", Mock(return_value=None))
+    assert runner._settle(process, 123, winner) == ProcessResult(
+        ProcessOutcome.LIMIT_EXCEEDED, ProcessLimit.MEMORY
+    )
+
+
 def test_private_settlement_and_reap_failure_guards(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
