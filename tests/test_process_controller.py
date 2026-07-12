@@ -506,6 +506,22 @@ def test_monitor_fail_closed_paths_publish_stable_errors(
     assert unreaped._error.code is ProcessControllerErrorCode.REAP_FAILED
 
 
+def test_completion_detected_after_usage_sample_wins_deterministically(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = controller(tmp_path, "success")
+    process = cast(
+        subprocess.Popen[bytes],
+        Mock(poll=Mock(side_effect=(None, 0))),
+    )
+    monkeypatch.setattr(process_control, "_process_group_usage", Mock(return_value=(1, 1024)))
+
+    assert (
+        runner._choose_winner(process, 123, time.monotonic() + 1)
+        is process_control._Winner.COMPLETION
+    )
+
+
 def test_private_settlement_and_reap_failure_guards(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

@@ -46,7 +46,13 @@
   "prompt_event_ids": [
     "PE-20260712-0011"
   ],
-  "commit_ids": [],
+  "commit_ids": [
+    "ae6720f7b107bdc611e00dd25226e7156b6334f9",
+    "bce5bb216ee9c133c31f458298ba778d41a80a50",
+    "0da9a1b6a8a324aaa73c49437801c98b3013f3ac",
+    "5e1cbbaadd49215c03e6a2708927774f8a609caf",
+    "eca535773a237d304b8c12397e1295df49295d3f"
+  ],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -58,6 +64,7 @@
     "decisions/ADR-0012-job-lifecycle-retention.md",
     "provenance/evidence/P005/architecture-audit.md",
     "provenance/evidence/P005/start-validation.md",
+    "provenance/evidence/P005/foundation-validation.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
@@ -113,7 +120,8 @@
     }
   ],
   "changed_files": [
-    "P005 execution brief, independent four-lens architecture audit, proposed lifecycle ADR, active Ticket, and synchronized startup pointers"
+    "P005 execution brief, independent four-lens architecture audit, proposed lifecycle ADR, active Ticket, and synchronized startup pointers",
+    "Lifecycle identity, policy, immutable state model, payload-free SQLite store, private workspace, validated-payload staging, synthetic process controller, deletion-event model, and conservative UI projection"
   ],
   "commands": [
     {
@@ -121,6 +129,12 @@
       "exit_code": 0,
       "result": "The P005 start package passed 468 tests, 100% of 3,174 statements and 880 branches, strict typing, metadata, 69 provenance records, repository and supply-chain scans, and the locked R/stylo boundary.",
       "evidence": "provenance/evidence/P005/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The P005 foundation checkpoint passed 769 tests, 100% of 4,947 statements and 1,304 branches, strict typing, metadata, 69 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P005/foundation-validation.md"
     }
   ],
   "blockers": []

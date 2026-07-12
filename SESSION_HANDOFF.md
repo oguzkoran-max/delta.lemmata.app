@@ -4,15 +4,25 @@
 
 **Aşama:** P004 `main`e alındı; P005 Job Lifecycle, Isolation, and Retention aktif
 
-**Kod durumu:** English-only workbench'te secure intake, versioned corpus domain,
-58-column metadata CSV, individual-TXT veya member-catalog'lu ZIP Guided Upload ->
-Describe -> Review, selectable timeline, exact correction routing ve hash-bound
-final documentation confirmation adayı var; scientific computation yok
+**Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
+256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
+validated-payload staging, synthetic POSIX process controller, content-free deletion
+event modeli ve honest lifecycle projection var; public analysis hâlâ kilitli ve
+scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** P005 `job-policy-v1`, immutable state models, session
-identity, SQLite control store ve workspace boundary'yi test-first uygula
+**Sıradaki tek ana iş:** P005 continuous janitor, startup running-job recovery,
+deletion-ledger persistence, result/export expiry ve event/tombstone purge katmanını
+test-first uygula
+
+**P005 foundation checkpoint:** Commit'ler `bce5bb2`, `0da9a1b`, `5e1cbba` ve
+`eca5357`; full gate 769 test, 4.947 statement, 1.304 branch ve yüzde 100 coverage
+ile geçti. SQLite concurrency/ownership, macOS-safe `setrlimit + execve` launcher,
+nested process cancellation, workspace load/selective cleanup ve fail-closed canary
+testleri dahildir. Kanıt:
+`provenance/evidence/P005/foundation-validation.md`. Bu ara checkpoint P005 kapanışı,
+Linux CI, production isolation, gerçek R/stylo veya CE-14/CE-15 doğrulaması değildir.
 
 **P005 başlangıç baseline'ı:** P004 merge commit `d13e63c`, main CI run
 `29208223198` içinde verify, SBOM/dependency audit ve Linux amd64 container

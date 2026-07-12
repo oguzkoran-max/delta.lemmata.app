@@ -4,9 +4,16 @@
 
 **Durum:** P004 `main`e alındı; P005 Job Lifecycle, Isolation, and Retention aktif
 
-**Kod:** English-only workbench'te secure intake, versioned corpus documentation,
-individual TXT ve member-catalog'lu ZIP guided flow, selectable Review timeline,
-correction routing ve hash-bound final confirmation var; bilimsel hesaplama henüz yok
+**Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
+foundation var: ayrı session/job identity, payload-free SQLite queue, private
+workspace, synthetic POSIX process control ve conservative lifecycle projection;
+public analiz ve bilimsel hesaplama henüz yok
+
+**P005 ara durum:** Foundation commit zinciri `bce5bb2` -> `0da9a1b` -> `5e1cbba`
+-> `eca5357`; 769 test ve full measured statement/branch coverage geçti. Continuous
+janitor, startup orphan recovery, deletion-ledger persistence ve retention purge
+sonraki ana bloktur. Ayrıntı:
+`provenance/evidence/P005/foundation-validation.md`.
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
