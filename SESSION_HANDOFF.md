@@ -117,7 +117,9 @@ no-overflow, no-egress ve clean console kapılarında geçti. İlk full gate for
 `provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
 Exact implementation commit `54e479d`, `RUN-20260712-0003` ile fresh
 no-hardlinks detached clone'da bootstrap, 468 test, yüzde 100 coverage ve aynı
-browser audit'inden geçti; clone temiz kaldı. CI ve insan kabulü henüz açıktır.
+browser audit'inden geçti; clone temiz kaldı. Provenance-link commit `5d95ce4`,
+GitHub CI run `29201459098` içinde verify, SBOM/dependency audit ve Linux amd64
+container işlerinde geçti. Yalnız insan kabulü açıktır.
 
 ## Önce Oku
 

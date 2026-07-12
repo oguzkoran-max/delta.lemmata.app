@@ -105,7 +105,9 @@ Mode'u açıklar. Kontroller motor ve corpus-health kapılarından önce açılm
 `provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
 Exact commit `54e479d`, `RUN-20260712-0003` ile fresh no-hardlinks detached
 clone'da 468 test, yüzde 100 coverage ve aynı computed-palette browser audit'inden
-geçti; clone temiz kaldı. Bu kayıt P004 acceptance veya bilimsel analiz değildir.
+geçti; clone temiz kaldı. Provenance-link commit `5d95ce4`, GitHub CI run
+`29201459098` içinde verify, SBOM/dependency audit ve Linux amd64 container
+işlerinde geçti. Bu kayıt P004 acceptance veya bilimsel analiz değildir.
 
 ## Ürün Tezi
 

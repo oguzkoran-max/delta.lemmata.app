@@ -27,6 +27,8 @@
 - Exact implementation commit `54e479d`, `RUN-20260712-0003` ile fresh
   no-hardlinks detached clone'da bootstrap, full gate ve aynı browser audit'ten
   geçti; clone temiz kaldı.
+- Provenance-link commit `5d95ce4`, GitHub CI run `29201459098` içinde Linux
+  verify, SBOM/dependency audit ve amd64 container build işlerinde geçti.
 
 ## Sınır
 

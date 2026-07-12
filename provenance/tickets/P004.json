@@ -60,7 +60,8 @@
     "a7560fcaa266145fac8aa9b3d5507a9a2d89a33a",
     "b538807799b83cae718c0c7888e28741bed56f66",
     "26a04e344344c47e297f464c8e4aea53e2adc1b8",
-    "54e479d1075f3c73ee4a707090e3c43e10488085"
+    "54e479d1075f3c73ee4a707090e3c43e10488085",
+    "5d95ce4b10fd88ab73bfe26f69a5fbcca293ef43"
   ],
   "run_ids": [
     "RUN-20260711-0006",
@@ -133,7 +134,8 @@
     "provenance/runs/RUN-20260712-0003.json",
     "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md",
     "provenance/evidence/P004/family-palette-parameter-exact-commit.sha256",
-    "provenance/evidence/P004/family-palette-parameter-exact-commit/browser-audit/browser-audit.json"
+    "provenance/evidence/P004/family-palette-parameter-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/family-palette-parameter-ci.md"
   ],
   "acceptance": [
     {
@@ -283,7 +285,8 @@
     "Exact entry implementation commit b538807 was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete six-viewport individual-TXT and two-member ZIP browser audit",
     "Entry provenance-link commit 26a04e3 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open",
     "Lemmata-family soft palette, beginner Start here sidebar, collapsed technical status, explicit Guided 100/300/500/1000 MFW and fixed-anchor explanation, future bounded Research controls, post-Upload parameter sequencing, computed-style and contrast browser oracles, retained placement/oracle and formatting failures, and unchanged TXT/ZIP flows without fake sliders or scientific results",
-    "Exact family-palette implementation commit 54e479d was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 468 tests at full measured coverage plus the complete computed-palette six-viewport individual-TXT and two-member ZIP browser audit"
+    "Exact family-palette implementation commit 54e479d was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 468 tests at full measured coverage plus the complete computed-palette six-viewport individual-TXT and two-member ZIP browser audit",
+    "Palette provenance-link commit 5d95ce4 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open"
   ],
   "commands": [
     {
@@ -579,6 +582,12 @@
       "exit_code": 0,
       "result": "A fresh no-hardlinks clone detached at exact implementation commit 54e479d rebuilt the committed Python and R environments, passed 468 tests with full measured coverage and every repository gate, passed the computed-palette six-viewport TXT/ZIP browser audit, and remained clean.",
       "evidence": "provenance/evidence/P004/family-palette-parameter-exact-commit/report.md"
+    },
+    {
+      "command": "gh run watch 29201459098 --exit-status",
+      "exit_code": 0,
+      "result": "GitHub commit 5d95ce4 passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/family-palette-parameter-ci.md"
     }
   ],
   "blockers": []

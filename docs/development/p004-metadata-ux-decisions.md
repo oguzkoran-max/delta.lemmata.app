@@ -479,4 +479,7 @@ Exact implementation commit `54e479d` was then reconstructed in a fresh
 no-hardlinks detached clone. `RUN-20260712-0003` passed 468 tests with 100% of
 3,171 statements and 880 branches, every repository gate, and the complete
 computed-palette six-viewport TXT/ZIP browser audit. The clone remained clean. CI
-and human acceptance remain separate gates.
+and human acceptance remain separate gates. The additive provenance commit
+`5d95ce4` then passed GitHub CI run `29201459098` across Linux verification,
+SBOM/dependency audit, and the canonical amd64 container build. Human acceptance
+remains open.

@@ -122,4 +122,7 @@ does not establish learnability, scientific validity, Safari or screen-reader
 conformance, production behavior, or P004 human acceptance. Exact implementation
 commit `54e479d` subsequently passed `RUN-20260712-0003` in a fresh no-hardlinks
 detached clone with the same complete repository and browser gates. CI and the
-revised Oğuz Koran walkthrough remain separate gates.
+revised Oğuz Koran walkthrough remain separate gates. The subsequent additive
+provenance commit `5d95ce4` passed GitHub CI run `29201459098`, including Linux
+verification, SBOM/dependency audit, and the canonical amd64 container build. Only
+the revised human walkthrough remains open for this P004 interface checkpoint.
