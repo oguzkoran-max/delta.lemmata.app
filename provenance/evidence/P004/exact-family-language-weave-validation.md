@@ -4,6 +4,10 @@
 
 **Ticket:** `P004`
 
+**PromptEvent:** `PE-20260712-0008`
+
+**Exact rerun:** `RUN-20260712-0004`
+
 **Implementation brief:** `prompts/P004-exact-family-language-weave.md`
 
 ## Scope
@@ -110,3 +114,9 @@ The implementation candidate satisfies its scoped automated and Chromium visual
 gates. It does not establish general learnability, scientific validity, Safari or
 VoiceOver conformance, production behavior, or P004 human acceptance. P004 remains
 in progress until Oğuz Koran completes the revised human walkthrough.
+
+Exact implementation commit `374e2d0` was subsequently reconstructed in a fresh
+`--no-hardlinks` detached clone. `RUN-20260712-0004` restored the committed Python
+and R environments, passed the same 468-test full gate and six-viewport browser
+audit, and left the clone clean. This establishes exact-commit reproducibility for
+the scoped implementation, not human acceptance or scientific validity.

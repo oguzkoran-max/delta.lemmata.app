@@ -24,6 +24,9 @@
   no-egress ve clean-console kapılarında geçti.
 - Full gate: 468 test, 3.174 statement, 880 branch, yüzde 100 coverage.
 - İki read-only ajan 10k bütçeyi aştığı için independent approval sayılmadı.
+- Exact implementation commit `374e2d0`, `RUN-20260712-0004` içinde fresh
+  `--no-hardlinks` detached clone'da bootstrap, full gate ve browser audit'ten
+  geçti; clone temiz kaldı.
 
 ## Sınır
 

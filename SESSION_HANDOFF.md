@@ -293,8 +293,10 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Validation report:
   `provenance/evidence/P004/exact-family-language-weave-validation.md`.
 - Full local gate: 468 test, 3.174 statement, 880 branch, yüzde 100 coverage.
+- Exact commit `374e2d0`, `RUN-20260712-0004` ile fresh no-hardlinks clone'da
+  bootstrap, full gate ve browser audit'ten geçti; clone temiz kaldı.
 - Attempts 1-5 machine-readable failure olarak korunuyor; yalnız final attempt
   full screenshot setini taşıyor.
 - Scientific analysis, parameter controls, Safari, VoiceOver ve P004 human
-  acceptance hâlâ açık. Sonraki iş: exact implementation commit, clean-clone Run,
-  GitHub CI ve Oğuz'un revised walkthrough'u.
+  acceptance hâlâ açık. Sonraki iş: provenance-link commit, GitHub CI ve Oğuz'un
+  revised walkthrough'u.

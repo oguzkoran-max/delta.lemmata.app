@@ -511,3 +511,8 @@ statements and 880 branches. Evidence:
 This checkpoint supersedes the current UI token mapping in section 16 without
 rewriting its historical evidence. It does not establish general usability,
 Safari or VoiceOver conformance, scientific validity, or P004 human acceptance.
+
+Exact implementation commit `374e2d0` was then restored in a fresh
+`--no-hardlinks` detached clone. `RUN-20260712-0004` passed dependency bootstrap,
+468 tests at full measured coverage, every repository gate, and the complete
+six-viewport browser audit. The clone remained clean; human acceptance stays open.

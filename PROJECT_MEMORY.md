@@ -378,6 +378,8 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   distance veya authorship sonucu üretmez.
 - Attempt 1-5 fail JSON olarak, attempt 6 tam screenshot setiyle pass olarak
   saklandı. Full gate 468 test ve yüzde 100 statement/branch coverage ile geçti.
+- Exact commit `374e2d0`, `RUN-20260712-0004` içinde fresh no-hardlinks clone'da
+  aynı full gate ve browser audit'i geçti; clone temiz kaldı.
 - Ajan raporları 10k bütçeyi aştığı için independent approval değildir.
 - P004 hâlâ Oğuz'un revised human walkthrough ve açık kabul/ret kararı için
   in-progress durumundadır.

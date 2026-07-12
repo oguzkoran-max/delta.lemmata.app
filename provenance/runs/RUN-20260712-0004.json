@@ -1,0 +1,130 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260712-0004",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P004"
+  ],
+  "started_at_utc": "2026-07-12T18:34:01Z",
+  "ended_at_utc": "2026-07-12T18:35:18Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "374e2d04a3c28029c69b9311fa0f3118f4bedbce",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-language-weave-exact-browser-374e2d0",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh --no-hardlinks local clone detached at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-language-weave-exact-browser-374e2d0",
+    "limitations": [
+      "The clean clone used the same Mac and may reuse locked Python and R package caches.",
+      "The browser run used Chromium rather than Safari or VoiceOver.",
+      "Only synthetic in-memory corpus inputs were used.",
+      "General learnability, scientific computation, calibrated stability, production isolation, retention enforcement, deployment, and human acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P004/exact-family-language-weave-exact-commit.sha256",
+    "sha256": "b30ac3b89af0fca25810fbe50d9ba67bf487f56fc84846cc16b710178bba10fb",
+    "covers": [
+      "provenance/evidence/P004/exact-family-language-weave-exact-commit"
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "scripts/browser_audit_p004.py",
+      "sha256": "5de860807d8866b3df88f160d427566767fc1396b13f3c20b72b0756855a48f8"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "652edd835350004a0fb0d2d714cd944df4478273a0cfb14df8f4c03f25f6626f"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "4e193fd7b8173d593077bcbcd0ed8b31341208eb478bb5ddb7096edb9e3495bc"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "20ee2f16dfdd9fafdd05c2af140ee218db4b5a13cefea8fae0ffca4b6912f76a"
+    },
+    {
+      "path": "tests/test_runtime_boundary.py",
+      "sha256": "b6467ead153466f01b476497eb834d8cea7bb78e81db73c8b6355b3a807fd17a"
+    },
+    {
+      "path": "tests/test_webapp.py",
+      "sha256": "a98683114d640346bc7b4239a2058b7afa7d954e6e7cbacfec7c7d412313234b"
+    },
+    {
+      "path": "prompts/P004-exact-family-language-weave.md",
+      "sha256": "90e150ca9ad974d05d20d6edf122b48960543feb0a4fe26457ff691184be3991"
+    },
+    {
+      "path": "provenance/evidence/P004/exact-family-language-weave-validation.md",
+      "sha256": "65067a14605693724873eff0a57707ddb32633c4df36d526bd55512a76acef76"
+    },
+    {
+      "path": "provenance/tickets/P004.json",
+      "sha256": "b9ceb7e75fe5efd3bc044d27443b83d695e28ef5faf4f493800d8a341f0c298f"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
+      "sha256": "6fe29807d58dcbe57bf6548d096d0fcd0b53fbb62c08215160d1c85d56c85ec0"
+    },
+    {
+      "path": "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+      "sha256": "32b1c10a77599eb4d289c648686a94d7eb1a9844da9dd550a4347c286c809007"
+    }
+  ],
+  "notes": "The exact Language Weave implementation commit was reconstructed in a fresh detached clone and passed dependency bootstrap, every repository gate, and the complete six-viewport TXT/ZIP browser audit. Duplicate exact-run screenshots were omitted because the committed passing candidate already retains the full visual set. P004 remains in progress for human acceptance."
+}
