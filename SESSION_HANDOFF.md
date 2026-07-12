@@ -8,7 +8,7 @@
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Yerel CSV adayını exact commit + GitHub CI ile kaydet; ardından rights questionnaire, Upload-Describe-Review state bağlantısı ve accessible Corpus Review UI'yi aynı contract üzerine kur
+**Sıradaki tek ana iş:** Rights questionnaire, Upload-Describe-Review state bağlantısı ve accessible Corpus Review UI'yi doğrulanmış domain/CSV contract üzerine kur
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
@@ -26,8 +26,9 @@ düzeltildi ve `0b0b349` ile main'e alındı. Hotfix run `29167750356` ve main r
 
 **P004 CSV doğrulaması:** Ayrı rights-source kaybı, statement-only public export,
 external schema drift ve yanlış field mapping bağımsız denetimde bulunup düzeltildi.
-Son yerel ağaç 390 test ve %100 statement/branch coverage ile geçti. Exact-commit
-Run ve bu ağacın GitHub CI sonucu henüz kaydedilmedi; ayrıntı
+`8dd85c1` temiz yerel ağaçta 390 test ve %100 statement/branch coverage ile geçti;
+`RUN-20260711-0006` bunu kaydeder. GitHub CI `29172847800` verify, SBOM/audit ve
+Linux container işlerinde geçti; ayrıntı
 `provenance/evidence/P004/metadata-csv-validation.md`.
 
 ## Önce Oku

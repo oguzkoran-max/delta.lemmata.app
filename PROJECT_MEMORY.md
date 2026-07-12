@@ -239,14 +239,14 @@ P004 versioned domain models, controlled vocabularies, generated JSON schemas,
 purpose-aware cross-field validation, canonical inventory hash, semantic metadata
 invalidation ve 58-column CSV round trip 2026-07-12 yerel adayında uygulanmıştır.
 Ayrı rights-source kayıtları korunur; statement-only beyan public redistribution
-kapısını açamaz. Aday 390 test ve %100 statement/branch coverage ile geçmiştir;
-exact-commit Run ve GitHub CI kaydı henüz oluşturulmamıştır.
+kapısını açamaz. Aday `8dd85c1` commitinde 390 test ve %100 statement/branch
+coverage ile geçmiştir; `RUN-20260711-0006` exact-commit yerel kanıtıdır. GitHub CI
+`29172847800` verify, SBOM/audit ve Linux container işlerinde geçmiştir.
 
-1. CSV adayını exact commit, reciprocal Run ve GitHub CI ile kaydet.
-2. Rights questionnaire ile exact-confirmed mapping'i guided form'a bağla.
-3. Upload, Describe, Review state akışını uygula.
-4. Bilimsel sonuç gibi görünmeyen erişilebilir corpus-description görsellerini uygula.
-5. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
+1. Rights questionnaire ile exact-confirmed mapping'i guided form'a bağla.
+2. Upload, Describe, Review state akışını uygula.
+3. Bilimsel sonuç gibi görünmeyen erişilebilir corpus-description görsellerini uygula.
+4. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
 
 ## Anahtar Kullanıcı İfadeleri
 

@@ -1,7 +1,7 @@
 # P004 Metadata CSV Validation Evidence
 
-**Status:** Local implementation candidate passed; exact-commit Run, GitHub CI,
-browser integration, and human acceptance remain pending
+**Status:** Clean exact-commit local Run and GitHub CI passed; browser integration
+and human acceptance remain pending
 
 **Date:** 2026-07-12
 
@@ -149,12 +149,14 @@ tests, and the locked R 4.5.2 / stylo 0.7.71 environment.
 
 ## Remaining Gates
 
-1. Commit the exact implementation tree and record its immutable Git SHA.
-2. Rerun `./scripts/verify.sh` from that exact committed tree and create a reciprocal
-   P004 Run record.
-3. Push the branch and require green GitHub verify, audit/SBOM, and Linux container
-   jobs.
-4. Implement and browser-test the English-only rights questionnaire, guided
+The implementation is commit `8dd85c1d3cd454c3b1a8227122ff73e136da87b0`.
+`RUN-20260711-0006` records its clean local rerun and
+`provenance/evidence/P004/metadata-csv-exact-commit/report.md` records the bounded
+result. GitHub Actions run `29172847800` passed source/schema/record verification,
+SBOM/dependency audit, and the canonical Linux amd64 container build; details are in
+`provenance/evidence/P004/metadata-csv-ci.md`.
+
+1. Implement and browser-test the English-only rights questionnaire, guided
    metadata editor, and accessible Corpus Review visuals.
-5. Obtain Oğuz Koran's terminology/workflow acceptance before closing any P004
+2. Obtain Oğuz Koran's terminology/workflow acceptance before closing any P004
    acceptance criterion.

@@ -1,6 +1,6 @@
 # P004 Versioned Metadata CSV Contract
 
-**Status:** Implementation candidate; exact-commit evidence, browser integration, and human acceptance remain pending
+**Status:** Exact-commit implementation and GitHub CI verified; browser integration and human acceptance remain pending
 
 **Ticket:** `P004`
 
