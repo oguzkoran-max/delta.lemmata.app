@@ -105,7 +105,8 @@ These runs are not treated as passing evidence.
 
 - Exact implementation commit `c82740d` subsequently passed clean-clone bootstrap,
   canonical verification, and the complete fresh-process P004 browser audit. The
-  additive record is `RUN-20260712-0001`; GitHub CI remains pending.
+  additive record is `RUN-20260712-0001`. Provenance-link commit `4c3bb8a` then
+  passed GitHub CI run `29190917436`.
 - Oğuz Koran's terminology, negative-rights, correction, timeline, confirmation,
   ZIP, Safari, and VoiceOver walkthrough remains pending.
 - Scientific parameters, R/stylo execution, result graphics, runtime AI,
@@ -113,4 +114,4 @@ These runs are not treated as passing evidence.
   checkpoint.
 
 The functional local P004 implementation is now complete, but P004 remains
-`in-progress` until GitHub CI evidence and human acceptance are recorded.
+`in-progress` until human acceptance is recorded.

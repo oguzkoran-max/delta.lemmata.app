@@ -292,9 +292,11 @@ coverage ile; fresh-process browser audit individual-TXT regression ve two-membe
 ZIP akışında geçti. Klon testlerden sonra temiz kaldı. Exact-commit kayıtları
 `RUN-20260712-0001` ve
 `provenance/evidence/P004/guided-ui-exact-commit/report.md` içindedir.
+Provenance-link commit'i `4c3bb8a` GitHub CI run `29190917436` üzerinde verify,
+SBOM/audit ve canonical Linux amd64 container işlerinde geçti.
 
-1. `c82740d` implementation ve provenance-link commit'lerinin GitHub CI sonucunu doğrula.
-2. Oğuz terminology/negative-rights/correction/timeline/confirmation/ZIP, Safari ve VoiceOver walkthrough'unu tamamlasın.
+1. Oğuz terminology/negative-rights/correction/timeline/confirmation/ZIP, Safari ve VoiceOver walkthrough'unu tamamlasın.
+2. Kabul veya ret kararını HumanDecision olarak kaydet; yalnız kabulde P004'ü kapat.
 3. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
 
 ## Anahtar Kullanıcı İfadeleri

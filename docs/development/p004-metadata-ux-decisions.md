@@ -402,5 +402,10 @@ viewports, payload-absence, keyboard, download, no-egress, and console-clean gat
 The additive FAIR record is `RUN-20260712-0001`; its report and checksum-bound
 browser bundle are under
 `../../provenance/evidence/P004/guided-ui-exact-commit/`. This closes the local
-exact-commit gate without claiming GitHub CI, Safari or VoiceOver acceptance,
-scientific computation, legal determination, or P004 human acceptance.
+exact-commit gate without claiming Safari or VoiceOver acceptance, scientific
+computation, legal determination, or P004 human acceptance.
+
+The subsequent provenance-link commit `4c3bb8a` passed GitHub CI run `29190917436`:
+source, metadata, schema, and record verification; SBOM and dependency audit; and
+the canonical Linux amd64 container build. The remaining P004 gate is Oğuz Koran's
+human walkthrough and explicit acceptance or rejection decision.

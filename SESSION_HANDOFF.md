@@ -11,8 +11,8 @@ final documentation confirmation adayı var; scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Exact implementation commit `c82740d` için GitHub CI'yi
-doğrula; ardından Oğuz'un insan kabul turunu yürüt
+**Sıradaki tek ana iş:** Oğuz'un P004 insan kabul turunu yürüt ve kabul/ret kararını
+HumanDecision olarak kaydet
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights
@@ -82,7 +82,9 @@ statement, 878 branch ve yüzde 100 coverage ile geçti; aynı klonda fresh-proc
 individual-TXT + two-member ZIP browser audit de tamamen geçti. Klon koşumlardan
 sonra temiz kaldı. `RUN-20260712-0001` ve
 `provenance/evidence/P004/guided-ui-exact-commit/report.md` bu kapıyı kaydeder.
-GitHub CI ve Oğuz insan kabulü hâlâ açıktır.
+Provenance-link commit'i `4c3bb8a` GitHub CI run `29190917436` üzerinde verify,
+SBOM/audit ve canonical Linux amd64 container işlerinde geçti. Kanıt:
+`provenance/evidence/P004/guided-ui-ci.md`. Yalnız Oğuz insan kabulü açıktır.
 
 ## Önce Oku
 
