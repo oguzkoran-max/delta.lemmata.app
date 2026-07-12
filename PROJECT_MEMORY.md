@@ -86,7 +86,9 @@ regression, keyboard selection, no overflow, no payload echo, no egress ve clean
 console kapılarında geçti. 320px tasarımında kelime parçalanması giderildi ve ilk
 amaç düğmesi görünür alana alındı. Full yöntem ve başarısızlık kaydı:
 `provenance/evidence/P004/entry-experience-redesign-validation.md`. Bu değişiklik
-general usability veya P004 acceptance iddiası değildir.
+general usability veya P004 acceptance iddiası değildir. Implementation commit
+`b538807`, `RUN-20260712-0002` ile fresh no-hardlinks detached clone'da yeniden
+kuruldu; 467 test, full measured coverage ve complete browser audit geçti.
 
 ## Ürün Tezi
 

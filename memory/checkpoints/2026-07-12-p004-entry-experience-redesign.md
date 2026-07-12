@@ -25,6 +25,8 @@
 - Fresh-process Playwright: altı viewport, individual TXT ve two-member ZIP geçti.
 - `./scripts/verify.sh`: 467 test, 3.167 statement, 880 branch ve yüzde 100
   coverage; typing, metadata, 57 kayıt, repository scan ve R lock geçti.
+- Exact commit `b538807`, `RUN-20260712-0002` ile temiz no-hardlinks detached
+  klonda aynı full gate ve browser audit'ten geçti; klon temiz kaldı.
 
 ## Saklanan Başarısızlıklar
 
@@ -41,5 +43,4 @@ Safari/keyboard/VoiceOver walkthrough ayrı kapılardır.
 
 ## Sıradaki Tek İş
 
-Tasarım commit'ini exact clone'da yeniden üret, CI sonucunu bağla ve ardından
-Oğuz'un adım adım insan kabul turunu başlat.
+CI sonucunu bağla ve ardından Oğuz'un adım adım insan kabul turunu başlat.

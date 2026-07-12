@@ -97,7 +97,9 @@ hale geldi. Final fresh-process audit altı viewport ile individual-TXT ve two-m
 ZIP regression'ı geçti; başarısız denemeler saklandı. Kanıt:
 `provenance/evidence/P004/entry-experience-redesign-validation.md`. Repository-wide
 gate 467 test, 3.167 statement, 880 branch ve yüzde 100 coverage ile geçti.
-Exact-commit/CI bağı ve revize insan kabulü bu checkpoint'in açık kapılarıdır.
+Implementation commit `b538807`, `RUN-20260712-0002` ile fresh no-hardlinks
+detached clone'da aynı full gate ve browser audit'ten geçti; clone temiz kaldı. CI
+bağı ve revize insan kabulü bu checkpoint'in açık kapılarıdır.
 
 ## Önce Oku
 

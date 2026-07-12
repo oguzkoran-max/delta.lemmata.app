@@ -436,3 +436,9 @@ and method boundaries are recorded in
 `../../provenance/evidence/P004/entry-experience-redesign-validation.md`. This
 checkpoint does not establish general learnability, screen-reader conformance,
 scientific validity, or P004 human acceptance.
+
+The implementation is committed as `b538807`. `RUN-20260712-0002` reconstructed
+that exact commit in a fresh no-hardlinks detached clone and passed 467 tests with
+100% of 3,167 statements and 880 branches plus the complete six-viewport
+individual-TXT and two-member ZIP browser audit. CI and human acceptance remain
+separate gates.

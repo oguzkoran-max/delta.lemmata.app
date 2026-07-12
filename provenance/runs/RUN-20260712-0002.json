@@ -1,0 +1,122 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260712-0002",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P004"
+  ],
+  "started_at_utc": "2026-07-12T12:29:20Z",
+  "ended_at_utc": "2026-07-12T12:31:08Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "b538807799b83cae718c0c7888e28741bed56f66",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-entry-exact-browser-b538807",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh --no-hardlinks local clone detached at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output /tmp/delta-p004-entry-exact-browser-b538807",
+    "limitations": [
+      "The clean clone used the same Mac and may reuse locked Python and R package caches.",
+      "The browser run used Chromium rather than Safari or VoiceOver.",
+      "Only synthetic in-memory corpus inputs were used.",
+      "General learnability, scientific computation, production isolation, retention enforcement, deployment, and human acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P004/entry-experience-exact-commit.sha256",
+    "sha256": "28c050bdbb2479dcc417228b0e19507f582edea2fe76b590cc58c5e92e01d2cb",
+    "covers": [
+      "provenance/evidence/P004/entry-experience-exact-commit"
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "scripts/browser_audit_p004.py",
+      "sha256": "69f9f872a75b7317d1d47d2dd9f66fc636a05b76729cec89222f724ea1f16fd0"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "3b093e0a0241669383c640b439a689141ecfd8d6fc170b057827bb9cae813139"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "70575bb5fe08059a859064009d99ee7fe7a238fe5fa98a0f7b9cfc10a22d7303"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "937bc5ad70064039ec927b31c41c478883769436e0011a8bc3f81a4e29613bcb"
+    },
+    {
+      "path": "tests/test_webapp.py",
+      "sha256": "50035bc1dcd0aa13338c53b45638a86327915918eb33f3f0d54921b4b446c2cd"
+    },
+    {
+      "path": "prompts/P004-entry-experience-redesign.md",
+      "sha256": "287f51977d820a0cb8a9013f24703a57cc0d7865444b8d75ced9f655419753d1"
+    },
+    {
+      "path": "provenance/evidence/P004/entry-experience-redesign-validation.md",
+      "sha256": "dc722c7bd4d2ca901e3d15bba46df690348c763ceb98454f2d30b5aae13052fb"
+    },
+    {
+      "path": "provenance/tickets/P004.json",
+      "sha256": "9ff10d48e94fe2f00a32c1616f9bcfbb432f74b6a26d740da15335b80f1b13c9"
+    },
+    {
+      "path": "provenance/prompt-events.jsonl",
+      "sha256": "d191df90207becacb9ca63f2a28e9c56a24e47df55e0571eac4c9f5cb8591136"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P004/entry-experience-exact-commit/report.md",
+      "sha256": "986ee8c8c4990f6b75977978653b7186dc00748c9625a8ce58df15cbc430d5d2"
+    },
+    {
+      "path": "provenance/evidence/P004/entry-experience-exact-commit/browser-audit/browser-audit.json",
+      "sha256": "f79f6018503c7a2cf1f18c76d9a4adebc1c32c29772090d59f8d26d0e5cb709c"
+    }
+  ],
+  "notes": "A fresh detached clone of the exact beginner-entry implementation commit passed dependency bootstrap, every repository gate, and the complete synthetic individual-TXT plus two-member ZIP browser audit. The run terminates at the recorded implementation commit and does not hash its own later provenance-link commit. Human acceptance and later P005-P015 boundaries remain open."
+}

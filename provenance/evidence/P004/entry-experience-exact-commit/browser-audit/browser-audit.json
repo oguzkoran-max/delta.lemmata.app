@@ -1,0 +1,973 @@
+{
+  "schema_version": "1.0.0",
+  "target_url": "http://127.0.0.1:61129",
+  "audit_method": "Tracked Python Playwright harness and fresh local Streamlit process.",
+  "synthetic_inputs_only": true,
+  "fresh_browser_context_per_viewport": true,
+  "audits": [
+    {
+      "target": "desktop-1440x1000",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 1037.65625,
+      "first_action_visible_pass": true,
+      "purpose_buttons_top": 536.1875,
+      "next_stage_hint_pass": true,
+      "corpus_stage_top": 786.25,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 40.8,
+          "box": {
+            "x": 413,
+            "y": 182.734375,
+            "width": 700,
+            "height": 80.046875,
+            "top": 182.734375,
+            "right": 1113,
+            "bottom": 262.78125,
+            "left": 413
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 396,
+            "y": 826.265625,
+            "width": 604.765625,
+            "height": 57,
+            "top": 826.265625,
+            "right": 1000.765625,
+            "bottom": 883.265625,
+            "left": 396
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 399,
+            "y": 1415.046875,
+            "width": 961,
+            "height": 57,
+            "top": 1415.046875,
+            "right": 1360,
+            "bottom": 1472.046875,
+            "left": 399
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "entry_experience_pass": true,
+      "entry_region_count": 1,
+      "method_step_count": 3,
+      "purpose_guide_count": 1,
+      "purpose_button_font_sizes": [
+        14,
+        14,
+        14
+      ],
+      "no_fake_result_pass": true,
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/desktop-1440x1000.png"
+    },
+    {
+      "target": "desktop-1280x800",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 1057.640625,
+      "first_action_visible_pass": true,
+      "purpose_buttons_top": 536.1875,
+      "next_stage_hint_pass": true,
+      "corpus_stage_top": 806.234375,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 40.8,
+          "box": {
+            "x": 413,
+            "y": 182.734375,
+            "width": 700,
+            "height": 80.046875,
+            "top": 182.734375,
+            "right": 1113,
+            "bottom": 262.78125,
+            "left": 413
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 396,
+            "y": 846.25,
+            "width": 501.34375,
+            "height": 57,
+            "top": 846.25,
+            "right": 897.34375,
+            "bottom": 903.25,
+            "left": 396
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 399,
+            "y": 1435.03125,
+            "width": 801,
+            "height": 57,
+            "top": 1435.03125,
+            "right": 1200,
+            "bottom": 1492.03125,
+            "left": 399
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "entry_experience_pass": true,
+      "entry_region_count": 1,
+      "method_step_count": 3,
+      "purpose_guide_count": 1,
+      "purpose_button_font_sizes": [
+        14,
+        14,
+        14
+      ],
+      "no_fake_result_pass": true,
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/desktop-1280x800.png"
+    },
+    {
+      "target": "reflow-640x800",
+      "viewport": {
+        "width": 640,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 1326.328125,
+      "first_action_visible_pass": true,
+      "purpose_buttons_top": 577.03125,
+      "next_stage_hint_pass": true,
+      "corpus_stage_top": 1033.328125,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 32,
+          "box": {
+            "x": 33,
+            "y": 148.15625,
+            "width": 310,
+            "height": 107.65625,
+            "top": 148.15625,
+            "right": 343,
+            "bottom": 255.8125,
+            "left": 33
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1073.34375,
+            "width": 576,
+            "height": 57,
+            "top": 1073.34375,
+            "right": 608,
+            "bottom": 1130.34375,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 35,
+            "y": 1726.109375,
+            "width": 589,
+            "height": 57,
+            "top": 1726.109375,
+            "right": 624,
+            "bottom": 1783.109375,
+            "left": 35
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "entry_experience_pass": true,
+      "entry_region_count": 1,
+      "method_step_count": 3,
+      "purpose_guide_count": 1,
+      "purpose_button_font_sizes": [
+        14,
+        14,
+        14
+      ],
+      "no_fake_result_pass": true,
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/reflow-640x800.png"
+    },
+    {
+      "target": "mobile-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 1510.5625,
+      "first_action_visible_pass": true,
+      "purpose_buttons_top": 678.921875,
+      "next_stage_hint_pass": true,
+      "corpus_stage_top": 1195.171875,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 32,
+          "box": {
+            "x": 33,
+            "y": 148.15625,
+            "width": 310,
+            "height": 107.65625,
+            "top": 148.15625,
+            "right": 343,
+            "bottom": 255.8125,
+            "left": 33
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1235.1875,
+            "width": 326,
+            "height": 57,
+            "top": 1235.1875,
+            "right": 358,
+            "bottom": 1292.1875,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 35,
+            "y": 1931.34375,
+            "width": 339,
+            "height": 57,
+            "top": 1931.34375,
+            "right": 374,
+            "bottom": 1988.34375,
+            "left": 35
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "entry_experience_pass": true,
+      "entry_region_count": 1,
+      "method_step_count": 3,
+      "purpose_guide_count": 1,
+      "purpose_button_font_sizes": [
+        14,
+        14,
+        14
+      ],
+      "no_fake_result_pass": true,
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/mobile-390x844.png"
+    },
+    {
+      "target": "mobile-360x800",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 1543.03125,
+      "first_action_visible_pass": true,
+      "purpose_buttons_top": 711.390625,
+      "next_stage_hint_pass": true,
+      "corpus_stage_top": 1227.640625,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 32,
+          "box": {
+            "x": 33,
+            "y": 148.15625,
+            "width": 294,
+            "height": 107.65625,
+            "top": 148.15625,
+            "right": 327,
+            "bottom": 255.8125,
+            "left": 33
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1267.65625,
+            "width": 296,
+            "height": 57,
+            "top": 1267.65625,
+            "right": 328,
+            "bottom": 1324.65625,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 35,
+            "y": 2002.59375,
+            "width": 309,
+            "height": 57,
+            "top": 2002.59375,
+            "right": 344,
+            "bottom": 2059.59375,
+            "left": 35
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "entry_experience_pass": true,
+      "entry_region_count": 1,
+      "method_step_count": 3,
+      "purpose_guide_count": 1,
+      "purpose_button_font_sizes": [
+        14,
+        14,
+        14
+      ],
+      "no_fake_result_pass": true,
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/mobile-360x800.png"
+    },
+    {
+      "target": "reflow-320x800",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 1643.21875,
+      "first_action_visible_pass": true,
+      "purpose_buttons_top": 754.390625,
+      "next_stage_hint_pass": true,
+      "corpus_stage_top": 1279.828125,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 30,
+          "box": {
+            "x": 31.390625,
+            "y": 155.859375,
+            "width": 257.21875,
+            "height": 103.1875,
+            "top": 155.859375,
+            "right": 288.609375,
+            "bottom": 259.046875,
+            "left": 31.390625
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1319.84375,
+            "width": 256,
+            "height": 57,
+            "top": 1319.84375,
+            "right": 288,
+            "bottom": 1376.84375,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 35,
+            "y": 2125.171875,
+            "width": 269,
+            "height": 57,
+            "top": 2125.171875,
+            "right": 304,
+            "bottom": 2182.171875,
+            "left": 35
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "entry_experience_pass": true,
+      "entry_region_count": 1,
+      "method_step_count": 3,
+      "purpose_guide_count": 1,
+      "purpose_button_font_sizes": [
+        14,
+        14,
+        14
+      ],
+      "no_fake_result_pass": true,
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/reflow-320x800.png"
+    }
+  ],
+  "guided_flow": {
+    "keyboard_purpose_selection_pass": true,
+    "continue_enabled_pass": true,
+    "describe_file_inputs_removed_pass": true,
+    "payload_absent_describe_pass": true,
+    "describe_active_step_pass": true,
+    "review_ready_pass": true,
+    "review_active_step_pass": true,
+    "composition_table_pass": true,
+    "composition_layout_pass": true,
+    "completeness_table_pass": true,
+    "timeline_table_pass": true,
+    "timeline_selection_pass": true,
+    "rights_table_pass": true,
+    "composition_key_parity_pass": true,
+    "composition_sum_pass": true,
+    "completeness_shape_pass": true,
+    "completeness_key_parity_pass": true,
+    "completeness_status_pass": true,
+    "scroll_region_semantics_pass": true,
+    "scroll_region_focus_pass": true,
+    "review_csv_payload_absent_pass": true,
+    "download_names_pass": true,
+    "download_buttons_pass": true,
+    "download_button_count": 5,
+    "confirmation_initial_pass": true,
+    "confirmation_recorded_pass": true,
+    "analysis_locked_pass": true,
+    "payload_absent_review_pass": true,
+    "review_viewports_pass": true,
+    "review_viewports": [
+      {
+        "target": "desktop-1440x1000",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/review-desktop-1440x1000.png"
+      },
+      {
+        "target": "desktop-1280x800",
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/review-desktop-1280x800.png"
+      },
+      {
+        "target": "reflow-640x800",
+        "viewport": {
+          "width": 640,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/review-reflow-640x800.png"
+      },
+      {
+        "target": "mobile-390x844",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/review-mobile-390x844.png"
+      },
+      {
+        "target": "mobile-360x800",
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/review-mobile-360x800.png"
+      },
+      {
+        "target": "reflow-320x800",
+        "viewport": {
+          "width": 320,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/review-reflow-320x800.png"
+      }
+    ],
+    "composition_screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/guided-composition-bars.png",
+    "completeness_screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/guided-completeness-matrix.png",
+    "timeline_screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/guided-work-timeline.png"
+  },
+  "zip_flow": {
+    "member_catalog_pass": true,
+    "member_catalog_screenshot": "/private/tmp/delta-p004-entry-exact-browser-b538807/screenshots/zip-member-catalog.png",
+    "payload_absent_upload_pass": true,
+    "continue_enabled_pass": true,
+    "describe_work_count_pass": true,
+    "describe_labels_pass": true,
+    "describe_payload_absent_pass": true,
+    "describe_file_inputs_removed_pass": true,
+    "mobile_describe_pass": true,
+    "mobile_describe_geometry": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "mainScrollWidth": 390,
+      "mainClientWidth": 390,
+      "overflowingControls": [],
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 28,
+          "box": {
+            "x": 16,
+            "y": 124.015625,
+            "width": 358,
+            "height": 104.3125,
+            "top": 124.015625,
+            "right": 374,
+            "bottom": 228.328125,
+            "left": 16
+          }
+        },
+        {
+          "level": 2,
+          "text": "Describe what each text represents",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 417.484375,
+            "width": 326,
+            "height": 57,
+            "top": 417.484375,
+            "right": 358,
+            "bottom": 474.484375,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Guided metadata editor",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 918.609375,
+            "width": 326,
+            "height": 48.796875,
+            "top": 918.609375,
+            "right": 358,
+            "bottom": 967.40625,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 35,
+            "y": 3176.125,
+            "width": 339,
+            "height": 57,
+            "top": 3176.125,
+            "right": 374,
+            "bottom": 3233.125,
+            "left": 35
+          }
+        }
+      ],
+      "sidebarVisibleFocusables": 0,
+      "expandSidebarVisible": false,
+      "segmentedButtonHeights": [
+        44,
+        44
+      ],
+      "helpButtonTargets": [],
+      "entryRegionCount": 0,
+      "methodStepCount": 0,
+      "purposeGuideCount": 0,
+      "purposeButtonCount": 0,
+      "purposeButtonFontSizes": [],
+      "purposeButtonsTop": null,
+      "corpusStageTop": null,
+      "brandUnoccluded": true
+    },
+    "review_blocked_transparently_pass": true,
+    "review_shape_pass": true,
+    "review_payload_absent_pass": true,
+    "mobile_review_pass": true,
+    "mobile_review_geometry": {
+      "scrollWidth": 390,
+      "clientWidth": 390,
+      "mainScrollWidth": 390,
+      "mainClientWidth": 390,
+      "overflowingControls": [],
+      "headings": [
+        {
+          "level": 1,
+          "text": "Discover patterns in writing style.",
+          "fontSize": 28,
+          "box": {
+            "x": 16,
+            "y": 124.015625,
+            "width": 358,
+            "height": 104.3125,
+            "top": 124.015625,
+            "right": 374,
+            "bottom": 228.328125,
+            "left": 16
+          }
+        },
+        {
+          "level": 2,
+          "text": "Review the documented corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 417.484375,
+            "width": 326,
+            "height": 57,
+            "top": 417.484375,
+            "right": 358,
+            "bottom": 474.484375,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Corpus composition",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 1289.65625,
+            "width": 326,
+            "height": 48.796875,
+            "top": 1289.65625,
+            "right": 358,
+            "bottom": 1338.453125,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Metadata completeness matrix",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 2178.3125,
+            "width": 326,
+            "height": 48.796875,
+            "top": 2178.3125,
+            "right": 358,
+            "bottom": 2227.109375,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Work timeline",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 2937.390625,
+            "width": 326,
+            "height": 48.796875,
+            "top": 2937.390625,
+            "right": 358,
+            "bottom": 2986.1875,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "One",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 3121.5625,
+            "width": 326,
+            "height": 48.796875,
+            "top": 3121.5625,
+            "right": 358,
+            "bottom": 3170.359375,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Rights action matrix",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 3795.328125,
+            "width": 326,
+            "height": 48.796875,
+            "top": 3795.328125,
+            "right": 358,
+            "bottom": 3844.125,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Actionable corpus checks",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 4079.90625,
+            "width": 326,
+            "height": 48.796875,
+            "top": 4079.90625,
+            "right": 358,
+            "bottom": 4128.703125,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Final corpus confirmation",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 6582.21875,
+            "width": 326,
+            "height": 48.796875,
+            "top": 6582.21875,
+            "right": 358,
+            "bottom": 6631.015625,
+            "left": 32
+          }
+        },
+        {
+          "level": 3,
+          "text": "Download the documentation package",
+          "fontSize": 16,
+          "box": {
+            "x": 32,
+            "y": 6868.1875,
+            "width": 326,
+            "height": 48.796875,
+            "top": 6868.1875,
+            "right": 358,
+            "bottom": 6916.984375,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 35,
+            "y": 7380.984375,
+            "width": 339,
+            "height": 57,
+            "top": 7380.984375,
+            "right": 374,
+            "bottom": 7437.984375,
+            "left": 35
+          }
+        }
+      ],
+      "sidebarVisibleFocusables": 0,
+      "expandSidebarVisible": false,
+      "segmentedButtonHeights": [],
+      "helpButtonTargets": [
+        24
+      ],
+      "entryRegionCount": 0,
+      "methodStepCount": 0,
+      "purposeGuideCount": 0,
+      "purposeButtonCount": 0,
+      "purposeButtonFontSizes": [],
+      "purposeButtonsTop": null,
+      "corpusStageTop": null,
+      "brandUnoccluded": true
+    }
+  },
+  "console_messages": [],
+  "external_hosts_observed": [],
+  "network_scope": "Browser requests observed by Playwright; not a packet capture.",
+  "retention_scope": "The harness verifies rendered UI and browser-visible state, not proxy, container, operating-system, or host retention.",
+  "result": "passed"
+}
