@@ -71,6 +71,141 @@ def test_create_verify_write_and_idempotent_cleanup(tmp_path: Path) -> None:
     assert workspaces.cleanup(layout) == CleanupReport(0, 0, True)
 
 
+def test_load_and_selective_area_cleanup_preserve_result_and_layout(tmp_path: Path) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    work_file = "d" * 64
+    result_file = "e" * 64
+    workspaces.create_file(layout, WorkspaceArea.INPUT, FILE, b"input")
+    workspaces.create_file(layout, WorkspaceArea.WORK, work_file, b"work")
+    workspaces.create_file(layout, WorkspaceArea.RESULT, result_file, b"result")
+
+    recovered = WorkspaceManager(tmp_path).load(OWNER, JOB)
+    first = workspaces.clear_areas(recovered, (WorkspaceArea.INPUT, WorkspaceArea.WORK))
+
+    assert first == CleanupReport(2, len(b"input") + len(b"work"), False)
+    assert list(recovered.input.iterdir()) == []
+    assert list(recovered.work.iterdir()) == []
+    assert (recovered.result / result_file).read_bytes() == b"result"
+    workspaces.verify(recovered)
+    assert workspaces.clear_areas(
+        recovered, (WorkspaceArea.INPUT, WorkspaceArea.WORK)
+    ) == CleanupReport(0, 0, True)
+
+
+def test_load_and_selective_cleanup_fail_closed_on_invalid_layout(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.clear_areas(layout, ()),
+    )
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.clear_areas(layout, (object(),)),  # type: ignore[arg-type]
+    )
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.load(OWNER, "f" * 64),
+    )
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.load("f" * 64, JOB),
+    )
+
+    unexpected = layout.job / "unexpected"
+    unexpected.mkdir()
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.load(OWNER, JOB),
+    )
+    unexpected.rmdir()
+
+    workspaces.create_file(layout, WorkspaceArea.INPUT, FILE, b"input")
+    original_stat = os.stat
+
+    def fail_stat(*args: object, **kwargs: object) -> os.stat_result:
+        if kwargs.get("dir_fd") is not None and args[0] == FILE:
+            raise OSError("private")
+        return original_stat(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(os, "stat", fail_stat)
+    expect_code(
+        WorkspaceErrorCode.CLEANUP_FAILED,
+        lambda: workspaces.clear_areas(layout, (WorkspaceArea.INPUT,)),
+    )
+
+
+def test_load_detaches_os_failures(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    workspaces = manager(tmp_path)
+    workspaces.create(OWNER, JOB)
+
+    def fail_listdir(_descriptor: int) -> list[str]:
+        raise OSError("private")
+
+    monkeypatch.setattr(os, "listdir", fail_listdir)
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.load(OWNER, JOB),
+    )
+
+
+def test_selective_cleanup_rechecks_identity_and_empty_directory(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    workspaces.create_file(layout, WorkspaceArea.INPUT, FILE, b"input")
+    original_preflight = workspaces._preflight
+
+    def tamper_mode(job_fd: int, current_layout: WorkspaceLayout) -> object:
+        inventory = original_preflight(job_fd, current_layout)
+        os.chmod(layout.input / FILE, 0o644)
+        return inventory
+
+    monkeypatch.setattr(workspaces, "_preflight", tamper_mode)
+    expect_code(
+        WorkspaceErrorCode.CLEANUP_FAILED,
+        lambda: workspaces.clear_areas(layout, (WorkspaceArea.INPUT,)),
+    )
+
+    os.chmod(layout.input / FILE, 0o600)
+    monkeypatch.setattr(workspaces, "_preflight", original_preflight)
+    original_unlink = os.unlink
+
+    def replace_after_unlink(name: str, *, dir_fd: int | None = None) -> None:
+        original_unlink(name, dir_fd=dir_fd)
+        descriptor = os.open(
+            "f" * 64,
+            os.O_CREAT | os.O_EXCL | os.O_WRONLY,
+            0o600,
+            dir_fd=dir_fd,
+        )
+        os.close(descriptor)
+
+    monkeypatch.setattr(os, "unlink", replace_after_unlink)
+    expect_code(
+        WorkspaceErrorCode.CLEANUP_FAILED,
+        lambda: workspaces.clear_areas(layout, (WorkspaceArea.INPUT,)),
+    )
+
+
+def test_selective_cleanup_detaches_workspace_errors(tmp_path: Path) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    external = tmp_path / "external"
+    external.write_bytes(b"canary")
+    (layout.input / FILE).symlink_to(external)
+
+    expect_code(
+        WorkspaceErrorCode.UNSAFE_ENTRY,
+        lambda: workspaces.clear_areas(layout, (WorkspaceArea.INPUT,)),
+    )
+    assert external.read_bytes() == b"canary"
+
+
 @pytest.mark.parametrize(
     "component",
     ["", "a" * 63, "a" * 65, "A" * 64, "g" * 64, "../" + "a" * 61, "." * 64],

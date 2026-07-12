@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 import re
 import stat
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from enum import StrEnum
 from functools import wraps
@@ -283,6 +283,65 @@ class WorkspaceManager:
                 os.close(area_fd)
 
     @_content_free
+    def load(self, owner_component: str, job_component: str) -> WorkspaceLayout:
+        """Open an existing fixed layout and capture fresh trusted identities."""
+
+        try:
+            owner_name = self._component(owner_component)
+            job_name = self._component(job_component)
+            root_fd = self._open_root()
+            try:
+                owner_info = self._optional_stat(root_fd, owner_name)
+                if owner_info is None or not _private_directory(owner_info):
+                    _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+                owner_identity = _identity(owner_info)
+                owner_fd = self._open_directory(root_fd, owner_name, owner_identity)
+                try:
+                    job_info = self._optional_stat(owner_fd, job_name)
+                    if job_info is None or not _private_directory(job_info):
+                        _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+                    job_identity = _identity(job_info)
+                    job_fd = self._open_directory(owner_fd, job_name, job_identity)
+                    try:
+                        if set(os.listdir(job_fd)) != {area.value for area in WorkspaceArea}:
+                            _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+                        area_identities: list[tuple[WorkspaceArea, _Identity]] = []
+                        for area in WorkspaceArea:
+                            area_fd = self._open_directory(job_fd, area.value, None)
+                            try:
+                                area_identities.append((area, _identity(os.fstat(area_fd))))
+                            finally:
+                                os.close(area_fd)
+                    finally:
+                        os.close(job_fd)
+                finally:
+                    os.close(owner_fd)
+            finally:
+                os.close(root_fd)
+            owner_path = self.root / owner_name
+            job_path = owner_path / job_name
+            return WorkspaceLayout(
+                root=self.root,
+                owner=owner_path,
+                job=job_path,
+                input=job_path / WorkspaceArea.INPUT.value,
+                work=job_path / WorkspaceArea.WORK.value,
+                result=job_path / WorkspaceArea.RESULT.value,
+                export=job_path / WorkspaceArea.EXPORT.value,
+                control=job_path / WorkspaceArea.CONTROL.value,
+                _owner_identity=owner_identity,
+                _job_identity=job_identity,
+                _area_identities=tuple(area_identities),
+            )
+        except WorkspaceError as error:
+            _detach(error)
+            raise
+        except OSError:
+            rejection = WorkspaceError(WorkspaceErrorCode.INVALID_LAYOUT)
+            _detach(rejection)
+            raise rejection from None
+
+    @_content_free
     def verify(self, layout: WorkspaceLayout) -> None:
         """Verify confinement, identities, modes, and the complete fixed layout."""
 
@@ -359,6 +418,55 @@ class WorkspaceManager:
                 return CleanupReport(file_count, byte_count, False)
             finally:
                 os.close(root_fd)
+        except WorkspaceError as error:
+            _detach(error)
+            raise
+        except OSError:
+            rejection = WorkspaceError(WorkspaceErrorCode.CLEANUP_FAILED)
+            _detach(rejection)
+            raise rejection from None
+
+    @_content_free
+    def clear_areas(
+        self,
+        layout: WorkspaceLayout,
+        areas: Sequence[WorkspaceArea],
+    ) -> CleanupReport:
+        """Remove files from selected areas while preserving the verified layout."""
+
+        if not areas or any(not isinstance(area, WorkspaceArea) for area in areas):
+            _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+        selected = frozenset(areas)
+        try:
+            job_fd = self._open_layout_job(layout)
+            try:
+                inventory = self._preflight(job_fd, layout)
+                selected_inventory = tuple(
+                    (area, entries) for area, entries in inventory if area in selected
+                )
+                for area, entries in selected_inventory:
+                    expected = dict(layout._area_identities)[area]
+                    area_fd = self._open_directory(job_fd, area.value, expected)
+                    try:
+                        for name, identity, _size in entries:
+                            current = os.stat(name, dir_fd=area_fd, follow_symlinks=False)
+                            if _identity(current) != identity or not _private_file(current):
+                                _reject(WorkspaceErrorCode.CLEANUP_FAILED)
+                            os.unlink(name, dir_fd=area_fd)
+                        if os.listdir(area_fd):
+                            _reject(WorkspaceErrorCode.CLEANUP_FAILED)
+                    finally:
+                        os.close(area_fd)
+            finally:
+                os.close(job_fd)
+            self.verify(layout)
+            file_count = sum(len(entries) for _area, entries in selected_inventory)
+            byte_count = sum(
+                size
+                for _area, entries in selected_inventory
+                for _name, _identity_value, size in entries
+            )
+            return CleanupReport(file_count, byte_count, file_count == 0)
         except WorkspaceError as error:
             _detach(error)
             raise
