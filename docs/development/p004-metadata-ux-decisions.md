@@ -188,8 +188,9 @@ Tickets supply real evidence. Placeholder charts must never resemble computed re
    policy with no runtime AI or automatic legal claim.
 6. Connect Upload, Describe, and Review state while preserving the P003 rejection,
    cleanup, and no-permanent-storage boundaries.
-7. Build readiness summary, timeline, composition bars, Rights Action Matrix, and
-   Metadata Completeness Matrix from validated inventory data only.
+7. Build the readiness summary, Rights Action Matrix, and simple timeline first from
+   validated inventory data only. Add composition bars and the Metadata Completeness
+   Matrix only after the complete guided path passes browser and keyboard checks.
 8. Add metadata CSV, inventory JSON, and validation-report downloads without raw text.
 9. Run unit, property, determinism, accessibility, responsive-browser, clean-clone,
    and adversarial scope tests; retain failed attempts in P004 evidence.
@@ -202,3 +203,189 @@ These decisions authorize implementation, not P004 acceptance. No metadata field
 chart, threshold, or rights label counts as verified until its Ticket criterion has
 test and browser evidence. Parameters and scientific analysis remain locked throughout
 P004 implementation.
+
+## 9. Comparative Baseline: Lemmata LDA v0.1.0
+
+A live desktop and mobile audit of `https://lda.lemmata.app/` on 2026-07-12
+established the sibling tool as a usability floor, not a visual template. The
+[comparative evidence record](../../provenance/evidence/P004/lemmata-live-comparative-audit-2026-07-12.md)
+retains the reproducible test conditions and observed failure/success paths. Delta
+keeps Lemmata's directness while improving the order of scholarly decisions,
+accessibility, error recovery, and reproducibility evidence.
+
+### Patterns to Preserve
+
+- The primary action is immediately visible and the three-step upload, configure,
+  analyse explanation is concise.
+- Advanced controls remain collapsed while common controls use familiar selects,
+  sliders, and reset actions.
+- Results use task-oriented tabs, preprocessing counts, plain-language warnings,
+  interpretation prompts, and downloadable tables.
+- Topic interpretation explicitly distinguishes statistical word clusters from
+  humanistic themes and returns interpretive responsibility to the researcher.
+- Export includes both a complete archive and separately downloadable result files.
+
+### Improvements Required in Delta
+
+- Delta is corpus-first rather than parameter-first. The user documents and reviews
+  the corpus before any scientific parameter is shown.
+- A rights-cleared worked example starts inside the application with one action;
+  the beginner is not sent to a repository to locate fixture files.
+- The default path is the guided editor. The 58-column CSV remains an advanced bulk
+  import/export contract and is never presented as the beginner's starting surface.
+- One experiment stepper and one readiness summary replace duplicate progress panels.
+  Locked future panels do not occupy the primary task surface.
+- Every error states what happened, why it matters, and the exact correction. Public
+  UI never exposes a raw traceback, server path, or dependency internals.
+- Closed mobile navigation is removed from keyboard and accessibility-tree order.
+  Its toggle has a task name such as `Open experiment navigation`, not an icon-font
+  token exposed as the accessible name.
+- Every corpus or result visualization has a programmatically equivalent table and
+  CSV. Tooltips, color, and a raster download are never the only evidence channel.
+- Result presentation follows `health and limitations -> evidence table -> visual ->
+  what this shows -> what this does not show -> FAIR export`, rather than leading
+  with a gallery of plots.
+- The FAIR package later includes resolved configuration, hashes, rights status,
+  warnings and failed cells, limitations, environment, checksums, and rerun guidance;
+  a collection of result CSV files alone is not treated as reproducibility evidence.
+- All repository, citation, issue, and source links are generated from one canonical
+  project identity and tested for HTTP success so stale account paths cannot ship.
+
+### Measurable P004 UX Gates
+
+1. The first uploader begins within the first 700 CSS pixels on `1440x1000` and the
+   first 900 CSS pixels on `390x844` without hiding the method boundary.
+2. The rendered interface contains one experiment navigation component and one
+   readiness summary; no duplicate Experiment Map appears in the main rail.
+3. Guided metadata entry is the visually primary action; CSV import is labelled
+   `Advanced` and remains reachable without being required.
+4. At `390x844`, `360x800`, `320x800`, and 400 percent reflow, closed navigation is
+   not focusable and the document has no horizontal page overflow.
+5. Mobile interactive targets are at least `44x44` CSS pixels. Normal text meets
+   `4.5:1`; focus indicators, control boundaries, and non-text status marks meet
+   `3:1` against adjacent colors.
+6. Computed styles, not only source CSS, verify H1, H2, segmented-control, and focus
+   dimensions. Letter spacing is `0` throughout the workbench.
+7. Rejection moves focus to a live error summary or the affected field and preserves
+   the safe state required by P003. The same test confirms that technical tracebacks
+   and uploaded content are not echoed.
+8. The stepper uses navigation/list semantics and exposes the current stage with
+   `aria-current="step"`; matrices use table semantics rather than generic `div` rows.
+9. Each Review visual is checked against its table and downloadable CSV from the same
+   validated inventory object. Removing color leaves all categories distinguishable.
+10. Automated desktop/mobile checks are followed by a manual Safari and VoiceOver
+    pass covering headings, navigation, upload failure, guided editing, timeline,
+    rights matrix, downloads, and focus restoration.
+
+## 10. Implementation Checkpoint: Guided TXT Flow
+
+The first UI slice passed its automated gate on 2026-07-12. Individual TXT files now
+move from secure Upload to payload-free Describe and Review. The guided editor builds
+the canonical P004 inventory; Review exposes readiness counters, an ordered semantic
+timeline, the rights action matrix, actionable issues, and three documentation
+downloads. Parameters and analysis remain locked.
+
+The browser evidence is retained in
+`../../provenance/evidence/P004/guided-corpus-workflow-validation.md`. The checkpoint
+did not by itself satisfy the full visual baseline. Its remaining visual items are
+addressed separately below rather than retroactively changing that evidence.
+
+## 11. Implementation Checkpoint: Review Projection
+
+The second UI slice passed its local automated gate on 2026-07-12. A pure,
+hash-bound Review projection now produces composition counts and seven
+documentation-completeness states from the exact same canonical inventory and
+validation report used by the rest of Review.
+
+The five composition dimensions count every work exactly once. Unknown,
+not-applicable, missing source mapping, and conflicting source types remain visible
+categories; orphan sources do not inflate a count. The decorative horizontal bars,
+semantic table, and P003-validated CSV share identical row keys.
+
+The completeness matrix presents one row per work and one cell each for identity,
+chronology, edition, source, classification, rights, and normalization. Every cell
+contains a visible Complete, Missing, Warning, or Conflict label, a short
+explanation, and the relevant field paths. The matrix is a documentation overview,
+not a corpus-quality score. Complete rights documentation does not imply permission;
+action permissions remain a separate matrix.
+
+Named table regions are keyboard-focusable and receive a visible outline. The
+fresh-process browser audit confirms visual/table/CSV key parity, exact work-by-seven
+matrix shape, five downloads, six responsive Review viewports, and absence of raw
+payload echo or external hosts. The failed focus run and a manually rejected clipped
+count screenshot are retained alongside the passing evidence:
+`../../provenance/evidence/P004/review-projection-validation.md`.
+
+P004 remains open. Guided ZIP-member documentation, exact-commit/CI verification,
+and human Safari/VoiceOver acceptance are pending rather than represented as
+completed behavior.
+
+## 12. Implementation Checkpoint: Timeline, Correction, and Confirmation
+
+The third UI slice passed its local automated gate on 2026-07-12. The ordered work
+timeline is now a native single-selection control. Selecting a work changes a
+plain-language detail list while the full semantic table remains available. Both
+surfaces use the same hash-bound projection and stable row keys. Unknown dates sort
+after documented dates; multiple edition or source relationships are labelled as
+conflicts rather than collapsed into one apparently authoritative value. The
+control does not encode distance, trajectory, quality, or a scientific result.
+
+Every non-complete metadata field in the completeness matrix can now be selected as
+a correction target. Guided inventories return to the exact work and metadata
+section, with the target field path visible. Guided values are restored from an
+immutable payload-free input record because Streamlit removes widget values while
+their controls are absent from Review. CSV-origin inventories instead name the
+exact `work_id` and source CSV field to edit; Delta does not pretend to edit CSV
+bytes that it deliberately did not retain.
+
+Final confirmation asks the researcher to acknowledge the documented file-to-work
+mappings and rights records. The acknowledgement is bound to the canonical
+inventory SHA-256, disabled when blockers exist, and invalidated by every guided
+rebuild. It is explicitly not a legal determination, a corpus-quality score, or a
+scientific sufficiency claim.
+
+The final fresh-process browser audit verifies timeline selection/table parity,
+keyboard confirmation, four named focusable data regions, five downloads, no page
+overflow across six viewports, no payload echo, no external host, and an unoccluded
+custom header. Manual screenshot inspection caught a mobile header overlap after an
+otherwise passing run; that run, the earlier interaction failure, and the final
+passing run are retained separately. Full verification passed 464 tests and 100%
+of 3,132 statements and 868 branches. Evidence:
+`../../provenance/evidence/P004/timeline-correction-confirmation-validation.md`.
+
+P004 remains open for exact-commit/CI evidence and Oğuz Koran's terminology,
+negative-rights, Safari, and VoiceOver walkthrough.
+
+## 13. Implementation Checkpoint: Guided ZIP Member Catalog
+
+The fourth UI slice passed its local automated gate on 2026-07-12. The strict P003
+ZIP parser already calculated a safe member path, SHA-256, byte size, line count,
+token count, and limit profile for every accepted TXT member. P004 now exposes only
+those content-free values as immutable nested receipt records. It does not reparse
+or extract the ZIP and does not retain archive or member bytes.
+
+Individual TXT receipts and ZIP member receipts project into the same
+`ValidatedCorpusUnit` model. Catalog order and hash do not depend on ZIP member
+order. Parent archive asset IDs, storage names, and archive digests are deliberately
+excluded from the documentation state. Safe nested member paths remain valid in
+the unchanged versioned metadata CSV contract.
+
+Upload shows a named member catalog before Continue. Each member displays its safe
+label, line and token counts, and abbreviated content digest. After Continue, one
+member opens one guided work form. The interface still asks the researcher to
+confirm whether each member represents an independent work, which edition and
+source it represents, and which actions the documented rights permit. Archive
+acceptance itself grants none of those claims.
+
+The final fresh-process browser audit re-runs the individual-TXT workflow and adds
+a two-member ZIP. It verifies two catalog rows, two guided forms, two Review rows,
+visible default-rights blockers, mobile Describe and Review without page overflow,
+no payload echo, no egress, and a clean console. Four failed harness/oracle runs are
+retained separately. Full verification passed 467 tests and 100% of 3,165
+statements and 878 branches. Evidence:
+`../../provenance/evidence/P004/guided-zip-member-catalog-validation.md`.
+
+The local functional P004 implementation is complete. P004 remains open for an
+exact-commit clean-clone and GitHub CI record plus Oğuz Koran's terminology,
+negative-rights, correction, timeline, confirmation, ZIP, Safari, and VoiceOver
+walkthrough.

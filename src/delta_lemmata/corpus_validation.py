@@ -78,6 +78,8 @@ class IssueCode(StrEnum):
     CHRONOLOGY_REQUIRED = "META_CHRONOLOGY_REQUIRED"
     WORK_COUNT_EXPLORATORY = "META_WORK_COUNT_EXPLORATORY"
     CHRONOLOGY_POINTS_EXPLORATORY = "META_CHRONOLOGY_POINTS_EXPLORATORY"
+    STYLE_AUTHOR_SET_MIXED = "META_STYLE_AUTHOR_SET_MIXED"
+    STYLE_LANGUAGE_MIXED = "META_STYLE_LANGUAGE_MIXED"
     DATE_RANGE_REVERSED = "META_DATE_RANGE_REVERSED"
     EDITION_DATE_UNKNOWN = "META_EDITION_DATE_UNKNOWN"
     EDITION_PRECEDES_PUBLICATION = "META_EDITION_PRECEDES_PUBLICATION"
@@ -278,6 +280,16 @@ _GUIDANCE: dict[IssueCode, tuple[str, str, str]] = {
         "The corpus contains fewer than three chronology points.",
         "A smaller temporal spread cannot support the standard workflow label.",
         "Add distinct chronology points or continue as exploratory.",
+    ),
+    IssueCode.STYLE_AUTHOR_SET_MIXED: (
+        "The Style Over Time corpus does not use one consistent author set.",
+        "A changing author set would confound chronology with authorship.",
+        "Use works with the same documented author set or choose another workflow.",
+    ),
+    IssueCode.STYLE_LANGUAGE_MIXED: (
+        "The Style Over Time corpus contains more than one language.",
+        "Language differences can dominate the stylistic distances under study.",
+        "Use one language or document separate language-specific experiments.",
     ),
     IssueCode.DATE_RANGE_REVERSED: (
         "A date range starts after it ends.",
@@ -1014,6 +1026,36 @@ def validate_inventory(
     }
     _validate_orphan_rights(inventory, issues, referenced_rights_ids)
     if inventory.purpose is PurposeId.STYLE_OVER_TIME:
+        author_sets = {
+            tuple(
+                sorted(
+                    contributor.author_id
+                    for contributor in work.contributors
+                    if contributor.role is ContributorRole.AUTHOR
+                )
+            )
+            for work in inventory.works
+        }
+        if len(author_sets) > 1:
+            issues.append(
+                _issue(
+                    IssueCode.STYLE_AUTHOR_SET_MIXED,
+                    IssueSeverity.BLOCKER,
+                    "inventory",
+                    None,
+                    "works.contributors",
+                )
+            )
+        if len({work.language for work in inventory.works}) > 1:
+            issues.append(
+                _issue(
+                    IssueCode.STYLE_LANGUAGE_MIXED,
+                    IssueSeverity.BLOCKER,
+                    "inventory",
+                    None,
+                    "works.language",
+                )
+            )
         if len(works_by_id) < 6:
             issues.append(
                 _issue(

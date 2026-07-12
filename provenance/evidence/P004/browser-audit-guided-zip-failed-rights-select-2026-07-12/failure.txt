@@ -1,0 +1,5 @@
+Result: failed before report serialization.
+Scope: fresh-process P004 individual-TXT regression plus guided two-member ZIP audit.
+Failure: after two guided forms were populated, the harness could not locate the custom Streamlit option for the second collapsed-form rights selectbox.
+Interpretation: redundant browser-harness interaction mismatch; rights selection is already exercised in the retained individual-TXT browser flow and in two-work AppTest coverage.
+Correction: the ZIP browser flow keeps default unknown rights and verifies that the resulting blocker is visible while both members still reach the two-work Review surfaces.

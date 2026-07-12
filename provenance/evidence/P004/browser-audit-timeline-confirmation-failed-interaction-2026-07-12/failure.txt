@@ -1,0 +1,5 @@
+Result: failed before report serialization.
+Scope: fresh-process P004 Playwright audit after timeline and final-confirmation integration.
+Failure: Playwright's native-input check action was intercepted by Streamlit's visible checkbox label.
+Interpretation: harness interaction mismatch, not a product exception or failed validation assertion.
+Correction: the retained final harness uses keyboard focus plus Space, which exercises the accessible checkbox control.

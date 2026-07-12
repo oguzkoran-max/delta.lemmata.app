@@ -1,0 +1,608 @@
+{
+  "schema_version": "1.0.0",
+  "target_url": "http://127.0.0.1:57153",
+  "audit_method": "Tracked Python Playwright harness and fresh local Streamlit process.",
+  "synthetic_inputs_only": true,
+  "fresh_browser_context_per_viewport": true,
+  "audits": [
+    {
+      "target": "desktop-1440x1000",
+      "viewport": {
+        "width": 1440,
+        "height": 1000
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 698.5,
+      "uploader_first_view_pass": true,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Prepare a documented corpus",
+          "fontSize": 32,
+          "box": {
+            "x": 380,
+            "y": 173.796875,
+            "width": 980,
+            "height": 73.75,
+            "top": 173.796875,
+            "right": 1360,
+            "bottom": 247.546875,
+            "left": 380
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 396,
+            "y": 487.109375,
+            "width": 389.578125,
+            "height": 57,
+            "top": 487.109375,
+            "right": 785.578125,
+            "bottom": 544.109375,
+            "left": 396
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 1106.453125,
+            "y": 463.09375,
+            "width": 237.546875,
+            "height": 57,
+            "top": 463.09375,
+            "right": 1344,
+            "bottom": 520.09375,
+            "left": 1106.453125
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/desktop-1440x1000.png"
+    },
+    {
+      "target": "desktop-1280x800",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 698.5,
+      "uploader_first_view_pass": true,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Prepare a documented corpus",
+          "fontSize": 32,
+          "box": {
+            "x": 380,
+            "y": 173.796875,
+            "width": 820,
+            "height": 73.75,
+            "top": 173.796875,
+            "right": 1200,
+            "bottom": 247.546875,
+            "left": 380
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 396,
+            "y": 487.109375,
+            "width": 317.90625,
+            "height": 57,
+            "top": 487.109375,
+            "right": 713.90625,
+            "bottom": 544.109375,
+            "left": 396
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 995.6875,
+            "y": 463.09375,
+            "width": 188.3125,
+            "height": 57,
+            "top": 463.09375,
+            "right": 1184,
+            "bottom": 520.09375,
+            "left": 995.6875
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        44,
+        44,
+        44,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/desktop-1280x800.png"
+    },
+    {
+      "target": "reflow-640x800",
+      "viewport": {
+        "width": 640,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 750.703125,
+      "uploader_first_view_pass": true,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Prepare a documented corpus",
+          "fontSize": 28,
+          "box": {
+            "x": 16,
+            "y": 124.015625,
+            "width": 608,
+            "height": 70.15625,
+            "top": 124.015625,
+            "right": 624,
+            "bottom": 194.171875,
+            "left": 16
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 497.71875,
+            "width": 576,
+            "height": 57,
+            "top": 497.71875,
+            "right": 608,
+            "bottom": 554.71875,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1270.484375,
+            "width": 576,
+            "height": 57,
+            "top": 1270.484375,
+            "right": 608,
+            "bottom": 1327.484375,
+            "left": 32
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/reflow-640x800.png"
+    },
+    {
+      "target": "mobile-390x844",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 829.640625,
+      "uploader_first_view_pass": true,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Prepare a documented corpus",
+          "fontSize": 28,
+          "box": {
+            "x": 16,
+            "y": 124.015625,
+            "width": 358,
+            "height": 104.3125,
+            "top": 124.015625,
+            "right": 374,
+            "bottom": 228.328125,
+            "left": 16
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 554.265625,
+            "width": 326,
+            "height": 57,
+            "top": 554.265625,
+            "right": 358,
+            "bottom": 611.265625,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1385.203125,
+            "width": 326,
+            "height": 57,
+            "top": 1385.203125,
+            "right": 358,
+            "bottom": 1442.203125,
+            "left": 32
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/mobile-390x844.png"
+    },
+    {
+      "target": "mobile-360x800",
+      "viewport": {
+        "width": 360,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 829.640625,
+      "uploader_first_view_pass": true,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Prepare a documented corpus",
+          "fontSize": 28,
+          "box": {
+            "x": 16,
+            "y": 124.015625,
+            "width": 328,
+            "height": 104.3125,
+            "top": 124.015625,
+            "right": 344,
+            "bottom": 228.328125,
+            "left": 16
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 554.265625,
+            "width": 296,
+            "height": 57,
+            "top": 554.265625,
+            "right": 328,
+            "bottom": 611.265625,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1423.984375,
+            "width": 296,
+            "height": 57,
+            "top": 1423.984375,
+            "right": 328,
+            "bottom": 1480.984375,
+            "left": 32
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/mobile-360x800.png"
+    },
+    {
+      "target": "reflow-320x800",
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "horizontal_overflow": false,
+      "main_horizontal_overflow": false,
+      "overflowing_controls": [],
+      "single_stepper_pass": true,
+      "stepper_count": 1,
+      "active_step_count": 1,
+      "uploader_top": 898.53125,
+      "uploader_first_view_pass": true,
+      "mobile_sidebar_focus_pass": true,
+      "mobile_sidebar_control_hidden_pass": true,
+      "visible_sidebar_focusables": 0,
+      "heading_scale_pass": true,
+      "headings": [
+        {
+          "level": 1,
+          "text": "Prepare a documented corpus",
+          "fontSize": 28,
+          "box": {
+            "x": 16,
+            "y": 135.71875,
+            "width": 288,
+            "height": 104.3125,
+            "top": 135.71875,
+            "right": 304,
+            "bottom": 240.03125,
+            "left": 16
+          }
+        },
+        {
+          "level": 2,
+          "text": "Upload the research corpus",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 575.15625,
+            "width": 256,
+            "height": 57,
+            "top": 575.15625,
+            "right": 288,
+            "bottom": 632.15625,
+            "left": 32
+          }
+        },
+        {
+          "level": 2,
+          "text": "Method boundary",
+          "fontSize": 20,
+          "box": {
+            "x": 32,
+            "y": 1515.265625,
+            "width": 256,
+            "height": 57,
+            "top": 1515.265625,
+            "right": 288,
+            "bottom": 1572.265625,
+            "left": 32
+          }
+        }
+      ],
+      "segmented_target_pass": true,
+      "segmented_button_heights": [
+        48,
+        48,
+        48,
+        44,
+        44
+      ],
+      "help_target_pass": true,
+      "help_button_targets": [
+        24,
+        24
+      ],
+      "brand_unoccluded_pass": true,
+      "continue_initially_disabled_pass": true,
+      "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/reflow-320x800.png"
+    }
+  ],
+  "guided_flow": {
+    "keyboard_purpose_selection_pass": true,
+    "continue_enabled_pass": true,
+    "describe_file_inputs_removed_pass": true,
+    "payload_absent_describe_pass": true,
+    "describe_active_step_pass": true,
+    "review_ready_pass": true,
+    "review_active_step_pass": true,
+    "composition_table_pass": true,
+    "composition_layout_pass": true,
+    "completeness_table_pass": true,
+    "timeline_table_pass": true,
+    "timeline_selection_pass": true,
+    "rights_table_pass": true,
+    "composition_key_parity_pass": true,
+    "composition_sum_pass": true,
+    "completeness_shape_pass": true,
+    "completeness_key_parity_pass": true,
+    "completeness_status_pass": true,
+    "scroll_region_semantics_pass": true,
+    "scroll_region_focus_pass": true,
+    "review_csv_payload_absent_pass": true,
+    "download_names_pass": true,
+    "download_buttons_pass": true,
+    "download_button_count": 5,
+    "confirmation_initial_pass": true,
+    "confirmation_recorded_pass": true,
+    "analysis_locked_pass": true,
+    "payload_absent_review_pass": true,
+    "review_viewports_pass": true,
+    "review_viewports": [
+      {
+        "target": "desktop-1440x1000",
+        "viewport": {
+          "width": 1440,
+          "height": 1000
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/review-desktop-1440x1000.png"
+      },
+      {
+        "target": "desktop-1280x800",
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/review-desktop-1280x800.png"
+      },
+      {
+        "target": "reflow-640x800",
+        "viewport": {
+          "width": 640,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/review-reflow-640x800.png"
+      },
+      {
+        "target": "mobile-390x844",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/review-mobile-390x844.png"
+      },
+      {
+        "target": "mobile-360x800",
+        "viewport": {
+          "width": 360,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/review-mobile-360x800.png"
+      },
+      {
+        "target": "reflow-320x800",
+        "viewport": {
+          "width": 320,
+          "height": 800
+        },
+        "horizontal_overflow": false,
+        "main_horizontal_overflow": false,
+        "overflowing_controls": [],
+        "screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/review-reflow-320x800.png"
+      }
+    ],
+    "composition_screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/guided-composition-bars.png",
+    "completeness_screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/guided-completeness-matrix.png",
+    "timeline_screenshot": "provenance/evidence/P004/browser-audit-timeline-confirmation-2026-07-12/screenshots/guided-work-timeline.png"
+  },
+  "console_messages": [],
+  "external_hosts_observed": [],
+  "network_scope": "Browser requests observed by Playwright; not a packet capture.",
+  "retention_scope": "The harness verifies rendered UI and browser-visible state, not proxy, container, operating-system, or host retention.",
+  "result": "passed"
+}

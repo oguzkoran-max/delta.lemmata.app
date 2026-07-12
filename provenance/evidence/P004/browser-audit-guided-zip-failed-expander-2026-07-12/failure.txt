@@ -1,0 +1,5 @@
+Result: failed before report serialization.
+Scope: fresh-process P004 individual-TXT regression plus guided two-member ZIP audit.
+Failure: the harness queried Streamlit's second expander as an ARIA button, but the rendered control uses native details/summary semantics.
+Interpretation: browser-harness locator mismatch after member catalog and mobile Describe checks; not a product exception or failed intake assertion.
+Correction: the retained final harness targets the expander's native summary element.

@@ -1,10 +1,12 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-11
+**Son güncelleme:** 2026-07-12
 
 **Durum:** P003 Secure Ingestion doğrulanarak `main`e alındı; P004 Metadata, Corpus Inventory, and Rights aktif
 
-**Kod:** English-only workbench'te TXT/ZIP/CSV secure intake var; bilimsel hesaplama henüz yok
+**Kod:** English-only workbench'te secure intake, versioned corpus documentation,
+individual TXT ve member-catalog'lu ZIP guided flow, selectable Review timeline,
+correction routing ve hash-bound final confirmation var; bilimsel hesaplama henüz yok
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -243,10 +245,49 @@ kapısını açamaz. Aday `8dd85c1` commitinde 390 test ve %100 statement/branch
 coverage ile geçmiştir; `RUN-20260711-0006` exact-commit yerel kanıtıdır. GitHub CI
 `29172847800` verify, SBOM/audit ve Linux container işlerinde geçmiştir.
 
-1. Rights questionnaire ile exact-confirmed mapping'i guided form'a bağla.
-2. Upload, Describe, Review state akışını uygula.
-3. Bilimsel sonuç gibi görünmeyen erişilebilir corpus-description görsellerini uygula.
-4. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
+Guided individual-TXT Upload -> Describe -> Review akışı 2026-07-12 adayında
+uygulanmıştır. Payload-free catalog, deterministic rights questionnaire, semantic
+timeline, Rights Action Matrix, readiness counters ve üç documentation download
+fresh-process Playwright ile altı viewport'ta; tam kaynak ağacı 418 test ve yüzde 100
+statement/branch coverage ile geçmiştir. P004 acceptance verilmemiştir.
+
+Hash-bound Review projection aynı gün uygulanmıştır. Genre, audience, adaptation,
+collection ve acquisition source type için composition bars; identity, chronology,
+edition, source, classification, rights ve normalization için Metadata Completeness
+Matrix tek immutable projection'dan semantic table ve iki P003-validated CSV üretir.
+Rights completeness permission anlamına gelmez; aggregate quality score yoktur.
+Fresh-process Playwright visual/table/CSV key parity, work x 7 matrix shape, üç
+focusable table region, beş download, altı responsive Review viewport, no external
+host ve no payload echo kapılarını geçti. İlk focus failure ile manuel incelemede
+reddedilen clipped-count screenshot korunmuştur. Tam aday 457 test ve 2.984 statement
+ile 830 branch'in yüzde 100'ünde geçti; P004 acceptance verilmemiştir.
+
+Selectable timeline, correction routing ve final documentation confirmation aynı
+gün tamamlandı. Timeline projection/table row key parity taşır; guided correction
+exact work ve section'a döner; CSV correction tutulmayan source CSV'yi taklit etmez,
+exact `work_id` ve field adını verir. Guided metadata payload-free state ile korunur.
+Final mapping/rights acknowledgement inventory hash'ine bağlıdır, blocker varsa
+disabled ve rebuild ile invalidated olur. Mobil custom header örtüşmesi manuel
+görüntü denetiminde bulunup düzeltildi. Final aday 464 test, 3.132 statement ve 868
+branch'in yüzde 100'ünde; fresh-process Playwright altı viewport, keyboard
+confirmation, dört focusable data region, beş download, no overflow, no egress ve
+no payload echo kapılarında geçti. P004 acceptance verilmemiştir.
+
+Guided ZIP member catalog aynı gün tamamlandı. P003 parser'ın zaten hesapladığı safe
+member label, SHA-256, byte, line, token ve limit-profile özeti immutable,
+payload-free receipt olarak açılır; parser veya limitler değişmez, ZIP yeniden parse
+ya da extract edilmez. Individual TXT ve ZIP member aynı deterministic P004
+catalog'una girer. Upload member catalog'u görünür; iki member iki guided form ve iki
+Review work satırı üretir. Browser payload, archive asset ID, storage name ve archive
+SHA P004 state'ine taşınmaz. Nested safe member path metadata CSV template'ten geçer.
+Final aday 467 test, 3.165 statement ve 878 branch'in yüzde 100'ünde; fresh-process
+Playwright individual-TXT regression + two-member ZIP, mobile no-overflow, visible
+unknown-rights blocker, no payload echo, no egress ve clean console kapılarında
+geçti. P004 acceptance verilmemiştir.
+
+1. Birleşik P004 UI adayını exact-commit clean clone ve GitHub CI ile doğrula.
+2. Oğuz terminology/negative-rights/correction/timeline/confirmation/ZIP, Safari ve VoiceOver walkthrough'unu tamamlasın.
+3. LiberLiber pilot manifestini araştırma verisi değil, hakları izlenebilir test girdisi olarak değerlendir.
 
 ## Anahtar Kullanıcı İfadeleri
 
