@@ -73,7 +73,8 @@
     "26a04e344344c47e297f464c8e4aea53e2adc1b8",
     "54e479d1075f3c73ee4a707090e3c43e10488085",
     "5d95ce4b10fd88ab73bfe26f69a5fbcca293ef43",
-    "374e2d04a3c28029c69b9311fa0f3118f4bedbce"
+    "374e2d04a3c28029c69b9311fa0f3118f4bedbce",
+    "9864db45dd3b9491dfbe514dfc7fb1e1d358f907"
   ],
   "run_ids": [
     "RUN-20260711-0006",
@@ -163,7 +164,8 @@
     "provenance/runs/RUN-20260712-0004.json",
     "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
     "provenance/evidence/P004/exact-family-language-weave-exact-commit.sha256",
-    "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json"
+    "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+    "provenance/evidence/P004/exact-family-language-weave-ci.md"
   ],
   "acceptance": [
     {
@@ -262,7 +264,8 @@
         "provenance/evidence/P004/exact-family-language-weave-validation.md",
         "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
         "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
-        "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json"
+        "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/exact-family-language-weave-ci.md"
       ]
     },
     {
@@ -299,7 +302,8 @@
         "provenance/evidence/P004/exact-family-language-weave-validation.md",
         "provenance/evidence/P004/exact-family-language-weave-attempt-6/browser-audit.json",
         "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
-        "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json"
+        "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
+        "provenance/evidence/P004/exact-family-language-weave-ci.md"
       ]
     }
   ],
@@ -325,7 +329,8 @@
     "Lemmata-family soft palette, beginner Start here sidebar, collapsed technical status, explicit Guided 100/300/500/1000 MFW and fixed-anchor explanation, future bounded Research controls, post-Upload parameter sequencing, computed-style and contrast browser oracles, retained placement/oracle and formatting failures, and unchanged TXT/ZIP flows without fake sliders or scientific results",
     "Exact family-palette implementation commit 54e479d was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 468 tests at full measured coverage plus the complete computed-palette six-viewport individual-TXT and two-member ZIP browser audit",
     "Palette provenance-link commit 5d95ce4 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open",
-    "Exact live-sibling CSS token extraction, LDA-native surface retention, two-row Language Weave teaching figure, non-result signal legend, compact accessible method descriptions, exact teal/purple/amber parameter bands, six retained responsive attempts, full passing screenshot set, strengthened computed-token browser oracles, and exact-commit clean-clone verification; P004 human acceptance remains pending"
+    "Exact live-sibling CSS token extraction, LDA-native surface retention, two-row Language Weave teaching figure, non-result signal legend, compact accessible method descriptions, exact teal/purple/amber parameter bands, six retained responsive attempts, full passing screenshot set, strengthened computed-token browser oracles, and exact-commit clean-clone verification; P004 human acceptance remains pending",
+    "Exact-family provenance-link commit 9864db4 passed GitHub CI run 29204391922 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; only Oğuz Koran human acceptance remains open"
   ],
   "commands": [
     {

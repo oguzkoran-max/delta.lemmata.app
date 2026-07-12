@@ -120,3 +120,7 @@ Exact implementation commit `374e2d0` was subsequently reconstructed in a fresh
 and R environments, passed the same 468-test full gate and six-viewport browser
 audit, and left the clone clean. This establishes exact-commit reproducibility for
 the scoped implementation, not human acceptance or scientific validity.
+
+The additive provenance-link commit `9864db4` then passed GitHub Actions run
+`29204391922`: Linux verification, SBOM/dependency audit, and the canonical amd64
+container build all succeeded. Human acceptance remains open.

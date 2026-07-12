@@ -295,8 +295,9 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Full local gate: 468 test, 3.174 statement, 880 branch, yüzde 100 coverage.
 - Exact commit `374e2d0`, `RUN-20260712-0004` ile fresh no-hardlinks clone'da
   bootstrap, full gate ve browser audit'ten geçti; clone temiz kaldı.
+- Provenance-link commit `9864db4`, GitHub CI run `29204391922` içinde Linux
+  verify, SBOM/dependency audit ve canonical amd64 container işlerinde geçti.
 - Attempts 1-5 machine-readable failure olarak korunuyor; yalnız final attempt
   full screenshot setini taşıyor.
 - Scientific analysis, parameter controls, Safari, VoiceOver ve P004 human
-  acceptance hâlâ açık. Sonraki iş: provenance-link commit, GitHub CI ve Oğuz'un
-  revised walkthrough'u.
+  acceptance hâlâ açık. Sonraki iş: Oğuz'un revised walkthrough'u.

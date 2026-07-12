@@ -380,6 +380,8 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   saklandı. Full gate 468 test ve yüzde 100 statement/branch coverage ile geçti.
 - Exact commit `374e2d0`, `RUN-20260712-0004` içinde fresh no-hardlinks clone'da
   aynı full gate ve browser audit'i geçti; clone temiz kaldı.
+- Provenance-link commit `9864db4`, GitHub CI run `29204391922` içinde Linux
+  verify, SBOM/dependency audit ve canonical amd64 container işlerinde geçti.
 - Ajan raporları 10k bütçeyi aştığı için independent approval değildir.
 - P004 hâlâ Oğuz'un revised human walkthrough ve açık kabul/ret kararı için
   in-progress durumundadır.

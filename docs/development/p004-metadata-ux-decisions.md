@@ -516,3 +516,7 @@ Exact implementation commit `374e2d0` was then restored in a fresh
 `--no-hardlinks` detached clone. `RUN-20260712-0004` passed dependency bootstrap,
 468 tests at full measured coverage, every repository gate, and the complete
 six-viewport browser audit. The clone remained clean; human acceptance stays open.
+
+The additive provenance-link commit `9864db4` passed GitHub CI run `29204391922`
+across Linux verification, SBOM/dependency audit, and the canonical amd64
+container build. Human acceptance remains the only gate for this UI refinement.
