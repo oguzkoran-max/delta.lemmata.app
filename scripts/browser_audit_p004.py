@@ -144,6 +144,9 @@ def _geometry(page: Page) -> dict[str, Any]:
             .filter(visible);
           const parameterItems = [...document.querySelectorAll('.delta-parameter-item')]
             .filter(visible);
+          const traceRegions = [...document.querySelectorAll('figure.delta-style-trace')];
+          const traceRows = [...document.querySelectorAll('.delta-trace-row')];
+          const traceLegendItems = [...document.querySelectorAll('.delta-trace-legend-item')];
           const purposeButtons = [...document.querySelectorAll(
             '.st-key-research_purpose button[role="radio"]'
           )].filter(visible);
@@ -169,6 +172,7 @@ def _geometry(page: Page) -> dict[str, Any]:
           const sidebarTitle = document.querySelector('.delta-sidebar-title');
           const parameterNote = document.querySelector('.delta-parameter-note');
           const parameterCopy = document.querySelector('.delta-parameter-intro p');
+          const rootStyle = getComputedStyle(document.documentElement);
           const appBackground = app ? getComputedStyle(app).backgroundColor : null;
           const sidebarBackground = sidebar ? getComputedStyle(sidebar).backgroundColor : null;
           const entryBackground = entry ? getComputedStyle(entry).backgroundColor : null;
@@ -207,7 +211,31 @@ def _geometry(page: Page) -> dict[str, Any]:
               sidebarBackground,
               entryBackground,
               entryBackgroundImage: entry ? getComputedStyle(entry).backgroundImage : null,
-              parameterBackground
+              parameterBackground,
+              parameterItemBackgrounds: parameterItems.map(
+                element => getComputedStyle(element).backgroundColor
+              )
+            },
+            familyTokens: {
+              teal: rootStyle.getPropertyValue('--delta-teal').trim(),
+              tealDark: rootStyle.getPropertyValue('--delta-teal-dark').trim(),
+              mint: rootStyle.getPropertyValue('--delta-mint').trim(),
+              mintStrong: rootStyle.getPropertyValue('--delta-mint-strong').trim(),
+              mintAccent: rootStyle.getPropertyValue('--delta-mint-accent').trim(),
+              familyCanvas: rootStyle.getPropertyValue('--delta-family-canvas').trim(),
+              ink: rootStyle.getPropertyValue('--delta-ink').trim(),
+              muted: rootStyle.getPropertyValue('--delta-muted').trim(),
+              line: rootStyle.getPropertyValue('--delta-line').trim(),
+              coral: rootStyle.getPropertyValue('--delta-coral').trim(),
+              amber: rootStyle.getPropertyValue('--delta-amber').trim(),
+              blue: rootStyle.getPropertyValue('--delta-blue').trim(),
+              purple: rootStyle.getPropertyValue('--delta-purple').trim()
+            },
+            trace: {
+              regionCount: traceRegions.length,
+              rowCount: traceRows.length,
+              legendItemCount: traceLegendItems.length,
+              oldPatternCount: document.querySelectorAll('.delta-entry-pattern').length
             },
             contrast: {
               entryTitle: entryForeground && entryBackground
@@ -246,7 +274,7 @@ def _audit_viewport(
     mobile = width <= 760
     h1_sizes = [item["fontSize"] for item in geometry["headings"] if item["level"] == 1]
     h2_sizes = [item["fontSize"] for item in geometry["headings"] if item["level"] == 2]
-    expected_h1 = 30 if width <= 340 else (32 if mobile else 40.8)
+    expected_h1 = 28 if width <= 340 else (30 if width <= 370 else (32 if mobile else 40.8))
     heading_scale_pass = (
         len(h1_sizes) == 1
         and abs(h1_sizes[0] - expected_h1) < 0.6
@@ -269,6 +297,14 @@ def _audit_viewport(
         == 1
         and page.get_by_text("Conceptual workflow · not an analysis result", exact=True).count()
         == 1
+        and geometry["trace"]
+        == {
+            "regionCount": 1,
+            "rowCount": 2,
+            "legendItemCount": 4,
+            "oldPatternCount": 0,
+        }
+        and page.get_by_text("Illustration only · no corpus analysed", exact=True).count() == 1
     )
     parameter_orientation_pass = (
         geometry["parameterNoteCount"] == 1
@@ -288,12 +324,34 @@ def _audit_viewport(
     expected_palette = {
         "appBackground": "rgb(248, 249, 250)",
         "sidebarBackground": "rgb(240, 242, 246)",
-        "entryBackground": "rgb(225, 245, 238)",
+        "entryBackground": "rgb(232, 245, 240)",
         "entryBackgroundImage": "none",
-        "parameterBackground": "rgb(240, 250, 246)",
+        "parameterBackground": "rgb(255, 255, 255)",
+        "parameterItemBackgrounds": [
+            "rgb(232, 245, 240)",
+            "rgb(243, 238, 254)",
+            "rgb(253, 246, 227)",
+        ],
     }
-    family_palette_pass = geometry["palette"] == expected_palette and all(
-        value is not None and value >= 4.5 for value in geometry["contrast"].values()
+    expected_family_tokens = {
+        "teal": "#0f6e56",
+        "tealDark": "#0a5443",
+        "mint": "#e8f5f0",
+        "mintStrong": "#c5e8dc",
+        "mintAccent": "#5dcaa5",
+        "familyCanvas": "#f8faf9",
+        "ink": "#1a1a1a",
+        "muted": "#5c5c5c",
+        "line": "#e2e5e4",
+        "coral": "#d85a30",
+        "amber": "#b8860b",
+        "blue": "#185fa5",
+        "purple": "#7c3aed",
+    }
+    family_palette_pass = (
+        geometry["palette"] == expected_palette
+        and geometry["familyTokens"] == expected_family_tokens
+        and all(value is not None and value >= 4.5 for value in geometry["contrast"].values())
     )
     visible_text = page.locator("body").inner_text().lower()
     no_fake_result_pass = all(
@@ -335,7 +393,9 @@ def _audit_viewport(
         "sidebar_guidance_pass": sidebar_guidance_pass,
         "family_palette_pass": family_palette_pass,
         "family_palette": geometry["palette"],
+        "family_tokens": geometry["familyTokens"],
         "family_contrast": geometry["contrast"],
+        "style_trace": geometry["trace"],
         "entry_region_count": geometry["entryRegionCount"],
         "method_step_count": geometry["methodStepCount"],
         "purpose_guide_count": geometry["purposeGuideCount"],

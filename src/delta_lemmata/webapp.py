@@ -333,6 +333,35 @@ def _render_purpose_guidance(purpose: PurposeSpec) -> None:
 
 
 def _render_entry_experience() -> None:
+    trace_rows = tuple(
+        (
+            text(f"setup.trace.row_{row}_label"),
+            tuple(text(f"setup.trace.row_{row}").split()),
+        )
+        for row in ("a", "b")
+    )
+    trace_markup = "".join(
+        '<div class="delta-trace-row">'
+        f'<span class="delta-trace-row-label">{_html(label)}</span>'
+        '<span class="delta-trace-tokens">'
+        + "".join(
+            f'<span class="delta-trace-token delta-trace-tone-{index % 4}">{_html(token)}</span>'
+            for index, token in enumerate(tokens)
+        )
+        + "</span></div>"
+        for label, tokens in trace_rows
+    )
+    trace_legend = "".join(
+        '<li class="delta-trace-legend-item '
+        f'delta-trace-legend-{tone}"><span aria-hidden="true"></span>'
+        f"{_html(text(label_key))}</li>"
+        for tone, label_key in (
+            ("teal", "setup.trace.common_words"),
+            ("blue", "setup.trace.punctuation"),
+            ("amber", "setup.trace.rhythm"),
+            ("purple", "setup.trace.vocabulary"),
+        )
+    )
     method_steps = (
         ("01", "setup.method.observe.title", "setup.method.observe.body"),
         ("02", "setup.method.compare.title", "setup.method.compare.body"),
@@ -350,15 +379,25 @@ def _render_entry_experience() -> None:
     st.markdown(
         f"""
         <section class="delta-entry" aria-labelledby="delta-entry-title">
-          <div class="delta-entry-pattern" aria-hidden="true">
-            {_html(text("setup.pattern_tokens"))}
-          </div>
           <div class="delta-entry-copy">
             <div class="delta-entry-eyebrow">{_html(text("setup.eyebrow"))}</div>
             <h1 id="delta-entry-title">{_html(text("setup.title"))}</h1>
             <p class="delta-entry-lede">{_html(text("setup.intro"))}</p>
             <p class="delta-entry-scope">{_html(text("setup.corpus_scope"))}</p>
           </div>
+          <figure class="delta-style-trace" aria-labelledby="delta-trace-title">
+            <figcaption>
+              <span class="delta-trace-kicker">{_html(text("setup.trace.kicker"))}</span>
+              <strong id="delta-trace-title">{_html(text("setup.trace.title"))}</strong>
+              <span>{_html(text("setup.trace.body"))}</span>
+              <small>{_html(text("setup.trace.caption"))}</small>
+            </figcaption>
+            <div class="delta-trace-samples" aria-hidden="true">{trace_markup}</div>
+            <div class="delta-trace-key">
+              <span>{_html(text("setup.trace.legend"))}</span>
+              <ul>{trace_legend}</ul>
+            </div>
+          </figure>
           <figure class="delta-method" aria-labelledby="delta-method-title">
             <figcaption id="delta-method-title">
               <strong>{_html(text("setup.method_label"))}</strong>

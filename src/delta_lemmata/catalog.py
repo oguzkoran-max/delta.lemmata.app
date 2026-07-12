@@ -15,7 +15,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "meta.page_title": "Delta · Stylometry workbench",
     "brand.mark": "Δ",
     "brand.name": "Delta",
-    "brand.subtitle": "Stylometry workbench",
+    "brand.subtitle": "A Lemmata stylometry workbench",
     "header.stage": "Secure intake",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
@@ -47,25 +47,37 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
     "build.engine_value": "Not connected",
-    "setup.eyebrow": "STYLOMETRY, WITHOUT THE CODE",
+    "setup.eyebrow": "COMPARE HOW TEXTS ARE WRITTEN",
     "setup.title": "Discover patterns in writing style.",
     "setup.intro": (
-        "Stylometry compares measurable patterns in language use across texts, "
-        "including how often common words recur. Delta helps you compare texts, "
-        "examine documented groups, and trace change over time without writing R or Python."
+        "Stylometry compares measurable patterns in language use across texts, such as "
+        "how often common words recur. Delta compares texts, groups, and change over time "
+        "without writing R or Python."
     ),
     "setup.corpus_scope": (
-        "Every comparison is relative to the corpus you provide. Delta documents "
-        "the texts before it exposes any method settings."
+        "Every comparison is relative to your corpus. Delta documents the texts before "
+        "method settings appear."
     ),
-    "setup.pattern_tokens": "and · the · but · yet · of · with",
+    "setup.trace.kicker": "WHAT STYLOMETRY NOTICES",
+    "setup.trace.title": "Small choices become visible when they repeat.",
+    "setup.trace.body": ("Delta compares patterns across documented texts, not isolated words."),
+    "setup.trace.caption": "Illustration only · no corpus analysed",
+    "setup.trace.row_a_label": "Illustrative text A",
+    "setup.trace.row_a": "the and of but with",
+    "setup.trace.row_b_label": "Illustrative text B",
+    "setup.trace.row_b": "and the with yet of",
+    "setup.trace.legend": "Signals that can be compared",
+    "setup.trace.common_words": "Common words",
+    "setup.trace.punctuation": "Punctuation",
+    "setup.trace.rhythm": "Sentence rhythm",
+    "setup.trace.vocabulary": "Vocabulary",
     "setup.method_label": "How stylometry works",
     "setup.method.observe.title": "Observe",
-    "setup.method.observe.body": "Common words and recurring patterns",
+    "setup.method.observe.body": "Recurring language features",
     "setup.method.compare.title": "Compare",
-    "setup.method.compare.body": "Patterns across documented texts",
+    "setup.method.compare.body": "Across documented texts",
     "setup.method.interpret.title": "Interpret",
-    "setup.method.interpret.body": "With dates, editions, genre, source, and rights",
+    "setup.method.interpret.body": "With context and limits",
     "setup.method.caption": "Conceptual workflow · not an analysis result",
     "parameters.orientation_title": "How parameters will work",
     "parameters.orientation_body": (

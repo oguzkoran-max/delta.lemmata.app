@@ -364,3 +364,20 @@ SBOM/audit ve canonical Linux amd64 container işlerinde geçti.
 ## Hafıza Güncelleme Kuralı
 
 Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sıkıştırması uyarısına kadar beklenmez. Durum ve sıradaki tek iş SESSION_HANDOFF.md içinde güncellenir. Kritik dönüm noktası oluşursa memory/checkpoints/ altında tarihli özet açılır.
+
+## P004 Exact Palette ve Language Weave (2026-07-12)
+
+- `lemmata.app` ve `lda.lemmata.app` renkleri ekran görüntüsünden tahmin edilmedi;
+  live CSS custom properties ve computed styles içinden birebir çıkarıldı.
+- Ana Lemmata tokenları `#0f6e56`, `#0a5443`, `#e8f5f0`, `#c5e8dc`,
+  `#5dcaa5`, `#f8faf9`, `#1a1a1a`, `#5c5c5c`, `#e2e5e4` ve exact
+  coral/amber/blue/purple accent çiftleridir. LDA canvas/sidebar/control değerleri
+  `#f8f9fa`, `#f0f2f6`, `#31333f` olarak korunur.
+- Girişte Language Weave iki illustrative text row ile common words, punctuation,
+  sentence rhythm ve vocabulary sinyallerini açıklar; sayı, axis, cluster,
+  distance veya authorship sonucu üretmez.
+- Attempt 1-5 fail JSON olarak, attempt 6 tam screenshot setiyle pass olarak
+  saklandı. Full gate 468 test ve yüzde 100 statement/branch coverage ile geçti.
+- Ajan raporları 10k bütçeyi aştığı için independent approval değildir.
+- P004 hâlâ Oğuz'un revised human walkthrough ve açık kabul/ret kararı için
+  in-progress durumundadır.

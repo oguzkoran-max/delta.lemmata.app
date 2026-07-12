@@ -284,3 +284,17 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
   wiki'si yeni kanonik yola işaret eder.
 - Repository taşıması P003 acceptance kanıtı değildir; P003'ün ayrı insan kabulü
   `HD-20260711-0008` ve `RUN-20260711-0004` ile tamamlanmıştır.
+
+## Aktif P004 Tasarım Checkpoint (2026-07-12)
+
+- Exact sibling palette ve Language Weave implementation localde tamamlandı.
+- Passing browser evidence:
+  `provenance/evidence/P004/exact-family-language-weave-attempt-6/`.
+- Validation report:
+  `provenance/evidence/P004/exact-family-language-weave-validation.md`.
+- Full local gate: 468 test, 3.174 statement, 880 branch, yüzde 100 coverage.
+- Attempts 1-5 machine-readable failure olarak korunuyor; yalnız final attempt
+  full screenshot setini taşıyor.
+- Scientific analysis, parameter controls, Safari, VoiceOver ve P004 human
+  acceptance hâlâ açık. Sonraki iş: exact implementation commit, clean-clone Run,
+  GitHub CI ve Oğuz'un revised walkthrough'u.

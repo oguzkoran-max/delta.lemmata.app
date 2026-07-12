@@ -3,21 +3,31 @@
 APP_CSS = """
 <style>
 :root {
-  --delta-ink: #31333f;
-  --delta-muted: #5f6b66;
-  --delta-line: #6f8f84;
-  --delta-soft-line: #cbd8d3;
+  --delta-ink: #1a1a1a;
+  --delta-control-ink: #31333f;
+  --delta-muted: #5c5c5c;
+  --delta-tertiary: #888888;
+  --delta-line: #e2e5e4;
+  --delta-soft-line: #eef0ef;
   --delta-canvas: #f8f9fa;
+  --delta-family-canvas: #f8faf9;
   --delta-paper: #ffffff;
   --delta-sidebar: #f0f2f6;
-  --delta-mint: #e1f5ee;
-  --delta-mint-soft: #f0faf6;
+  --delta-mint: #e8f5f0;
+  --delta-mint-strong: #c5e8dc;
+  --delta-mint-accent: #5dcaa5;
+  --delta-mint-soft: #f8faf9;
   --delta-focus: #0f6e56;
-  --delta-coral: #a94f3d;
-  --delta-sky: #4f7f8c;
-  /* The primary and neutral surfaces mirror the Lemmata product family. Teal
-     carries actions, coral marks boundaries, and sky separates explanations. */
   --delta-teal: #0f6e56;
+  --delta-teal-dark: #0a5443;
+  --delta-coral: #d85a30;
+  --delta-coral-soft: #fef0eb;
+  --delta-amber: #b8860b;
+  --delta-amber-soft: #fdf6e3;
+  --delta-blue: #185fa5;
+  --delta-blue-soft: #e8f0fa;
+  --delta-purple: #7c3aed;
+  --delta-purple-soft: #f3eefe;
 }
 
 [data-testid="stAppViewContainer"] {
@@ -201,33 +211,17 @@ footer,
 
 .delta-entry {
   position: relative;
-  min-height: 286px;
   overflow: hidden;
   margin: 0 0 1rem;
-  padding: 1.7rem 2rem 1.1rem;
-  border: 1px solid var(--delta-soft-line);
-  border-radius: 8px;
+  padding: 1.4rem 2rem 0.75rem;
+  border-top: 1px solid var(--delta-mint-strong);
+  border-bottom: 1px solid var(--delta-mint-strong);
   background: var(--delta-mint);
   color: var(--delta-ink);
 }
 
-.delta-entry-pattern {
-  position: absolute;
-  top: 1.2rem;
-  right: 1.5rem;
-  width: 42%;
-  color: var(--delta-teal);
-  font-family: ui-serif, Charter, "Iowan Old Style", Georgia, serif;
-  font-size: 1.35rem;
-  line-height: 2.2;
-  opacity: 0.12;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
 .delta-entry-copy {
   position: relative;
-  z-index: 1;
   max-width: 760px;
 }
 
@@ -243,9 +237,9 @@ footer,
   max-width: 700px;
   margin: 0;
   color: #1a1a1a;
-  font-family: ui-serif, Charter, "Iowan Old Style", Georgia, serif;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 2.55rem !important;
-  font-weight: 650;
+  font-weight: 720;
   line-height: 1.08 !important;
 }
 
@@ -265,6 +259,161 @@ footer,
   line-height: 1.45;
 }
 
+.delta-style-trace {
+  display: grid;
+  grid-template-columns: minmax(180px, 0.55fr) minmax(0, 1.45fr);
+  gap: 0.5rem 1.2rem;
+  align-items: center;
+  margin: 0.8rem 0 0;
+  padding: 0.7rem 0;
+  border-top: 1px solid var(--delta-mint-strong);
+  border-bottom: 1px solid var(--delta-mint-strong);
+}
+
+.delta-style-trace figcaption {
+  display: flex;
+  grid-column: 1;
+  grid-row: 1;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.18rem;
+  margin: 0;
+}
+
+.delta-trace-kicker {
+  color: var(--delta-teal-dark);
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.delta-style-trace figcaption strong {
+  color: var(--delta-ink);
+  font-size: 0.92rem;
+  line-height: 1.25;
+}
+
+.delta-style-trace figcaption > span:not(.delta-trace-kicker) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.delta-style-trace figcaption small {
+  color: var(--delta-tertiary);
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+
+.delta-trace-samples {
+  display: grid;
+  grid-column: 2;
+  grid-row: 1;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.delta-trace-row {
+  display: grid;
+  grid-template-columns: 92px minmax(0, 1fr);
+  gap: 0.55rem;
+  align-items: end;
+}
+
+.delta-trace-row-label {
+  color: var(--delta-muted);
+  font-size: 0.66rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.delta-trace-tokens {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.28rem;
+  min-width: 0;
+}
+
+.delta-trace-token {
+  min-width: 0;
+  padding: 0.15rem 0 0.2rem;
+  border-bottom: 3px solid var(--delta-teal);
+  color: var(--delta-ink);
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.delta-trace-tone-1 {
+  border-bottom-color: var(--delta-blue);
+}
+
+.delta-trace-tone-2 {
+  border-bottom-color: var(--delta-amber);
+}
+
+.delta-trace-tone-3 {
+  border-bottom-color: var(--delta-purple);
+}
+
+.delta-trace-key {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  gap: 0.7rem;
+  align-items: center;
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+}
+
+.delta-trace-key > span {
+  display: block;
+  margin-bottom: 0;
+  color: var(--delta-muted);
+  font-size: 0.66rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.delta-trace-key ul {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.35rem 0.65rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.delta-trace-legend-item {
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr);
+  gap: 0.38rem;
+  align-items: center;
+  min-width: 0;
+  color: var(--delta-ink);
+  font-size: 0.7rem;
+}
+
+.delta-trace-legend-item > span {
+  width: 9px;
+  height: 9px;
+  background: var(--delta-teal);
+}
+
+.delta-trace-legend-blue > span {
+  background: var(--delta-blue);
+}
+
+.delta-trace-legend-amber > span {
+  background: var(--delta-amber);
+}
+
+.delta-trace-legend-purple > span {
+  background: var(--delta-purple);
+}
+
 .delta-method {
   position: relative;
   z-index: 1;
@@ -272,8 +421,8 @@ footer,
   grid-template-columns: minmax(150px, 0.55fr) minmax(0, 2fr);
   gap: 1rem;
   align-items: start;
-  margin: 1.15rem 0 0;
-  padding-top: 0.85rem;
+  margin: 0.45rem 0 0;
+  padding-top: 0.4rem;
   border-top: 1px solid var(--delta-soft-line);
 }
 
@@ -308,13 +457,31 @@ footer,
   grid-template-columns: 24px minmax(0, 1fr);
   gap: 0.5rem;
   min-width: 0;
+  padding-top: 0.3rem;
+  border-top: 3px solid var(--delta-teal);
 }
 
 .delta-method-number {
-  color: var(--delta-coral);
+  color: var(--delta-teal-dark);
   font-size: 0.72rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
+}
+
+.delta-method-step:nth-child(2) {
+  border-top-color: var(--delta-blue);
+}
+
+.delta-method-step:nth-child(2) .delta-method-number {
+  color: var(--delta-blue);
+}
+
+.delta-method-step:nth-child(3) {
+  border-top-color: var(--delta-coral);
+}
+
+.delta-method-step:nth-child(3) .delta-method-number {
+  color: var(--delta-coral);
 }
 
 .delta-method-copy {
@@ -330,15 +497,18 @@ footer,
 }
 
 .delta-method-copy small {
-  color: var(--delta-muted);
-  font-size: 0.7rem;
-  line-height: 1.35;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 .delta-purpose-guide {
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
-  margin: 0.65rem 0 0.9rem;
+  margin: 0.45rem 0 0.55rem;
   border-top: 1px solid var(--delta-soft-line);
   border-bottom: 1px solid var(--delta-soft-line);
   background: var(--delta-paper);
@@ -346,7 +516,7 @@ footer,
 
 .delta-purpose-guide-item {
   min-width: 0;
-  padding: 0.75rem 0.9rem;
+  padding: 0.6rem 0.8rem;
   border-right: 1px solid var(--delta-soft-line);
 }
 
@@ -358,15 +528,15 @@ footer,
   display: block;
   margin-bottom: 0.2rem;
   color: var(--delta-muted);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 750;
 }
 
 .delta-purpose-guide-item p {
   margin: 0;
   color: var(--delta-ink);
-  font-size: 0.88rem;
-  line-height: 1.42;
+  font-size: 0.82rem;
+  line-height: 1.32;
 }
 
 .delta-purpose-guide-question {
@@ -374,7 +544,7 @@ footer,
 }
 
 .delta-purpose-guide-use {
-  border-top: 3px solid var(--delta-sky);
+  border-top: 3px solid var(--delta-blue);
 }
 
 .delta-purpose-guide-boundary {
@@ -384,17 +554,20 @@ footer,
 .delta-parameter-note {
   display: block;
   margin: 0 0 0.8rem;
-  padding: 0.85rem 0.95rem;
-  border-left: 3px solid var(--delta-teal);
-  background: var(--delta-mint-soft);
+  padding: 0;
+  border-top: 1px solid var(--delta-line);
+  border-bottom: 1px solid var(--delta-line);
+  background: var(--delta-paper);
 }
 
 .delta-parameter-intro {
   display: grid;
   grid-template-columns: minmax(190px, 0.55fr) minmax(0, 1.45fr);
   gap: 1rem;
-  padding-bottom: 0.75rem;
+  padding: 0.85rem 0.95rem;
+  border-left: 3px solid var(--delta-teal);
   border-bottom: 1px solid var(--delta-soft-line);
+  background: var(--delta-family-canvas);
 }
 
 .delta-parameter-intro strong,
@@ -419,18 +592,37 @@ footer,
 
 .delta-parameter-item {
   min-width: 0;
-  padding: 0.75rem 0.85rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-top: 3px solid var(--delta-teal);
+  background: var(--delta-mint);
 }
 
 .delta-parameter-item + .delta-parameter-item {
-  padding-left: 0.85rem;
-  border-left: 1px solid var(--delta-soft-line);
+  border-left: 1px solid var(--delta-paper);
+}
+
+.delta-parameter-item:nth-child(2) {
+  border-top-color: var(--delta-purple);
+  background: var(--delta-purple-soft);
+}
+
+.delta-parameter-item:nth-child(3) {
+  border-top-color: var(--delta-amber);
+  background: var(--delta-amber-soft);
 }
 
 .delta-parameter-item strong {
   display: block;
   margin-bottom: 0.25rem;
   color: var(--delta-teal);
+}
+
+.delta-parameter-item:nth-child(2) strong {
+  color: var(--delta-purple);
+}
+
+.delta-parameter-item:nth-child(3) strong {
+  color: var(--delta-amber);
 }
 
 .delta-field-label {
@@ -476,7 +668,7 @@ footer,
   grid-template-columns: 28px 1fr auto;
   gap: 0.65rem;
   align-items: center;
-  min-height: 44px;
+  min-height: 36px;
   padding: 0 0.75rem;
   border-right: 1px solid var(--delta-line);
 }
@@ -987,12 +1179,8 @@ div[data-testid="stMainBlockContainer"] h3 {
     padding: 1.25rem 1rem 0.9rem;
   }
 
-  .delta-entry-pattern {
-    display: none;
-  }
-
   .delta-entry h1 {
-    max-width: 310px;
+    max-width: 100%;
     font-size: 2rem !important;
     line-height: 1.12 !important;
   }
@@ -1006,37 +1194,27 @@ div[data-testid="stMainBlockContainer"] h3 {
     font-size: 0.8rem;
   }
 
-  .delta-method {
-    grid-template-columns: 1fr;
-    gap: 0.55rem;
-    margin-top: 0.8rem;
-    padding-top: 0.65rem;
+  .delta-style-trace {
+    gap: 0.45rem 0.9rem;
+    margin-top: 0.65rem;
+    padding: 0.6rem 0;
   }
 
-  .delta-method figcaption {
-    flex-flow: row wrap;
+  .delta-trace-row {
+    grid-template-columns: 72px minmax(0, 1fr);
     gap: 0.35rem;
   }
 
-  .delta-method ol {
-    grid-template-columns: 1fr;
-    gap: 0.4rem;
+  .delta-trace-row-label,
+  .delta-trace-token,
+  .delta-trace-key > span,
+  .delta-trace-legend-item {
+    font-size: 0.62rem;
   }
 
-  .delta-method-step {
-    grid-template-columns: 22px minmax(0, 1fr);
-    gap: 0.4rem;
-    align-items: start;
-  }
-
-  .delta-method-copy {
-    display: grid;
-    grid-template-columns: 72px minmax(0, 1fr);
-    gap: 0.45rem;
-  }
-
-  .delta-method-copy small {
-    font-size: 0.7rem;
+  .delta-trace-key ul {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
   }
 
   .delta-purpose-guide {
@@ -1064,13 +1242,13 @@ div[data-testid="stMainBlockContainer"] h3 {
 
   .delta-parameter-item,
   .delta-parameter-item + .delta-parameter-item {
-    padding: 0.65rem 0 0;
+    padding: 0.7rem 0.75rem;
     border-left: 0;
   }
 
   .delta-parameter-item + .delta-parameter-item {
-    margin-top: 0.65rem;
-    border-top: 1px solid var(--delta-soft-line);
+    margin-top: 0;
+    border-top-width: 3px;
   }
 
   .delta-build {
@@ -1193,6 +1371,169 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 }
 
+@media (max-width: 480px) {
+  .delta-entry {
+    padding: 1.1rem 1rem 0.75rem;
+  }
+
+  .delta-entry-eyebrow {
+    margin-bottom: 0.3rem;
+    font-size: 0.7rem;
+  }
+
+  .delta-entry-lede {
+    margin-top: 0.55rem;
+  }
+
+  .delta-entry-scope {
+    margin-top: 0.25rem;
+  }
+
+  .delta-style-trace {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+    margin-top: 0.6rem;
+    padding: 0.55rem 0;
+  }
+
+  .delta-style-trace figcaption {
+    grid-column: 1;
+    grid-row: auto;
+    gap: 0.12rem;
+  }
+
+  .delta-trace-samples,
+  .delta-trace-key {
+    grid-column: 1;
+    grid-row: auto;
+  }
+
+  .delta-style-trace figcaption > span:not(.delta-trace-kicker) {
+    display: none;
+  }
+
+  .delta-trace-row:nth-child(n + 2) {
+    display: none;
+  }
+
+  .delta-trace-key {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .delta-trace-key ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem 0.6rem;
+  }
+
+  .delta-method {
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+    margin-top: 0.5rem;
+    padding-top: 0.45rem;
+  }
+
+  .delta-method figcaption {
+    flex-flow: row wrap;
+    gap: 0.35rem;
+  }
+
+  .delta-method ol {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .delta-method-step {
+    grid-template-columns: 18px minmax(0, 1fr);
+    gap: 0.25rem;
+    padding-top: 0.25rem;
+  }
+
+  .delta-method-copy {
+    display: block;
+  }
+
+  .delta-method-copy small {
+    display: none;
+  }
+}
+
+@media (max-width: 370px) {
+  .delta-header {
+    min-height: 54px;
+    padding-bottom: 0.45rem;
+  }
+
+  .delta-brand-subtitle {
+    display: none;
+  }
+
+  .delta-build {
+    max-width: none;
+  }
+
+  .delta-build-status {
+    font-size: 0.68rem;
+    white-space: nowrap;
+  }
+
+  .delta-entry {
+    padding-top: 0.9rem;
+    padding-bottom: 0.55rem;
+  }
+
+  .delta-entry h1 {
+    font-size: 1.875rem !important;
+  }
+
+  .delta-entry-lede {
+    font-size: 0.875rem;
+    line-height: 1.36;
+  }
+
+  .delta-entry-scope {
+    font-size: 0.76rem;
+    line-height: 1.34;
+  }
+
+  .delta-style-trace figcaption small,
+  .delta-method figcaption span {
+    display: none;
+  }
+
+  .delta-trace-key ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.2rem 0.5rem;
+  }
+
+  .delta-trace-legend-item {
+    grid-template-columns: 7px minmax(0, 1fr);
+    gap: 0.2rem;
+    font-size: 0.56rem;
+    line-height: 1.2;
+  }
+
+  .delta-trace-legend-item > span {
+    width: 7px;
+    height: 7px;
+  }
+
+  .delta-method {
+    margin-top: 0.35rem;
+    padding-top: 0.3rem;
+  }
+
+  .delta-method figcaption strong,
+  .delta-method-copy strong {
+    font-size: 0.7rem;
+  }
+
+  .delta-method-step {
+    padding-top: 0.15rem;
+    border-top-width: 2px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
@@ -1211,11 +1552,12 @@ div[data-testid="stMainBlockContainer"] h3 {
 
   .delta-entry {
     margin-bottom: 0.65rem;
-    padding: 1rem 0.9rem 0.75rem;
+    padding: 0.8rem 0.9rem 0.65rem;
   }
 
   .delta-entry h1 {
-    font-size: 1.875rem !important;
+    font-size: 1.75rem !important;
+    line-height: 1.08 !important;
   }
 
   .delta-entry-lede {
@@ -1224,12 +1566,30 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-scope {
-    font-size: 0.78rem;
-    line-height: 1.4;
+    font-size: 0.72rem;
+    line-height: 1.3;
+  }
+
+  .delta-trace-row {
+    grid-template-columns: 64px minmax(0, 1fr);
   }
 
   .delta-method {
-    margin-top: 0.65rem;
+    margin-top: 0.25rem;
+  }
+
+  .delta-method-step {
+    display: block;
+    text-align: center;
+  }
+
+  .delta-method-number {
+    display: block;
+    margin-bottom: 0.1rem;
+  }
+
+  .delta-method-copy strong {
+    font-size: 0.62rem;
   }
 
   .delta-map {

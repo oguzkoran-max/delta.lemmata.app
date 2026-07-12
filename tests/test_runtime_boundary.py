@@ -38,7 +38,7 @@ def test_streamlit_theme_uses_the_lemmata_product_family_palette() -> None:
     assert theme["secondaryBackgroundColor"] == "#f0f2f6"
     assert theme["textColor"] == "#31333f"
     assert theme["linkColor"] == "#0f6e56"
-    assert theme["borderColor"] == "#6f8f84"
+    assert theme["borderColor"] == "#e2e5e4"
 
 
 def test_application_source_declares_no_remote_endpoint() -> None:

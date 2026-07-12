@@ -483,3 +483,31 @@ and human acceptance remain separate gates. The additive provenance commit
 `5d95ce4` then passed GitHub CI run `29201459098` across Linux verification,
 SBOM/dependency audit, and the canonical amd64 container build. Human acceptance
 remains open.
+
+## 17. Exact Family Palette and Language Weave
+
+The earlier soft-family checkpoint used visually related but partly approximate
+colors. The 2026-07-12 refinement instead read CSS custom properties and computed
+styles from the live sibling products. Delta now uses the exact Lemmata teal,
+mint, text, border, coral, amber, blue, and purple tokens, while preserving the
+exact LDA Streamlit canvas, sidebar, control text, and primary action colors.
+
+The faint decorative function-word string was replaced by a Language Weave. Two
+explicitly illustrative rows show recurring common words without counts, axes,
+distance, clustering, or authorship implication. A text-labelled key distinguishes
+common words, punctuation, sentence rhythm, and vocabulary. The figure explicitly
+says no corpus has been analysed, and the longer method descriptions remain
+available to assistive technology even when visually compacted.
+
+Five responsive candidates are retained as machine-readable failures. The sixth
+passed six Upload and Review viewports, exact computed token checks, contrast,
+first-action and continuation geometry, keyboard and no-overflow checks, unchanged
+TXT/ZIP workflows, payload absence, no egress, and a clean console. The complete
+screenshot set is retained only for the passing candidate to limit binary
+repository growth. Full verification passed 468 tests with 100% of 3,174
+statements and 880 branches. Evidence:
+`../../provenance/evidence/P004/exact-family-language-weave-validation.md`.
+
+This checkpoint supersedes the current UI token mapping in section 16 without
+rewriting its historical evidence. It does not establish general usability,
+Safari or VoiceOver conformance, scientific validity, or P004 human acceptance.

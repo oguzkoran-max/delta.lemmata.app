@@ -59,8 +59,15 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert rendered.count('<h1 id="delta-entry-title">') == 1
     assert "Discover patterns in writing style." in rendered
     assert "Stylometry compares measurable patterns in language use across texts" in rendered
-    assert "including how often common words recur" in rendered
+    assert "such as how often common words recur" in rendered
     assert "without writing R or Python" in rendered
+    assert "WHAT STYLOMETRY NOTICES" in rendered
+    assert "Small choices become visible when they repeat." in rendered
+    assert "Delta compares patterns across documented texts, not isolated words." in rendered
+    assert "Illustration only · no corpus analysed" in rendered
+    assert rendered.count('class="delta-trace-row"') == 2
+    assert rendered.count('<li class="delta-trace-legend-item ') == 4
+    assert "delta-entry-pattern" not in rendered
     assert "How stylometry works" in rendered
     assert all(label in rendered for label in ("Observe", "Compare", "Interpret"))
     assert "Conceptual workflow · not an analysis result" in rendered
