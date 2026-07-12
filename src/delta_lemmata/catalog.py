@@ -39,44 +39,59 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
     "build.engine_value": "Not connected",
-    "setup.eyebrow": "RESEARCH SETUP",
-    "setup.title": "Prepare a documented corpus",
+    "setup.eyebrow": "STYLOMETRY, WITHOUT THE CODE",
+    "setup.title": "Discover patterns in writing style.",
     "setup.intro": (
-        "Choose the question, then add the texts. Delta documents what every file "
-        "represents before any stylometric parameter becomes available."
+        "Stylometry compares measurable patterns in language use across texts, "
+        "including how often common words recur. Delta helps you compare texts, "
+        "examine documented groups, and trace change over time without writing R or Python."
     ),
-    "purpose.guidance": "Why this workflow, and where does interpretation stop?",
-    "purpose.label": "Research purpose",
+    "setup.corpus_scope": (
+        "Every comparison is relative to the corpus you provide. Delta documents "
+        "the texts before it exposes any method settings."
+    ),
+    "setup.pattern_tokens": "and · the · but · yet · of · with",
+    "setup.method_label": "How stylometry works",
+    "setup.method.observe.title": "Observe",
+    "setup.method.observe.body": "Common words and recurring patterns",
+    "setup.method.compare.title": "Compare",
+    "setup.method.compare.body": "Patterns across documented texts",
+    "setup.method.interpret.title": "Interpret",
+    "setup.method.interpret.body": "With dates, editions, genre, source, and rights",
+    "setup.method.caption": "Conceptual workflow · not an analysis result",
+    "purpose.guidance": "Understand this research path",
+    "purpose.label": "What do you want to investigate?",
     "purpose.badge": "Selected purpose",
-    "purpose.question_label": "Working question",
-    "purpose.use_label": "Use this when",
-    "purpose.boundary_label": "Interpretive boundary",
-    "purpose.text_proximity.label": "Text Proximity",
+    "purpose.question_label": "Question",
+    "purpose.use_label": "Why use it",
+    "purpose.boundary_label": "Do not conclude",
+    "purpose.text_proximity.label": "Compare Texts",
     "purpose.text_proximity.question": (
-        "Which known texts are stylistically nearest to a focal text?"
+        "Which texts show more similar recurring language patterns within this corpus?"
     ),
-    "purpose.text_proximity.use": "You have one focal text and a documented comparison corpus.",
+    "purpose.text_proximity.use": (
+        "Explore relative similarity or place one focal text beside documented comparison texts."
+    ),
     "purpose.text_proximity.boundary": (
-        "Proximity is not proof of authorship and does not implement open-set rejection."
+        "Nearer does not mean the same author, influence, intention, or authenticity."
     ),
-    "purpose.group_comparison.label": "Group Comparison",
+    "purpose.group_comparison.label": "Compare Groups",
     "purpose.group_comparison.question": (
-        "How does stylistic structure differ across labelled groups of works?"
+        "Do documented groups show different recurring stylistic patterns?"
     ),
     "purpose.group_comparison.use": (
-        "You need to compare groups defined by author, genre, period, audience, or "
-        "another recorded category."
+        "Compare works grouped by author, genre, period, audience, or another recorded category."
     ),
     "purpose.group_comparison.boundary": (
         "Observed separation may reflect corpus balance, genre, period, source, or edition effects."
     ),
-    "purpose.style_over_time.label": "Style Over Time",
+    "purpose.style_over_time.label": "Trace Style Over Time",
     "purpose.style_over_time.question": (
-        "How does a writer's work-level stylistic position vary across a dated corpus?"
+        "How does one writer's stylistic position vary across dated independent works?"
     ),
     "purpose.style_over_time.use": (
-        "You have several independently dated works and enough metadata to inspect "
-        "chronological confounds."
+        "Explore a documented sequence of independently dated works while keeping "
+        "edition, genre, audience, and source differences visible."
     ),
     "purpose.style_over_time.boundary": (
         "Chronology alone does not establish ageing, maturation, a turning point, or causation."

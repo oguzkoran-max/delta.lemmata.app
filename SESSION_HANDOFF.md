@@ -86,6 +86,19 @@ Provenance-link commit'i `4c3bb8a` GitHub CI run `29190917436` üzerinde verify,
 SBOM/audit ve canonical Linux amd64 container işlerinde geçti. Kanıt:
 `provenance/evidence/P004/guided-ui-ci.md`. Yalnız Oğuz insan kabulü açıktır.
 
+**P004 beginner-first entry revizyonu:** İlk Purpose/Upload yüzeyi artık stilometriyi
+ölçülebilir dil kullanım örüntülerinin corpus-relative karşılaştırılması olarak
+tanımlar; Observe -> Compare -> Interpret haritasını analiz sonucu olmadığını
+belirterek gösterir; Compare Texts, Compare Groups ve Trace Style Over Time için
+Question, Why use it ve Do not conclude açıklamalarını görünür tutar. Sahte sonuç
+grafiği, AI, analiz veya yeni storage katmanı eklenmedi. Mobile yöntem adımları
+satırlara dönüştürüldü, dekoratif token alanı gizlendi ve 320px first-action görünür
+hale geldi. Final fresh-process audit altı viewport ile individual-TXT ve two-member
+ZIP regression'ı geçti; başarısız denemeler saklandı. Kanıt:
+`provenance/evidence/P004/entry-experience-redesign-validation.md`. Repository-wide
+gate 467 test, 3.167 statement, 880 branch ve yüzde 100 coverage ile geçti.
+Exact-commit/CI bağı ve revize insan kabulü bu checkpoint'in açık kapılarıdır.
+
 ## Önce Oku
 
 1. `START_HERE.md`

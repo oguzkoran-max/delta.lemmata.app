@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
 from html import escape
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import streamlit as st
 from pydantic import HttpUrl, TypeAdapter, ValidationError
@@ -292,16 +292,65 @@ def _render_receipts(outcome: IntakeOutcome) -> None:
 
 
 def _render_purpose_guidance(purpose: PurposeSpec) -> None:
-    with st.expander(text("purpose.guidance")):
-        st.markdown(f"**{text('purpose.question_label')}**")
-        st.write(text(purpose.question_key))
-        use_column, boundary_column = st.columns(2, gap="medium")
-        with use_column:
-            st.markdown(f"**{text('purpose.use_label')}**")
-            st.caption(text(purpose.use_key))
-        with boundary_column:
-            st.markdown(f"**{text('purpose.boundary_label')}**")
-            st.caption(text(purpose.boundary_key))
+    guidance = text("purpose.guidance")
+    items = (
+        ("purpose.question_label", purpose.question_key, "question"),
+        ("purpose.use_label", purpose.use_key, "use"),
+        ("purpose.boundary_label", purpose.boundary_key, "boundary"),
+    )
+    markup = "".join(
+        '<div class="delta-purpose-guide-item '
+        f'delta-purpose-guide-{kind}">'
+        f"<span>{_html(text(label_key))}</span>"
+        f"<p>{_html(text(body_key))}</p>"
+        "</div>"
+        for label_key, body_key, kind in items
+    )
+    st.markdown(
+        '<section class="delta-purpose-guide" role="region" aria-live="polite" '
+        f'aria-label="{_html(guidance)}">{markup}</section>',
+        unsafe_allow_html=True,
+    )
+
+
+def _render_entry_experience() -> None:
+    method_steps = (
+        ("01", "setup.method.observe.title", "setup.method.observe.body"),
+        ("02", "setup.method.compare.title", "setup.method.compare.body"),
+        ("03", "setup.method.interpret.title", "setup.method.interpret.body"),
+    )
+    method_markup = "".join(
+        '<li class="delta-method-step">'
+        f'<span class="delta-method-number">{number}</span>'
+        '<span class="delta-method-copy">'
+        f"<strong>{_html(text(title_key))}</strong>"
+        f"<small>{_html(text(body_key))}</small>"
+        "</span></li>"
+        for number, title_key, body_key in method_steps
+    )
+    st.markdown(
+        f"""
+        <section class="delta-entry" aria-labelledby="delta-entry-title">
+          <div class="delta-entry-pattern" aria-hidden="true">
+            {_html(text("setup.pattern_tokens"))}
+          </div>
+          <div class="delta-entry-copy">
+            <div class="delta-entry-eyebrow">{_html(text("setup.eyebrow"))}</div>
+            <h1 id="delta-entry-title">{_html(text("setup.title"))}</h1>
+            <p class="delta-entry-lede">{_html(text("setup.intro"))}</p>
+            <p class="delta-entry-scope">{_html(text("setup.corpus_scope"))}</p>
+          </div>
+          <figure class="delta-method" aria-labelledby="delta-method-title">
+            <figcaption id="delta-method-title">
+              <strong>{_html(text("setup.method_label"))}</strong>
+              <span>{_html(text("setup.method.caption"))}</span>
+            </figcaption>
+            <ol>{method_markup}</ol>
+          </figure>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def _render_mode() -> WorkbenchMode:
@@ -320,7 +369,7 @@ def _render_mode() -> WorkbenchMode:
 
 
 def _render_boundary() -> None:
-    with st.container(border=True, key="boundary_panel"):
+    with st.container(border=False, key="boundary_panel"):
         st.header(text("boundary.title"), anchor=False)
         st.caption(text("boundary.body"))
 
@@ -418,7 +467,6 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                 key=f"corpus_archive_file_{generation}",
             )
             corpus_files = () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
-        _render_purpose_guidance(PURPOSE_BY_ID[purpose.value])
         uploaded_metadata = None
         with st.expander(text("corpus.metadata_advanced")):
             uploaded_metadata = st.file_uploader(
@@ -1413,13 +1461,8 @@ def _render_review_stage() -> None:
 
 
 def _render_setup(stage: CorpusSubstage) -> PurposeId:
-    st.markdown(
-        f'<div class="delta-eyebrow">{_html(text("setup.eyebrow"))}</div>',
-        unsafe_allow_html=True,
-    )
-    st.title(text("setup.title"))
     if stage is CorpusSubstage.UPLOAD:
-        st.caption(text("setup.intro"))
+        _render_entry_experience()
         selected = st.segmented_control(
             text("purpose.label"),
             options=[purpose.purpose_id for purpose in PURPOSES],
@@ -1429,7 +1472,13 @@ def _render_setup(stage: CorpusSubstage) -> PurposeId:
             width="stretch",
         )
         purpose_spec = PURPOSE_BY_ID[selected or PURPOSES[0].purpose_id]
+        _render_purpose_guidance(purpose_spec)
         return PurposeId(purpose_spec.purpose_id)
+    st.markdown(
+        f'<div class="delta-eyebrow">{_html(text("setup.eyebrow"))}</div>',
+        unsafe_allow_html=True,
+    )
+    st.title(text("setup.title"))
     purpose = PurposeId(st.session_state.get(_FLOW_PURPOSE_KEY, PurposeId.TEXT_PROXIMITY.value))
     st.caption(f"{text('purpose.label')}: {_purpose_label(purpose.value)}")
     return purpose
@@ -1451,7 +1500,9 @@ def main() -> None:
     stage = _stage()
     purpose = _render_setup(stage)
     _render_stepper(stage)
-    left, right = st.columns([1.8, 0.8], gap="large")
+    column_ratio = [1000, 1] if stage is CorpusSubstage.UPLOAD else [1.8, 0.8]
+    column_gap: Literal["large"] | None = None if stage is CorpusSubstage.UPLOAD else "large"
+    left, right = st.columns(column_ratio, gap=column_gap)
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
@@ -1459,8 +1510,11 @@ def main() -> None:
             _render_describe_stage(purpose)
         else:
             _render_review_stage()
-    with right:
+    if stage is CorpusSubstage.UPLOAD:
         _render_boundary()
+    else:
+        with right:
+            _render_boundary()
     _render_sidebar(health)
     st.divider()
     footer_left, footer_right = st.columns(2)

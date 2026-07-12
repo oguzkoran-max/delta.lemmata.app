@@ -35,12 +35,12 @@ def _advance_to_describe(app: AppTest, payload: bytes = b"one text") -> AppTest:
     return app
 
 
-def test_upload_shell_is_compact_single_stepper_and_future_analysis_is_absent() -> None:
+def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> None:
     app = run_app()
     assert len(app.exception) == 0
-    assert [title.value for title in app.title] == ["Prepare a documented corpus"]
+    assert [title.value for title in app.title] == []
     assert [control.label for control in app.segmented_control] == [
-        "Research purpose",
+        "What do you want to investigate?",
         "Corpus input format",
     ]
     assert [(uploader.label, uploader.accept_multiple_files) for uploader in app.file_uploader] == [
@@ -56,9 +56,22 @@ def test_upload_shell_is_compact_single_stepper_and_future_analysis_is_absent() 
         "No files submitted. Choose a corpus format and add files when ready."
     ]
     rendered = unescape("\n".join(element.value for element in app.markdown))
+    assert rendered.count('<h1 id="delta-entry-title">') == 1
+    assert "Discover patterns in writing style." in rendered
+    assert "Stylometry compares measurable patterns in language use across texts" in rendered
+    assert "including how often common words recur" in rendered
+    assert "without writing R or Python" in rendered
+    assert "How stylometry works" in rendered
+    assert all(label in rendered for label in ("Observe", "Compare", "Interpret"))
+    assert "Conceptual workflow · not an analysis result" in rendered
+    assert "Question" in rendered
+    assert "Why use it" in rendered
+    assert "Do not conclude" in rendered
     assert rendered.count('<nav class="delta-map"') == 1
     assert 'aria-current="step"' in rendered
     assert "Run analysis" not in rendered
+    assert "dendrogram" not in rendered.lower()
+    assert "distance score" not in rendered.lower()
     assert [heading.value for heading in app.header] == [
         "Upload the research corpus",
         "Method boundary",
@@ -70,10 +83,9 @@ def test_purpose_control_updates_guidance_before_upload() -> None:
     app.segmented_control[0].set_value("style_over_time").run()
     assert app.segmented_control[0].value == "style_over_time"
     rendered = unescape("\n".join(element.value for element in app.markdown))
-    captions = "\n".join(element.value for element in app.caption)
-    assert "How does a writer's work-level stylistic position vary" in rendered
-    assert "Chronology alone does not establish" in captions
-    assert captions.count("Chronology alone does not establish") == 1
+    assert "How does one writer's stylistic position vary" in rendered
+    assert "Chronology alone does not establish" in rendered
+    assert rendered.count("Chronology alone does not establish") == 1
 
 
 def test_v01_upload_shell_has_no_locale_selector() -> None:

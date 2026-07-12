@@ -44,7 +44,8 @@
     "PE-20260712-0002",
     "PE-20260712-0003",
     "PE-20260712-0004",
-    "PE-20260712-0005"
+    "PE-20260712-0005",
+    "PE-20260712-0006"
   ],
   "commit_ids": [
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
@@ -103,7 +104,11 @@
     "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
     "provenance/evidence/P004/guided-ui-provenance-link-validation.md",
     "provenance/evidence/P004/guided-ui-ci.md",
-    "memory/checkpoints/2026-07-12-p004-exact-ci.md"
+    "memory/checkpoints/2026-07-12-p004-exact-ci.md",
+    "prompts/P004-entry-experience-redesign.md",
+    "provenance/evidence/P004/entry-experience-redesign-validation.md",
+    "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json",
+    "memory/checkpoints/2026-07-12-p004-entry-experience-redesign.md"
   ],
   "acceptance": [
     {
@@ -186,7 +191,10 @@
         "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
         "provenance/evidence/P004/guided-ui-exact-commit/report.md",
         "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
-        "provenance/evidence/P004/guided-ui-ci.md"
+        "provenance/evidence/P004/guided-ui-ci.md",
+        "prompts/P004-entry-experience-redesign.md",
+        "provenance/evidence/P004/entry-experience-redesign-validation.md",
+        "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json"
       ]
     },
     {
@@ -209,7 +217,9 @@
         "provenance/evidence/P004/browser-audit-guided-zip-2026-07-12/browser-audit.json",
         "provenance/evidence/P004/guided-ui-exact-commit/report.md",
         "provenance/evidence/P004/guided-ui-exact-commit/browser-audit/browser-audit.json",
-        "provenance/evidence/P004/guided-ui-ci.md"
+        "provenance/evidence/P004/guided-ui-ci.md",
+        "provenance/evidence/P004/entry-experience-redesign-validation.md",
+        "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json"
       ]
     }
   ],
@@ -228,7 +238,8 @@
     "Chronologically selectable hash-bound timeline, exact guided-section and source-CSV correction routing, payload-free guided-input restoration, inventory-hash-bound mapping and rights confirmation, mobile custom-header repair, retained browser and coverage failures, and final six-viewport keyboard/visual evidence",
     "Immutable P003-validated ZIP member receipts, deterministic individual-TXT and ZIP-member projection into one payload-free corpus catalog, visible pre-Continue member summaries, two-member guided Describe and Review flow, nested safe-path CSV compatibility, retained browser-oracle failures, and final individual-TXT regression plus ZIP Playwright evidence",
     "Exact implementation commit c82740d was restored in a fresh no-hardlinks detached clone, bootstrapped from committed Python and R lockfiles, and passed 467 tests at full measured coverage plus the complete fresh-process individual-TXT and two-member ZIP browser audit",
-    "Provenance-link commit 4c3bb8a passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's human acceptance remains open for P004"
+    "Provenance-link commit 4c3bb8a passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's human acceptance remains open for P004",
+    "Beginner-first Purpose and Upload entry surface with a concrete stylometry definition, explicit corpus-relative boundary, semantic Observe-Compare-Interpret map, plain-language research paths, visible question/use/non-conclusion guidance, responsive 320px repair, strengthened AppTest and six-viewport TXT/ZIP browser oracles, retained failed runs, and no fake scientific result"
   ],
   "commands": [
     {
@@ -446,6 +457,36 @@
       "exit_code": 0,
       "result": "GitHub commit 4c3bb8a passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
       "evidence": "provenance/evidence/P004/guided-ui-ci.md"
+    },
+    {
+      "command": "python -m pytest tests/test_webapp.py tests/test_catalog.py -q; .tools/uv/bin/uv run pytest tests/test_webapp.py tests/test_catalog.py -q",
+      "exit_code": 1,
+      "result": "The host-Python attempt could not import the project package; the first locked-environment retry then exposed three stale Streamlit widget-tree failures caused by moving Upload outside its stable column path. The layout tree was repaired and the same focused suite later passed 15 tests.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-entry-redesign-2026-07-12",
+      "exit_code": 1,
+      "result": "Four retained browser candidates exposed an over-strict uploader threshold, a superseded copy candidate, an obsolete content oracle, a 320px first-action miss, and a stale narrow-screen H1 expectation. None is treated as final passing evidence.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run python scripts/browser_audit_p004.py --output provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12",
+      "exit_code": 0,
+      "result": "The final fresh-process audit passed six entry and Review viewports plus individual-TXT and two-member ZIP regressions, keyboard purpose selection, semantic entry and method regions, first-action visibility, no overflow, no fake result, no payload echo, no egress, and a clean console.",
+      "evidence": "provenance/evidence/P004/browser-audit-entry-redesign-passed-2026-07-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "Two intermediate full gates stopped first on the Streamlit column-gap literal type and then on the formatter after that type correction. Neither partial run is treated as passing evidence.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The final uncommitted entry candidate passed 467 tests, 100% of 3,167 measured statements and 880 branches, strict typing, metadata, 57 provenance records, repository scanning, and the locked R/stylo boundary.",
+      "evidence": "provenance/evidence/P004/entry-experience-redesign-validation.md"
     }
   ],
   "blockers": []

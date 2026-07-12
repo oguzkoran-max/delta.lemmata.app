@@ -409,3 +409,30 @@ The subsequent provenance-link commit `4c3bb8a` passed GitHub CI run `2919091743
 source, metadata, schema, and record verification; SBOM and dependency audit; and
 the canonical Linux amd64 container build. The remaining P004 gate is Oğuz Koran's
 human walkthrough and explicit acceptance or rejection decision.
+
+## 15. Beginner-First Entry Experience
+
+The P004 entry page remains the workbench itself rather than becoming a marketing
+landing page. Its first semantic surface now answers what stylometry compares, why
+a researcher might use it, how Delta structures the process, and what relative
+stylistic evidence cannot establish. The opening gives one concrete example,
+recurring common words, without reducing the future engine to that single feature.
+
+The entry sequence is Observe -> Compare -> Interpret. It is explicitly a
+conceptual workflow and not a computed result. Compare Texts, Compare Groups, and
+Trace Style Over Time are plain-language interface labels; the canonical purpose
+identifiers do not change. Each selected purpose exposes its question, suitable
+use, and inferential boundary without an expander.
+
+The visual surface uses an ink/forest field, paper-white type, and restrained teal,
+sky, and coral roles. It contains no fake result, gradient, decorative blob,
+floating page section, or nested card. Desktop keeps a three-column method map;
+mobile uses readable rows and hides the decorative token field. At 320px the first
+purpose action remains inside the initial viewport and no method word fragments
+vertically.
+
+The retained entry redesign failures, final six-viewport TXT/ZIP browser result,
+and method boundaries are recorded in
+`../../provenance/evidence/P004/entry-experience-redesign-validation.md`. This
+checkpoint does not establish general learnability, screen-reader conformance,
+scientific validity, or P004 human acceptance.

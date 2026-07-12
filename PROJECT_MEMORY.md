@@ -41,6 +41,7 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 | Motor | R stylo | Alan standardı ve hesaplama parity olanağı |
 | Arayüz | Python ve Streamlit | Hızlı geliştirme, Lemmata tecrübesi |
 | v0.1 UI dili | Yalnız İngilizce | lda.lemmata.app tutarlılığı ve daha dar QA kapsamı |
+| Giriş deneyimi | Stilometriyi tanımlayan tek öğretici yüzey + görünür gerçek Purpose/Upload akışı | Kod bilmeyen kullanıcıyı yönteme yönlendirirken aracı marketing landing page'e çevirmemek |
 | Yerelleştirme | Mimari hazır, Türkçe ve İtalyanca sonraki sürüm | Metinleri sonradan koddan ayırma maliyetini önlemek |
 | Ana değer | Uncertainty, interpretation, reproducibility | Basit bir stylo wrapper olmamak |
 | Hedef kullanıcı | Kod bilmeyen DBB/edebiyat araştırmacısı | Teknik eşiği kaldırırken yöntemsel kontrolü korumak |
@@ -70,6 +71,22 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 | Gönderim hedefi | Şubat 2027 | Geliştirme, doğrulama, release ve yazım için aşamalı takvim |
 | Ajan mimarisi | Agent-nötr sözleşme ve ince adaptörler | Codex ve Claude arasında kayıpsız geçiş |
 | Hafıza | Sürekli checkpoint, yalnız pre-compaction değil | Sıkıştırma önceden haber vermeyebilir |
+
+## P004 Beginner-First Entry Experience
+
+2026-07-12 giriş revizyonu, ilk ekranda stilometriyi ölçülebilir dil kullanım
+örüntülerinin corpus-relative karşılaştırılması olarak açıklar. Common-word recurrence
+somut başlangıç örneğidir. Observe -> Compare -> Interpret haritası analiz sonucu
+değil kavramsal akış olarak etiketlenir. Compare Texts, Compare Groups ve Trace Style
+Over Time seçimlerinin Question, Why use it ve Do not conclude açıklamaları sürekli
+görünür. Sahte dendrogram, cluster, heatmap veya distance sonucu yoktur.
+
+Final fresh-process Playwright altı viewport, individual TXT ve two-member ZIP
+regression, keyboard selection, no overflow, no payload echo, no egress ve clean
+console kapılarında geçti. 320px tasarımında kelime parçalanması giderildi ve ilk
+amaç düğmesi görünür alana alındı. Full yöntem ve başarısızlık kaydı:
+`provenance/evidence/P004/entry-experience-redesign-validation.md`. Bu değişiklik
+general usability veya P004 acceptance iddiası değildir.
 
 ## Ürün Tezi
 

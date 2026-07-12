@@ -1,4 +1,4 @@
-"""Delta's P002 visual system."""
+"""Delta's restrained, accessible workbench visual system."""
 
 APP_CSS = """
 <style>
@@ -9,11 +9,11 @@ APP_CSS = """
   --delta-canvas: #f7f8f7;
   --delta-paper: #ffffff;
   --delta-focus: #1769aa;
-  /* Teal is the single accent wired into this stylesheet. Badge hues come from
-     Streamlit's named palette and the link colour lives in
-     .streamlit/config.toml, so no further accent tokens are defined here.
-     --delta-teal-on-dark is a lightened teal for the dark sidebar, where the
-     base teal fails WCAG AA contrast on #1c2925. */
+  --delta-coral: #d5654d;
+  --delta-sky: #79a5b5;
+  /* Teal carries actions; coral marks interpretive boundaries; sky separates
+     explanatory structure. --delta-teal-on-dark is lightened for the sidebar,
+     where the base teal fails WCAG AA contrast on #1c2925. */
   --delta-teal: #116f63;
   --delta-teal-on-dark: #63b6a6;
 }
@@ -23,8 +23,8 @@ APP_CSS = """
 }
 
 [data-testid="stMainBlockContainer"] {
-  max-width: 1240px;
-  padding-top: 2.4rem;
+  max-width: 1280px;
+  padding-top: 1.4rem;
   padding-bottom: 2rem;
 }
 
@@ -34,8 +34,7 @@ APP_CSS = """
 
 #MainMenu,
 footer,
-[data-testid="stAppDeployButton"],
-[data-testid="stExpandSidebarButton"] {
+[data-testid="stAppDeployButton"] {
   display: none;
 }
 
@@ -82,7 +81,7 @@ footer,
   gap: 1rem;
   padding: 0.75rem 0 1rem;
   border-bottom: 1px solid var(--delta-line);
-  margin-bottom: 1.4rem;
+  margin-bottom: 1rem;
 }
 
 .delta-brand {
@@ -145,6 +144,188 @@ footer,
   font-weight: 750;
   text-transform: uppercase;
   margin: 0 0 0.35rem;
+}
+
+.delta-entry {
+  position: relative;
+  min-height: 286px;
+  overflow: hidden;
+  margin: 0 0 1rem;
+  padding: 1.7rem 2rem 1.1rem;
+  border: 1px solid #2e4640;
+  border-radius: 8px;
+  background: #182a25;
+  color: #f7faf8;
+}
+
+.delta-entry-pattern {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.5rem;
+  width: 42%;
+  color: var(--delta-sky);
+  font-family: ui-serif, Charter, "Iowan Old Style", Georgia, serif;
+  font-size: 1.35rem;
+  line-height: 2.2;
+  opacity: 0.3;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.delta-entry-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 760px;
+}
+
+.delta-entry-eyebrow {
+  margin-bottom: 0.45rem;
+  color: #83cabc;
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-transform: uppercase;
+}
+
+.delta-entry h1 {
+  max-width: 700px;
+  margin: 0;
+  color: #ffffff;
+  font-family: ui-serif, Charter, "Iowan Old Style", Georgia, serif;
+  font-size: 2.55rem !important;
+  font-weight: 650;
+  line-height: 1.08 !important;
+}
+
+.delta-entry-lede {
+  max-width: 720px;
+  margin: 0.75rem 0 0;
+  color: #f0f5f2;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.delta-entry-scope {
+  max-width: 720px;
+  margin: 0.35rem 0 0;
+  color: #b8c9c3;
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.delta-method {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(150px, 0.55fr) minmax(0, 2fr);
+  gap: 1rem;
+  align-items: start;
+  margin: 1.15rem 0 0;
+  padding-top: 0.85rem;
+  border-top: 1px solid #4f6a62;
+}
+
+.delta-method figcaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+  margin: 0;
+}
+
+.delta-method figcaption strong {
+  color: #ffffff;
+  font-size: 0.82rem;
+}
+
+.delta-method figcaption span {
+  color: #aebfba;
+  font-size: 0.7rem;
+}
+
+.delta-method ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.delta-method-step {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr);
+  gap: 0.5rem;
+  min-width: 0;
+}
+
+.delta-method-number {
+  color: var(--delta-coral);
+  font-size: 0.72rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.delta-method-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.delta-method-copy strong {
+  color: #ffffff;
+  font-size: 0.8rem;
+}
+
+.delta-method-copy small {
+  color: #c8d5d1;
+  font-size: 0.7rem;
+  line-height: 1.35;
+}
+
+.delta-purpose-guide {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  margin: 0.65rem 0 0.9rem;
+  border-top: 1px solid var(--delta-line);
+  border-bottom: 1px solid var(--delta-line);
+  background: var(--delta-paper);
+}
+
+.delta-purpose-guide-item {
+  min-width: 0;
+  padding: 0.75rem 0.9rem;
+  border-right: 1px solid var(--delta-line);
+}
+
+.delta-purpose-guide-item:last-child {
+  border-right: 0;
+}
+
+.delta-purpose-guide-item span {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--delta-muted);
+  font-size: 0.78rem;
+  font-weight: 750;
+}
+
+.delta-purpose-guide-item p {
+  margin: 0;
+  color: var(--delta-ink);
+  font-size: 0.88rem;
+  line-height: 1.42;
+}
+
+.delta-purpose-guide-question {
+  border-top: 3px solid var(--delta-teal);
+}
+
+.delta-purpose-guide-use {
+  border-top: 3px solid var(--delta-sky);
+}
+
+.delta-purpose-guide-boundary {
+  border-top: 3px solid var(--delta-coral);
 }
 
 .delta-field-label {
@@ -591,7 +772,6 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 .st-key-corpus_stage,
 .st-key-describe_stage,
 .st-key-review_stage,
-.st-key-boundary_panel,
 .st-key-evidence_panel,
 .st-key-run_state {
   background: var(--delta-paper);
@@ -614,6 +794,12 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   white-space: normal;
 }
 
+.st-key-boundary_panel {
+  padding-left: 1rem;
+  border-left: 3px solid var(--delta-coral);
+  background: transparent;
+}
+
 [data-testid="stFileUploaderDropzone"] {
   min-height: 112px;
 }
@@ -632,9 +818,14 @@ button[aria-label^="Help for"] {
 }
 
 button:focus-visible,
+a[href]:focus-visible,
 input:focus-visible,
+select:focus-visible,
 textarea:focus-visible,
-[role="radio"]:focus-visible {
+[role="radio"]:focus-visible,
+[role="combobox"]:focus-visible,
+summary:focus-visible,
+[tabindex]:not([tabindex="-1"]):focus-visible {
   outline: 3px solid var(--delta-focus) !important;
   outline-offset: 2px;
 }
@@ -684,6 +875,77 @@ div[data-testid="stMainBlockContainer"] h3 {
     min-height: 64px;
     margin-bottom: 0.5rem;
     padding-bottom: 0.7rem;
+  }
+
+  .delta-entry {
+    min-height: 0;
+    padding: 1.25rem 1rem 0.9rem;
+  }
+
+  .delta-entry-pattern {
+    display: none;
+  }
+
+  .delta-entry h1 {
+    max-width: 310px;
+    font-size: 2rem !important;
+    line-height: 1.12 !important;
+  }
+
+  .delta-entry-lede {
+    font-size: 0.92rem;
+    line-height: 1.42;
+  }
+
+  .delta-entry-scope {
+    font-size: 0.8rem;
+  }
+
+  .delta-method {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    margin-top: 0.8rem;
+    padding-top: 0.65rem;
+  }
+
+  .delta-method figcaption {
+    flex-flow: row wrap;
+    gap: 0.35rem;
+  }
+
+  .delta-method ol {
+    grid-template-columns: 1fr;
+    gap: 0.4rem;
+  }
+
+  .delta-method-step {
+    grid-template-columns: 22px minmax(0, 1fr);
+    gap: 0.4rem;
+    align-items: start;
+  }
+
+  .delta-method-copy {
+    display: grid;
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 0.45rem;
+  }
+
+  .delta-method-copy small {
+    font-size: 0.7rem;
+  }
+
+  .delta-purpose-guide {
+    grid-template-columns: 1fr;
+  }
+
+  .delta-purpose-guide-item {
+    padding: 0.65rem 0.75rem;
+    border-right: 0;
+    border-bottom: 1px solid var(--delta-line);
+  }
+
+  .delta-purpose-guide-item:last-child {
+    border-bottom: 0;
   }
 
   .delta-build {
@@ -740,16 +1002,23 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .st-key-research_purpose [role="radiogroup"] {
-    flex-wrap: nowrap !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    flex-wrap: initial !important;
   }
 
   .st-key-research_purpose button[role="radio"] {
-    flex: 1 1 0 !important;
+    flex: initial !important;
     min-width: 0 !important;
-    height: 48px;
+    min-height: 48px;
+    height: auto;
     padding-right: 0.35rem;
     padding-left: 0.35rem;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .st-key-research_purpose button[role="radio"]:last-child {
+    grid-column: 1 / -1;
   }
 
   .st-key-research_purpose button[role="radio"] p {
@@ -799,9 +1068,43 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
 @media (max-width: 340px) {
   [data-testid="stMainBlockContainer"] {
     padding-top: 0.375rem;
+  }
+
+  .delta-entry {
+    margin-bottom: 0.65rem;
+    padding: 1rem 0.9rem 0.75rem;
+  }
+
+  .delta-entry h1 {
+    font-size: 1.875rem !important;
+  }
+
+  .delta-entry-lede {
+    font-size: 0.875rem;
+    line-height: 1.4;
+  }
+
+  .delta-entry-scope {
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .delta-method {
+    margin-top: 0.65rem;
   }
 
   .delta-map {

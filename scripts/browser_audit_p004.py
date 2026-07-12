@@ -114,6 +114,21 @@ def _geometry(page: Page) -> dict[str, Any]:
               const box = element.getBoundingClientRect();
               return Math.min(box.width, box.height);
             });
+          const entryRegions = [...document.querySelectorAll('section.delta-entry')]
+            .filter(visible);
+          const methodSteps = [...document.querySelectorAll('.delta-method-step')].filter(visible);
+          const purposeGuides = [...document.querySelectorAll('section.delta-purpose-guide')]
+            .filter(visible);
+          const purposeButtons = [...document.querySelectorAll(
+            '.st-key-research_purpose button[role="radio"]'
+          )].filter(visible);
+          const purposeButtonFontSizes = purposeButtons.map(element =>
+            Number.parseFloat(getComputedStyle(element).fontSize)
+          );
+          const purposeButtonBox = purposeButtons[0]?.getBoundingClientRect();
+          const corpusStageBox = document.querySelector(
+            '.st-key-corpus_stage'
+          )?.getBoundingClientRect();
           const brand = document.querySelector('.delta-brand-name');
           const brandBox = brand?.getBoundingClientRect();
           const brandHit = brandBox
@@ -135,6 +150,13 @@ def _geometry(page: Page) -> dict[str, Any]:
             )].some(visible),
             segmentedButtonHeights: segmentedButtons,
             helpButtonTargets: helpButtons,
+            entryRegionCount: entryRegions.length,
+            methodStepCount: methodSteps.length,
+            purposeGuideCount: purposeGuides.length,
+            purposeButtonCount: purposeButtons.length,
+            purposeButtonFontSizes,
+            purposeButtonsTop: purposeButtonBox?.top ?? null,
+            corpusStageTop: corpusStageBox?.top ?? null,
             brandUnoccluded: Boolean(brand && brandHit && brand.contains(brandHit))
           };
         }"""
@@ -150,7 +172,7 @@ def _audit_viewport(
     output: Path,
 ) -> dict[str, Any]:
     page.goto(url, wait_until="networkidle")
-    page.get_by_role("heading", name="Prepare a documented corpus", level=1).wait_for()
+    page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
     page.get_by_role("heading", name="Upload the research corpus", level=2).wait_for()
     page.get_by_role("region", name="Corpus texts (.txt)", exact=True).wait_for()
     geometry = _geometry(page)
@@ -162,7 +184,7 @@ def _audit_viewport(
     mobile = width <= 760
     h1_sizes = [item["fontSize"] for item in geometry["headings"] if item["level"] == 1]
     h2_sizes = [item["fontSize"] for item in geometry["headings"] if item["level"] == 2]
-    expected_h1 = 28 if mobile else 32
+    expected_h1 = 30 if width <= 340 else (32 if mobile else 40.8)
     heading_scale_pass = (
         len(h1_sizes) == 1
         and abs(h1_sizes[0] - expected_h1) < 0.6
@@ -173,7 +195,29 @@ def _audit_viewport(
         value >= 43.5 for value in geometry["segmentedButtonHeights"]
     )
     help_targets_pass = all(value >= 23.5 for value in geometry["helpButtonTargets"])
-    uploader_threshold = 900 if mobile else 700
+    entry_experience_pass = (
+        geometry["entryRegionCount"] == 1
+        and geometry["methodStepCount"] == 3
+        and geometry["purposeGuideCount"] == 1
+        and geometry["purposeButtonCount"] == 3
+        and all(value >= 13.9 for value in geometry["purposeButtonFontSizes"])
+        and page.get_by_text(
+            "Stylometry compares measurable patterns in language use", exact=False
+        ).count()
+        == 1
+        and page.get_by_text("Conceptual workflow · not an analysis result", exact=True).count()
+        == 1
+    )
+    visible_text = page.locator("body").inner_text().lower()
+    no_fake_result_pass = all(
+        phrase not in visible_text for phrase in ("dendrogram", "distance score", "cluster result")
+    )
+    first_action_visible_pass = (
+        geometry["purposeButtonsTop"] is not None and geometry["purposeButtonsTop"] <= height + 1
+    )
+    next_stage_hint_pass = mobile or (
+        geometry["corpusStageTop"] is not None and geometry["corpusStageTop"] <= height + 80
+    )
     screenshot = output / "screenshots" / f"{target}.png"
     page.screenshot(path=str(screenshot), full_page=True)
     return {
@@ -186,7 +230,10 @@ def _audit_viewport(
         "stepper_count": map_count,
         "active_step_count": active_step_count,
         "uploader_top": uploader_top,
-        "uploader_first_view_pass": uploader_top is not None and uploader_top <= uploader_threshold,
+        "first_action_visible_pass": first_action_visible_pass,
+        "purpose_buttons_top": geometry["purposeButtonsTop"],
+        "next_stage_hint_pass": next_stage_hint_pass,
+        "corpus_stage_top": geometry["corpusStageTop"],
         "mobile_sidebar_focus_pass": not mobile or geometry["sidebarVisibleFocusables"] == 0,
         "mobile_sidebar_control_hidden_pass": not mobile or not geometry["expandSidebarVisible"],
         "visible_sidebar_focusables": geometry["sidebarVisibleFocusables"],
@@ -196,6 +243,12 @@ def _audit_viewport(
         "segmented_button_heights": geometry["segmentedButtonHeights"],
         "help_target_pass": help_targets_pass,
         "help_button_targets": geometry["helpButtonTargets"],
+        "entry_experience_pass": entry_experience_pass,
+        "entry_region_count": geometry["entryRegionCount"],
+        "method_step_count": geometry["methodStepCount"],
+        "purpose_guide_count": geometry["purposeGuideCount"],
+        "purpose_button_font_sizes": geometry["purposeButtonFontSizes"],
+        "no_fake_result_pass": no_fake_result_pass,
         "brand_unoccluded_pass": geometry["brandUnoccluded"],
         "continue_initially_disabled_pass": page.get_by_role(
             "button", name="Continue to describe the corpus", exact=True
@@ -240,15 +293,15 @@ def _audit_guided_flow(
     page.on("request", lambda request: requests.append(request.url))
     _observe_console(page, console_messages)
     page.goto(url, wait_until="networkidle")
-    page.get_by_role("heading", name="Prepare a documented corpus", level=1).wait_for()
+    page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
 
-    proximity = page.get_by_role("radio", name="Text Proximity", exact=True)
+    proximity = page.get_by_role("radio", name="Compare Texts", exact=True)
     proximity.focus()
     page.keyboard.press("ArrowRight")
     page.keyboard.press("Space")
     page.wait_for_timeout(800)
     keyboard_selection_pass = (
-        page.get_by_role("radio", name="Group Comparison", exact=True).get_attribute("aria-checked")
+        page.get_by_role("radio", name="Compare Groups", exact=True).get_attribute("aria-checked")
         == "true"
     )
     page.keyboard.press("ArrowLeft")
@@ -517,7 +570,7 @@ def _audit_zip_flow(
     page.on("request", lambda request: requests.append(request.url))
     _observe_console(page, console_messages)
     page.goto(url, wait_until="networkidle")
-    page.get_by_role("heading", name="Prepare a documented corpus", level=1).wait_for()
+    page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
     page.get_by_role("radio", name="One ZIP archive", exact=True).click()
     archive_region = page.get_by_role("region", name="Corpus archive (.zip)", exact=True)
     archive_region.locator('input[type="file"]').set_input_files(
@@ -705,12 +758,15 @@ def main() -> int:
             and not audit["main_horizontal_overflow"]
             and not audit["overflowing_controls"]
             and audit["single_stepper_pass"]
-            and audit["uploader_first_view_pass"]
+            and audit["first_action_visible_pass"]
+            and audit["next_stage_hint_pass"]
             and audit["mobile_sidebar_focus_pass"]
             and audit["mobile_sidebar_control_hidden_pass"]
             and audit["heading_scale_pass"]
             and audit["segmented_target_pass"]
             and audit["help_target_pass"]
+            and audit["entry_experience_pass"]
+            and audit["no_fake_result_pass"]
             and audit["brand_unoccluded_pass"]
             and audit["continue_initially_disabled_pass"]
             for audit in audits
