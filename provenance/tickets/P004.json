@@ -45,7 +45,8 @@
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
     "fc3c2462408c20ef363b929a0550720d44bac65f",
     "e5b269f1614938cbf2a7066fa322d6b55d4d47d6",
-    "8dd85c1d3cd454c3b1a8227122ff73e136da87b0"
+    "8dd85c1d3cd454c3b1a8227122ff73e136da87b0",
+    "dc0000852e2df6a337ace81b368b86f305247516"
   ],
   "run_ids": ["RUN-20260711-0006"],
   "human_owner": "Oğuz Koran",
@@ -229,6 +230,12 @@
       "command": "gh run view 29172847800 --json conclusion,databaseId,headSha,status,url,jobs",
       "exit_code": 0,
       "result": "The exact implementation commit passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P004/metadata-csv-ci.md"
+    },
+    {
+      "command": "gh run watch 29173125607 --exit-status",
+      "exit_code": 0,
+      "result": "The reciprocal provenance-link commit passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build.",
       "evidence": "provenance/evidence/P004/metadata-csv-ci.md"
     }
   ],

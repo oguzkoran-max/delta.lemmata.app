@@ -38,3 +38,17 @@ deployment, and retention remain outside this CI result.
 
 The earlier `93c9f50` failure email belongs to a superseded branch snapshot and does
 not describe this run.
+
+## Provenance-Link Commit CI
+
+The follow-up evidence-link commit
+`dc0000852e2df6a337ace81b368b86f305247516` also passed GitHub Actions run
+`29173125607`:
+
+- verify/SBOM/audit job `86597438543`: `success`;
+- Linux amd64 container job `86597438556`: `success`;
+- workflow completed at `2026-07-12T00:06:47Z`.
+
+This second green run confirms that the reciprocal Ticket, Run, checksum, CI report,
+and handoff records added after the implementation run also satisfy the repository
+gates.
