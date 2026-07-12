@@ -119,5 +119,7 @@ the repository formatter, the complete gate passed:
 
 The implementation candidate satisfies its scoped automated and visual gates. It
 does not establish learnability, scientific validity, Safari or screen-reader
-conformance, production behavior, or P004 human acceptance. Exact-commit replay,
-CI, and the revised Oğuz Koran walkthrough remain separate gates.
+conformance, production behavior, or P004 human acceptance. Exact implementation
+commit `54e479d` subsequently passed `RUN-20260712-0003` in a fresh no-hardlinks
+detached clone with the same complete repository and browser gates. CI and the
+revised Oğuz Koran walkthrough remain separate gates.

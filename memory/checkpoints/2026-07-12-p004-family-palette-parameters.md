@@ -24,6 +24,9 @@
   no-overflow, no-egress ve clean-console kapılarında geçti.
 - `./scripts/verify.sh` ilk formatting failure sonrasında 468 test, 3.171 statement,
   880 branch ve yüzde 100 coverage ile geçti.
+- Exact implementation commit `54e479d`, `RUN-20260712-0003` ile fresh
+  no-hardlinks detached clone'da bootstrap, full gate ve aynı browser audit'ten
+  geçti; clone temiz kaldı.
 
 ## Sınır
 

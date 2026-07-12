@@ -115,7 +115,9 @@ no-overflow, no-egress ve clean console kapılarında geçti. İlk full gate for
 üzerinde durdu; format sonrasında 468 test, 3.171 statement, 880 branch ve yüzde
 100 coverage ile geçti. Kanıt:
 `provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
-Exact-commit/CI ve insan kabulü henüz açıktır.
+Exact implementation commit `54e479d`, `RUN-20260712-0003` ile fresh
+no-hardlinks detached clone'da bootstrap, 468 test, yüzde 100 coverage ve aynı
+browser audit'inden geçti; clone temiz kaldı. CI ve insan kabulü henüz açıktır.
 
 ## Önce Oku
 

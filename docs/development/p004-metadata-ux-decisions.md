@@ -474,3 +474,9 @@ in
 `../../provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
 This checkpoint does not establish scientific validity, screen-reader conformance,
 general usability, or P004 human acceptance.
+
+Exact implementation commit `54e479d` was then reconstructed in a fresh
+no-hardlinks detached clone. `RUN-20260712-0003` passed 468 tests with 100% of
+3,171 statements and 880 branches, every repository gate, and the complete
+computed-palette six-viewport TXT/ZIP browser audit. The clone remained clean. CI
+and human acceptance remain separate gates.

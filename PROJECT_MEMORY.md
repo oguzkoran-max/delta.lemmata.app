@@ -103,7 +103,9 @@ içindedir. Ana akış Guided 100/300/500/1000 MFW taramasını, sabit 500 MFW +
 0 culling + whole text + Classic Delta referansını ve gelecekteki bounded Research
 Mode'u açıklar. Kontroller motor ve corpus-health kapılarından önce açılmaz. Kanıt:
 `provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
-Bu kayıt P004 acceptance veya bilimsel analiz değildir.
+Exact commit `54e479d`, `RUN-20260712-0003` ile fresh no-hardlinks detached
+clone'da 468 test, yüzde 100 coverage ve aynı computed-palette browser audit'inden
+geçti; clone temiz kaldı. Bu kayıt P004 acceptance veya bilimsel analiz değildir.
 
 ## Ürün Tezi
 
