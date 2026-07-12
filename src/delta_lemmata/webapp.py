@@ -182,9 +182,28 @@ def _render_stepper(stage: CorpusSubstage) -> None:
 
 def _render_sidebar(health: dict[str, Any]) -> None:
     with st.sidebar:
-        st.badge(text("header.stage"), icon=":material/construction:", color="green")
-        st.markdown(f"**{text('sidebar.boundary_title')}**")
-        st.caption(text("sidebar.boundary_body"))
+        st.badge(text("sidebar.badge"), icon=":material/menu_book:", color="green")
+        guide_items = "".join(
+            f"<li>{_html(text(key))}</li>"
+            for key in (
+                "sidebar.guide.question",
+                "sidebar.guide.corpus",
+                "sidebar.guide.parameters",
+            )
+        )
+        st.markdown(
+            '<section class="delta-sidebar-guide" role="region" '
+            'aria-labelledby="delta-sidebar-title">'
+            f'<strong class="delta-sidebar-title" id="delta-sidebar-title">'
+            f"{_html(text('sidebar.guide_title'))}</strong>"
+            f"<p>{_html(text('sidebar.guide_body'))}</p>"
+            f"<ol>{guide_items}</ol>"
+            '<div class="delta-sidebar-parameters">'
+            f"<strong>{_html(text('sidebar.parameters_title'))}</strong>"
+            f"<p>{_html(text('sidebar.parameters_body'))}</p>"
+            "</div></section>",
+            unsafe_allow_html=True,
+        )
         with st.expander(text("build.title"), icon=":material/info:"):
             st.markdown(f"**{text('build.readiness_label')}**")
             st.caption(text("build.readiness_value"))
@@ -349,6 +368,28 @@ def _render_entry_experience() -> None:
           </figure>
         </section>
         """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_parameter_orientation() -> None:
+    items = "".join(
+        '<div class="delta-parameter-item">'
+        f"<strong>{_html(text(f'parameters.{item}.title'))}</strong>"
+        f"<p>{_html(text(f'parameters.{item}.body'))}</p>"
+        "</div>"
+        for item in ("guided", "research", "status")
+    )
+    st.markdown(
+        '<section class="delta-parameter-note" role="region" '
+        'aria-labelledby="delta-parameter-note-title">'
+        '<div class="delta-parameter-intro">'
+        f'<strong id="delta-parameter-note-title">'
+        f"{_html(text('parameters.orientation_title'))}</strong>"
+        f"<p>{_html(text('parameters.orientation_body'))}</p>"
+        "</div>"
+        f'<div class="delta-parameter-grid">{items}</div>'
+        "</section>",
         unsafe_allow_html=True,
     )
 
@@ -1506,6 +1547,7 @@ def main() -> None:
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
+            _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:
             _render_describe_stage(purpose)
         else:

@@ -42,6 +42,9 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 | Arayüz | Python ve Streamlit | Hızlı geliştirme, Lemmata tecrübesi |
 | v0.1 UI dili | Yalnız İngilizce | lda.lemmata.app tutarlılığı ve daha dar QA kapsamı |
 | Giriş deneyimi | Stilometriyi tanımlayan tek öğretici yüzey + görünür gerçek Purpose/Upload akışı | Kod bilmeyen kullanıcıyı yönteme yönlendirirken aracı marketing landing page'e çevirmemek |
+| Görsel aile | Lemmata koyu yeşili + LDA açık çalışma alanı + soft mint öğretici yüzeyler | delta.lemmata.app'i ürün ailesine bağlarken operasyonel okunabilirliği korumak |
+| Sidebar | Start here rehberi; build/engine bilgisi collapsed Technical status | Geliştirici sınırını ilk mesaj yapmamak; kullanıcıya sıradaki gerçek işi göstermek |
+| Parametre UI sırası | Önce corpus review; sonra Guided sweep veya bounded Research controls | Corpus kapasitesini kontrol etmek ve sonuç-sonrası cherry-picking riskini azaltmak |
 | Yerelleştirme | Mimari hazır, Türkçe ve İtalyanca sonraki sürüm | Metinleri sonradan koddan ayırma maliyetini önlemek |
 | Ana değer | Uncertainty, interpretation, reproducibility | Basit bir stylo wrapper olmamak |
 | Hedef kullanıcı | Kod bilmeyen DBB/edebiyat araştırmacısı | Teknik eşiği kaldırırken yöntemsel kontrolü korumak |
@@ -91,6 +94,16 @@ general usability veya P004 acceptance iddiası değildir. Implementation commit
 kuruldu; 467 test, full measured coverage ve complete browser audit geçti.
 Provenance-link commit `26a04e3`, GitHub CI run `29192912269` içinde verify,
 SBOM/dependency audit ve Linux amd64 container işlerinde geçti.
+
+2026-07-12 aile-paleti revizyonu, canlı `lemmata.app` ve `lda.lemmata.app`
+görsellerinden koyu yeşil eylem, açık gri çalışma alanı/sidebar ve soft mint giriş
+yüzeyini Delta'ya uyarladı. Sidebar artık teknik boundary yerine Start here ve
+parametre sıralamasını anlatır; build ve engine bilgisi collapsed Technical status
+içindedir. Ana akış Guided 100/300/500/1000 MFW taramasını, sabit 500 MFW + yüzde
+0 culling + whole text + Classic Delta referansını ve gelecekteki bounded Research
+Mode'u açıklar. Kontroller motor ve corpus-health kapılarından önce açılmaz. Kanıt:
+`provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
+Bu kayıt P004 acceptance veya bilimsel analiz değildir.
 
 ## Ürün Tezi
 

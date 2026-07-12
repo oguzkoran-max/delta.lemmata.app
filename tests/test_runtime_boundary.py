@@ -30,6 +30,17 @@ def test_streamlit_usage_telemetry_is_disabled() -> None:
     assert config["browser"]["gatherUsageStats"] is False
 
 
+def test_streamlit_theme_uses_the_lemmata_product_family_palette() -> None:
+    with (ROOT / ".streamlit" / "config.toml").open("rb") as handle:
+        theme = tomllib.load(handle)["theme"]
+    assert theme["primaryColor"] == "#0f6e56"
+    assert theme["backgroundColor"] == "#f8f9fa"
+    assert theme["secondaryBackgroundColor"] == "#f0f2f6"
+    assert theme["textColor"] == "#31333f"
+    assert theme["linkColor"] == "#0f6e56"
+    assert theme["borderColor"] == "#6f8f84"
+
+
 def test_application_source_declares_no_remote_endpoint() -> None:
     source = "\n".join(
         path.read_text(encoding="utf-8") for path in (ROOT / "src" / "delta_lemmata").glob("*.py")

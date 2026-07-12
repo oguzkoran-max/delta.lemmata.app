@@ -67,6 +67,16 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert "Question" in rendered
     assert "Why use it" in rendered
     assert "Do not conclude" in rendered
+    assert "Start here" in rendered
+    assert "Why parameters come later" in rendered
+    assert "Current boundary" not in rendered
+    assert "How parameters will work" in rendered
+    assert "Tests 100, 300, 500, and 1,000 MFW" in rendered
+    assert "500 MFW, 0% culling, whole text, and Classic Delta" in rendered
+    assert "this is not a 'best setting'" in rendered
+    assert "bounded MFW, culling, segmentation, and distance choices" in rendered
+    assert "up to 24 documented combinations" in rendered
+    assert "No stylometric analysis is running in this build" in rendered
     assert rendered.count('<nav class="delta-map"') == 1
     assert 'aria-current="step"' in rendered
     assert "Run analysis" not in rendered

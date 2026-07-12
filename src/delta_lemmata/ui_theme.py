@@ -3,19 +3,21 @@
 APP_CSS = """
 <style>
 :root {
-  --delta-ink: #18211f;
-  --delta-muted: #5d6965;
-  --delta-line: #83928c;
-  --delta-canvas: #f7f8f7;
+  --delta-ink: #31333f;
+  --delta-muted: #5f6b66;
+  --delta-line: #6f8f84;
+  --delta-soft-line: #cbd8d3;
+  --delta-canvas: #f8f9fa;
   --delta-paper: #ffffff;
-  --delta-focus: #1769aa;
-  --delta-coral: #d5654d;
-  --delta-sky: #79a5b5;
-  /* Teal carries actions; coral marks interpretive boundaries; sky separates
-     explanatory structure. --delta-teal-on-dark is lightened for the sidebar,
-     where the base teal fails WCAG AA contrast on #1c2925. */
-  --delta-teal: #116f63;
-  --delta-teal-on-dark: #63b6a6;
+  --delta-sidebar: #f0f2f6;
+  --delta-mint: #e1f5ee;
+  --delta-mint-soft: #f0faf6;
+  --delta-focus: #0f6e56;
+  --delta-coral: #a94f3d;
+  --delta-sky: #4f7f8c;
+  /* The primary and neutral surfaces mirror the Lemmata product family. Teal
+     carries actions, coral marks boundaries, and sky separates explanations. */
+  --delta-teal: #0f6e56;
 }
 
 [data-testid="stAppViewContainer"] {
@@ -39,8 +41,8 @@ footer,
 }
 
 [data-testid="stSidebar"] {
-  background: #1c2925;
-  border-right: 1px solid #31443d;
+  background: var(--delta-sidebar);
+  border-right: 1px solid var(--delta-soft-line);
 }
 
 [data-testid="stSidebar"] p,
@@ -49,12 +51,63 @@ footer,
 [data-testid="stSidebar"] h1,
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3 {
-  color: #f0f5f2;
+  color: var(--delta-ink);
 }
 
 [data-testid="stSidebar"] [data-testid="stExpander"] {
-  border-color: #456057;
+  border-color: var(--delta-line);
   border-radius: 6px;
+}
+
+.delta-sidebar-guide {
+  margin-top: 1.2rem;
+}
+
+.delta-sidebar-title {
+  display: block;
+  margin: 0 0 0.45rem;
+  color: var(--delta-ink);
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.delta-sidebar-guide > p,
+.delta-sidebar-parameters p {
+  margin: 0;
+  color: var(--delta-muted) !important;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.delta-sidebar-guide ol {
+  margin: 0.9rem 0 1rem;
+  padding-left: 1.3rem;
+  color: var(--delta-ink);
+}
+
+.delta-sidebar-guide li {
+  margin: 0.45rem 0;
+  padding-left: 0.2rem;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+
+.delta-sidebar-guide li::marker {
+  color: var(--delta-teal);
+  font-weight: 750;
+}
+
+.delta-sidebar-parameters {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--delta-soft-line);
+}
+
+.delta-sidebar-parameters strong {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: var(--delta-teal) !important;
+  font-size: 0.88rem;
 }
 
 .delta-progress {
@@ -63,14 +116,14 @@ footer,
   overflow: hidden;
   margin: 0.45rem 0 0.9rem;
   border-radius: 4px;
-  background: #f0f5f2;
+  background: var(--delta-paper);
 }
 
 .delta-progress-fill {
   display: block;
   width: 50%;
   height: 100%;
-  background: var(--delta-teal-on-dark);
+  background: var(--delta-teal);
 }
 
 .delta-header {
@@ -80,7 +133,7 @@ footer,
   justify-content: space-between;
   gap: 1rem;
   padding: 0.75rem 0 1rem;
-  border-bottom: 1px solid var(--delta-line);
+  border-bottom: 1px solid var(--delta-soft-line);
   margin-bottom: 1rem;
 }
 
@@ -96,7 +149,7 @@ footer,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--delta-ink);
+  background: var(--delta-teal);
   color: #ffffff;
   border-radius: 6px;
   font-size: 1.55rem;
@@ -152,10 +205,10 @@ footer,
   overflow: hidden;
   margin: 0 0 1rem;
   padding: 1.7rem 2rem 1.1rem;
-  border: 1px solid #2e4640;
+  border: 1px solid var(--delta-soft-line);
   border-radius: 8px;
-  background: #182a25;
-  color: #f7faf8;
+  background: var(--delta-mint);
+  color: var(--delta-ink);
 }
 
 .delta-entry-pattern {
@@ -163,11 +216,11 @@ footer,
   top: 1.2rem;
   right: 1.5rem;
   width: 42%;
-  color: var(--delta-sky);
+  color: var(--delta-teal);
   font-family: ui-serif, Charter, "Iowan Old Style", Georgia, serif;
   font-size: 1.35rem;
   line-height: 2.2;
-  opacity: 0.3;
+  opacity: 0.12;
   text-align: right;
   overflow-wrap: anywhere;
 }
@@ -180,7 +233,7 @@ footer,
 
 .delta-entry-eyebrow {
   margin-bottom: 0.45rem;
-  color: #83cabc;
+  color: var(--delta-teal);
   font-size: 0.78rem;
   font-weight: 750;
   text-transform: uppercase;
@@ -189,7 +242,7 @@ footer,
 .delta-entry h1 {
   max-width: 700px;
   margin: 0;
-  color: #ffffff;
+  color: #1a1a1a;
   font-family: ui-serif, Charter, "Iowan Old Style", Georgia, serif;
   font-size: 2.55rem !important;
   font-weight: 650;
@@ -199,7 +252,7 @@ footer,
 .delta-entry-lede {
   max-width: 720px;
   margin: 0.75rem 0 0;
-  color: #f0f5f2;
+  color: var(--delta-ink);
   font-size: 1rem;
   line-height: 1.5;
 }
@@ -207,7 +260,7 @@ footer,
 .delta-entry-scope {
   max-width: 720px;
   margin: 0.35rem 0 0;
-  color: #b8c9c3;
+  color: var(--delta-muted);
   font-size: 0.86rem;
   line-height: 1.45;
 }
@@ -221,7 +274,7 @@ footer,
   align-items: start;
   margin: 1.15rem 0 0;
   padding-top: 0.85rem;
-  border-top: 1px solid #4f6a62;
+  border-top: 1px solid var(--delta-soft-line);
 }
 
 .delta-method figcaption {
@@ -232,12 +285,12 @@ footer,
 }
 
 .delta-method figcaption strong {
-  color: #ffffff;
+  color: var(--delta-ink);
   font-size: 0.82rem;
 }
 
 .delta-method figcaption span {
-  color: #aebfba;
+  color: var(--delta-muted);
   font-size: 0.7rem;
 }
 
@@ -272,12 +325,12 @@ footer,
 }
 
 .delta-method-copy strong {
-  color: #ffffff;
+  color: var(--delta-ink);
   font-size: 0.8rem;
 }
 
 .delta-method-copy small {
-  color: #c8d5d1;
+  color: var(--delta-muted);
   font-size: 0.7rem;
   line-height: 1.35;
 }
@@ -286,15 +339,15 @@ footer,
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
   margin: 0.65rem 0 0.9rem;
-  border-top: 1px solid var(--delta-line);
-  border-bottom: 1px solid var(--delta-line);
+  border-top: 1px solid var(--delta-soft-line);
+  border-bottom: 1px solid var(--delta-soft-line);
   background: var(--delta-paper);
 }
 
 .delta-purpose-guide-item {
   min-width: 0;
   padding: 0.75rem 0.9rem;
-  border-right: 1px solid var(--delta-line);
+  border-right: 1px solid var(--delta-soft-line);
 }
 
 .delta-purpose-guide-item:last-child {
@@ -326,6 +379,58 @@ footer,
 
 .delta-purpose-guide-boundary {
   border-top: 3px solid var(--delta-coral);
+}
+
+.delta-parameter-note {
+  display: block;
+  margin: 0 0 0.8rem;
+  padding: 0.85rem 0.95rem;
+  border-left: 3px solid var(--delta-teal);
+  background: var(--delta-mint-soft);
+}
+
+.delta-parameter-intro {
+  display: grid;
+  grid-template-columns: minmax(190px, 0.55fr) minmax(0, 1.45fr);
+  gap: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--delta-soft-line);
+}
+
+.delta-parameter-intro strong,
+.delta-parameter-item strong {
+  color: var(--delta-ink);
+  font-size: 0.88rem;
+}
+
+.delta-parameter-intro p,
+.delta-parameter-item p {
+  margin: 0;
+  color: var(--delta-muted);
+  font-size: 0.86rem;
+  line-height: 1.45;
+}
+
+.delta-parameter-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+
+.delta-parameter-item {
+  min-width: 0;
+  padding: 0.75rem 0.85rem 0 0;
+}
+
+.delta-parameter-item + .delta-parameter-item {
+  padding-left: 0.85rem;
+  border-left: 1px solid var(--delta-soft-line);
+}
+
+.delta-parameter-item strong {
+  display: block;
+  margin-bottom: 0.25rem;
+  color: var(--delta-teal);
 }
 
 .delta-field-label {
@@ -404,7 +509,7 @@ footer,
 
 [data-testid="stSidebar"] .delta-map-row.is-active .delta-map-number,
 [data-testid="stSidebar"] .delta-map-row.is-active .delta-map-state {
-  color: var(--delta-teal-on-dark);
+  color: var(--delta-teal);
 }
 
 .delta-evidence-row {
@@ -941,11 +1046,31 @@ div[data-testid="stMainBlockContainer"] h3 {
   .delta-purpose-guide-item {
     padding: 0.65rem 0.75rem;
     border-right: 0;
-    border-bottom: 1px solid var(--delta-line);
+    border-bottom: 1px solid var(--delta-soft-line);
   }
 
   .delta-purpose-guide-item:last-child {
     border-bottom: 0;
+  }
+
+  .delta-parameter-intro,
+  .delta-parameter-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .delta-parameter-intro {
+    gap: 0.3rem;
+  }
+
+  .delta-parameter-item,
+  .delta-parameter-item + .delta-parameter-item {
+    padding: 0.65rem 0 0;
+    border-left: 0;
+  }
+
+  .delta-parameter-item + .delta-parameter-item {
+    margin-top: 0.65rem;
+    border-top: 1px solid var(--delta-soft-line);
   }
 
   .delta-build {

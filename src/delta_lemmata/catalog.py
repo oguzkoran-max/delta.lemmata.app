@@ -29,12 +29,20 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.state.complete": "Complete",
     "sidebar.state.validated": "Validated",
     "sidebar.state.locked": "Locked",
-    "sidebar.boundary_title": "Current boundary",
-    "sidebar.boundary_body": (
-        "This build validates uploads without creating analysis state. It does not "
-        "calculate stylometric results or retain a permanent project copy."
+    "sidebar.badge": "Corpus setup",
+    "sidebar.guide_title": "Start here",
+    "sidebar.guide_body": (
+        "Delta checks and documents your corpus before any analysis settings appear."
     ),
-    "build.title": "Build information",
+    "sidebar.guide.question": "Choose a research question",
+    "sidebar.guide.corpus": "Upload and document the texts",
+    "sidebar.guide.parameters": "Review parameters before analysis",
+    "sidebar.parameters_title": "Why parameters come later",
+    "sidebar.parameters_body": (
+        "Stylometric settings depend on the size and structure of your corpus. "
+        "Delta checks the texts first, then explains the available choices."
+    ),
+    "build.title": "Technical status",
     "build.readiness_label": "Readiness",
     "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
@@ -59,6 +67,26 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "setup.method.interpret.title": "Interpret",
     "setup.method.interpret.body": "With dates, editions, genre, source, and rights",
     "setup.method.caption": "Conceptual workflow · not an analysis result",
+    "parameters.orientation_title": "How parameters will work",
+    "parameters.orientation_body": (
+        "Usable settings depend on text length, feature count, and corpus structure. "
+        "Delta checks the corpus before exposing them."
+    ),
+    "parameters.guided.title": "Guided mode",
+    "parameters.guided.body": (
+        "Tests 100, 300, 500, and 1,000 MFW. Its fixed reference is 500 MFW, "
+        "0% culling, whole text, and Classic Delta; this is not a 'best setting'."
+    ),
+    "parameters.research.title": "Research mode",
+    "parameters.research.body": (
+        "Offers bounded MFW, culling, segmentation, and distance choices, then "
+        "compares up to 24 documented combinations instead of hiding sensitivity."
+    ),
+    "parameters.status.title": "Current status",
+    "parameters.status.body": (
+        "Controls stay locked until corpus-health checks and the R stylo engine are "
+        "connected. No stylometric analysis is running in this build."
+    ),
     "purpose.guidance": "Understand this research path",
     "purpose.label": "What do you want to investigate?",
     "purpose.badge": "Selected purpose",

@@ -80,6 +80,27 @@ def _geometry(page: Page) -> dict[str, Any]:
             return style.display !== 'none' && style.visibility !== 'hidden'
               && box.width > 0 && box.height > 0;
           };
+          const rgb = value => {
+            const channels = value.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
+            return channels?.length === 3 ? channels : null;
+          };
+          const luminance = value => {
+            const channels = rgb(value);
+            if (!channels) return null;
+            const linear = channels.map(channel => {
+              const normalized = channel / 255;
+              return normalized <= 0.04045
+                ? normalized / 12.92
+                : ((normalized + 0.055) / 1.055) ** 2.4;
+            });
+            return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+          };
+          const contrast = (foreground, background) => {
+            const first = luminance(foreground);
+            const second = luminance(background);
+            if (first === null || second === null) return null;
+            return (Math.max(first, second) + 0.05) / (Math.min(first, second) + 0.05);
+          };
           const controls = [...document.querySelectorAll(
             '[data-testid="stMainBlockContainer"] button, '
             + '[data-testid="stMainBlockContainer"] input:not([type="file"]), '
@@ -119,6 +140,10 @@ def _geometry(page: Page) -> dict[str, Any]:
           const methodSteps = [...document.querySelectorAll('.delta-method-step')].filter(visible);
           const purposeGuides = [...document.querySelectorAll('section.delta-purpose-guide')]
             .filter(visible);
+          const parameterNotes = [...document.querySelectorAll('section.delta-parameter-note')]
+            .filter(visible);
+          const parameterItems = [...document.querySelectorAll('.delta-parameter-item')]
+            .filter(visible);
           const purposeButtons = [...document.querySelectorAll(
             '.st-key-research_purpose button[role="radio"]'
           )].filter(visible);
@@ -137,6 +162,23 @@ def _geometry(page: Page) -> dict[str, Any]:
                 brandBox.top + brandBox.height / 2
               )
             : null;
+          const app = document.querySelector('[data-testid="stAppViewContainer"]');
+          const sidebar = document.querySelector('[data-testid="stSidebar"]');
+          const entry = document.querySelector('.delta-entry');
+          const entryTitle = document.querySelector('.delta-entry h1');
+          const sidebarTitle = document.querySelector('.delta-sidebar-title');
+          const parameterNote = document.querySelector('.delta-parameter-note');
+          const parameterCopy = document.querySelector('.delta-parameter-intro p');
+          const appBackground = app ? getComputedStyle(app).backgroundColor : null;
+          const sidebarBackground = sidebar ? getComputedStyle(sidebar).backgroundColor : null;
+          const entryBackground = entry ? getComputedStyle(entry).backgroundColor : null;
+          const entryForeground = entryTitle ? getComputedStyle(entryTitle).color : null;
+          const parameterBackground = parameterNote
+            ? getComputedStyle(parameterNote).backgroundColor
+            : null;
+          const parameterForeground = parameterCopy
+            ? getComputedStyle(parameterCopy).color
+            : null;
           return {
             scrollWidth: document.documentElement.scrollWidth,
             clientWidth: document.documentElement.clientWidth,
@@ -153,11 +195,31 @@ def _geometry(page: Page) -> dict[str, Any]:
             entryRegionCount: entryRegions.length,
             methodStepCount: methodSteps.length,
             purposeGuideCount: purposeGuides.length,
+            parameterNoteCount: parameterNotes.length,
+            parameterItemCount: parameterItems.length,
             purposeButtonCount: purposeButtons.length,
             purposeButtonFontSizes,
             purposeButtonsTop: purposeButtonBox?.top ?? null,
             corpusStageTop: corpusStageBox?.top ?? null,
-            brandUnoccluded: Boolean(brand && brandHit && brand.contains(brandHit))
+            brandUnoccluded: Boolean(brand && brandHit && brand.contains(brandHit)),
+            palette: {
+              appBackground,
+              sidebarBackground,
+              entryBackground,
+              entryBackgroundImage: entry ? getComputedStyle(entry).backgroundImage : null,
+              parameterBackground
+            },
+            contrast: {
+              entryTitle: entryForeground && entryBackground
+                ? contrast(entryForeground, entryBackground)
+                : null,
+              sidebarTitle: sidebarTitle && sidebarBackground
+                ? contrast(getComputedStyle(sidebarTitle).color, sidebarBackground)
+                : null,
+              parameterCopy: parameterForeground && parameterBackground
+                ? contrast(parameterForeground, parameterBackground)
+                : null
+            }
           };
         }"""
     )
@@ -208,6 +270,31 @@ def _audit_viewport(
         and page.get_by_text("Conceptual workflow · not an analysis result", exact=True).count()
         == 1
     )
+    parameter_orientation_pass = (
+        geometry["parameterNoteCount"] == 1
+        and geometry["parameterItemCount"] == 3
+        and page.get_by_role("region", name="How parameters will work", exact=True).count() == 1
+        and page.get_by_text("Tests 100, 300, 500, and 1,000 MFW", exact=False).count() == 1
+        and page.get_by_text("up to 24 documented combinations", exact=False).count() == 1
+        and page.get_by_text("No stylometric analysis is running", exact=False).count() == 1
+    )
+    sidebar_guidance_pass = page.get_by_text("Current boundary", exact=True).count() == 0 and (
+        mobile
+        or (
+            page.get_by_role("region", name="Start here", exact=True).count() == 1
+            and page.get_by_text("Why parameters come later", exact=True).count() == 1
+        )
+    )
+    expected_palette = {
+        "appBackground": "rgb(248, 249, 250)",
+        "sidebarBackground": "rgb(240, 242, 246)",
+        "entryBackground": "rgb(225, 245, 238)",
+        "entryBackgroundImage": "none",
+        "parameterBackground": "rgb(240, 250, 246)",
+    }
+    family_palette_pass = geometry["palette"] == expected_palette and all(
+        value is not None and value >= 4.5 for value in geometry["contrast"].values()
+    )
     visible_text = page.locator("body").inner_text().lower()
     no_fake_result_pass = all(
         phrase not in visible_text for phrase in ("dendrogram", "distance score", "cluster result")
@@ -244,6 +331,11 @@ def _audit_viewport(
         "help_target_pass": help_targets_pass,
         "help_button_targets": geometry["helpButtonTargets"],
         "entry_experience_pass": entry_experience_pass,
+        "parameter_orientation_pass": parameter_orientation_pass,
+        "sidebar_guidance_pass": sidebar_guidance_pass,
+        "family_palette_pass": family_palette_pass,
+        "family_palette": geometry["palette"],
+        "family_contrast": geometry["contrast"],
         "entry_region_count": geometry["entryRegionCount"],
         "method_step_count": geometry["methodStepCount"],
         "purpose_guide_count": geometry["purposeGuideCount"],
@@ -766,6 +858,9 @@ def main() -> int:
             and audit["segmented_target_pass"]
             and audit["help_target_pass"]
             and audit["entry_experience_pass"]
+            and audit["parameter_orientation_pass"]
+            and audit["sidebar_guidance_pass"]
+            and audit["family_palette_pass"]
             and audit["no_fake_result_pass"]
             and audit["brand_unoccluded_pass"]
             and audit["continue_initially_disabled_pass"]

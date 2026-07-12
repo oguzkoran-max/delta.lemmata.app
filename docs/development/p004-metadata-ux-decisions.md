@@ -443,3 +443,34 @@ that exact commit in a fresh no-hardlinks detached clone and passed 467 tests wi
 individual-TXT and two-member ZIP browser audit. CI and human acceptance remain
 separate gates. The provenance-link commit `26a04e3` subsequently passed GitHub CI
 run `29192912269`; only human acceptance remains open.
+
+## 16. Lemmata Family Palette and Parameter Orientation
+
+The 2026-07-12 user review replaced the dark technical sidebar with a soft,
+product-family-aligned and task-oriented surface. The versioned Delta palette now
+uses `#0f6e56` for primary action and focus, `#f8f9fa` for the canvas,
+`#f0f2f6` for the sidebar, `#e1f5ee` for the entry surface, `#f0faf6` for
+parameter guidance, and `#31333f` for primary text. Coral and sky retain their
+secondary semantic roles. This decision is based on dated inspection of the live
+`lemmata.app` and `lda.lemmata.app` renders, not on an assumed external token API.
+
+The sidebar's purpose is orientation rather than release-status reporting. It now
+answers where to start, what comes next, and why parameters appear after corpus
+review. Build and engine facts remain available in `Technical status`. Essential
+parameter information is repeated in the main flow because mobile deliberately
+hides the sidebar.
+
+Delta will remain selectable without becoming a free post-result slider surface.
+Guided Mode tests 100, 300, 500, and 1,000 MFW and uses 500 MFW, 0% culling,
+whole text, and Classic Delta as a fixed reference. Research Mode will expose
+bounded MFW, culling, segmentation, and distance choices through a versioned
+maximum 24-cell public grid. The exact grid and resource limits remain calibration
+and load-test decisions. P004 therefore explains these controls but keeps them
+locked until P006/P007/P008 connect the engine and corpus-health gates.
+
+The retained failed placement/oracle run, corrected six-viewport computed-style
+audit, contrast measurements, TXT/ZIP regressions, and repository gate are recorded
+in
+`../../provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
+This checkpoint does not establish scientific validity, screen-reader conformance,
+general usability, or P004 human acceptance.

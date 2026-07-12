@@ -102,6 +102,21 @@ detached clone'da aynı full gate ve browser audit'ten geçti; clone temiz kald�
 run `29192912269`, provenance-link commit `26a04e3` için verify, SBOM/dependency
 audit ve Linux amd64 container işlerinde geçti. Yalnız revize insan kabulü açıktır.
 
+**P004 Lemmata aile paleti ve parametre yönlendirmesi:** Canlı `lemmata.app` ve
+`lda.lemmata.app` denetiminden koyu yeşil eylem, açık gri canvas/sidebar ve soft
+mint öğretici yüzeyler Delta'ya taşındı. Koyu `Current boundary` sidebar'ı Start
+here, üç adım, neden-parametreler-sonra açıklaması ve collapsed Technical status'a
+dönüştü. Ana akış Guided 100/300/500/1000 MFW, sabit 500 MFW + yüzde 0 culling +
+whole text + Classic Delta referansı ve bounded Research Mode'un en fazla 24
+belgeli kombinasyonunu açıklar; gerçek kontroller P006/P007/P008 tamamlanmadan
+kilitli kalır. İlk browser koşusu parameter-placement ve mobil sidebar oracle'ında
+fail olarak saklandı; ikinci koşu altı viewport, computed palette, kontrast, TXT/ZIP,
+no-overflow, no-egress ve clean console kapılarında geçti. İlk full gate formatting
+üzerinde durdu; format sonrasında 468 test, 3.171 statement, 880 branch ve yüzde
+100 coverage ile geçti. Kanıt:
+`provenance/evidence/P004/family-palette-parameter-orientation-validation.md`.
+Exact-commit/CI ve insan kabulü henüz açıktır.
+
 ## Önce Oku
 
 1. `START_HERE.md`

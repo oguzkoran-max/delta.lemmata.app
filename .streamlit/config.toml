@@ -1,10 +1,10 @@
 [theme]
-primaryColor = "#116f63"
-backgroundColor = "#f4f6f5"
-secondaryBackgroundColor = "#e7eeeb"
-textColor = "#18211f"
-linkColor = "#315f7b"
-borderColor = "#ccd6d1"
+primaryColor = "#0f6e56"
+backgroundColor = "#f8f9fa"
+secondaryBackgroundColor = "#f0f2f6"
+textColor = "#31333f"
+linkColor = "#0f6e56"
+borderColor = "#6f8f84"
 showWidgetBorder = true
 baseRadius = "small"
 buttonRadius = "small"
