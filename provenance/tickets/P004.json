@@ -42,7 +42,8 @@
     "HD-20260711-0009",
     "HD-20260711-0010",
     "HD-20260711-0011",
-    "HD-20260712-0001"
+    "HD-20260712-0001",
+    "HD-20260712-0002"
   ],
   "prompt_event_ids": [
     "PE-20260711-0009",
@@ -58,7 +59,9 @@
     "PE-20260712-0005",
     "PE-20260712-0006",
     "PE-20260712-0007",
-    "PE-20260712-0008"
+    "PE-20260712-0008",
+    "PE-20260712-0009",
+    "PE-20260712-0010"
   ],
   "commit_ids": [
     "233f0b37737dd8ab017653c4af911036f5ea04ca",
@@ -165,7 +168,11 @@
     "provenance/evidence/P004/exact-family-language-weave-exact-commit/report.md",
     "provenance/evidence/P004/exact-family-language-weave-exact-commit.sha256",
     "provenance/evidence/P004/exact-family-language-weave-exact-commit/browser-audit/browser-audit.json",
-    "provenance/evidence/P004/exact-family-language-weave-ci.md"
+    "provenance/evidence/P004/exact-family-language-weave-ci.md",
+    "prompts/P004-automated-acceptance-rehearsal.md",
+    "memory/checkpoints/2026-07-12-p004-automated-acceptance-rehearsal.md",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12/browser-audit.json"
   ],
   "acceptance": [
     {
@@ -330,7 +337,8 @@
     "Exact family-palette implementation commit 54e479d was restored in a fresh no-hardlinks detached clone, rebuilt from committed Python and R lockfiles, and passed 468 tests at full measured coverage plus the complete computed-palette six-viewport individual-TXT and two-member ZIP browser audit",
     "Palette provenance-link commit 5d95ce4 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open",
     "Exact live-sibling CSS token extraction, LDA-native surface retention, two-row Language Weave teaching figure, non-result signal legend, compact accessible method descriptions, exact teal/purple/amber parameter bands, six retained responsive attempts, full passing screenshot set, strengthened computed-token browser oracles, and exact-commit clean-clone verification; P004 human acceptance remains pending",
-    "Exact-family provenance-link commit 9864db4 passed GitHub CI run 29204391922 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; only Oğuz Koran human acceptance remains open"
+    "Exact-family provenance-link commit 9864db4 passed GitHub CI run 29204391922 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; only Oğuz Koran human acceptance remains open",
+    "Owner-directed automated acceptance rehearsal, expanded fail-closed rights correction browser journey, stable selectbox/render/confirmation/download oracles, eleven disclosed failed harness iterations, final six-viewport Guided TXT + rights correction + ZIP pass, and a repeated 468-test full repository gate; exact-commit, CI, and technical closure remain pending"
   ],
   "commands": [
     {
@@ -632,6 +640,18 @@
       "exit_code": 0,
       "result": "GitHub commit 5d95ce4 passed source, metadata, schema, and record verification; SBOM and dependency audit; and the canonical Linux amd64 container build.",
       "evidence": "provenance/evidence/P004/family-palette-parameter-ci.md"
+    },
+    {
+      "command": ".venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12",
+      "exit_code": 0,
+      "result": "The final fresh-process rehearsal passed six responsive viewports, Guided TXT, fail-closed permission-required rights, exact correction to analysis-only, payload-free value restoration, rights action matrix, inventory-bound confirmation, five downloads, and strict two-member ZIP with no overflow, external host, payload echo, or console error.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12/browser-audit.json"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The expanded automated-acceptance candidate passed 468 tests, 100% of 3,174 measured statements and 880 branches, Ruff, strict typing, metadata, 63 provenance records, repository and supply-chain scans, and the locked R/stylo environment.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
     }
   ],
   "blockers": []

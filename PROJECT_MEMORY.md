@@ -385,3 +385,23 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
 - Ajan raporları 10k bütçeyi aştığı için independent approval değildir.
 - P004 hâlâ Oğuz'un revised human walkthrough ve açık kabul/ret kararı için
   in-progress durumundadır.
+
+## P004 Otomatik Kabul Provası Kararı (2026-07-12)
+
+- Oğuz, ara testleri Codex'in yürütmesini ve ortak insan walkthrough'unun ürün
+  hazır olduğunda yapılmasını istedi: `HD-20260712-0002`.
+- Bu karar otomasyonu insan kabulü gibi göstermiyor. Safari, VoiceOver, genel
+  kullanılabilirlik, bilimsel geçerlilik ve release kabulü final walkthrough'a
+  veya sonraki ticket kanıtlarına aittir.
+- Browser harness fail-closed rights correction turuyla genişletildi:
+  `permission_required` blocker üretir, exact `rights_status` correction guided
+  değerleri korur, `analysis_only` upload/analysis iznini açarken export ve public
+  redistribution'ı kapalı tutar.
+- On bir başarısız harness/oracle iterasyonu açıkça raporlandı. On ikinci koşum
+  altı viewport, Guided TXT, rights correction, beş download, confirmation ve ZIP
+  akışlarının tamamında; no egress, no payload echo ve clean console ile geçti.
+- Working-tree full gate 468 test, 3.174 statement, 880 branch ve yüzde 100
+  coverage ile geçti.
+- Sıradaki kapı exact implementation commit'i fresh no-hardlinks clone'da tekrar
+  kurmak ve GitHub CI'yi doğrulamaktır. Bu kapılar geçmeden P004 teknik kapanışı
+  yapılmaz.

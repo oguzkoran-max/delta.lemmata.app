@@ -11,8 +11,24 @@ final documentation confirmation adayı var; scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Oğuz'un P004 insan kabul turunu yürüt ve kabul/ret kararını
-HumanDecision olarak kaydet
+**Sıradaki tek ana iş:** Otomatik kabul provası implementation commit'ini fresh
+no-hardlinks clone'da yeniden kur, full gate ve expanded browser audit'i tekrarla,
+ardından GitHub CI'yi doğrula
+
+**İnsan kabul sırası değişikliği:** Oğuz `HD-20260712-0002` ile ara testleri
+Codex'in yürütmesini, ortak walkthrough'un ürün hazır olduğunda yapılmasını istedi.
+Bu karar P004'ü kendiliğinden kabul etmez; automated technical closure ancak expanded
+browser, full repository, exact-commit ve CI kapıları geçerse ilerleyebilir. Safari,
+VoiceOver, bilimsel sonuç ve final release kabulü bu otomatik kanıttan türetilmez.
+
+**P004 otomatik kabul provası:** Tracked browser harness'a permission-required
+blocker, exact rights correction, guided-value restoration, analysis-only action
+matrix ve post-correction confirmation turu eklendi. On bir başarısız harness/oracle
+iterasyonu raporlandı; on ikinci final koşum altı viewport, Guided TXT, rights
+correction, Review/download ve two-member ZIP akışlarında, sıfır external host,
+sıfır console error, sıfır payload echo ve sıfır overflow ile geçti. Working-tree
+full gate 468 test, 3.174 statement, 880 branch ve yüzde 100 coverage ile yeşildir.
+Kanıt: `provenance/evidence/P004/automated-acceptance-rehearsal-validation.md`.
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights

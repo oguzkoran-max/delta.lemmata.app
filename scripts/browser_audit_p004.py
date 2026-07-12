@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from playwright.sync_api import Browser, Page, sync_playwright
+from playwright.sync_api import Browser, Locator, Page, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 VIEWPORTS = (
@@ -410,8 +410,42 @@ def _audit_viewport(
 
 
 def _choose_selectbox(page: Page, label: str, option: str) -> None:
-    page.get_by_label(label, exact=True).click()
-    page.get_by_role("option", name=option, exact=True).click()
+    option_locator = page.get_by_role("option", name=option, exact=True)
+    for _ in range(3):
+        page.get_by_label(label, exact=True).click()
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline:
+            if option_locator.count() == 1:
+                option_locator.click()
+                return
+            page.wait_for_timeout(100)
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(100)
+    raise RuntimeError(f"selectbox option did not become available: {label} -> {option}")
+
+
+def _wait_until_enabled(page: Page, locator: Locator, *, timeout: float = 10.0) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if locator.is_enabled():
+            return True
+        page.wait_for_timeout(100)
+    return locator.is_enabled()
+
+
+def _wait_for_count(
+    page: Page,
+    locator: Locator,
+    expected: int,
+    *,
+    timeout: float = 10.0,
+) -> bool:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        if locator.count() == expected:
+            return True
+        page.wait_for_timeout(100)
+    return locator.count() == expected
 
 
 def _download_csv(page: Page, button_name: str) -> tuple[str, list[dict[str, str]]]:
@@ -530,6 +564,20 @@ def _audit_guided_flow(
     composition_table_keys = composition_table.locator("tbody tr[data-row-key]").evaluate_all(
         "elements => elements.map(element => element.dataset.rowKey)"
     )
+    confirmation = page.get_by_role(
+        "checkbox",
+        name="I reviewed the file-to-work mappings and the documented rights records.",
+        exact=True,
+    )
+    confirmation_initial_pass = _wait_until_enabled(page, confirmation) and not (
+        confirmation.is_checked()
+    )
+    confirmation_recorded_pass = False
+    if confirmation_initial_pass:
+        confirmation.focus()
+        page.keyboard.press("Space")
+        page.get_by_text("Confirmation recorded for this inventory.", exact=True).wait_for()
+        confirmation_recorded_pass = confirmation.is_checked()
     composition_filename, composition_rows = _download_csv(page, "Download composition CSV")
     completeness_filename, completeness_rows = _download_csv(page, "Download completeness CSV")
     composition_csv_keys = [
@@ -607,16 +655,6 @@ def _audit_guided_flow(
             )
         )
     scroll_focus_pass = bool(focus_results) and all(focus_results)
-    confirmation = page.get_by_role(
-        "checkbox",
-        name="I reviewed the file-to-work mappings and the documented rights records.",
-        exact=True,
-    )
-    confirmation_initial_pass = confirmation.is_enabled() and not confirmation.is_checked()
-    confirmation.focus()
-    page.keyboard.press("Space")
-    page.get_by_text("Confirmation recorded for this inventory.", exact=True).wait_for()
-    confirmation_recorded_pass = confirmation.is_checked()
     analysis_locked_pass = (
         page.get_by_text("No stylometric analysis has run", exact=False).count() == 1
     )
@@ -706,6 +744,136 @@ def _audit_guided_flow(
     return result
 
 
+def _audit_rights_correction_flow(
+    browser: Browser,
+    url: str,
+    requests: list[str],
+    console_messages: list[dict[str, str]],
+    output: Path,
+) -> dict[str, Any]:
+    """Exercise fail-closed rights, exact correction routing, and confirmation."""
+
+    payload = b"RIGHTS_CORRECTION_CANARY synthetic text"
+    context = browser.new_context(viewport={"width": 1280, "height": 900})
+    page = context.new_page()
+    page.on("request", lambda request: requests.append(request.url))
+    _observe_console(page, console_messages)
+    page.goto(url, wait_until="networkidle")
+    page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
+
+    corpus_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+    corpus_region.locator('input[type="file"]').set_input_files(
+        {
+            "name": "rights-correction.txt",
+            "mimeType": "text/plain",
+            "buffer": payload,
+        }
+    )
+    page.get_by_text("Intake checks passed · Uploads: 1", exact=False).wait_for()
+    page.get_by_role("button", name="Continue to describe the corpus", exact=True).click()
+    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    page.get_by_label("Primary author name", exact=True).fill("Delta Test Author")
+    page.get_by_label("Bibliographic citation", exact=True).fill(
+        "Synthetic fixture for the P004 rights-correction browser audit."
+    )
+    _choose_selectbox(
+        page,
+        "Documented rights state",
+        "Permission required · unresolved",
+    )
+    page.keyboard.press("Escape")
+    page.get_by_role("button", name="Build corpus review", exact=True).click()
+    page.get_by_role("heading", name="Review the documented corpus", level=2).wait_for()
+
+    blocked_pass = (
+        page.get_by_text("Corpus documentation contains blockers", exact=False).count() == 1
+    )
+    unresolved_issue_pass = (
+        page.get_by_text("RIGHTS_ANALYSIS_PERMISSION_REQUIRED", exact=False).count() == 1
+        and page.get_by_text("RIGHTS_UPLOAD_PERMISSION_REQUIRED", exact=False).count() == 1
+        and page.get_by_text("RIGHTS_STATUS_UNRESOLVED", exact=False).count() == 1
+    )
+    confirmation = page.get_by_role(
+        "checkbox",
+        name="I reviewed the file-to-work mappings and the documented rights records.",
+        exact=True,
+    )
+    confirmation_blocked_pass = not confirmation.is_enabled()
+    blocked_screenshot = output / "screenshots" / "rights-correction-blocked.png"
+    page.screenshot(path=str(blocked_screenshot), full_page=True)
+
+    _choose_selectbox(
+        page,
+        "Metadata field to correct",
+        "Rights Correction · Rights · rights_status",
+    )
+    page.keyboard.press("Escape")
+    page.get_by_role("button", name="Edit selected field", exact=False).click()
+    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    correction_target_pass = (
+        page.get_by_text("Correction target: rights_status", exact=True).count() == 1
+    )
+    restored_author = page.get_by_label("Primary author name", exact=True).input_value()
+    restored_citation = page.get_by_label("Bibliographic citation", exact=True).input_value()
+    restored_values_pass = (
+        restored_author == "Delta Test Author"
+        and restored_citation == "Synthetic fixture for the P004 rights-correction browser audit."
+    )
+    _choose_selectbox(
+        page,
+        "Documented rights state",
+        "Analysis only · permit upload and analysis, prohibit text export",
+    )
+    page.keyboard.press("Escape")
+    page.get_by_role("button", name="Build corpus review", exact=True).click()
+    page.get_by_role("heading", name="Review the documented corpus", level=2).wait_for()
+
+    corrected_pass = (
+        page.get_by_text("Corpus documentation has no blockers", exact=False).count() == 1
+    )
+    rights_table = page.get_by_role("table", name="Rights action matrix", exact=True)
+    rights_text = rights_table.inner_text()
+    permissions_pass = (
+        rights_text.count("Permitted") == 2
+        and rights_text.count("Prohibited") == 2
+        and "Unknown" not in rights_text
+    )
+    confirmation = page.get_by_role(
+        "checkbox",
+        name="I reviewed the file-to-work mappings and the documented rights records.",
+        exact=True,
+    )
+    confirmation_enabled_pass = _wait_until_enabled(page, confirmation) and not (
+        confirmation.is_checked()
+    )
+    confirmation_recorded_pass = False
+    if confirmation_enabled_pass:
+        confirmation.focus()
+        page.keyboard.press("Space")
+        page.get_by_text("Confirmation recorded for this inventory.", exact=True).wait_for()
+        confirmation_recorded_pass = confirmation.is_checked()
+    payload_absent_pass = payload.decode("utf-8") not in page.locator("body").inner_text()
+    corrected_screenshot = output / "screenshots" / "rights-correction-resolved.png"
+    page.screenshot(path=str(corrected_screenshot), full_page=True)
+
+    result = {
+        "blocked_pass": blocked_pass,
+        "unresolved_issue_pass": unresolved_issue_pass,
+        "confirmation_blocked_pass": confirmation_blocked_pass,
+        "correction_target_pass": correction_target_pass,
+        "restored_values_pass": restored_values_pass,
+        "corrected_pass": corrected_pass,
+        "permissions_pass": permissions_pass,
+        "confirmation_enabled_pass": confirmation_enabled_pass,
+        "confirmation_recorded_pass": confirmation_recorded_pass,
+        "payload_absent_pass": payload_absent_pass,
+        "blocked_screenshot": _display_path(blocked_screenshot),
+        "corrected_screenshot": _display_path(corrected_screenshot),
+    }
+    context.close()
+    return result
+
+
 def _audit_zip_flow(
     browser: Browser,
     url: str,
@@ -753,7 +921,11 @@ def _audit_zip_flow(
 
     continue_button.click()
     page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
-    describe_work_count_pass = page.get_by_label("Primary author name", exact=True).count() == 2
+    describe_work_count_pass = _wait_for_count(
+        page,
+        page.get_by_label("Primary author name", exact=True),
+        2,
+    )
     describe_labels_pass = all(
         page.get_by_text(f"{index}. {name}", exact=True).count() == 1
         for index, (name, _) in enumerate(entries, start=1)
@@ -895,6 +1067,13 @@ def main() -> int:
                 audits.append(_audit_viewport(page, url, target, width, height, output))
                 context.close()
             guided_flow = _audit_guided_flow(browser, url, requests, console_messages, output)
+            rights_correction_flow = _audit_rights_correction_flow(
+                browser,
+                url,
+                requests,
+                console_messages,
+                output,
+            )
             zip_flow = _audit_zip_flow(browser, url, requests, console_messages, output)
             browser.close()
 
@@ -927,10 +1106,14 @@ def main() -> int:
             for audit in audits
         )
         interaction_pass = all(value for key, value in guided_flow.items() if key.endswith("_pass"))
+        rights_correction_pass = all(
+            value for key, value in rights_correction_flow.items() if key.endswith("_pass")
+        )
         zip_pass = all(value for key, value in zip_flow.items() if key.endswith("_pass"))
         passed = (
             viewport_pass
             and interaction_pass
+            and rights_correction_pass
             and zip_pass
             and not external_hosts
             and not console_messages
@@ -943,6 +1126,7 @@ def main() -> int:
             "fresh_browser_context_per_viewport": True,
             "audits": audits,
             "guided_flow": guided_flow,
+            "rights_correction_flow": rights_correction_flow,
             "zip_flow": zip_flow,
             "console_messages": console_messages,
             "external_hosts_observed": external_hosts,
