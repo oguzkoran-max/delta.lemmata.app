@@ -402,6 +402,10 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   akışlarının tamamında; no egress, no payload echo ve clean console ile geçti.
 - Working-tree full gate 468 test, 3.174 statement, 880 branch ve yüzde 100
   coverage ile geçti.
-- Sıradaki kapı exact implementation commit'i fresh no-hardlinks clone'da tekrar
-  kurmak ve GitHub CI'yi doğrulamaktır. Bu kapılar geçmeden P004 teknik kapanışı
-  yapılmaz.
+- Implementation commit `9f3124a`, fresh no-hardlinks detached clone'da committed
+  Python/R lockfile'larından yeniden kuruldu. `RUN-20260712-0005` içinde 468 test,
+  3.174 statement, 880 branch, yüzde 100 coverage ve expanded browser audit geçti;
+  clone temiz kaldı.
+- Exact report, browser JSON ve checksum manifesti
+  `provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/` altında
+  bağlıdır. Sıradaki tek kapı provenance-link commit'i için GitHub CI'dir.

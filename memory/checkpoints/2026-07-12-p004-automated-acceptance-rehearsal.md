@@ -30,9 +30,12 @@
 - Working-tree full gate: 468 test, 3.174 statement, 880 branch, yüzde 100 coverage.
 - Final browser: six viewport + Guided TXT + rights correction + ZIP, no egress,
   no console error, no payload echo.
+- Exact implementation commit: `9f3124a65216fd1c0f6d459cfe6a3049f51baa07`.
+- Exact clean-clone run: `RUN-20260712-0005`, 468 test, 3.174 statement, 880
+  branch, yüzde 100 coverage ve expanded browser audit; clone temiz kaldı.
 
 ## Siradaki Kapi
 
-Implementation commit'i fresh no-hardlinks clone'da yeniden kur, full gate ve
-browser audit'i tekrarla, GitHub CI'yi doğrula. Ancak bundan sonra P004 teknik
-kapanışı ve P005 geçişi değerlendirilebilir.
+Exact-commit kanıtını provenance-link commit'inde mühürle ve GitHub CI'yi doğrula.
+CI yeşil olursa `HD-20260712-0002` sınırlarıyla P004 teknik kapanışını kaydet;
+ortak final owner walkthrough'u P015 ürün-hazır kapısında açık tut.

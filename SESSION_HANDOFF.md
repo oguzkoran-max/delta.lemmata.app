@@ -11,9 +11,9 @@ final documentation confirmation adayı var; scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P004.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Otomatik kabul provası implementation commit'ini fresh
-no-hardlinks clone'da yeniden kur, full gate ve expanded browser audit'i tekrarla,
-ardından GitHub CI'yi doğrula
+**Sıradaki tek ana iş:** Otomatik kabul provasının exact-commit kanıtını
+provenance-link commit'inde mühürle, GitHub CI'yi doğrula ve yalnız yeşil CI
+sonrasında P004 teknik kapanışını kaydet
 
 **İnsan kabul sırası değişikliği:** Oğuz `HD-20260712-0002` ile ara testleri
 Codex'in yürütmesini, ortak walkthrough'un ürün hazır olduğunda yapılmasını istedi.
@@ -29,6 +29,10 @@ correction, Review/download ve two-member ZIP akışlarında, sıfır external h
 sıfır console error, sıfır payload echo ve sıfır overflow ile geçti. Working-tree
 full gate 468 test, 3.174 statement, 880 branch ve yüzde 100 coverage ile yeşildir.
 Kanıt: `provenance/evidence/P004/automated-acceptance-rehearsal-validation.md`.
+Implementation commit `9f3124a`, fresh `--no-hardlinks` detached clone'da
+committed lockfile'lardan yeniden kuruldu; aynı 468-test full gate ve expanded
+browser audit tamamen geçti, clone temiz kaldı. `RUN-20260712-0005` ile exact
+report/checksum paketi bu sonucu kaydeder. GitHub CI henüz son açık teknik kapıdır.
 
 **Kabul edilen P004 UX:** Form + versioned CSV, progressive disclosure, bir TXT =
 bir bağımsız eser, exact-confirmed mapping, uncertainty-aware chronology, ayrı rights

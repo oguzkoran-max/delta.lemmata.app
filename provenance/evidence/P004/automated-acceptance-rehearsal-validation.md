@@ -86,9 +86,39 @@ After the harness change, `./scripts/verify.sh` passed:
 - repository and supply-chain scans;
 - locked R 4.5.2, renv 1.2.3, stylo 0.7.71, and jsonlite 2.0.0.
 
+## Exact-Commit Result
+
+Implementation commit `9f3124a65216fd1c0f6d459cfe6a3049f51baa07`
+was detached in a fresh `--no-hardlinks` clone and rebuilt from committed Python
+and R lockfiles. The clone passed 468 tests, 3,174 statements and 880 branches at
+100% measured coverage, every repository gate, and the expanded six-viewport
+Guided TXT, rights-correction, Review/download, and strict ZIP audit. It remained
+clean after the run.
+
+The machine-readable record is `RUN-20260712-0005`; the human-readable replay,
+browser JSON, and checksum manifest are under
+`provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/` and
+`provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit.sha256`.
+
+## Provenance-Link Iterations
+
+The first post-link full gate passed application tests but correctly rejected the
+new Run because `command` and `replay.command` differed and the replay contained a
+placeholder. The second passed all 468 tests but the repository scanner correctly
+rejected three records containing a personal macOS absolute path. The Run was made
+internally identical and placeholder-free; paths were then normalized to an
+equivalent relative or `$HOME` form, and affected checksums were regenerated.
+
+A preliminary direct call to nonexistent `scripts/verify_metadata.py` was also
+discarded as an operator command mistake; the repository's canonical
+`./scripts/verify.sh` remained the only full-gate authority. The corrected final
+gate passed 468 tests, 3,174 statements, 880 branches, 67 provenance records,
+repository and supply-chain scans, metadata, and the R lock boundary.
+
 ## Verdict
 
-The working-tree candidate passes P004's repeatable technical acceptance rehearsal.
-This does not yet establish exact-commit reproducibility, GitHub CI, Safari,
-VoiceOver, scientific computation, general usability, production behavior, or
-the final owner walkthrough. Those boundaries remain explicit.
+The candidate passes P004's repeatable working-tree and exact-commit technical
+acceptance rehearsal. GitHub CI remains the final technical-closure gate. This
+does not establish Safari, VoiceOver, scientific computation, general usability,
+production behavior, or the final owner walkthrough. Those boundaries remain
+explicit.

@@ -77,14 +77,16 @@
     "54e479d1075f3c73ee4a707090e3c43e10488085",
     "5d95ce4b10fd88ab73bfe26f69a5fbcca293ef43",
     "374e2d04a3c28029c69b9311fa0f3118f4bedbce",
-    "9864db45dd3b9491dfbe514dfc7fb1e1d358f907"
+    "9864db45dd3b9491dfbe514dfc7fb1e1d358f907",
+    "9f3124a65216fd1c0f6d459cfe6a3049f51baa07"
   ],
   "run_ids": [
     "RUN-20260711-0006",
     "RUN-20260712-0001",
     "RUN-20260712-0002",
     "RUN-20260712-0003",
-    "RUN-20260712-0004"
+    "RUN-20260712-0004",
+    "RUN-20260712-0005"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -172,7 +174,11 @@
     "prompts/P004-automated-acceptance-rehearsal.md",
     "memory/checkpoints/2026-07-12-p004-automated-acceptance-rehearsal.md",
     "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md",
-    "provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12/browser-audit.json"
+    "provenance/evidence/P004/automated-acceptance-rehearsal-attempt-12/browser-audit.json",
+    "provenance/runs/RUN-20260712-0005.json",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit.sha256",
+    "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/browser-audit/browser-audit.json"
   ],
   "acceptance": [
     {
@@ -338,7 +344,8 @@
     "Palette provenance-link commit 5d95ce4 passed GitHub source/schema/record verification, SBOM and dependency audit, and the canonical Linux amd64 container build; only Oğuz Koran's revised human acceptance remains open",
     "Exact live-sibling CSS token extraction, LDA-native surface retention, two-row Language Weave teaching figure, non-result signal legend, compact accessible method descriptions, exact teal/purple/amber parameter bands, six retained responsive attempts, full passing screenshot set, strengthened computed-token browser oracles, and exact-commit clean-clone verification; P004 human acceptance remains pending",
     "Exact-family provenance-link commit 9864db4 passed GitHub CI run 29204391922 across Linux verification, SBOM/dependency audit, and the canonical amd64 container build; only Oğuz Koran human acceptance remains open",
-    "Owner-directed automated acceptance rehearsal, expanded fail-closed rights correction browser journey, stable selectbox/render/confirmation/download oracles, eleven disclosed failed harness iterations, final six-viewport Guided TXT + rights correction + ZIP pass, and a repeated 468-test full repository gate; exact-commit, CI, and technical closure remain pending"
+    "Owner-directed automated acceptance rehearsal, expanded fail-closed rights correction browser journey, stable selectbox/render/confirmation/download oracles, eleven disclosed failed harness iterations, final six-viewport Guided TXT + rights correction + ZIP pass, and a repeated 468-test full repository gate; exact-commit, CI, and technical closure remain pending",
+    "Exact automated-rehearsal implementation commit 9f3124a was rebuilt in a fresh no-hardlinks detached clone, passed 468 tests at full measured coverage plus every repository gate and the expanded six-viewport TXT, rights-correction, download, and ZIP browser audit, and remained clean; GitHub CI and technical closure remain pending"
   ],
   "commands": [
     {
@@ -651,6 +658,30 @@
       "command": "./scripts/verify.sh",
       "exit_code": 0,
       "result": "The expanded automated-acceptance candidate passed 468 tests, 100% of 3,174 measured statements and 880 branches, Ruff, strict typing, metadata, 63 provenance records, repository and supply-chain scans, and the locked R/stylo environment.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output ../delta-p004-auto-exact-9f3124a-output",
+      "exit_code": 0,
+      "result": "A fresh no-hardlinks clone detached at exact implementation commit 9f3124a rebuilt the committed Python and R environments, passed 468 tests with 100% of 3,174 statements and 880 branches plus every repository gate, passed the expanded six-viewport Guided TXT, fail-closed rights correction, download, and strict ZIP browser audit, and remained clean.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-exact-commit/report.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first provenance-link gate passed application checks but record integrity rejected a differing replay command and its placeholder; the Run was corrected before any pass was claimed.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The second provenance-link gate passed all 468 tests and record integrity, then repository hygiene rejected personal macOS absolute paths in the Run, Ticket, and exact report; paths and dependent checksums were normalized.",
+      "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected provenance-link candidate passed 468 tests, 100% of 3,174 statements and 880 branches, Ruff, strict typing, metadata, 67 provenance records, repository and supply-chain scans, and the locked R/stylo environment.",
       "evidence": "provenance/evidence/P004/automated-acceptance-rehearsal-validation.md"
     }
   ],
