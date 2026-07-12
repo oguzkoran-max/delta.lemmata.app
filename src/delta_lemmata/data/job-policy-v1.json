@@ -1,0 +1,22 @@
+{
+  "profile_version": "job-policy-v1",
+  "max_running": 1,
+  "max_queued": 3,
+  "max_staged_global": 4,
+  "max_active_per_session": 1,
+  "staged_ttl_seconds": 3600,
+  "queued_ttl_seconds": 900,
+  "unsuccessful_payload_ttl_seconds": 900,
+  "result_ttl_seconds": 3600,
+  "export_ttl_seconds": 3600,
+  "event_ttl_seconds": 604800,
+  "tombstone_ttl_seconds": 604800,
+  "worker_limits": {
+    "profile_version": "synthetic-worker-limits-v1",
+    "wall_time_seconds": 30,
+    "cpu_time_seconds": 10,
+    "memory_bytes": 134217728,
+    "max_processes": 8,
+    "terminate_grace_seconds": 2
+  }
+}

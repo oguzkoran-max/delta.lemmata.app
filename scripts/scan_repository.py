@@ -31,7 +31,8 @@ PATTERNS = {
     "OpenAI-style secret": re.compile(r"\bsk-[A-Za-z0-9_-]{20,}\b"),
     "private key": re.compile(r"-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----"),
     "assigned API secret": re.compile(
-        r"(?i)(?:api[_-]?key|secret|token)\s*[:=]\s*['\"][A-Za-z0-9_./+=-]{12,}['\"]"
+        r"(?i)(?<![A-Za-z0-9_])(?:api[_-]?key|secret|token)\s*[:=]\s*"
+        r"['\"][A-Za-z0-9_./+=-]{12,}['\"]"
     ),
 }
 FORBIDDEN_DIRECTORIES = {"data", "uploads", "workspaces", "exports", "secrets"}
