@@ -892,7 +892,7 @@ def test_force_and_emergency_reap_fallback_branches(
         "_leader_exited",
         Mock(side_effect=process_control._ReapFailure),
     )
-    moments = iter((0.0, 5.0))
+    moments = iter((0.0, 0.0, 5.0))
     monkeypatch.setattr(time, "monotonic", lambda: next(moments))
     with pytest.raises(process_control._ReapFailure):
         runner._emergency_kill_and_reap(process, 123)
