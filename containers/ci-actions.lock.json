@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "queried_at_utc": "2026-07-10T12:11:30Z",
+  "queried_at_utc": "2026-07-13T00:43:03Z",
   "source": "GitHub git tag references",
   "actions": [
     {
@@ -20,6 +20,12 @@
       "uses": "r-lib/actions/setup-r",
       "tag": "v2.12.1",
       "commit": "d3c5be51b12e724e68f33216ca3c148b66d5f0b6"
+    },
+    {
+      "repository": "actions/upload-artifact",
+      "uses": "actions/upload-artifact",
+      "tag": "v7.0.1",
+      "commit": "043fb46d1a93c77aae656e7c1c64a875d1fc6a0a"
     }
   ]
 }

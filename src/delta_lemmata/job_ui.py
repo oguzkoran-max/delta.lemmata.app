@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import re
 from dataclasses import dataclass
 from enum import StrEnum
@@ -16,6 +17,8 @@ class JobDisplayState(StrEnum):
     RUNNING = "running"
     CANCELLING = "cancelling"
     FINALIZING = "finalizing"
+    CLEANING = "cleaning"
+    CLEANUP_FAILED = "cleanup_failed"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
     CANCELLED = "cancelled"
@@ -124,6 +127,23 @@ _STATE_COPY = {
         role=PresentationRole.STATUS,
         icon_token="shield-check",
     ),
+    JobDisplayState.CLEANING: _StateCopy(
+        label="Cleaning up",
+        title="Removing temporary files",
+        body="The run ended. Temporary server-file cleanup is still in progress.",
+        role=PresentationRole.STATUS,
+        icon_token="loader-circle",
+    ),
+    JobDisplayState.CLEANUP_FAILED: _StateCopy(
+        label="Cleanup needs attention",
+        title="Temporary-file removal is not confirmed",
+        body=(
+            "The run ended, but removal of its temporary server files could not be "
+            "confirmed. Use the support reference if this message persists."
+        ),
+        role=PresentationRole.ALERT,
+        icon_token="shield-alert",
+    ),
     JobDisplayState.SUCCEEDED: _StateCopy(
         label="Succeeded",
         title="Analysis complete",
@@ -190,6 +210,8 @@ _ACTIVE_STATES = frozenset(
         JobDisplayState.RUNNING,
         JobDisplayState.CANCELLING,
         JobDisplayState.FINALIZING,
+        JobDisplayState.CLEANING,
+        JobDisplayState.CLEANUP_FAILED,
         JobDisplayState.BUSY,
     }
 )
@@ -269,3 +291,35 @@ def project_job_state(
         disabled_action_reasons=disabled_action_reasons,
         support_reference=support_reference,
     )
+
+
+def render_job_presentation_html(presentation: JobPresentation) -> str:
+    """Render one payload-free lifecycle projection as an accessible status region."""
+
+    live = "assertive" if presentation.role is PresentationRole.ALERT else "polite"
+    support = ""
+    if presentation.support_reference is not None:
+        support = (
+            '<p class="delta-job-support">Support reference: '
+            f"<code>{html.escape(presentation.support_reference)}</code></p>"
+        )
+    return (
+        f'<section class="delta-job-status" role="{presentation.role.value}" '
+        f'aria-live="{live}" aria-atomic="true" '
+        f'data-job-state="{html.escape(presentation.state_id)}">'
+        f'<p class="delta-job-label">{html.escape(presentation.label)}</p>'
+        f"<h2>{html.escape(presentation.title)}</h2>"
+        f'<p class="delta-job-body">{html.escape(presentation.body)}</p>'
+        f"{support}</section>"
+    )
+
+
+__all__ = [
+    "DisabledActionReason",
+    "JobAction",
+    "JobDisplayState",
+    "JobPresentation",
+    "PresentationRole",
+    "project_job_state",
+    "render_job_presentation_html",
+]

@@ -116,7 +116,48 @@ def test_requested_cancellation_projects_as_cancelling(source: object) -> None:
 def test_terminal_outcomes_have_distinct_honest_display_states(
     outcome: TerminalOutcome, state: JobDisplayState
 ) -> None:
-    assert display_state_for(terminal(outcome)) is state
+    job = terminal(outcome)
+    assert display_state_for(job) is JobDisplayState.CLEANING
+    for index, kind in enumerate(ArtifactKind, start=20):
+        job = transition_artifact(
+            job,
+            kind=kind,
+            target=CleanupState.VERIFIED_ABSENT,
+            at_utc=NOW + timedelta(seconds=index),
+            expected_version=job.version,
+            operation_id=operation(index),
+        )
+    assert display_state_for(job) is state
+
+
+def test_expired_job_never_claims_removal_until_cleanup_is_verified() -> None:
+    expired = terminal(TerminalOutcome.EXPIRED)
+    presentation = project_job_record(expired)
+    assert presentation.state_id == JobDisplayState.CLEANING.value
+    assert "removed" not in presentation.body.casefold()
+
+    in_progress = transition_artifact(
+        expired,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.IN_PROGRESS,
+        at_utc=NOW + timedelta(seconds=5),
+        delete_by_utc=expired.artifacts.input.delete_by_utc,
+        expected_version=expired.version,
+        operation_id=operation(40),
+    )
+    failed = transition_artifact(
+        in_progress,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.FAILED,
+        at_utc=NOW + timedelta(seconds=6),
+        delete_by_utc=in_progress.artifacts.input.delete_by_utc,
+        expected_version=in_progress.version,
+        operation_id=operation(41),
+    )
+    failed_presentation = project_job_record(failed)
+    assert failed_presentation.state_id == JobDisplayState.CLEANUP_FAILED.value
+    assert "could not be confirmed" in failed_presentation.body
+    assert "removed" not in failed_presentation.body.casefold()
 
 
 def test_success_remains_finalizing_until_cleanup_and_export_publication() -> None:

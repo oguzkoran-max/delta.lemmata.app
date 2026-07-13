@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import StrEnum
-from typing import Annotated, Literal, Self
+from typing import Annotated, Any, Literal, Self
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator, model_validator
 
 from delta_lemmata.clock import require_utc
 from delta_lemmata.session_identity import JobId, workspace_component
@@ -29,7 +29,12 @@ class DeletionReason(StrEnum):
 class DeletionEvent(BaseModel):
     """A bounded deletion fact that cannot carry scholarly or runtime payloads."""
 
-    model_config = ConfigDict(extra="forbid", frozen=True, str_strip_whitespace=True)
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+        str_strip_whitespace=True,
+        hide_input_in_errors=True,
+    )
 
     event_code: Literal["JOB_ARTIFACTS_DELETED"] = "JOB_ARTIFACTS_DELETED"
     job_reference_digest: JobReferenceDigest
@@ -52,6 +57,26 @@ class DeletionEvent(BaseModel):
             raise ValueError("deletion evidence must expire within seven days")
         return self
 
+    def __init__(self, **data: Any) -> None:
+        try:
+            super().__init__(**data)
+        except ValidationError:
+            raise DeletionEventError from None
+
+    @classmethod
+    def model_validate(cls, obj: object, **kwargs: Any) -> Self:
+        try:
+            return super().model_validate(obj, **kwargs)
+        except ValidationError:
+            raise DeletionEventError from None
+
+
+class DeletionEventError(ValueError):
+    """Content-free rejection from the deletion-evidence boundary."""
+
+    def __init__(self) -> None:
+        super().__init__("JOB_DELETION_EVENT_INVALID")
+
 
 def new_deletion_event(
     *,
@@ -65,23 +90,38 @@ def new_deletion_event(
 ) -> DeletionEvent:
     """Create one deletion fact from typed, content-free values only."""
 
-    occurred_at_utc = require_utc(occurred_at_utc, field_name="occurred_at_utc")
-    if event_ttl_seconds <= 0 or event_ttl_seconds > MAX_EVENT_TTL_SECONDS:
-        raise ValueError("event_ttl_seconds must be between one second and seven days")
-    return DeletionEvent(
-        job_reference_digest=workspace_component(job_id),
-        occurred_at_utc=occurred_at_utc,
-        reason=reason,
-        file_count=file_count,
-        byte_count=byte_count,
-        policy_version=policy_version,
-        expires_at_utc=occurred_at_utc + timedelta(seconds=event_ttl_seconds),
-    )
+    try:
+        if (
+            not isinstance(job_id, JobId)
+            or not isinstance(reason, DeletionReason)
+            or type(file_count) is not int
+            or type(byte_count) is not int
+            or type(event_ttl_seconds) is not int
+            or policy_version != "job-policy-v1"
+        ):
+            raise DeletionEventError
+        occurred_at_utc = require_utc(occurred_at_utc, field_name="occurred_at_utc")
+        if event_ttl_seconds <= 0 or event_ttl_seconds > MAX_EVENT_TTL_SECONDS:
+            raise DeletionEventError
+        return DeletionEvent(
+            job_reference_digest=workspace_component(job_id),
+            occurred_at_utc=occurred_at_utc,
+            reason=reason,
+            file_count=file_count,
+            byte_count=byte_count,
+            policy_version=policy_version,
+            expires_at_utc=occurred_at_utc + timedelta(seconds=event_ttl_seconds),
+        )
+    except (AttributeError, TypeError, ValueError, ValidationError) as error:
+        if isinstance(error, DeletionEventError):
+            raise
+        raise DeletionEventError from None
 
 
 __all__ = [
     "MAX_EVENT_TTL_SECONDS",
     "DeletionEvent",
+    "DeletionEventError",
     "DeletionReason",
     "new_deletion_event",
 ]

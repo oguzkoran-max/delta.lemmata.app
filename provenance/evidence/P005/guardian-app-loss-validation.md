@@ -1,7 +1,8 @@
 # P005 Guardian and Application-Loss Validation
 
-**Status:** Intermediate engineering evidence. P005 remains open for exact-commit
-clean-clone, Linux CI, canonical container, SBOM, and final acceptance audit.
+**Status:** Historical guardian checkpoint. Its exact-commit clean-clone and Linux
+CI/container/SBOM build gates later passed; subsequent P005 acceptance hardening is
+recorded separately.
 
 **Validated locally:** 2026-07-13, macOS, branch `codex/p005-job-lifecycle`
 
@@ -106,6 +107,8 @@ returned `CLOSED` with no new P0/P1.
 ## Claim Boundary
 
 This checkpoint supports the tested local POSIX application-loss boundary on macOS.
-It does not establish secure erasure, reboot recovery, production resource values,
-container/cgroup/host isolation, proxy behavior, Linux parity, R/stylo execution, or
-CE-14/CE-15 completion. Those claims remain gated by later P005/P006/P014/P015 work.
+The later Linux CI result is a separate source/test and image-build record, not a
+production runtime claim. Neither record establishes secure erasure, reboot
+recovery, production resource values, container/cgroup/host isolation, proxy
+behavior, R/stylo execution, or CE-14/CE-15 completion. Those claims remain gated by
+P006/P014/P015 work.

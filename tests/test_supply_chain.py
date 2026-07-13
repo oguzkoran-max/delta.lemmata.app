@@ -35,7 +35,11 @@ def test_container_base_digest_matches_lock() -> None:
     expected = f"{lock['repository']}:{lock['tag']}@{lock['manifest_list_digest']}"
     assert expected in dockerfile
     assert "--platform=linux/amd64" in dockerfile
-    assert lock["verification_status"] == "digest-verified-build-not-run"
+    assert lock["verification_status"] == "digest-verified-ci-build-passed"
+    assert lock["verification_commit"] == "cfb503c1c5b8fc7d03e9d80fce557a98b86b977c"
+    assert lock["verification_run"] == "29215163561"
+    assert lock["verification_job"] == "86709522510"
+    assert lock["verified_at_utc"] == "2026-07-13T00:23:44Z"
 
 
 def test_python_direct_dependencies_are_locked() -> None:

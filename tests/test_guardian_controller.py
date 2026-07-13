@@ -580,7 +580,7 @@ def test_private_guardian_entry_rejects_malformed_contract() -> None:
     assert guardian._run_guardian([]) == 126
     assert guardian._run_guardian([guardian._GUARDIAN_MARKER] + ["bad"] * 10) == 126
     assert (
-        guardian._run_guardian([guardian._GUARDIAN_MARKER, "-1", "-1", "-1"] + ["bad"] * 8) == 126
+        guardian._run_guardian([guardian._GUARDIAN_MARKER, "-1", "-1", "-1"] + ["bad"] * 9) == 126
     )
 
 
@@ -622,12 +622,13 @@ def test_private_guardian_entry_success_and_app_loss_cleanup_path(
         limits().model_dump_json(),
         guardian._encoded_argv((sys.executable, str(WORKER.resolve()), "success")),
         operation(2),
+        str(os.open(tmp_path, guardian._DIRECTORY_FLAGS)),
     ]
     assert guardian._run_guardian(arguments) == 0
     os.close(control_write)
     protocol = os.read(result_read, 1024)
     os.close(result_read)
-    assert protocol == b"R 321\nF cancelled none\n"
+    assert protocol == b"R 321\nF cancelled none\nX\n"
     cleanup.assert_called_once()
 
     control_read, control_write = os.pipe()
@@ -637,6 +638,7 @@ def test_private_guardian_entry_success_and_app_loss_cleanup_path(
     os.close(secret_write)
     completed = list(arguments)
     completed[1:4] = [str(control_read), str(result_write), str(secret_read)]
+    completed[12] = str(os.open(tmp_path, guardian._DIRECTORY_FLAGS))
     os.write(control_write, b"A")
     monkeypatch.setattr(
         guardian,
@@ -646,7 +648,7 @@ def test_private_guardian_entry_success_and_app_loss_cleanup_path(
     cleanup.reset_mock()
     assert guardian._run_guardian(completed) == 0
     os.close(control_write)
-    assert os.read(result_read, 1024) == b"R 321\nF succeeded none\n"
+    assert os.read(result_read, 1024) == b"R 321\nF succeeded none\nA\n"
     os.close(result_read)
     cleanup.assert_not_called()
 
@@ -657,6 +659,7 @@ def test_private_guardian_entry_success_and_app_loss_cleanup_path(
     os.close(bad_secret_write)
     bad = list(arguments)
     bad[1:4] = [str(bad_read), str(bad_result_write), str(bad_secret_read)]
+    bad[12] = str(os.open(tmp_path, guardian._DIRECTORY_FLAGS))
     bad[7] = "b" * 64
     assert guardian._run_guardian(bad) == 126
     os.close(bad_write)
@@ -675,6 +678,7 @@ def test_private_guardian_entry_success_and_app_loss_cleanup_path(
         str(invalid_secret_read),
     ]
     invalid_reference[11] = "bad"
+    invalid_reference[12] = str(os.open(tmp_path, guardian._DIRECTORY_FLAGS))
     assert guardian._run_guardian(invalid_reference) == 126
     os.close(invalid_reference_write)
     assert os.read(invalid_result_read, 1024) == b"E\n"
@@ -721,6 +725,7 @@ def test_guardian_entry_reaps_worker_and_attempts_cleanup_after_control_failure(
             limits().model_dump_json(),
             guardian._encoded_argv((sys.executable, str(WORKER.resolve()), "success")),
             operation(2),
+            str(os.open(tmp_path, guardian._DIRECTORY_FLAGS)),
         ]
         status = guardian._run_guardian(arguments)
         os.close(control_write)
@@ -774,6 +779,41 @@ def test_start_failure_and_protocol_monitor_failure_are_stable(
     assert broken._error.code is GuardianControllerErrorCode.CONTROL_FAILED
 
 
+def test_guardian_start_rejects_cwd_rename_swap_before_spawning(tmp_path: Path) -> None:
+    item, _workspaces, _layout, _receipts, _job_id = controller(tmp_path, "success")
+    original = tmp_path.with_name(tmp_path.name + "-original")
+    tmp_path.rename(original)
+    tmp_path.mkdir()
+
+    expect_error(GuardianControllerErrorCode.START_FAILED, item.start)
+    assert item._guardian is None
+
+
+def test_guardian_partial_pipe_failure_closes_every_allocated_descriptor(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    item, _workspaces, _layout, _receipts, _job_id = controller(tmp_path, "success")
+    real_pipe = os.pipe
+    allocated: list[int] = []
+    calls = 0
+
+    def fail_third_pipe() -> tuple[int, int]:
+        nonlocal calls
+        calls += 1
+        if calls == 3:
+            raise OSError("CANARY_EMFILE")
+        pair = real_pipe()
+        allocated.extend(pair)
+        return pair
+
+    monkeypatch.setattr(guardian.os, "pipe", fail_third_pipe)
+    error = expect_error(GuardianControllerErrorCode.START_FAILED, item.start)
+    assert "CANARY" not in str(error)
+    for descriptor in allocated:
+        with pytest.raises(OSError):
+            os.fstat(descriptor)
+
+
 def test_monitor_thread_start_failure_closes_liveness_pipe_and_reaps_guardian(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -799,7 +839,9 @@ def test_monitor_thread_start_failure_closes_liveness_pipe_and_reaps_guardian(
         (b"R -1\n", 0),
         (b"R 1\n", 0),
         (b"R 1\n" + b"x" * guardian._MAX_PROTOCOL_LINE, 0),
-        (b"R 1\nF succeeded none\n", 1),
+        (b"R 1\nF succeeded none\nX\n", 0),
+        (b"R 1\nF succeeded none\nQ\n", 0),
+        (b"R 1\nF succeeded none\nA\n", 1),
     ],
 )
 def test_protocol_monitor_rejects_malformed_ready_final_and_guardian_status(
@@ -819,10 +861,12 @@ def test_protocol_monitor_rejects_malformed_ready_final_and_guardian_status(
     assert item._error.code is GuardianControllerErrorCode.CONTROL_FAILED
 
 
-def test_protocol_monitor_accepts_result_without_open_control_descriptor(tmp_path: Path) -> None:
+def test_protocol_monitor_accepts_confirmed_result_without_open_control_descriptor(
+    tmp_path: Path,
+) -> None:
     item, _workspaces, _layout, _receipts, _job_id = controller(tmp_path, "success")
     read_fd, write_fd = os.pipe()
-    os.write(write_fd, b"R 321\nF succeeded none\n")
+    os.write(write_fd, b"R 321\nF succeeded none\nA\n")
     os.close(write_fd)
     item._started = True
     item._result_read = read_fd
@@ -830,6 +874,7 @@ def test_protocol_monitor_accepts_result_without_open_control_descriptor(tmp_pat
     item._guardian = cast(Any, Mock(wait=Mock(return_value=0)))
     item._monitor_protocol()
     assert item.result == ProcessResult(ProcessOutcome.SUCCEEDED)
+    assert item._ack_confirmed is True
 
 
 def test_protocol_monitor_error_closes_control_reaps_child_and_preserves_prior_error(
@@ -938,6 +983,12 @@ def test_terminal_ack_rejects_prior_error_late_ack_and_pipe_failure(tmp_path: Pa
     late._result = ProcessResult(ProcessOutcome.SUCCEEDED)
     late_version = persist_terminal(late, late._result)
     late._guardian_finished = True
+    expect_error(
+        GuardianControllerErrorCode.CONTROL_FAILED,
+        lambda: late.acknowledge_terminal_persisted(expected_version=late_version),
+    )
+
+    late._acknowledged = True
     expect_error(
         GuardianControllerErrorCode.CONTROL_FAILED,
         lambda: late.acknowledge_terminal_persisted(expected_version=late_version),

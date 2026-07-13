@@ -58,6 +58,7 @@ class JanitorRunReport:
     workspaces_removed: int
     deletion_events_recorded: int
     purge: StorePurgeReport
+    untracked_workspaces_removed: int = 0
 
 
 def _operation_id(job: JobRecord, action: str, at_utc: datetime) -> str:
@@ -114,6 +115,7 @@ class JobJanitor:
         if recovery is not None and not callable(recovery):
             raise ValueError("JOB_JANITOR_INVALID_RECOVERY")
         now = require_utc(self._clock.now(), field_name="clock.now")
+        orphan_attempts, orphan_removed, orphan_failures = self._reconcile_untracked_workspaces()
         recovered = 0
         unresolved = 0
         conflicts = 0
@@ -156,9 +158,14 @@ class JobJanitor:
             running_recovery_unresolved=unresolved,
             reason_overrides=reason_overrides,
         )
-        if conflicts == 0:
-            return report
-        return replace(report, state_conflicts=report.state_conflicts + conflicts)
+        return replace(
+            report,
+            cleanup_attempts=report.cleanup_attempts + orphan_attempts,
+            cleanup_failures=report.cleanup_failures + orphan_failures,
+            state_conflicts=report.state_conflicts + conflicts,
+            workspaces_removed=report.workspaces_removed + orphan_removed,
+            untracked_workspaces_removed=orphan_removed,
+        )
 
     def run_continuously(
         self,
@@ -173,6 +180,27 @@ class JobJanitor:
         while not stop_event.is_set():
             self.run_once()
             stop_event.wait(interval_seconds)
+
+    def _reconcile_untracked_workspaces(self) -> tuple[int, int, int]:
+        known = {
+            (job.owner_digest, workspace_component(JobId.from_urlsafe(job.job_id)))
+            for job in self._store.list_jobs_for_maintenance()
+        }
+        attempts = 0
+        removed = 0
+        failures = 0
+        for layout in self._workspaces.list_layouts():
+            identity = (layout.owner.name, layout.job.name)
+            if identity in known:
+                continue
+            attempts += 1
+            try:
+                self._workspaces.cleanup(layout)
+            except WorkspaceError:
+                failures += 1
+            else:
+                removed += 1
+        return attempts, removed, failures
 
     def _run_at(
         self,

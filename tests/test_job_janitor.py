@@ -17,6 +17,7 @@ from delta_lemmata.job_models import (
     JobRecord,
     TerminalOutcome,
     VersionConflictError,
+    request_cancellation,
     transition_artifact,
     transition_execution,
 )
@@ -125,18 +126,35 @@ def terminal_job(
     base_operation: int = 1,
 ) -> JobRecord:
     running = running_job(store, owner, base_operation=base_operation)
+    current = running
     terminal_at = NOW + timedelta(seconds=3)
+    terminal_operation = base_operation + 2
+    if outcome is TerminalOutcome.CANCELLED:
+        requested = request_cancellation(
+            current,
+            at_utc=NOW + timedelta(seconds=2, microseconds=1),
+            expected_version=current.version,
+            operation_id=operation(terminal_operation),
+        )
+        current = persist(
+            store,
+            owner,
+            current,
+            requested,
+            NOW + timedelta(seconds=2, microseconds=1),
+        )
+        terminal_operation += 1
     terminal = transition_execution(
-        running,
+        current,
         target=ExecutionState.TERMINAL,
         outcome=outcome,
         at_utc=terminal_at,
         tombstone_expires_at_utc=terminal_at
         + timedelta(seconds=DEFAULT_JOB_POLICY.tombstone_ttl_seconds),
-        expected_version=running.version,
-        operation_id=operation(base_operation + 2),
+        expected_version=current.version,
+        operation_id=operation(terminal_operation),
     )
-    return persist(store, owner, running, terminal, terminal_at)
+    return persist(store, owner, current, terminal, terminal_at)
 
 
 def add_artifact(
@@ -270,16 +288,59 @@ def test_failed_cleanup_is_retried_without_changing_the_terminal_outcome(tmp_pat
     assert not layout.job.exists()
 
 
+@pytest.mark.parametrize(
+    "outcome",
+    [
+        TerminalOutcome.FAILED,
+        TerminalOutcome.CANCELLED,
+        TerminalOutcome.TIMED_OUT,
+        TerminalOutcome.CRASHED,
+        TerminalOutcome.ABANDONED,
+    ],
+)
+def test_every_unsuccessful_running_outcome_is_cleaned_immediately(
+    tmp_path: Path,
+    outcome: TerminalOutcome,
+) -> None:
+    store, workspaces, clock, janitor = environment(tmp_path)
+    owner = capability()
+    terminal = terminal_job(store, owner, outcome)
+    assert terminal.outcome is not None
+    tombstone_deadline = terminal.tombstone_expires_at_utc
+    layout = layout_for(workspaces, terminal)
+    workspaces.create_file(layout, WorkspaceArea.INPUT, "a" * 64, b"private input")
+    workspaces.create_file(layout, WorkspaceArea.WORK, "b" * 64, b"private work")
+    clock.set(NOW + timedelta(seconds=4))
+
+    report = janitor.run_once()
+    cleaned = store.get_job(job_id=terminal.job_id, capability=owner)
+
+    assert report.cleanup_attempts == 1
+    assert report.cleanup_failures == 0
+    assert report.artifacts_verified_absent == 4
+    assert report.deletion_events_recorded == 1
+    assert cleaned.outcome == terminal.outcome
+    assert cleaned.tombstone_expires_at_utc == tombstone_deadline
+    assert all(
+        cleaned.artifacts.for_kind(kind).state is CleanupState.VERIFIED_ABSENT
+        for kind in ArtifactKind
+    )
+    assert not layout.job.exists()
+    events = store.list_deletion_events()
+    assert len(events) == 1
+    assert events[0].reason is DeletionReason.UNSUCCESSFUL_TERMINAL
+
+
 def test_success_publishes_only_after_input_work_cleanup_then_expires_outputs(
     tmp_path: Path,
 ) -> None:
     store, workspaces, clock, janitor = environment(tmp_path)
     owner = capability()
     job = terminal_job(store, owner, TerminalOutcome.SUCCEEDED)
-    deadline = NOW + timedelta(hours=1)
     for number, kind in enumerate(
         (ArtifactKind.WORK, ArtifactKind.RESULT, ArtifactKind.EXPORT), start=10
     ):
+        deadline = NOW + timedelta(minutes=15 if kind is ArtifactKind.WORK else 60)
         job = add_artifact(
             store,
             owner,
@@ -396,6 +457,43 @@ def test_startup_recovery_requires_guardian_proof_and_records_abandonment(tmp_pa
     assert abandoned.outcome.kind is TerminalOutcome.ABANDONED
     assert not layout.job.exists()
     assert store.list_deletion_events()[0].reason is DeletionReason.STARTUP_RECOVERY
+
+
+def test_startup_recovery_removes_only_untracked_verified_workspaces(tmp_path: Path) -> None:
+    store, workspaces, _clock, janitor = environment(tmp_path)
+    owner = capability()
+    known = store.stage_job(capability=owner, at_utc=NOW)
+    known_layout = layout_for(workspaces, known)
+    orphan = workspaces.create("a" * 64, "b" * 64)
+    workspaces.create_file(orphan, WorkspaceArea.INPUT, "c" * 64, b"orphan corpus")
+
+    assert {layout.job for layout in workspaces.list_layouts()} == {
+        known_layout.job,
+        orphan.job,
+    }
+    assert janitor.run_once().untracked_workspaces_removed == 0
+    assert orphan.job.exists()
+
+    recovered = janitor.recover_startup()
+    assert recovered.untracked_workspaces_removed == 1
+    assert recovered.cleanup_attempts == 1
+    assert recovered.workspaces_removed == 1
+    assert known_layout.job.exists()
+    assert not orphan.job.exists()
+
+    failed_store, failed_workspaces, _clock, failed_janitor = environment(tmp_path / "failed")
+    failed_orphan = failed_workspaces.create("d" * 64, "e" * 64)
+
+    def fail_cleanup(_layout: WorkspaceLayout) -> CleanupReport:
+        raise WorkspaceError(WorkspaceErrorCode.CLEANUP_FAILED)
+
+    failed_workspaces.cleanup = fail_cleanup  # type: ignore[method-assign]
+    failed = failed_janitor.recover_startup()
+    assert failed_store.list_jobs_for_maintenance() == ()
+    assert failed.cleanup_attempts == 1
+    assert failed.cleanup_failures == 1
+    assert failed.untracked_workspaces_removed == 0
+    assert failed_orphan.job.exists()
 
 
 def test_janitor_configuration_loop_and_conflict_paths_are_fail_closed(

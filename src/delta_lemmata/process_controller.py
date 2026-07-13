@@ -39,6 +39,7 @@ _CLEAN_WORKER_ENVIRONMENT = {
 _CONTROL_ENVIRONMENT = {"LC_ALL": "C"}
 _MONITOR_INTERVAL_SECONDS = 0.025
 _PS_TIMEOUT_SECONDS = 1.0
+_DIRECTORY_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
 
 # The synthetic fixture uses these content-free exit codes to make simulated
 # memory/PID exhaustion deterministic across the macOS and Linux evidence runs.
@@ -132,7 +133,11 @@ def _apply_worker_limits(cpu_time_seconds: int, memory_bytes: int) -> None:
         _bounded_limit(resource.RLIMIT_AS, memory_bytes, memory_bytes)
 
 
-def _launcher_argv(argv: tuple[str, ...], limits: WorkerLimitProfile) -> tuple[str, ...]:
+def _launcher_argv(
+    argv: tuple[str, ...],
+    limits: WorkerLimitProfile,
+    cwd_descriptor: int,
+) -> tuple[str, ...]:
     return (
         sys.executable,
         "-m",
@@ -140,6 +145,7 @@ def _launcher_argv(argv: tuple[str, ...], limits: WorkerLimitProfile) -> tuple[s
         _LAUNCHER_MARKER,
         str(limits.cpu_time_seconds),
         str(limits.memory_bytes),
+        str(cwd_descriptor),
         *argv,
     )
 
@@ -147,22 +153,26 @@ def _launcher_argv(argv: tuple[str, ...], limits: WorkerLimitProfile) -> tuple[s
 def _run_launcher(arguments: list[str]) -> NoReturn:
     """Set limits after fork in a single-threaded interpreter, then replace it."""
 
-    if len(arguments) < 4 or arguments[0] != _LAUNCHER_MARKER:
+    if len(arguments) < 5 or arguments[0] != _LAUNCHER_MARKER:
         raise SystemExit(126)
     try:
         cpu_time_seconds = int(arguments[1])
         memory_bytes = int(arguments[2])
+        cwd_descriptor = int(arguments[3])
     except ValueError:
         raise SystemExit(126) from None
-    target = tuple(arguments[3:])
+    target = tuple(arguments[4:])
     if (
         cpu_time_seconds <= 0
         or memory_bytes <= 0
+        or cwd_descriptor < 0
         or not target
         or not Path(target[0]).is_absolute()
     ):
         raise SystemExit(126)
     try:
+        os.fchdir(cwd_descriptor)
+        os.close(cwd_descriptor)
         _apply_worker_limits(cpu_time_seconds, memory_bytes)
         os.execve(target[0], target, _CLEAN_WORKER_ENVIRONMENT)
     except (OSError, ValueError):
@@ -277,7 +287,7 @@ class ProcessController:
         cwd: Path,
         limits: WorkerLimitProfile,
     ) -> None:
-        self._validate_configuration(argv=argv, cwd=cwd, limits=limits)
+        self._cwd_identity = self._validate_configuration(argv=argv, cwd=cwd, limits=limits)
         self._argv = argv
         self._cwd = cwd
         self._limits = limits
@@ -297,7 +307,7 @@ class ProcessController:
         argv: tuple[str, ...],
         cwd: Path,
         limits: WorkerLimitProfile,
-    ) -> None:
+    ) -> tuple[int, int]:
         if os.name != "posix" or not hasattr(os, "killpg"):
             raise ProcessControllerError(ProcessControllerErrorCode.POSIX_REQUIRED)
         if not isinstance(limits, WorkerLimitProfile):
@@ -314,7 +324,7 @@ class ProcessController:
         try:
             info = cwd.lstat()
             fixed_cwd = cwd.resolve(strict=True)
-        except OSError:
+        except (OSError, RuntimeError):
             invalid_cwd = True
         else:
             invalid_cwd = False
@@ -322,6 +332,7 @@ class ProcessController:
             raise ProcessControllerError(ProcessControllerErrorCode.INVALID_CONFIGURATION)
         if not stat.S_ISDIR(info.st_mode) or fixed_cwd != cwd:
             raise ProcessControllerError(ProcessControllerErrorCode.INVALID_CONFIGURATION)
+        return info.st_dev, info.st_ino
 
     @property
     def result(self) -> ProcessResult | None:
@@ -342,21 +353,35 @@ class ProcessController:
             if self._started:
                 raise ProcessControllerError(ProcessControllerErrorCode.INVALID_STATE)
             self._started = True
+            cwd_descriptor = -1
             try:
+                cwd_descriptor = os.open(self._cwd, _DIRECTORY_FLAGS)
+                cwd_info = os.fstat(cwd_descriptor)
+                if (
+                    not stat.S_ISDIR(cwd_info.st_mode)
+                    or (cwd_info.st_dev, cwd_info.st_ino) != self._cwd_identity
+                ):
+                    raise OSError
                 process = subprocess.Popen(
-                    _launcher_argv(self._argv, self._limits),
+                    _launcher_argv(self._argv, self._limits, cwd_descriptor),
                     shell=False,
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     close_fds=True,
-                    cwd=self._cwd,
+                    pass_fds=(cwd_descriptor,),
                     env=_CLEAN_WORKER_ENVIRONMENT,
                     restore_signals=True,
                     start_new_session=True,
                 )
             except (OSError, subprocess.SubprocessError):
                 process = None
+            finally:
+                if cwd_descriptor >= 0:
+                    try:
+                        os.close(cwd_descriptor)
+                    except OSError:
+                        pass
             if process is None:
                 raise ProcessControllerError(ProcessControllerErrorCode.START_FAILED)
             self._process = process
@@ -430,8 +455,7 @@ class ProcessController:
             if process.returncode is not None:
                 if not _group_exists(process_group_id):
                     return
-                time.sleep(_MONITOR_INTERVAL_SECONDS)
-                continue
+                raise ProcessControllerError(ProcessControllerErrorCode.REAP_FAILED)
             try:
                 _signal_group(process_group_id, signal.SIGKILL)
                 if self._wait_for_group_absence(process, process_group_id):
@@ -608,15 +632,28 @@ class ProcessController:
                 process.kill()
             except OSError:
                 pass
-        try:
-            process.wait(timeout=self._limits.terminate_grace_seconds + 2)
-        except subprocess.TimeoutExpired as error:
-            raise _ReapFailure from error
         deadline = time.monotonic() + self._limits.terminate_grace_seconds + 2
-        while _group_exists(process_group_id) and time.monotonic() < deadline:
+        while time.monotonic() < deadline:
+            try:
+                leader_exited = _leader_exited(process)
+                descendants = _count_group_descendants(
+                    self._ps_path,
+                    process_group_id,
+                    process.pid,
+                )
+            except (_ControlFailure, _ReapFailure):
+                time.sleep(_MONITOR_INTERVAL_SECONDS)
+                continue
+            if leader_exited and descendants == 0:
+                try:
+                    process.wait(timeout=self._limits.terminate_grace_seconds)
+                except subprocess.TimeoutExpired as error:
+                    raise _ReapFailure from error
+                if not _group_exists(process_group_id):
+                    return
+                raise _ReapFailure
             time.sleep(_MONITOR_INTERVAL_SECONDS)
-        if _group_exists(process_group_id):
-            raise _ReapFailure
+        raise _ReapFailure
 
     def _wait_for_group_absence(
         self,

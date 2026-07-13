@@ -386,6 +386,45 @@ def test_lifecycle_state_and_start_failure_are_content_free(
     assert PAYLOAD_CANARY not in "".join(traceback.format_exception(error))
 
 
+def test_start_descriptor_close_failure_remains_content_free(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = controller(tmp_path, "success")
+    monkeypatch.setattr(subprocess, "Popen", Mock(side_effect=OSError(PAYLOAD_CANARY)))
+    real_close = os.close
+
+    def close_then_fail(descriptor: int) -> None:
+        real_close(descriptor)
+        raise OSError(PAYLOAD_CANARY)
+
+    monkeypatch.setattr(process_control.os, "close", close_then_fail)
+    error = expect_error(ProcessControllerErrorCode.START_FAILED, runner.start)
+    assert PAYLOAD_CANARY not in "".join(traceback.format_exception(error))
+
+
+def test_start_cwd_descriptor_open_failure_never_spawns(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = controller(tmp_path, "success")
+    popen = Mock()
+    monkeypatch.setattr(process_control.os, "open", Mock(side_effect=OSError(PAYLOAD_CANARY)))
+    monkeypatch.setattr(subprocess, "Popen", popen)
+
+    error = expect_error(ProcessControllerErrorCode.START_FAILED, runner.start)
+    assert PAYLOAD_CANARY not in "".join(traceback.format_exception(error))
+    popen.assert_not_called()
+
+
+def test_start_rejects_working_directory_rename_swap(tmp_path: Path) -> None:
+    runner = controller(tmp_path, "success")
+    original = tmp_path.with_name(tmp_path.name + "-original")
+    tmp_path.rename(original)
+    tmp_path.mkdir()
+
+    expect_error(ProcessControllerErrorCode.START_FAILED, runner.start)
+    assert runner._process is None
+
+
 def test_private_stable_classification_and_signal_helpers(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -418,6 +457,9 @@ def test_private_stable_classification_and_signal_helpers(
         [process_control._LAUNCHER_MARKER, "bad", "1", sys.executable],
         [process_control._LAUNCHER_MARKER, "0", "1", sys.executable],
         [process_control._LAUNCHER_MARKER, "1", "0", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "bad", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "-1", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "1", "relative"],
         [process_control._LAUNCHER_MARKER, "1", "1", "relative"],
     ],
 )
@@ -440,9 +482,16 @@ def test_launcher_applies_limits_and_fails_closed_if_exec_fails(
 
     monkeypatch.setattr(process_control, "_apply_worker_limits", record_limits)
     monkeypatch.setattr(os, "execve", fail_exec)
+    cwd_descriptor = os.open(Path.cwd(), process_control._DIRECTORY_FLAGS)
     with pytest.raises(SystemExit) as caught:
         process_control._run_launcher(
-            [process_control._LAUNCHER_MARKER, "2", "1024", sys.executable]
+            [
+                process_control._LAUNCHER_MARKER,
+                "2",
+                "1024",
+                str(cwd_descriptor),
+                sys.executable,
+            ]
         )
     assert caught.value.code == 126
     assert applied == [(2, 1024)]
@@ -520,6 +569,18 @@ def test_completion_detected_after_usage_sample_wins_deterministically(
         runner._choose_winner(process, 123, time.monotonic() + 1)
         is process_control._Winner.COMPLETION
     )
+
+
+def test_preselected_winner_returns_before_process_sampling(tmp_path: Path) -> None:
+    runner = controller(tmp_path, "success")
+    runner._winner = process_control._Winner.CANCELLATION
+    process = cast(subprocess.Popen[bytes], Mock())
+
+    assert (
+        runner._choose_winner(process, 123, time.monotonic() + 1)
+        is process_control._Winner.CANCELLATION
+    )
+    process.poll.assert_not_called()
 
 
 def test_memory_sample_and_settlement_are_platform_independent(
@@ -768,6 +829,8 @@ def test_force_and_emergency_reap_fallback_branches(
         runner._force_reap(process, 123)
 
     process.kill.side_effect = OSError
+    monkeypatch.setattr(process_control, "_leader_exited", Mock(return_value=True))
+    monkeypatch.setattr(process_control, "_count_group_descendants", Mock(return_value=0))
     monkeypatch.setattr(process_control, "_group_exists", Mock(return_value=False))
     runner._emergency_kill_and_reap(process, 123)
 
@@ -783,16 +846,31 @@ def test_force_and_emergency_reap_fallback_branches(
         runner._emergency_kill_and_reap(timed_out, 123)
 
     process.kill.side_effect = None
-    groups = Mock(side_effect=(True, False, False))
-    monkeypatch.setattr(process_control, "_group_exists", groups)
-    monkeypatch.setattr(time, "sleep", lambda _seconds: None)
-    runner._emergency_kill_and_reap(process, 123)
-
     monkeypatch.setattr(process_control, "_group_exists", Mock(return_value=True))
+    with pytest.raises(process_control._ReapFailure):
+        runner._emergency_kill_and_reap(process, 123)
+
+    process.wait.reset_mock()
+    monkeypatch.setattr(process_control, "_leader_exited", Mock(side_effect=(False, True)))
+    monkeypatch.setattr(process_control, "_count_group_descendants", Mock(side_effect=(1, 0)))
+    monkeypatch.setattr(process_control, "_group_exists", Mock(return_value=False))
+    monkeypatch.setattr(time, "monotonic", lambda: 0.0)
+    sleep = Mock()
+    monkeypatch.setattr(time, "sleep", sleep)
+    runner._emergency_kill_and_reap(process, 123)
+    sleep.assert_called_once_with(process_control._MONITOR_INTERVAL_SECONDS)
+
+    process.wait.reset_mock()
+    monkeypatch.setattr(
+        process_control,
+        "_leader_exited",
+        Mock(side_effect=process_control._ReapFailure),
+    )
     moments = iter((0.0, 5.0))
     monkeypatch.setattr(time, "monotonic", lambda: next(moments))
     with pytest.raises(process_control._ReapFailure):
         runner._emergency_kill_and_reap(process, 123)
+    process.wait.assert_not_called()
 
 
 def test_owned_reap_retry_never_releases_a_live_group(
@@ -822,7 +900,8 @@ def test_owned_reap_retry_never_releases_a_live_group(
     runner.reap_until_absent()
 
     process.returncode = -signal.SIGKILL
-    groups = Mock(side_effect=(True, False))
-    monkeypatch.setattr(process_control, "_group_exists", groups)
+    monkeypatch.setattr(process_control, "_group_exists", Mock(return_value=False))
     runner.reap_until_absent()
-    assert groups.call_count == 2
+
+    monkeypatch.setattr(process_control, "_group_exists", Mock(return_value=True))
+    expect_error(ProcessControllerErrorCode.REAP_FAILED, runner.reap_until_absent)

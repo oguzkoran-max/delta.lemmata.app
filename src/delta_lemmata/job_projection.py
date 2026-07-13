@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 from delta_lemmata.job_models import (
+    ArtifactKind,
     CancellationState,
+    CleanupState,
     ExecutionState,
     JobRecord,
     TerminalOutcome,
@@ -40,6 +42,14 @@ def display_state_for(job: JobRecord) -> JobDisplayState:
         if job.export_available:
             return JobDisplayState.SUCCEEDED
         return JobDisplayState.FINALIZING
+    artifact_states = tuple(job.artifacts.for_kind(kind).state for kind in ArtifactKind)
+    if any(state is CleanupState.FAILED for state in artifact_states):
+        return JobDisplayState.CLEANUP_FAILED
+    if any(
+        state not in {CleanupState.NOT_CREATED, CleanupState.VERIFIED_ABSENT}
+        for state in artifact_states
+    ):
+        return JobDisplayState.CLEANING
     return _TERMINAL_DISPLAY_STATES[job.outcome.kind]
 
 

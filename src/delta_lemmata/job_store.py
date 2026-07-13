@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import os
 import re
 import sqlite3
@@ -21,6 +22,7 @@ from delta_lemmata.clock import require_utc
 from delta_lemmata.job_events import DeletionEvent
 from delta_lemmata.job_models import (
     ArtifactKind,
+    CancellationState,
     CleanupState,
     ExecutionState,
     JobModelError,
@@ -33,6 +35,7 @@ from delta_lemmata.job_models import (
     retire_export,
     transition_artifact,
     transition_execution,
+    withdraw_export,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY, JobPolicy
 from delta_lemmata.session_identity import (
@@ -52,6 +55,9 @@ _BUSY_TIMEOUT_MILLISECONDS = 30_000
 _SCHEMA_VERSION = 2
 _ZERO_DIGEST = bytes(32)
 _OPERATION_REFERENCE = re.compile(r"^op_[0-9a-f]{64}$", flags=re.ASCII)
+_ADMISSION_OPERATION_DOMAIN = b"delta-lemmata\x00queued-admission\x00v1\x00"
+_ADMISSION_ABANDONMENT_DOMAIN = b"delta-lemmata\x00admission-abandonment\x00v1\x00"
+_QUEUE_CANCELLATION_DOMAIN = b"delta-lemmata\x00queue-cancellation\x00v1\x00"
 
 _SELECT_JOB = """
 SELECT job_id, owner_digest, execution_state, deadline_at_utc,
@@ -134,6 +140,7 @@ class JobStoreErrorCode(StrEnum):
     INVALID_CONFIGURATION = "JOB_STORE_INVALID_CONFIGURATION"
     IDENTIFIER_GENERATION_FAILED = "JOB_IDENTIFIER_GENERATION_FAILED"
     ADMISSION_REJECTED = "JOB_ADMISSION_REJECTED"
+    ADMISSION_CLEANUP_UNRESOLVED = "JOB_ADMISSION_CLEANUP_UNRESOLVED"
     NOT_AVAILABLE = "JOB_NOT_AVAILABLE"
     INVALID_UPDATE = "JOB_STORE_INVALID_UPDATE"
 
@@ -151,6 +158,13 @@ class JobAdmissionRejectedError(JobStoreError):
 
     def __init__(self) -> None:
         super().__init__(JobStoreErrorCode.ADMISSION_REJECTED)
+
+
+class JobAdmissionCleanupUnresolvedError(JobStoreError):
+    """Request an atomically tracked terminal record for an uncleared workspace."""
+
+    def __init__(self) -> None:
+        super().__init__(JobStoreErrorCode.ADMISSION_CLEANUP_UNRESOLVED)
 
 
 class JobNotAvailableError(JobStoreError):
@@ -187,6 +201,21 @@ def _invalid_update() -> NoReturn:
 
 def _timestamp(value: datetime) -> str:
     return value.isoformat().replace("+00:00", "Z")
+
+
+def _admission_operation_id(job: JobRecord) -> str:
+    material = _ADMISSION_OPERATION_DOMAIN + job.job_id.encode("ascii")
+    return "op_" + hashlib.sha256(material).hexdigest()
+
+
+def _admission_abandonment_operation_id(job: JobRecord) -> str:
+    material = _ADMISSION_ABANDONMENT_DOMAIN + job.job_id.encode("ascii")
+    return "op_" + hashlib.sha256(material).hexdigest()
+
+
+def _queue_cancellation_operation_id(job: JobRecord) -> str:
+    material = _QUEUE_CANCELLATION_DOMAIN + job.job_id.encode("ascii")
+    return "op_" + hashlib.sha256(material).hexdigest()
 
 
 class SQLiteJobStore:
@@ -245,7 +274,13 @@ class SQLiteJobStore:
         if self._validate_database_directory(self.database_file.parent) != self._directory_identity:
             raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE)
 
-    def _harden_file(self, path: Path, *, create: bool) -> None:
+    def _harden_file(
+        self,
+        path: Path,
+        *,
+        create: bool,
+        allow_unlinked: bool = False,
+    ) -> None:
         flags = os.O_RDWR | getattr(os, "O_NOFOLLOW", 0)
         if create:
             flags |= os.O_CREAT
@@ -261,17 +296,27 @@ class SQLiteJobStore:
             raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE) from None
         try:
             info = os.fstat(descriptor)
-            if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or info.st_nlink != 1:
+            valid_link_count = info.st_nlink == 1 or (allow_unlinked and info.st_nlink == 0)
+            if not stat.S_ISREG(info.st_mode) or info.st_uid != os.getuid() or not valid_link_count:
                 raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE)
-            os.fchmod(descriptor, _DATABASE_MODE)
+            if info.st_nlink == 1:
+                os.fchmod(descriptor, _DATABASE_MODE)
         finally:
             os.close(descriptor)
 
     def _harden_database_files(self) -> None:
         self._verify_database_directory()
         self._harden_file(self.database_file, create=False)
-        self._harden_file(Path(f"{self.database_file}-wal"), create=False)
-        self._harden_file(Path(f"{self.database_file}-shm"), create=False)
+        self._harden_file(
+            Path(f"{self.database_file}-wal"),
+            create=False,
+            allow_unlinked=True,
+        )
+        self._harden_file(
+            Path(f"{self.database_file}-shm"),
+            create=False,
+            allow_unlinked=True,
+        )
 
     def _initialize_schema(self) -> None:
         connection = sqlite3.connect(
@@ -647,6 +692,16 @@ class SQLiteJobStore:
                     expected_version=previous.version,
                     operation_id=operation.operation_id,
                 )
+            elif action == "export:withdraw":
+                verified_at = updated.artifacts.export.verified_at_utc
+                if verified_at is None:
+                    _invalid_update()
+                expected = withdraw_export(
+                    previous,
+                    at_utc=verified_at,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
+                )
             else:
                 _invalid_update()
         except (JobModelError, ValueError):
@@ -654,63 +709,170 @@ class SQLiteJobStore:
         if expected != updated:
             _invalid_update()
 
+    @contextmanager
+    def reserve_admission(
+        self,
+        *,
+        capability: SessionCapability,
+        at_utc: datetime,
+        queued: bool = False,
+    ) -> Iterator[JobRecord]:
+        """Reserve admission while callers finish allocation-prone setup.
+
+        The writer transaction is intentionally held across the yielded block. A
+        capacity denial therefore occurs before identifier generation, while any
+        exception from workspace creation or materialization rolls back the job and
+        its operational events.
+        """
+
+        try:
+            at_utc = require_utc(at_utc, field_name="at_utc")
+            if not isinstance(capability, SessionCapability):
+                raise JobAdmissionRejectedError
+            if not isinstance(queued, bool):
+                _invalid_update()
+            with self._immediate() as connection:
+                rows = connection.execute(
+                    """
+                    SELECT job_id, owner_digest, execution_state, deadline_at_utc,
+                           queue_sequence, version, model_json
+                    FROM jobs
+                    """
+                ).fetchall()
+                staged_count = 0
+                queued_count = 0
+                retained_unsuccessful_count = 0
+                owned_count = 0
+                for row in rows:
+                    existing = self._decode(row)
+                    if existing.execution.state is ExecutionState.STAGED:
+                        staged_count += 1
+                    if existing.execution.state is ExecutionState.QUEUED:
+                        queued_count += 1
+                    retained_unsuccessful = bool(
+                        existing.execution.state is ExecutionState.TERMINAL
+                        and existing.outcome is not None
+                        and existing.outcome.kind is not TerminalOutcome.SUCCEEDED
+                        and any(
+                            existing.artifacts.for_kind(kind).state
+                            not in {CleanupState.NOT_CREATED, CleanupState.VERIFIED_ABSENT}
+                            for kind in ArtifactKind
+                        )
+                    )
+                    if retained_unsuccessful:
+                        retained_unsuccessful_count += 1
+                    active_for_owner = (
+                        existing.execution.state is not ExecutionState.TERMINAL
+                        or retained_unsuccessful
+                    )
+                    if active_for_owner and self._owner_matches(
+                        job_id=row["job_id"],
+                        stored_digest=row["owner_digest"],
+                        capability=capability,
+                    ):
+                        owned_count += 1
+                capacity_reached = (
+                    queued_count >= self._policy.max_queued
+                    if queued
+                    else staged_count >= self._policy.max_staged_global
+                )
+                if (
+                    owned_count >= self._policy.max_active_per_session
+                    or capacity_reached
+                    or retained_unsuccessful_count >= self._policy.max_staged_global
+                ):
+                    raise JobAdmissionRejectedError
+                try:
+                    generated_id = self._job_id_factory()
+                except Exception:
+                    raise JobStoreError(JobStoreErrorCode.IDENTIFIER_GENERATION_FAILED) from None
+                if not isinstance(generated_id, JobId):
+                    raise JobStoreError(JobStoreErrorCode.IDENTIFIER_GENERATION_FAILED)
+                digest = owner_digest(
+                    owner_secret=self._owner_secret,
+                    capability=capability,
+                    job_id=generated_id,
+                ).hex()
+                job = new_staged_job(
+                    job_id=generated_id.to_urlsafe(),
+                    owner_digest=digest,
+                    policy_version=self._policy.profile_version,
+                    at_utc=at_utc,
+                    staged_ttl_seconds=self._policy.staged_ttl_seconds,
+                    event_ttl_seconds=self._policy.event_ttl_seconds,
+                )
+                self._insert_job(connection, job)
+                cleanup_unresolved: JobAdmissionCleanupUnresolvedError | None = None
+                try:
+                    yield job
+                except JobAdmissionCleanupUnresolvedError as error:
+                    cleanup_unresolved = error
+                self._insert_event(
+                    connection,
+                    job=job,
+                    event_code="JOB_STAGED",
+                    at_utc=at_utc,
+                )
+                if cleanup_unresolved is not None:
+                    abandoned = transition_execution(
+                        job,
+                        target=ExecutionState.TERMINAL,
+                        outcome=TerminalOutcome.ABANDONED,
+                        at_utc=at_utc,
+                        tombstone_expires_at_utc=at_utc
+                        + timedelta(seconds=self._policy.tombstone_ttl_seconds),
+                        expected_version=job.version,
+                        operation_id=_admission_abandonment_operation_id(job),
+                    )
+                    self._insert_event(
+                        connection,
+                        job=abandoned,
+                        event_code="JOB_UPDATED",
+                        at_utc=at_utc,
+                    )
+                    self._write_job(
+                        connection,
+                        previous=job,
+                        updated=abandoned,
+                        queue_sequence=None,
+                    )
+                elif queued:
+                    updated = transition_execution(
+                        job,
+                        target=ExecutionState.QUEUED,
+                        at_utc=at_utc,
+                        deadline_at_utc=at_utc + timedelta(seconds=self._policy.queued_ttl_seconds),
+                        expected_version=job.version,
+                        operation_id=_admission_operation_id(job),
+                    )
+                    queue_sequence = self._insert_event(
+                        connection,
+                        job=updated,
+                        event_code="JOB_QUEUED",
+                        at_utc=at_utc,
+                    )
+                    self._write_job(
+                        connection,
+                        previous=job,
+                        updated=updated,
+                        queue_sequence=queue_sequence,
+                    )
+            if cleanup_unresolved is not None:
+                raise cleanup_unresolved
+        except JobStoreError as error:
+            rejection = error
+        except (OSError, sqlite3.Error):
+            rejection = JobStoreError(JobStoreErrorCode.DATABASE_FAILURE)
+        else:
+            return
+        _detach(rejection)
+        raise rejection
+
     @_content_free
     def stage_job(self, *, capability: SessionCapability, at_utc: datetime) -> JobRecord:
         """Atomically admit one staged lease without allocating on rejection."""
 
-        at_utc = require_utc(at_utc, field_name="at_utc")
-        if not isinstance(capability, SessionCapability):
-            raise JobAdmissionRejectedError
-        with self._immediate() as connection:
-            rows = connection.execute(
-                """
-                SELECT job_id, owner_digest, execution_state
-                FROM jobs
-                WHERE execution_state != 'terminal'
-                """
-            ).fetchall()
-            staged_count = 0
-            owned_count = 0
-            for row in rows:
-                if row["execution_state"] == ExecutionState.STAGED.value:
-                    staged_count += 1
-                if self._owner_matches(
-                    job_id=row["job_id"],
-                    stored_digest=row["owner_digest"],
-                    capability=capability,
-                ):
-                    owned_count += 1
-            if (
-                owned_count >= self._policy.max_active_per_session
-                or staged_count >= self._policy.max_staged_global
-            ):
-                raise JobAdmissionRejectedError
-            try:
-                generated_id = self._job_id_factory()
-            except Exception:
-                raise JobStoreError(JobStoreErrorCode.IDENTIFIER_GENERATION_FAILED) from None
-            if not isinstance(generated_id, JobId):
-                raise JobStoreError(JobStoreErrorCode.IDENTIFIER_GENERATION_FAILED)
-            digest = owner_digest(
-                owner_secret=self._owner_secret,
-                capability=capability,
-                job_id=generated_id,
-            ).hex()
-            job = new_staged_job(
-                job_id=generated_id.to_urlsafe(),
-                owner_digest=digest,
-                policy_version=self._policy.profile_version,
-                at_utc=at_utc,
-                staged_ttl_seconds=self._policy.staged_ttl_seconds,
-                event_ttl_seconds=self._policy.event_ttl_seconds,
-            )
-            self._insert_job(connection, job)
-            self._insert_event(
-                connection,
-                job=job,
-                event_code="JOB_STAGED",
-                at_utc=at_utc,
-            )
+        with self.reserve_admission(capability=capability, at_utc=at_utc) as job:
             return job
 
     create_staged = stage_job
@@ -804,22 +966,47 @@ class SQLiteJobStore:
             )
             if int(running_row[0]) >= self._policy.max_running:
                 return None
-            row = connection.execute(
-                """
-                SELECT job_id, owner_digest, execution_state, deadline_at_utc,
-                       queue_sequence, version, model_json
-                FROM jobs
-                WHERE execution_state = 'queued' AND deadline_at_utc > ?
-                ORDER BY queue_sequence ASC
-                LIMIT 1
-                """,
-                (_timestamp(at_utc),),
-            ).fetchone()
-            if row is None:
-                return None
-            previous = self._decode(row)
-            if at_utc < previous.execution.entered_at_utc:
-                return None
+            while True:
+                row = connection.execute(
+                    """
+                    SELECT job_id, owner_digest, execution_state, deadline_at_utc,
+                           queue_sequence, version, model_json
+                    FROM jobs
+                    WHERE execution_state = 'queued' AND deadline_at_utc > ?
+                    ORDER BY queue_sequence ASC
+                    LIMIT 1
+                    """,
+                    (_timestamp(at_utc),),
+                ).fetchone()
+                if row is None:
+                    return None
+                previous = self._decode(row)
+                if at_utc < previous.execution.entered_at_utc:
+                    return None
+                if previous.cancellation.state is not CancellationState.REQUESTED:
+                    break
+                cancelled = transition_execution(
+                    previous,
+                    target=ExecutionState.TERMINAL,
+                    outcome=TerminalOutcome.CANCELLED,
+                    at_utc=at_utc,
+                    tombstone_expires_at_utc=at_utc
+                    + timedelta(seconds=self._policy.tombstone_ttl_seconds),
+                    expected_version=previous.version,
+                    operation_id=_queue_cancellation_operation_id(previous),
+                )
+                self._insert_event(
+                    connection,
+                    job=cancelled,
+                    event_code="JOB_UPDATED",
+                    at_utc=at_utc,
+                )
+                self._write_job(
+                    connection,
+                    previous=previous,
+                    updated=cancelled,
+                    queue_sequence=None,
+                )
             updated = transition_execution(
                 previous,
                 target=ExecutionState.RUNNING,
@@ -1087,6 +1274,7 @@ class SQLiteJobStore:
 
 
 __all__ = [
+    "JobAdmissionCleanupUnresolvedError",
     "JobAdmissionRejectedError",
     "JobIdFactory",
     "JobNotAvailableError",

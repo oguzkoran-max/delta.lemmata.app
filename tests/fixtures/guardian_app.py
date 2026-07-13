@@ -46,8 +46,10 @@ def main() -> int:
         ),
     )
     controller.start()
-    ready_file.write_text(str(controller.process_group_id), encoding="ascii")
-    os.chmod(ready_file, 0o600)
+    ready_temporary = ready_file.with_name(ready_file.name + ".tmp")
+    ready_temporary.write_text(str(controller.process_group_id), encoding="ascii")
+    os.chmod(ready_temporary, 0o600)
+    os.replace(ready_temporary, ready_file)
     while True:
         time.sleep(60)
 

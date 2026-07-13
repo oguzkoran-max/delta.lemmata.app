@@ -248,6 +248,90 @@ def test_atomic_staged_limits_use_no_identifier_or_event_on_rejection(
     assert database_counts(owner_database) == (1, 1)
 
 
+def test_admission_reservation_rolls_back_job_and_event_on_caller_failure(
+    tmp_path: Path,
+) -> None:
+    database_file = tmp_path / "control.sqlite3"
+    factory = CountingJobIds()
+    store = make_store(database_file, factory)
+
+    with pytest.raises(RuntimeError, match="post-reservation-failure"):
+        with store.reserve_admission(capability=capability(1), at_utc=NOW):
+            assert database_counts(database_file) == (0, 0)
+            raise RuntimeError("post-reservation-failure")
+
+    assert factory.calls == 1
+    assert database_counts(database_file) == (0, 0)
+    accepted = store.stage_job(capability=capability(1), at_utc=NOW)
+    assert accepted.execution.state is ExecutionState.STAGED
+    assert database_counts(database_file) == (1, 1)
+
+
+def test_direct_queued_reservations_are_concurrent_and_zero_allocation_on_rejection(
+    tmp_path: Path,
+) -> None:
+    database_file = tmp_path / "control.sqlite3"
+    factory = CountingJobIds()
+    stores = [make_store(database_file, factory) for _ in range(7)]
+    owners = [capability(number) for number in range(1, 8)]
+    barrier = threading.Barrier(len(stores))
+
+    def admit(index: int) -> JobRecord | JobStoreError:
+        barrier.wait()
+        try:
+            with stores[index].reserve_admission(
+                capability=owners[index],
+                at_utc=NOW,
+                queued=True,
+            ) as staged:
+                assert staged.execution.state is ExecutionState.STAGED
+            return stores[index].get_job(job_id=staged.job_id, capability=owners[index])
+        except JobStoreError as error:
+            return error
+
+    with ThreadPoolExecutor(max_workers=len(stores)) as executor:
+        outcomes = list(executor.map(admit, range(len(stores))))
+
+    accepted = [outcome for outcome in outcomes if isinstance(outcome, JobRecord)]
+    rejected = [outcome for outcome in outcomes if isinstance(outcome, JobStoreError)]
+    assert len(accepted) == DEFAULT_JOB_POLICY.max_queued
+    assert all(job.execution.state is ExecutionState.QUEUED for job in accepted)
+    assert len(rejected) == len(stores) - DEFAULT_JOB_POLICY.max_queued
+    assert all(isinstance(error, JobAdmissionRejectedError) for error in rejected)
+    assert factory.calls == DEFAULT_JOB_POLICY.max_queued
+    assert database_counts(database_file) == (3, 6)
+
+    invalid = make_store(tmp_path / "invalid.sqlite3")
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: invalid.reserve_admission(
+            capability=capability(1),
+            at_utc=NOW,
+            queued=cast(Any, "yes"),
+        ).__enter__(),
+    )
+
+
+def test_admission_reservation_database_failure_is_content_free(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = make_store(tmp_path / "control.sqlite3")
+
+    def fail_connection() -> sqlite3.Connection:
+        raise sqlite3.OperationalError("CANARY /private/database/path")
+
+    monkeypatch.setattr(store, "_connect", fail_connection)
+    error = expect_store_error(
+        JobStoreErrorCode.DATABASE_FAILURE,
+        lambda: store.reserve_admission(
+            capability=capability(1),
+            at_utc=NOW,
+        ).__enter__(),
+    )
+    assert "CANARY" not in str(error)
+    assert "/" not in str(error)
+
+
 def test_staged_admission_counts_queued_ownership_without_counting_it_as_staged(
     tmp_path: Path,
 ) -> None:
@@ -712,7 +796,15 @@ def test_cas_rejects_forged_or_capacity_bypassing_successors(tmp_path: Path) -> 
     changed_expiry = expired.model_copy(
         update={"event_expires_at_utc": expired.event_expires_at_utc + timedelta(seconds=1)}
     )
-    for candidate in (missing_outcome, changed_expiry):
+    missing_withdraw_time = expired.model_copy(
+        update={
+            "operations": (
+                *queued.operations,
+                AppliedOperation(operation_id=operation(76), action="export:withdraw"),
+            )
+        }
+    )
+    for candidate in (missing_outcome, changed_expiry, missing_withdraw_time):
         expect_store_error(
             JobStoreErrorCode.INVALID_UPDATE,
             lambda candidate=candidate: store.compare_and_swap(
@@ -810,6 +902,26 @@ def test_configuration_file_identity_and_identifier_failures_are_content_free(
         lambda: invalid.stage_job(capability=capability(1), at_utc=NOW),
     )
     assert database_counts(invalid_database) == (0, 0)
+
+
+def test_unlinked_wal_sidecar_race_is_ignored_but_main_database_is_not(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = make_store(tmp_path / "control.sqlite3")
+    sidecar = Path(f"{store.database_file}-wal")
+    sidecar.touch(mode=0o600, exist_ok=True)
+    real_fstat = job_store.os.fstat
+
+    def unlinked(descriptor: int) -> os.stat_result:
+        values = list(real_fstat(descriptor))
+        values[3] = 0
+        return os.stat_result(values)
+
+    monkeypatch.setattr(job_store.os, "fstat", unlinked)
+    store._harden_file(sidecar, create=False, allow_unlinked=True)
+    with pytest.raises(JobStoreError) as captured:
+        store._harden_file(store.database_file, create=False)
+    assert captured.value.code is JobStoreErrorCode.INVALID_DATABASE
 
 
 def test_database_parent_must_remain_the_same_private_real_directory(
@@ -966,6 +1078,10 @@ def test_identity_verifier_failure_is_a_content_free_corruption(
     expect_store_error(
         JobStoreErrorCode.CORRUPT_RECORD,
         lambda: store.get_job(job_id=staged.job_id, capability=owner),
+    )
+    expect_store_error(
+        JobStoreErrorCode.CORRUPT_RECORD,
+        lambda: store.stage_job(capability=capability(2), at_utc=NOW),
     )
 
 

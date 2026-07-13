@@ -8,6 +8,7 @@ import os
 import queue
 import re
 import select
+import stat
 import subprocess
 import sys
 import threading
@@ -53,6 +54,7 @@ _ACK_TIMEOUT_SECONDS = 5.0
 _POLL_SECONDS = 0.025
 _MAX_PROTOCOL_LINE = 160
 _MAX_SECRET_BYTES = 4096
+_DIRECTORY_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
 
 
 class GuardianControllerErrorCode(StrEnum):
@@ -212,7 +214,11 @@ class GuardianController:
         receipt_store: RecoveryReceiptStore,
     ) -> None:
         try:
-            ProcessController._validate_configuration(argv=argv, cwd=cwd, limits=limits)
+            cwd_identity = ProcessController._validate_configuration(
+                argv=argv,
+                cwd=cwd,
+                limits=limits,
+            )
             WorkspaceManager(workspace_root)
         except (ProcessControllerError, WorkspaceError):
             raise GuardianControllerError(
@@ -231,6 +237,7 @@ class GuardianController:
             raise GuardianControllerError(GuardianControllerErrorCode.INVALID_CONFIGURATION)
         self._argv = argv
         self._cwd = cwd
+        self._cwd_identity = cwd_identity
         self._limits = limits
         self._job_id = job_id
         self._execution_reference = execution_reference
@@ -249,6 +256,7 @@ class GuardianController:
         self._error: GuardianControllerError | None = None
         self._guardian_finished = False
         self._acknowledged = False
+        self._ack_confirmed = False
 
     @property
     def boundary(self) -> str:
@@ -272,28 +280,40 @@ class GuardianController:
             if self._started:
                 raise GuardianControllerError(GuardianControllerErrorCode.INVALID_STATE)
             self._started = True
-            control_read, control_write = os.pipe()
-            result_read, result_write = os.pipe()
-            secret_read, secret_write = os.pipe()
-            arguments = (
-                sys.executable,
-                "-m",
-                "delta_lemmata.guardian_controller",
-                _GUARDIAN_MARKER,
-                str(control_read),
-                str(result_write),
-                str(secret_read),
-                self._job_id.to_urlsafe(),
-                str(self._workspace_root),
-                self._owner_component,
-                self._job_component,
-                str(self._receipt_store.root),
-                self._limits.model_dump_json(),
-                _encoded_argv(self._argv),
-                self._execution_reference,
-            )
+            control_read = control_write = -1
+            result_read = result_write = -1
+            secret_read = secret_write = -1
+            cwd_descriptor = -1
             guardian: subprocess.Popen[bytes] | None = None
             try:
+                control_read, control_write = os.pipe()
+                result_read, result_write = os.pipe()
+                secret_read, secret_write = os.pipe()
+                cwd_descriptor = os.open(self._cwd, _DIRECTORY_FLAGS)
+                cwd_info = os.fstat(cwd_descriptor)
+                if (
+                    not stat.S_ISDIR(cwd_info.st_mode)
+                    or (cwd_info.st_dev, cwd_info.st_ino) != self._cwd_identity
+                ):
+                    raise OSError
+                arguments = (
+                    sys.executable,
+                    "-m",
+                    "delta_lemmata.guardian_controller",
+                    _GUARDIAN_MARKER,
+                    str(control_read),
+                    str(result_write),
+                    str(secret_read),
+                    self._job_id.to_urlsafe(),
+                    str(self._workspace_root),
+                    self._owner_component,
+                    self._job_component,
+                    str(self._receipt_store.root),
+                    self._limits.model_dump_json(),
+                    _encoded_argv(self._argv),
+                    self._execution_reference,
+                    str(cwd_descriptor),
+                )
                 _write_all(secret_write, self._receipt_store.signing_secret_for_guardian())
                 _safe_close(secret_write)
                 guardian = subprocess.Popen(
@@ -303,8 +323,7 @@ class GuardianController:
                     stdout=subprocess.DEVNULL,
                     stderr=subprocess.DEVNULL,
                     close_fds=True,
-                    pass_fds=(control_read, result_write, secret_read),
-                    cwd=self._cwd,
+                    pass_fds=(control_read, result_write, secret_read, cwd_descriptor),
                     env=_CLEAN_ENVIRONMENT,
                     restore_signals=True,
                     start_new_session=True,
@@ -312,6 +331,8 @@ class GuardianController:
                 _safe_close(control_read)
                 _safe_close(result_write)
                 _safe_close(secret_read)
+                _safe_close(cwd_descriptor)
+                cwd_descriptor = -1
             except (OSError, subprocess.SubprocessError):
                 for descriptor in (
                     control_read,
@@ -320,6 +341,7 @@ class GuardianController:
                     result_write,
                     secret_read,
                     secret_write,
+                    cwd_descriptor,
                 ):
                     _safe_close(descriptor)
                 raise GuardianControllerError(GuardianControllerErrorCode.START_FAILED) from None
@@ -404,6 +426,8 @@ class GuardianController:
                 self._condition.wait()
             if self._error is not None:
                 raise GuardianControllerError(self._error.code)
+            if not self._ack_confirmed:
+                raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
 
     @_content_free
     def cancel(self) -> ProcessResult:
@@ -455,6 +479,15 @@ class GuardianController:
                 with self._condition:
                     self._result = result
                     self._condition.notify_all()
+                confirmation = stream.readline(_MAX_PROTOCOL_LINE)
+                if confirmation == b"A\n":
+                    with self._condition:
+                        self._ack_confirmed = True
+                        self._condition.notify_all()
+                elif confirmation == b"X\n":
+                    raise ValueError
+                else:
+                    raise ValueError
             if (
                 guardian.wait(
                     timeout=_ACK_TIMEOUT_SECONDS + self._limits.terminate_grace_seconds + 2
@@ -578,7 +611,7 @@ def _await_persistence_ack(control_descriptor: int) -> bool:
 
 
 def _run_guardian(arguments: list[str]) -> int:
-    if len(arguments) != 12 or arguments[0] != _GUARDIAN_MARKER:
+    if len(arguments) != 13 or arguments[0] != _GUARDIAN_MARKER:
         return 126
     controller: ProcessController | None = None
     recovery_attempted = False
@@ -594,10 +627,13 @@ def _run_guardian(arguments: list[str]) -> int:
         limits = WorkerLimitProfile.model_validate_json(arguments[9])
         argv = _decoded_argv(arguments[10])
         execution_reference = arguments[11]
+        cwd_descriptor = int(arguments[12])
         if _OPERATION_REFERENCE.fullmatch(execution_reference) is None:
             raise ValueError
         signing_secret = _read_secret(secret_descriptor)
         os.close(secret_descriptor)
+        os.fchdir(cwd_descriptor)
+        os.close(cwd_descriptor)
         if job_component != workspace_component(job_id):
             raise ValueError
         controller = ProcessController(argv=argv, cwd=Path.cwd(), limits=limits)
@@ -621,6 +657,9 @@ def _run_guardian(arguments: list[str]) -> int:
                 receipt_root=receipt_root,
                 signing_secret=signing_secret,
             )
+            _safe_protocol_write(result_descriptor, b"X\n")
+        else:
+            _safe_protocol_write(result_descriptor, b"A\n")
         return 0
     except (OSError, RuntimeError, ValueError):
         reaped = False
@@ -647,7 +686,12 @@ def _run_guardian(arguments: list[str]) -> int:
         _safe_protocol_write(result_descriptor if "result_descriptor" in locals() else -1, b"E\n")
         return 126
     finally:
-        for name in ("control_descriptor", "result_descriptor", "secret_descriptor"):
+        for name in (
+            "control_descriptor",
+            "result_descriptor",
+            "secret_descriptor",
+            "cwd_descriptor",
+        ):
             descriptor = locals().get(name)
             if isinstance(descriptor, int) and descriptor >= 0:
                 try:

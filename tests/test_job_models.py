@@ -27,6 +27,7 @@ from delta_lemmata.job_models import (
     retire_export,
     transition_artifact,
     transition_execution,
+    withdraw_export,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
 
@@ -117,6 +118,123 @@ def test_new_staged_job_is_content_free_immutable_and_uses_absolute_deadlines() 
             staged_ttl_seconds=0,
             event_ttl_seconds=1,
         )
+
+
+@pytest.mark.parametrize(
+    ("policy_version", "staged_ttl", "event_ttl"),
+    [
+        ("job-policy-v2", 3600, 604800),
+        ("job-policy-v1", 3601, 604800),
+        ("job-policy-v1", 3600, 604801),
+    ],
+)
+def test_new_staged_job_rejects_values_outside_the_closed_policy(
+    policy_version: str,
+    staged_ttl: int,
+    event_ttl: int,
+) -> None:
+    with pytest.raises(ValueError):
+        new_staged_job(
+            job_id=JOB_ID,
+            owner_digest=OWNER_DIGEST,
+            policy_version=policy_version,
+            at_utc=NOW,
+            staged_ttl_seconds=staged_ttl,
+            event_ttl_seconds=event_ttl,
+        )
+
+
+def test_queue_deadline_is_capped_and_shortens_the_input_lease() -> None:
+    job = _job()
+    at_utc = NOW + timedelta(seconds=1)
+    with pytest.raises(IllegalTransitionError):
+        transition_execution(
+            job,
+            target=ExecutionState.QUEUED,
+            at_utc=at_utc,
+            deadline_at_utc=at_utc + timedelta(seconds=DEFAULT_JOB_POLICY.queued_ttl_seconds + 1),
+            expected_version=job.version,
+            operation_id=_operation(90),
+        )
+    queued = _queued(job)
+    assert queued.artifacts.input.delete_by_utc == queued.execution.deadline_at_utc
+
+
+def test_terminal_tombstone_and_artifacts_cannot_exceed_policy_caps() -> None:
+    running = _running()
+    terminal_at = NOW + timedelta(seconds=3)
+    with pytest.raises(IllegalTransitionError):
+        transition_execution(
+            running,
+            target=ExecutionState.TERMINAL,
+            outcome=TerminalOutcome.FAILED,
+            at_utc=terminal_at,
+            tombstone_expires_at_utc=terminal_at
+            + timedelta(seconds=DEFAULT_JOB_POLICY.tombstone_ttl_seconds + 1),
+            expected_version=running.version,
+            operation_id=_operation(91),
+        )
+
+    terminal = _terminal()
+    for number, kind in enumerate(
+        (ArtifactKind.WORK, ArtifactKind.RESULT, ArtifactKind.EXPORT), start=92
+    ):
+        cap_seconds = (
+            DEFAULT_JOB_POLICY.unsuccessful_payload_ttl_seconds
+            if kind is ArtifactKind.WORK
+            else (
+                DEFAULT_JOB_POLICY.result_ttl_seconds
+                if kind is ArtifactKind.RESULT
+                else DEFAULT_JOB_POLICY.export_ttl_seconds
+            )
+        )
+        with pytest.raises(IllegalTransitionError):
+            transition_artifact(
+                terminal,
+                kind=kind,
+                target=CleanupState.PRESENT,
+                at_utc=terminal_at + timedelta(seconds=1),
+                delete_by_utc=terminal_at + timedelta(seconds=cap_seconds + 1),
+                expected_version=terminal.version,
+                operation_id=_operation(number),
+            )
+
+
+def test_direct_job_validation_rejects_overlong_event_artifact_and_tombstone() -> None:
+    unsupported_payload = _job().model_dump(mode="python")
+    unsupported_payload["policy_version"] = "job-policy-v2"
+    with pytest.raises(ValidationError, match="unsupported job policy"):
+        JobRecord.model_validate(unsupported_payload)
+
+    queued_payload = _queued().model_dump(mode="python")
+    queued_payload["execution"]["deadline_at_utc"] = queued_payload["execution"][
+        "entered_at_utc"
+    ] + timedelta(seconds=DEFAULT_JOB_POLICY.queued_ttl_seconds + 1)
+    with pytest.raises(ValidationError, match="execution deadline"):
+        JobRecord.model_validate(queued_payload)
+
+    staged_payload = _job().model_dump(mode="python")
+    staged_payload["event_expires_at_utc"] = NOW + timedelta(
+        seconds=DEFAULT_JOB_POLICY.event_ttl_seconds + 1
+    )
+    with pytest.raises(ValidationError, match="event deadline"):
+        JobRecord.model_validate(staged_payload)
+
+    terminal = _terminal(TerminalOutcome.FAILED)
+    terminal_payload = terminal.model_dump(mode="python")
+    terminal_payload["tombstone_expires_at_utc"] = terminal.outcome.occurred_at_utc + timedelta(
+        seconds=DEFAULT_JOB_POLICY.tombstone_ttl_seconds + 1
+    )
+    with pytest.raises(ValidationError, match="tombstone deadline"):
+        JobRecord.model_validate(terminal_payload)
+
+    artifact_payload = terminal.model_dump(mode="python")
+    artifact_payload["artifacts"]["input"]["delete_by_utc"] = (
+        terminal.outcome.occurred_at_utc
+        + timedelta(seconds=DEFAULT_JOB_POLICY.unsuccessful_payload_ttl_seconds + 1)
+    )
+    with pytest.raises(ValidationError, match="artifact deadline"):
+        JobRecord.model_validate(artifact_payload)
 
 
 @pytest.mark.parametrize(
@@ -742,8 +860,8 @@ def test_artifact_transition_rejects_stale_illegal_and_invalid_deadlines() -> No
 
 def test_success_export_requires_verified_input_and_work_cleanup() -> None:
     job = _terminal()
-    deadline = NOW + timedelta(hours=1)
     for number, kind in enumerate((ArtifactKind.WORK, ArtifactKind.EXPORT), start=10):
+        deadline = NOW + timedelta(minutes=15 if kind is ArtifactKind.WORK else 60)
         job = transition_artifact(
             job,
             kind=kind,
@@ -781,8 +899,9 @@ def test_success_export_requires_verified_input_and_work_cleanup() -> None:
 
 def test_published_export_retires_only_at_its_deadline_and_is_idempotent() -> None:
     job = _terminal()
-    deadline = NOW + timedelta(hours=1)
+    export_deadline = NOW + timedelta(hours=1)
     for number, kind in enumerate((ArtifactKind.WORK, ArtifactKind.EXPORT), start=10):
+        deadline = NOW + timedelta(minutes=15 if kind is ArtifactKind.WORK else 60)
         job = transition_artifact(
             job,
             kind=kind,
@@ -808,23 +927,72 @@ def test_published_export_retires_only_at_its_deadline_and_is_idempotent() -> No
     )
     retired = retire_export(
         published,
-        at_utc=deadline,
+        at_utc=export_deadline,
         expected_version=published.version,
         operation_id=_operation(15),
     )
     assert retired.outcome == published.outcome
     assert retired.export_available is False
     assert retired.artifacts.export.state is CleanupState.VERIFIED_ABSENT
-    assert retired.artifacts.export.verified_at_utc == deadline
+    assert retired.artifacts.export.verified_at_utc == export_deadline
     assert (
         retire_export(
             retired,
-            at_utc=deadline,
+            at_utc=export_deadline,
             expected_version=published.version,
             operation_id=_operation(15),
         )
         is retired
     )
+
+
+def test_owner_can_withdraw_a_published_export_before_expiry() -> None:
+    job = _terminal()
+    for number, kind in enumerate((ArtifactKind.WORK, ArtifactKind.EXPORT), start=10):
+        deadline = NOW + timedelta(minutes=15 if kind is ArtifactKind.WORK else 60)
+        job = transition_artifact(
+            job,
+            kind=kind,
+            target=CleanupState.PRESENT,
+            at_utc=NOW + timedelta(seconds=number),
+            delete_by_utc=deadline,
+            expected_version=job.version,
+            operation_id=_operation(number),
+        )
+    for number, kind in enumerate((ArtifactKind.INPUT, ArtifactKind.WORK), start=12):
+        job = transition_artifact(
+            job,
+            kind=kind,
+            target=CleanupState.VERIFIED_ABSENT,
+            at_utc=NOW + timedelta(seconds=number),
+            expected_version=job.version,
+            operation_id=_operation(number),
+        )
+    published = publish_export(job, expected_version=job.version, operation_id=_operation(14))
+    withdrawn = withdraw_export(
+        published,
+        at_utc=NOW + timedelta(seconds=20),
+        expected_version=published.version,
+        operation_id=_operation(15),
+    )
+    assert withdrawn.export_available is False
+    assert withdrawn.artifacts.export.state is CleanupState.VERIFIED_ABSENT
+    assert (
+        withdraw_export(
+            withdrawn,
+            at_utc=NOW + timedelta(seconds=20),
+            expected_version=published.version,
+            operation_id=_operation(15),
+        )
+        is withdrawn
+    )
+    with pytest.raises(IllegalTransitionError):
+        withdraw_export(
+            published,
+            at_utc=NOW,
+            expected_version=published.version,
+            operation_id=_operation(16),
+        )
 
 
 def test_export_retirement_rejects_stale_early_unpublished_or_missing_deadline() -> None:

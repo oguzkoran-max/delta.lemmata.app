@@ -1029,6 +1029,22 @@ def main() -> int:
     arguments = parser.parse_args()
     output = arguments.output.resolve()
     (output / "screenshots").mkdir(parents=True, exist_ok=True)
+    commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=ROOT,
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+    dirty = bool(
+        subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+    )
 
     port = _free_port()
     url = f"http://127.0.0.1:{port}"
@@ -1120,6 +1136,8 @@ def main() -> int:
         )
         result = {
             "schema_version": "1.0.0",
+            "git_commit": commit,
+            "git_dirty": dirty,
             "target_url": url,
             "audit_method": "Tracked Python Playwright harness and fresh local Streamlit process.",
             "synthetic_inputs_only": True,

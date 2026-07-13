@@ -8,6 +8,7 @@ from pydantic import ValidationError
 from delta_lemmata.job_events import (
     MAX_EVENT_TTL_SECONDS,
     DeletionEvent,
+    DeletionEventError,
     DeletionReason,
     new_deletion_event,
 )
@@ -73,7 +74,7 @@ def test_every_deletion_reason_is_allowlisted(reason: DeletionReason) -> None:
 
 @pytest.mark.parametrize("ttl", [0, -1, MAX_EVENT_TTL_SECONDS + 1])
 def test_factory_rejects_event_retention_outside_the_closed_boundary(ttl: int) -> None:
-    with pytest.raises(ValueError, match="between one second and seven days"):
+    with pytest.raises(DeletionEventError, match="JOB_DELETION_EVENT_INVALID"):
         new_deletion_event(
             job_id=fixed_job(),
             occurred_at_utc=NOW,
@@ -104,12 +105,12 @@ def test_model_rejects_unbounded_malformed_or_payload_bearing_records(
 ) -> None:
     data = event().model_dump(mode="python")
     data.update(payload)
-    with pytest.raises(ValidationError):
+    with pytest.raises(DeletionEventError):
         DeletionEvent.model_validate(data)
 
 
 def test_factory_rejects_non_utc_time() -> None:
-    with pytest.raises(ValueError, match="occurred_at_utc"):
+    with pytest.raises(DeletionEventError, match="JOB_DELETION_EVENT_INVALID"):
         new_deletion_event(
             job_id=fixed_job(),
             occurred_at_utc=NOW.astimezone(timezone(timedelta(hours=3))),
@@ -119,3 +120,34 @@ def test_factory_rejects_non_utc_time() -> None:
             policy_version="job-policy-v1",
             event_ttl_seconds=1,
         )
+
+
+@pytest.mark.parametrize("field", ["file_count", "byte_count", "policy_version"])
+def test_malformed_factory_values_cannot_echo_canary(field: str) -> None:
+    canary = "AC07_CANARY_PRIVATE_CORPUS"
+    values: dict[str, object] = {
+        "job_id": fixed_job(),
+        "occurred_at_utc": NOW,
+        "reason": DeletionReason.OWNER_REQUEST,
+        "file_count": 0,
+        "byte_count": 0,
+        "policy_version": "job-policy-v1",
+        "event_ttl_seconds": 1,
+    }
+    values[field] = canary
+    with pytest.raises(DeletionEventError) as captured:
+        new_deletion_event(**values)  # type: ignore[arg-type]
+    assert str(captured.value) == "JOB_DELETION_EVENT_INVALID"
+    assert canary not in str(captured.value)
+
+
+def test_direct_model_validation_hides_canary_input() -> None:
+    canary = "AC07_CANARY_PRIVATE_CORPUS"
+    data = event().model_dump(mode="python")
+    data["file_count"] = canary
+    with pytest.raises(DeletionEventError) as captured:
+        DeletionEvent.model_validate(data)
+    assert str(captured.value) == "JOB_DELETION_EVENT_INVALID"
+    assert canary not in str(captured.value)
+    assert not hasattr(captured.value, "errors")
+    assert not hasattr(captured.value, "json")

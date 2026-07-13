@@ -313,6 +313,38 @@ class WorkspaceManager:
             _detach(rejection)
             raise rejection from None
 
+    @_content_free
+    def list_layouts(self) -> tuple[WorkspaceLayout, ...]:
+        """Inventory every verified workspace for startup-only reconciliation."""
+
+        try:
+            root_fd = self._open_root()
+            try:
+                layouts: list[WorkspaceLayout] = []
+                for owner_name in sorted(os.listdir(root_fd)):
+                    self._component(owner_name)
+                    owner_fd = self._open_directory(root_fd, owner_name, None)
+                    try:
+                        job_names = sorted(os.listdir(owner_fd))
+                    finally:
+                        os.close(owner_fd)
+                    for job_name in job_names:
+                        self._component(job_name)
+                        layout = self._load_optional(owner_name, job_name)
+                        if layout is None:  # pragma: no cover - concurrent startup mutation
+                            _reject(WorkspaceErrorCode.INVALID_LAYOUT)
+                        layouts.append(layout)
+                return tuple(layouts)
+            finally:
+                os.close(root_fd)
+        except WorkspaceError as error:
+            _detach(error)
+            raise
+        except OSError:
+            rejection = WorkspaceError(WorkspaceErrorCode.INVALID_LAYOUT)
+            _detach(rejection)
+            raise rejection from None
+
     def _load_optional(self, owner_component: str, job_component: str) -> WorkspaceLayout | None:
         owner_name = self._component(owner_component)
         job_name = self._component(job_component)

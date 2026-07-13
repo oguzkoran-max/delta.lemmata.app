@@ -645,6 +645,32 @@ def test_cleanup_detects_file_swap_between_preflight_and_unlink(
     assert target.read_bytes() == b"replacement"
 
 
+def test_cleanup_unlink_race_preserves_external_canary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    target = workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"original")
+    moved = layout.result / ("e" * 64)
+    external = tmp_path / "external-canary"
+    external.write_bytes(b"preserve")
+    real_unlink = workspace.os.unlink
+    swapped = False
+
+    def swap_before_unlink(name: object, *, dir_fd: int | None = None) -> None:
+        nonlocal swapped
+        if name == FILE and not swapped:
+            swapped = True
+            target.rename(moved)
+            target.symlink_to(external)
+        real_unlink(name, dir_fd=dir_fd)
+
+    monkeypatch.setattr(workspace.os, "unlink", swap_before_unlink)
+    expect_code(WorkspaceErrorCode.CLEANUP_FAILED, lambda: workspaces.cleanup(layout))
+    assert external.read_bytes() == b"preserve"
+    assert moved.read_bytes() == b"original"
+
+
 def test_missing_area_identity_is_rejected_by_all_operations(tmp_path: Path) -> None:
     workspaces = manager(tmp_path)
     layout = workspaces.create(OWNER, JOB)
@@ -741,3 +767,25 @@ def test_best_effort_owner_removal_swallows_os_failure(
     monkeypatch.setattr(WorkspaceManager, "_remove_owner_if_empty_fd", fail)
     workspaces._remove_owner_if_empty(OWNER, layout._owner_identity)
     assert layout.owner.exists()
+
+
+def test_layout_inventory_failures_are_content_free(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    invalid = workspaces.root / "not-a-component"
+    invalid.write_text("unsafe", encoding="ascii")
+    expect_code(WorkspaceErrorCode.INVALID_COMPONENT, workspaces.list_layouts)
+    invalid.unlink()
+
+    real_listdir = workspace.os.listdir
+
+    def fail_root(descriptor: int) -> list[str]:
+        if descriptor >= 0:
+            raise OSError
+        return list(real_listdir(descriptor))
+
+    monkeypatch.setattr(workspace.os, "listdir", fail_root)
+    expect_code(WorkspaceErrorCode.INVALID_LAYOUT, workspaces.list_layouts)
+    assert layout.job.exists()

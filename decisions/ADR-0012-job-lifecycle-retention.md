@@ -33,12 +33,24 @@ alana sıkıştırır.
   Public P004 UI bağlantısı P008'e bırakılır.
 - Queue bir running ve en fazla üç queued job'dur. Admission ile allocation tek
   transaction'dır. Queue deadline 15 dakikadır.
+- Application service status, cancel, result, export ve cleanup işleminden önce
+  capability ownership doğrular. Admission reservation session ve capacity
+  sınırlarını job ID, workspace, materialization, event veya process ayırmadan önce
+  kontrol eder; sonraki hata store/event işlemlerini geri alır ve workspace'i siler.
+- Store finalization ile immediate cleanup birlikte başarısız olursa startup janitor
+  trusted root'u envanterler ve store satırı olmayan, kimliği doğrulanmış workspace'i
+  siler. Bu reconciliation yalnız startup'ta çalışır; live admission ile yarışmaz.
+- Cleanup'i çözülememiş unsuccessful terminal workspace'ler owner ve global
+  admission limitlerini tüketmeye devam eder; terminal etiketi disk kotasını sıfırlamaz.
 - Workspace path yalnız trusted root, owner digest prefix ve server job ID'den oluşur.
   Input label veya metadata path bileşeni değildir. Directory mode 0700, file mode
   0600 olur.
 - Success export ancak raw/normalized cleanup doğrulandıktan sonra yayımlanır.
   Failure, cancel, timeout, crash ve abandon cleanup hemen denenir ve 15 dakika üst
   sınırı vardır. Result/export bir saat, allowlisted event/tombstone yedi gün tutulur.
+- Bu süreler yalnız janitor davranışı değildir; model ve store sınırında policy cap
+  olarak doğrulanır. Geçiş daha uzun bir mevcut lease'i uzatmaz, gerekli olduğunda
+  daha kısa üst sınıra çeker.
 - Startup recovery ile sürekli deadline-driven janitor birlikte çalışır.
 - Worker execution shell kullanmaz; sabit argv, temiz environment, kapalı stdin,
   fixed cwd, process group, TERM/KILL/reap ve mandatory finite limit profile ister.
@@ -50,10 +62,19 @@ alana sıkıştırır.
   operation reference, terminal SQLite version ve mapped outcome eşleştiğinde ACK
   gönderebilir. ACK yoksa guardian workspace'i temizler ve aynı execution
   reference'a bağlı, imzalı content-free recovery receipt üretir.
+- ACK iki yönlüdür: guardian zamanında aldığı durable ACK için `A`, timeout sonrası
+  recovery için `X` döndürür. App yalnız `A` teyidini başarı sayar.
+- Guardian ve worker cwd'yi doğrulanmış inode'a bağlı inherited descriptor üzerinden
+  `fchdir` ile alır. Validation ile spawn arasındaki pathname rename/symlink değişimi
+  execution'a dönüşmez.
 - Normal ve emergency reap birlikte başarısız olursa guardian hata verip çıkmaz;
   process-group yokluğu kanıtlanana kadar sahipliği koruyarak reap'i tekrarlar.
 - Kullanıcı yüzeyi lifecycle projection hazırlayabilir, fakat P006/P008 öncesi aktif
   Start analysis veya scientific result göstermez.
+- Terminal outcome cleanup sonucu değildir. Artifact yokluğu doğrulanmadan
+  `removed`/`expired` kopyası gösterilmez; cleanup devam ediyor veya doğrulanamadı
+  durumu ayrı accessible live region olarak sunulur. Owner cleanup yayımlanmış
+  export'u ayrıca withdraw eder.
 
 ## Reddedilen Alternatifler
 
@@ -105,6 +126,10 @@ Bu nedenle result ve durable ACK ayrı protokol aşamalarıdır.
   tamamlandığında üretilebilir.
 - P005 kapanışı application-managed local evidence'tır. Secure erase, proxy, swap,
   snapshot, backup, cgroup, host isolation ve Delta-LDA isolation P014'te kalır.
+- P005'in complete process-tree iddiası sabit sentetik fixture ağacıyla sınırlıdır.
+  Arbitrary worker code'un yeni POSIX session açarak process group'tan kaçmasını
+  engellemek cgroup/container/no-new-privileges katmanı gerektirir ve P014 residual
+  riskidir.
 
 ## Kanıt Bağlantıları
 

@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 from enum import StrEnum
-from typing import Annotated, Self
+from typing import Annotated, Self, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from delta_lemmata.clock import require_utc
+from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
 
 JobIdText = Annotated[
     str,
@@ -19,7 +20,12 @@ OperationId = Annotated[str, Field(pattern=r"^op_[0-9a-f]{64}$")]
 
 
 class FrozenModel(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True, str_strip_whitespace=True)
+    model_config = ConfigDict(
+        extra="forbid",
+        frozen=True,
+        str_strip_whitespace=True,
+        hide_input_in_errors=True,
+    )
 
 
 class ExecutionState(StrEnum):
@@ -211,6 +217,9 @@ class JobRecord(FrozenModel):
 
     @model_validator(mode="after")
     def require_consistent_terminal_and_export_state(self) -> Self:
+        policy = DEFAULT_JOB_POLICY
+        if self.policy_version != policy.profile_version:
+            raise ValueError("unsupported job policy version")
         terminal = self.execution.state is ExecutionState.TERMINAL
         if terminal != (self.outcome is not None):
             raise ValueError("terminal execution state and outcome must agree")
@@ -232,6 +241,35 @@ class JobRecord(FrozenModel):
             raise ValueError("cancelled outcome requires a cancellation request")
         if self.export_available and not self.can_publish_export:
             raise ValueError("export cannot be available before successful verified cleanup")
+        execution_deadline_cap = {
+            ExecutionState.STAGED: self.execution.entered_at_utc
+            + timedelta(seconds=policy.staged_ttl_seconds),
+            ExecutionState.QUEUED: self.execution.entered_at_utc
+            + timedelta(seconds=policy.queued_ttl_seconds),
+        }.get(self.execution.state)
+        if (
+            execution_deadline_cap is not None
+            and self.execution.deadline_at_utc is not None
+            and self.execution.deadline_at_utc > execution_deadline_cap
+        ):
+            raise ValueError("execution deadline exceeds the job policy")
+        if self.event_expires_at_utc > self.execution.entered_at_utc + timedelta(
+            seconds=policy.event_ttl_seconds
+        ):
+            raise ValueError("event deadline exceeds the job policy")
+        if (
+            self.outcome is not None
+            and self.tombstone_expires_at_utc is not None
+            and self.tombstone_expires_at_utc
+            > self.outcome.occurred_at_utc + timedelta(seconds=policy.tombstone_ttl_seconds)
+        ):
+            raise ValueError("tombstone deadline exceeds the job policy")
+        for kind in ArtifactKind:
+            artifact = self.artifacts.for_kind(kind)
+            if artifact.delete_by_utc is None:
+                continue
+            if artifact.delete_by_utc > _artifact_deadline_cap(self, kind):
+                raise ValueError("artifact deadline exceeds the job policy")
         return self
 
     @property
@@ -311,6 +349,50 @@ def _updated(
     return JobRecord.model_validate(payload)
 
 
+def _artifact_deadline_cap(job: JobRecord, kind: ArtifactKind) -> datetime:
+    policy = DEFAULT_JOB_POLICY
+    state = job.execution.state
+    if state is ExecutionState.STAGED:
+        return job.execution.entered_at_utc + timedelta(seconds=policy.staged_ttl_seconds)
+    if state is ExecutionState.QUEUED:
+        return cast(datetime, job.execution.deadline_at_utc)
+    if state is ExecutionState.RUNNING:
+        return job.execution.entered_at_utc + timedelta(
+            seconds=(
+                policy.worker_limits.wall_time_seconds + policy.unsuccessful_payload_ttl_seconds
+            )
+        )
+    outcome = cast(Outcome, job.outcome)
+    seconds: int
+    if outcome.kind is TerminalOutcome.SUCCEEDED:
+        if kind is ArtifactKind.RESULT:
+            seconds = policy.result_ttl_seconds
+        elif kind is ArtifactKind.EXPORT:
+            seconds = policy.export_ttl_seconds
+        else:
+            seconds = policy.unsuccessful_payload_ttl_seconds
+    else:
+        seconds = policy.unsuccessful_payload_ttl_seconds
+    return outcome.occurred_at_utc + timedelta(seconds=seconds)
+
+
+def _retime_artifacts(
+    artifacts: ArtifactLifecycle,
+    caps: dict[ArtifactKind, datetime],
+) -> ArtifactLifecycle:
+    payload = artifacts.model_dump(mode="python")
+    for kind, cap in caps.items():
+        current = artifacts.for_kind(kind)
+        if current.delete_by_utc is None or current.delete_by_utc <= cap:
+            continue
+        payload[kind.value] = ArtifactStatus(
+            state=current.state,
+            delete_by_utc=cap,
+            verified_at_utc=current.verified_at_utc,
+        )
+    return ArtifactLifecycle.model_validate(payload)
+
+
 def transition_execution(
     job: JobRecord,
     *,
@@ -345,11 +427,27 @@ def transition_execution(
         tombstone_expires_at_utc = require_utc(
             tombstone_expires_at_utc, field_name="tombstone_expires_at_utc"
         )
-        if tombstone_expires_at_utc <= at_utc or deadline_at_utc is not None:
+        if (
+            tombstone_expires_at_utc <= at_utc
+            or tombstone_expires_at_utc
+            > at_utc + timedelta(seconds=DEFAULT_JOB_POLICY.tombstone_ttl_seconds)
+            or deadline_at_utc is not None
+        ):
             raise IllegalTransitionError
         next_outcome = Outcome(kind=outcome, occurred_at_utc=at_utc)
     else:
         if outcome is not None or tombstone_expires_at_utc is not None:
+            raise IllegalTransitionError
+        if deadline_at_utc is not None:
+            try:
+                deadline_at_utc = require_utc(deadline_at_utc, field_name="deadline_at_utc")
+            except ValueError as error:
+                raise IllegalTransitionError from error
+        if (
+            target is ExecutionState.QUEUED
+            and deadline_at_utc is not None
+            and deadline_at_utc > at_utc + timedelta(seconds=DEFAULT_JOB_POLICY.queued_ttl_seconds)
+        ):
             raise IllegalTransitionError
         next_outcome = None
     try:
@@ -360,6 +458,19 @@ def transition_execution(
         )
     except ValueError as error:
         raise IllegalTransitionError from error
+    artifact_cap_anchor = job.model_copy(
+        update={
+            "execution": execution,
+            "outcome": next_outcome,
+            "tombstone_expires_at_utc": tombstone_expires_at_utc,
+        }
+    )
+    if target is ExecutionState.QUEUED:
+        queue_deadline = cast(datetime, deadline_at_utc)
+        caps = {kind: queue_deadline for kind in ArtifactKind}
+    else:
+        caps = {kind: _artifact_deadline_cap(artifact_cap_anchor, kind) for kind in ArtifactKind}
+    artifacts = _retime_artifacts(job.artifacts, caps)
     return _updated(
         job,
         operation_id=operation_id,
@@ -368,6 +479,7 @@ def transition_execution(
             "execution": execution,
             "outcome": next_outcome,
             "tombstone_expires_at_utc": tombstone_expires_at_utc,
+            "artifacts": artifacts,
         },
     )
 
@@ -433,6 +545,8 @@ def transition_artifact(
         if delete_by_utc <= at_utc and delete_by_utc != current.delete_by_utc:
             raise IllegalTransitionError
         if current.delete_by_utc is not None and delete_by_utc > current.delete_by_utc:
+            raise IllegalTransitionError
+        if delete_by_utc > _artifact_deadline_cap(job, kind):
             raise IllegalTransitionError
     verified_at = at_utc if target is CleanupState.VERIFIED_ABSENT else None
     try:
@@ -514,6 +628,43 @@ def retire_export(
     )
 
 
+def withdraw_export(
+    job: JobRecord,
+    *,
+    at_utc: datetime,
+    expected_version: int,
+    operation_id: str,
+) -> JobRecord:
+    """Remove an owned published export before its scheduled expiry."""
+
+    action = "export:withdraw"
+    if _check_operation(job, operation_id, action):
+        return job
+    _check_version(job, expected_version)
+    at_utc = require_utc(at_utc, field_name="at_utc")
+    current = job.artifacts.export
+    if (
+        not job.export_available
+        or current.state is not CleanupState.PRESENT
+        or at_utc < job.execution.entered_at_utc
+    ):
+        raise IllegalTransitionError
+    artifact_payload = job.artifacts.model_dump(mode="python")
+    artifact_payload[ArtifactKind.EXPORT.value] = ArtifactStatus(
+        state=CleanupState.VERIFIED_ABSENT,
+        verified_at_utc=at_utc,
+    )
+    return _updated(
+        job,
+        operation_id=operation_id,
+        action=action,
+        updates={
+            "artifacts": ArtifactLifecycle.model_validate(artifact_payload),
+            "export_available": False,
+        },
+    )
+
+
 def new_staged_job(
     *,
     job_id: str,
@@ -526,7 +677,14 @@ def new_staged_job(
     """Construct the initial staged snapshot from explicit versioned durations."""
 
     at_utc = require_utc(at_utc, field_name="at_utc")
-    if staged_ttl_seconds <= 0 or event_ttl_seconds <= 0:
+    if policy_version != DEFAULT_JOB_POLICY.profile_version:
+        raise ValueError("unsupported job policy version")
+    if (
+        staged_ttl_seconds <= 0
+        or staged_ttl_seconds > DEFAULT_JOB_POLICY.staged_ttl_seconds
+        or event_ttl_seconds <= 0
+        or event_ttl_seconds > DEFAULT_JOB_POLICY.event_ttl_seconds
+    ):
         raise ValueError("retention durations must be positive")
     staged_deadline = at_utc + timedelta(seconds=staged_ttl_seconds)
     absent = ArtifactStatus(state=CleanupState.NOT_CREATED)
@@ -576,4 +734,5 @@ __all__ = [
     "request_cancellation",
     "transition_artifact",
     "transition_execution",
+    "withdraw_export",
 ]

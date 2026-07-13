@@ -12,6 +12,7 @@ from delta_lemmata.job_ui import (
     JobPresentation,
     PresentationRole,
     project_job_state,
+    render_job_presentation_html,
 )
 
 JobState = JobDisplayState
@@ -36,6 +37,12 @@ def test_every_state_has_a_stable_complete_projection() -> None:
         JobDisplayState.RUNNING: ("Running", PresentationRole.STATUS, "activity"),
         JobDisplayState.CANCELLING: ("Cancelling", PresentationRole.STATUS, "circle-slash-2"),
         JobDisplayState.FINALIZING: ("Finalizing", PresentationRole.STATUS, "shield-check"),
+        JobDisplayState.CLEANING: ("Cleaning up", PresentationRole.STATUS, "loader-circle"),
+        JobDisplayState.CLEANUP_FAILED: (
+            "Cleanup needs attention",
+            PresentationRole.ALERT,
+            "shield-alert",
+        ),
         JobDisplayState.SUCCEEDED: ("Succeeded", PresentationRole.STATUS, "circle-check"),
         JobDisplayState.FAILED: ("Failed", PresentationRole.ALERT, "triangle-alert"),
         JobDisplayState.CANCELLED: ("Cancelled", PresentationRole.STATUS, "ban"),
@@ -96,6 +103,8 @@ def test_copy_is_conservative_and_contains_required_explanations() -> None:
         (JobState.RUNNING, (JobAction.CANCEL,)),
         (JobState.CANCELLING, ()),
         (JobState.FINALIZING, ()),
+        (JobState.CLEANING, ()),
+        (JobState.CLEANUP_FAILED, ()),
         (JobState.SUCCEEDED, (JobAction.START_OVER,)),
         (JobState.FAILED, (JobAction.START_OVER,)),
         (JobState.CANCELLED, (JobAction.START_OVER,)),
@@ -166,6 +175,8 @@ def test_cancelling_has_specific_cancel_reason_and_start_over_is_blocked_when_ac
         JobState.RUNNING,
         JobState.CANCELLING,
         JobState.FINALIZING,
+        JobState.CLEANING,
+        JobState.CLEANUP_FAILED,
         JobState.BUSY,
     ):
         item = projection(state)
@@ -219,3 +230,39 @@ def test_only_confirmed_terminal_states_claim_success_or_cancellation() -> None:
             assert "cancelled" in copy
         else:
             assert "cancelled" not in copy
+
+
+@pytest.mark.parametrize("state", list(JobState))
+def test_html_projection_has_accessible_live_region_semantics(state: JobState) -> None:
+    item = projection(state, support_reference="SUP-ABCDEFGHIJKL")
+    rendered = render_job_presentation_html(item)
+    expected_live = "assertive" if item.role is PresentationRole.ALERT else "polite"
+    assert f'role="{item.role.value}"' in rendered
+    assert f'aria-live="{expected_live}"' in rendered
+    assert 'aria-atomic="true"' in rendered
+    assert f'data-job-state="{state.value}"' in rendered
+    assert f"<h2>{item.title}</h2>" in rendered
+    assert "SUP-ABCDEFGHIJKL" in rendered
+
+
+def test_html_projection_escapes_untrusted_copy() -> None:
+    without_support = render_job_presentation_html(projection(JobState.FAILED))
+    assert "delta-job-support" not in without_support
+
+    unsafe = JobPresentation(
+        state_id='failed" data-leak="yes',
+        label="<script>label</script>",
+        title="<img src=x onerror=alert(1)>",
+        body="private & temporary",
+        role=PresentationRole.ALERT,
+        icon_token="triangle-alert",
+        enabled_actions=(),
+        disabled_action_reasons=(),
+        support_reference="SUP-ABCDEFGHIJKL",
+    )
+    rendered = render_job_presentation_html(unsafe)
+    assert "<script>" not in rendered
+    assert "<img" not in rendered
+    assert 'data-leak="yes"' not in rendered
+    assert "&lt;script&gt;" in rendered
+    assert "private &amp; temporary" in rendered

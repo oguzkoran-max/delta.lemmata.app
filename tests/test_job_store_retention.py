@@ -317,8 +317,8 @@ def test_published_export_retirement_is_persisted_with_deletion_evidence(
         operation_id=operation(12),
     )
     job = persist_owned(store, owner, running, job, terminal_at)
-    export_deadline = NOW + timedelta(hours=1)
     for number, kind in enumerate((ArtifactKind.WORK, ArtifactKind.EXPORT), start=13):
+        export_deadline = NOW + timedelta(minutes=15 if kind is ArtifactKind.WORK else 60)
         updated = transition_artifact(
             job,
             kind=kind,
