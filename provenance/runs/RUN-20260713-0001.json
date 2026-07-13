@@ -1,0 +1,125 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260713-0001",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P005"
+  ],
+  "started_at_utc": "2026-07-13T00:09:23Z",
+  "ended_at_utc": "2026-07-13T00:11:40Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "3c746d160769e50baddf2e6ec1c3c13db14fd019",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2"
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh --no-hardlinks local clone detached at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh",
+    "limitations": [
+      "The clean clone used the same Mac and may reuse locked Python and R package caches.",
+      "Only synthetic process and corpus fixtures were used.",
+      "Linux parity, canonical container behavior, SBOM audit, production isolation, reboot recovery, secure erasure, R/stylo computation, deployment, and final acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P005/guardian-exact-commit.sha256",
+    "sha256": "485494e0a6dfb10951cfa15de17d72628acf1cae01d63f38fa85ee1087a17419",
+    "covers": [
+      "provenance/evidence/P005/guardian-exact-commit"
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "src/delta_lemmata/job_store.py",
+      "sha256": "30c37bc75ae4ed14cad316f630521813932a72f0a65159b026e10a732ac7fdba"
+    },
+    {
+      "path": "src/delta_lemmata/process_controller.py",
+      "sha256": "ab0b4afc6518a81b4ed8e564a79893d2c16c615aba3aebbae5fcc3e49093df4f"
+    },
+    {
+      "path": "src/delta_lemmata/guardian_controller.py",
+      "sha256": "49cd08c6bdc538fb5005e6a75cd98db7ff44feb7da40677ef8d1be893888257c"
+    },
+    {
+      "path": "src/delta_lemmata/recovery_receipt.py",
+      "sha256": "01e14b35504a19d038432a9150048734b161dcc3ca12c2a958f5985449d36bdd"
+    },
+    {
+      "path": "tests/test_job_store.py",
+      "sha256": "bffbe67403a0371f0b9a6533bdbf8b3032959ef484404e2ba4c2e486f4d82abe"
+    },
+    {
+      "path": "tests/test_process_controller.py",
+      "sha256": "3fbcd90165d51212d87bed127d31713dbe91f90ed62a3bd647e489cfbbd56c07"
+    },
+    {
+      "path": "tests/test_guardian_controller.py",
+      "sha256": "f5212e377040399e70089b077892fa137b0100327fc20c6fcda69148d31605bd"
+    },
+    {
+      "path": "tests/test_recovery_receipt.py",
+      "sha256": "7f12b799ccc747514ce4ad317e9c9ec3063f882a816d4203f37d933e1e058411"
+    },
+    {
+      "path": "tests/fixtures/guardian_app.py",
+      "sha256": "ab36ce69016c6e58a6f8104c460e726372c97d7a1177085019017995b6c93201"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P005/guardian-exact-commit/report.md",
+      "sha256": "f43b27b1b3299c222e44539a669768f71ef3842a04115978da6c1e40653fd97a"
+    }
+  ],
+  "notes": "The guardian implementation commit was reconstructed in a fresh detached no-hardlinks clone and passed locked dependency bootstrap, all repository gates, 878 tests, and full measured source coverage. The clone remained clean. Linux CI and P005 acceptance remain separate gates."
+}

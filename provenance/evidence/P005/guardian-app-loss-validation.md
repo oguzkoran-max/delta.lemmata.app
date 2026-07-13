@@ -38,6 +38,11 @@ P005: unresolved HumanDecision ADR-0012
 The ADR remained linked through `supplemental_evidence`; the invalid decision entry
 was removed and the complete gate was rerun.
 
+The first gate after adding `RUN-20260713-0001` then passed provenance integrity but
+stopped at repository scan because the human-readable report retained an absolute
+local macOS user path. The path was replaced with the machine-independent
+`<fresh-clone>` label and the report, manifest, and Run hashes were regenerated.
+
 The final repository gate passed:
 
 ```text
@@ -57,6 +62,13 @@ verify-ok
 The four highest-risk real/fault-injection tests were repeated in three fresh pytest
 runs after the final ownership change; all 12 executions passed. Earlier versions
 also ran the two real app-loss races five times each before the later fixes.
+
+`RUN-20260713-0001` then detached the exact implementation commit in a fresh local
+`--no-hardlinks` clone, restored the committed Python and R locks, reran the same
+878-test full gate with 100% measured coverage, and confirmed a clean post-run Git
+status. Report and checksum manifest:
+`provenance/evidence/P005/guardian-exact-commit/` and
+`provenance/evidence/P005/guardian-exact-commit.sha256`.
 
 ## Real and Adversarial Cases
 

@@ -13,8 +13,8 @@ public analiz ve bilimsel hesaplama henüz yok
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,
 execution-bound signed receipt ve gerçek app-loss yarışları uygulandı. 878 test ve
-full measured statement/branch coverage geçti. Exact-commit, Linux CI, container,
-SBOM ve acceptance audit açıktır. Ayrıntı:
+full measured statement/branch coverage geçti; `RUN-20260713-0001` exact-commit
+clean-clone replay'i de geçti. Linux CI, container, SBOM ve acceptance audit açıktır. Ayrıntı:
 `provenance/evidence/P005/guardian-app-loss-validation.md`.
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.

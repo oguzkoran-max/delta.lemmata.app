@@ -55,7 +55,9 @@
     "0e84b106b10ca979b0ebb7d5cd9b6ff5de73c2bb",
     "3c746d160769e50baddf2e6ec1c3c13db14fd019"
   ],
-  "run_ids": [],
+  "run_ids": [
+    "RUN-20260713-0001"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": [
@@ -72,6 +74,9 @@
     "memory/checkpoints/2026-07-13-p005-retention.md",
     "provenance/evidence/P005/guardian-app-loss-validation.md",
     "memory/checkpoints/2026-07-13-p005-guardian.md",
+    "provenance/runs/RUN-20260713-0001.json",
+    "provenance/evidence/P005/guardian-exact-commit/report.md",
+    "provenance/evidence/P005/guardian-exact-commit.sha256",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
@@ -156,6 +161,12 @@
       "exit_code": 0,
       "result": "The P005 guardian checkpoint passed 878 tests, 100% of 6,060 statements and 1,602 branches, strict typing, metadata, 69 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
       "evidence": "provenance/evidence/P005/guardian-app-loss-validation.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "RUN-20260713-0001 rebuilt exact implementation commit 3c746d1 in a fresh detached no-hardlinks clone; 878 tests, full measured coverage, all repository gates, and post-run clean status passed.",
+      "evidence": "provenance/runs/RUN-20260713-0001.json"
     }
   ],
   "blockers": []
