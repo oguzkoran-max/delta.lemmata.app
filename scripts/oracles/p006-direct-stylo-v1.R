@@ -96,17 +96,25 @@ read_json <- function(path) {
 }
 
 assert_environment <- function() {
-  if (as.character(getRversion()) != "4.5.2" ||
-      !requireNamespace("jsonlite", quietly = TRUE) ||
-      !requireNamespace("stylo", quietly = TRUE) ||
-      as.character(utils::packageVersion("jsonlite")) != "2.0.0" ||
-      as.character(utils::packageVersion("stylo")) != "0.7.71" ||
-      Sys.getenv("LANG") != "C.UTF-8" ||
+  if (as.character(getRversion()) != "4.5.2") {
+    fail("ORACLE_R_VERSION_INVALID")
+  }
+  if (!requireNamespace("jsonlite", quietly = TRUE)) {
+    fail("ORACLE_JSONLITE_NAMESPACE_INVALID")
+  }
+  if (!requireNamespace("stylo", quietly = TRUE)) {
+    fail("ORACLE_STYLO_NAMESPACE_INVALID")
+  }
+  if (as.character(utils::packageVersion("jsonlite")) != "2.0.0" ||
+      as.character(utils::packageVersion("stylo")) != "0.7.71") {
+    fail("ORACLE_PACKAGE_VERSION_INVALID")
+  }
+  if (Sys.getenv("LANG") != "C.UTF-8" ||
       Sys.getlocale("LC_COLLATE") != "C.UTF-8" ||
       Sys.getlocale("LC_CTYPE") != "C.UTF-8" ||
       Sys.getlocale("LC_NUMERIC") != "C" ||
       Sys.getenv("TZ") != "UTC") {
-    fail("ORACLE_ENVIRONMENT_INVALID")
+    fail("ORACLE_LOCALE_INVALID")
   }
   RNGkind("Mersenne-Twister", "Inversion", "Rejection")
   set.seed(20260713)
