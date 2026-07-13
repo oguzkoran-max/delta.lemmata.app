@@ -29,18 +29,14 @@ def test_ci_verify_fetches_complete_history_for_provenance() -> None:
     assert "fetch-depth: 0" in verify_job
 
 
-def test_p005_capture_is_branch_scoped_and_uses_pinned_actions() -> None:
-    workflow = (ROOT / ".github" / "workflows" / "p005-evidence-capture.yml").read_text(
-        encoding="utf-8"
-    )
-    lock = load_json(ROOT / "containers" / "ci-actions.lock.json")
-    assert "codex/p005-evidence-capture" in workflow
-    assert "contents: write" in workflow
-    assert "github.actor != 'github-actions[bot]'" in workflow
-    assert "pull_request" not in workflow
-    assert "validate_generated_evidence.py" in workflow
-    for action in lock["actions"]:
-        assert f"{action['uses']}@{action['commit']}" in workflow
+def test_temporary_p005_write_workflow_was_removed_after_capture() -> None:
+    workflows = ROOT / ".github" / "workflows"
+    capture = workflows / "p005-evidence-capture.yml"
+    normal_ci = (workflows / "ci.yml").read_text(encoding="utf-8")
+
+    assert not capture.exists()
+    assert "codex/p005-evidence-capture" not in normal_ci
+    assert "contents: write" not in normal_ci
 
 
 def test_container_base_digest_matches_lock() -> None:

@@ -1,8 +1,9 @@
 # P005 Final CI Validation
 
-**Status:** Linux verification and canonical container passed for the final
-implementation commit. Supply-chain generation passed, but GitHub artifact upload
-is temporarily blocked by account storage recalculation. P005-AC-08 remains open.
+**Status:** Superseded external-storage boundary. The historical quota failures
+below remain valid, but `HD-20260713-0001` replaced the transient artifact channel
+with a permanent checksum-bound Git package. Exact Linux capture and normal CI
+passed on 2026-07-13; final Ticket closure remains separately gated.
 
 **Date:** 2026-07-13
 
@@ -37,10 +38,30 @@ is temporarily blocked by account storage recalculation. P005-AC-08 remains open
    until 2026-07-13 18:55 TRT, the conservative end of the stated 6-12 hour
    recalculation window.
 
-## Current Boundary
+## Historical Boundary Before HD-20260713-0001
 
 No code, test, SBOM-generation, dependency-audit, or container failure remains in
 the final commit. The missing item is a downloadable retained CI artifact. The
 upload step remains required and is not marked `continue-on-error`; therefore CI
 correctly remains red and P005-AC-08 remains pending until GitHub accepts the
 artifact and its downloaded checksums are verified.
+
+## Superseding Git-Backed Validation
+
+Oğuz Koran accepted the Git-backed exact Linux evidence channel in
+`HD-20260713-0001`. Source commit `d3ca0f67a6a08f2e6a232b0b686b36842ef819e9`
+passed normal CI run `29268150409`: verify job `86878775588` and canonical Linux
+amd64 container job `86878775601` both succeeded. Branch-scoped capture run
+`29268150070`, job `86878774447`, independently passed the same exact-source gate,
+generated and validated the eight-file package, and wrote evidence commit
+`2eff470e4e06a1b1586c4aec251ba99162770dbc`.
+
+The committed package, nested source checksums, outer SHA-256 manifest, JSON roots,
+SBOM dependency graph, zero-known-vulnerability result, and private-path absence
+were replayed in a detached worktree. Full details and exact file hashes are in
+`provenance/evidence/P005/git-backed-linux-evidence-validation.md` and
+`RUN-20260713-0004`.
+
+The earlier red run was not rewritten or ignored. It now documents why the
+kota-dependent evidence channel was rejected. P005 closure still requires removing
+the temporary write-capable capture workflow and passing the final normal CI tree.
