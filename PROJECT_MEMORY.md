@@ -6,14 +6,16 @@
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
-workspace, synthetic POSIX process control ve conservative lifecycle projection;
+workspace, guardian-managed POSIX process control, durable terminal ACK,
+execution-bound recovery receipt ve conservative lifecycle projection;
 public analiz ve bilimsel hesaplama henüz yok
 
-**P005 ara durum:** Foundation commit zinciri `bce5bb2` -> `0da9a1b` -> `5e1cbba`
--> `eca5357`; 769 test ve full measured statement/branch coverage geçti. Continuous
-janitor, startup orphan recovery, deletion-ledger persistence ve retention purge
-sonraki ana bloktur. Ayrıntı:
-`provenance/evidence/P005/foundation-validation.md`.
+**P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
+commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,
+execution-bound signed receipt ve gerçek app-loss yarışları uygulandı. 878 test ve
+full measured statement/branch coverage geçti. Exact-commit, Linux CI, container,
+SBOM ve acceptance audit açıktır. Ayrıntı:
+`provenance/evidence/P005/guardian-app-loss-validation.md`.
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 

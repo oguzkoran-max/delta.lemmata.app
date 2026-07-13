@@ -119,7 +119,9 @@ Safari, VoiceOver, genel usability, bilimsel sonuç veya deployment iddiası de�
 Aktif iş `provenance/tickets/P005.json` kabul ölçütlerine göre session-owned job
 workspace, transactional SQLite control store, one-running/three-queued admission,
 cancellation/timeout, process-tree cleanup, restart recovery ve retention
-sözleşmesini uygulamaktır. `prompts/P005-start.md`, ADR-0012 ve
+sözleşmesini uygulamaktır. Local macOS guardian katmanı `3c746d1` ile uygulanmış ve
+full gate'ten geçmiştir; sıradaki kapı exact-commit clean-clone ve Linux CI'dır.
+`prompts/P005-start.md`, ADR-0012 ve
 `provenance/evidence/P005/architecture-audit.md` önce okunur.
 
 P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start

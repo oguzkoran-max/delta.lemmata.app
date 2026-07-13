@@ -7,6 +7,12 @@ application-process crash can still outlive the current in-process worker monito
 
 **Implementation commit:** `0e84b106b10ca979b0ebb7d5cd9b6ff5de73c2bb`
 
+**Superseded open finding:** The guardian requirement identified here was
+implemented and locally validated in
+`provenance/evidence/P005/guardian-app-loss-validation.md`. This file remains the
+historical retention checkpoint and is not rewritten as if the guardian already
+existed at this commit.
+
 ## Implemented Boundary
 
 - SQLite schema v2 adds a content-free deletion ledger independent of job

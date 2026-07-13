@@ -7,14 +7,24 @@
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
 validated-payload staging, synthetic POSIX process controller, kalıcı content-free
-deletion ledger, continuous fake-clock janitor ve honest lifecycle projection var;
+deletion ledger, continuous fake-clock janitor, ayrı app-loss guardian, durable
+SQLite terminal ACK ve execution-bound recovery receipt var;
 public analysis hâlâ kilitli ve scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Mevcut in-process monitor uygulama `SIGKILL` ile kapanınca
-worker'ı geride bırakabildiği için P005 per-job guardian, owned group anchor,
-authenticated recovery evidence ve gerçek macOS/Linux parent-loss testini uygula
+**Sıradaki tek ana iş:** Guardian implementation commit'i `3c746d1` için exact-commit
+clean-clone kanıtını üret; ardından Linux GitHub CI, canonical container, SBOM ve
+P005 acceptance audit kapılarını tamamla
+
+**P005 guardian checkpoint:** Ayrı POSIX-session guardian, app-liveness pipe,
+`waitid(..., WNOWAIT)` leader ownership, durable SQLite terminal ACK ve
+job+execution-bound HMAC recovery receipt uygulandı. Running-worker ve
+post-completion app-loss yarışları gerçek `SIGKILL` ile geçti; thread-start,
+malformed control, double-control-failure ve persistent reap yolları kapatıldı. Dört
+bağımsız adversarial turdaki bütün P0/P1 bulguları kapandı. Full gate 878 test,
+6.060 statement, 1.602 branch ve yüzde 100 coverage ile geçti. Kanıt:
+`provenance/evidence/P005/guardian-app-loss-validation.md`.
 
 **P005 retention checkpoint:** `0e84b10` ile SQLite deletion ledger, schema-v1
 migration, fail-closed optional workspace load, exact staged/queue/result/export
@@ -23,10 +33,10 @@ tombstone purge uygulandı. Full gate 795 test, 5.262 statement, 1.404 branch ve
 100 coverage ile geçti. Kanıt:
 `provenance/evidence/P005/retention-janitor-validation.md`.
 
-**P005 yeni P0 bulgu:** Bağımsız süreç denetimi mevcut daemon monitorün app process
-ile öldüğünü ve synthetic worker grubunun hayatta kalabildiğini doğruladı. Kalıcı
-PID/PGID sonrası `killpg` çözümü identifier reuse nedeniyle reddedildi. Guardian
-kanıtı olmadan running row `abandoned` yapılmıyor; P005-AC-06 ve ticket kapanışı açık.
+**P005 tarihsel P0 bulgu, kapatıldı:** Bağımsız süreç denetimi eski daemon monitorün
+app process ile öldüğünü ve worker grubunu bırakabildiğini doğrulamıştı. Kalıcı
+PID/PGID çözümü identifier reuse nedeniyle reddedildi; `3c746d1` guardian katmanı bu
+yerel macOS açığını kapattı. Linux parity ve P005 kapanışı hâlâ açıktır.
 
 **P005 foundation checkpoint:** Commit'ler `bce5bb2`, `0da9a1b`, `5e1cbba` ve
 `eca5357`; full gate 769 test, 4.947 statement, 1.304 branch ve yüzde 100 coverage

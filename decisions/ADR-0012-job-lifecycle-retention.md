@@ -43,6 +43,15 @@ alana sıkıştırır.
 - Worker execution shell kullanmaz; sabit argv, temiz environment, kapalı stdin,
   fixed cwd, process group, TERM/KILL/reap ve mandatory finite limit profile ister.
   P005 sentetik fixture worker kullanır; R/stylo ve production limitleri P006/P014'tür.
+- Worker monitorü uygulama sürecinde tutulmaz. Ayrı per-job guardian, app-liveness
+  pipe ve ayrı POSIX session kullanır. Worker lideri descendants kaybolmadan reap
+  edilmez; normal yolda PID/PGID reuse bu sahipli lider kimliğiyle engellenir.
+- Worker sonucu guardian'ı serbest bırakmaz. App yalnız job ID, immutable running
+  operation reference, terminal SQLite version ve mapped outcome eşleştiğinde ACK
+  gönderebilir. ACK yoksa guardian workspace'i temizler ve aynı execution
+  reference'a bağlı, imzalı content-free recovery receipt üretir.
+- Normal ve emergency reap birlikte başarısız olursa guardian hata verip çıkmaz;
+  process-group yokluğu kanıtlanana kadar sahipliği koruyarak reap'i tekrarlar.
 - Kullanıcı yüzeyi lifecycle projection hazırlayabilir, fakat P006/P008 öncesi aktif
   Start analysis veya scientific result göstermez.
 
@@ -73,6 +82,18 @@ yanlış temsil edilir. Execution ve cleanup orthogonal tutulur.
 Reddedildi. Gerçek R workload P006'dan önce yoktur ve VPS load baseline P014'tedir.
 P005 mekanizmayı finite fixture profiles ile sınar; production değerlerini uydurmaz.
 
+### Restart Sonrası Kaydedilmiş PID/PGID ile `killpg`
+
+Reddedildi. PID ve process-group ID yeniden kullanılabilir; uygulama yeniden
+başladığında yalnız sayısal kimliğe güvenmek başka bir süreci öldürebilir. Guardian,
+orijinal lider child kimliğini reap etmeden tutar ve startup recovery yalnız current
+execution reference'a bağlı imzalı receipt ile ilerler.
+
+### Sonuç Mesajını Durable Completion Kabul Etmek
+
+Reddedildi. App sonucu aldıktan sonra SQLite terminal transition'dan önce ölebilir.
+Bu nedenle result ve durable ACK ayrı protokol aşamalarıdır.
+
 ## Sonuçlar
 
 - SQLite içeriği ve WAL canary taramasına dahildir.
@@ -88,5 +109,6 @@ P005 mekanizmayı finite fixture profiles ile sınar; production değerlerini uy
 ## Kanıt Bağlantıları
 
 - `provenance/evidence/P005/architecture-audit.md`
+- `provenance/evidence/P005/guardian-app-loss-validation.md`
 - `prompts/P005-start.md`
 - `provenance/tickets/P005.json`
