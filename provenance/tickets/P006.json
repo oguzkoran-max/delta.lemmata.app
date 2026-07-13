@@ -43,12 +43,17 @@
     "RP-05",
     "EPI-03"
   ],
-  "decision_ids": [],
+  "decision_ids": [
+    "HD-20260713-0002"
+  ],
   "prompt_event_ids": [
-    "PE-20260713-0002"
+    "PE-20260713-0002",
+    "PE-20260713-0003",
+    "PE-20260713-0004"
   ],
   "commit_ids": [
-    "82cc6799017be87dde1b07133646b511fac2798d"
+    "82cc6799017be87dde1b07133646b511fac2798d",
+    "c1e308f15a653d66a4c0403fbbe11245ca46a761"
   ],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
@@ -63,6 +68,8 @@
     "provenance/evidence/P006/architecture-audit.md",
     "provenance/evidence/P006/start-validation.md",
     "memory/checkpoints/2026-07-13-p006-start.md",
+    "provenance/evidence/P006/contracts-finalizer-validation.md",
+    "memory/checkpoints/2026-07-14-p006-contracts-finalizer.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/local-runtime-limitations.md",
     "docs/research/claim-evidence-matrix.md",
@@ -120,7 +127,12 @@
   ],
   "changed_files": [
     "P006 execution brief, native PromptEvent, method/security architecture audit, proposed parity ADR, active Ticket, checkpoint, and synchronized startup pointers",
-    "Deterministic pre-sample process-completion regression coverage added after the repeated opening gate exposed timing-dependent coverage"
+    "Deterministic pre-sample process-completion regression coverage added after the repeated opening gate exposed timing-dependent coverage",
+    "Accepted HumanDecision and ADR update for the CC0 fixture, locked environment, tolerance, metric, known-only fitting, and fixture-local claim protocol",
+    "Closed v1 worker input, result, and fatal-error models, generated schemas, strict single-parse JSON boundary, scientific semantic validator, and pure finalizer",
+    "Bounded nonblocking private workspace output read with pre-open type checks, identity fingerprints, mutation detection, and current-path area rebinding",
+    "Adversarial method and security regressions plus synchronized project memory, handoff, start instructions, checkpoint, and retained validation evidence",
+    "Premature lifecycle and guardian ACK integration removed after independent review; P006-AC-03 remains pending"
   ],
   "commands": [
     {
@@ -146,6 +158,24 @@
       "exit_code": 0,
       "result": "Exact start commit 82cc679 passed Linux source, schema, record, SBOM, dependency-audit, and canonical Linux amd64 container jobs; it establishes opening-package integrity only, not R worker parity.",
       "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first post-audit full gate passed all 1,072 behavior tests but reached 99.89% measured coverage across 7,215 statements and 1,898 branches; the failed gate is retained and seven defensive lines received direct adversarial tests.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected contracts/finalizer checkpoint passed 1,073 tests, 100% of 7,215 statements and 1,898 branches, strict typing, metadata, 79 provenance records, repository scanning, and the locked R boundary on macOS.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "After the finite-number and FIFO-race re-audit corrections, the checkpoint passed 1,075 tests, 100% of 7,216 statements and 1,898 branches, strict typing, metadata, 80 provenance records, repository scanning, and the locked R boundary on macOS; the final narrow scientific review returned PASS.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
     }
   ],
   "blockers": []

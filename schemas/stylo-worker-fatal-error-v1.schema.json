@@ -1,0 +1,80 @@
+{
+  "$defs": {
+    "FatalErrorCode": {
+      "enum": [
+        "INPUT_MISSING",
+        "INPUT_TOO_LARGE",
+        "INPUT_INVALID_UTF8",
+        "INPUT_INVALID_JSON",
+        "INPUT_INVALID_CONTRACT",
+        "ENVIRONMENT_INVALID",
+        "ANALYSIS_FAILED",
+        "RESULT_WRITE_FAILED"
+      ],
+      "title": "FatalErrorCode",
+      "type": "string"
+    },
+    "FatalStage": {
+      "enum": [
+        "input_read",
+        "input_parse",
+        "input_validate",
+        "engine_init",
+        "analysis",
+        "result_write"
+      ],
+      "title": "FatalStage",
+      "type": "string"
+    },
+    "RequestId": {
+      "pattern": "^request_[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/stylo-worker-fatal-error-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "error_code": {
+      "$ref": "#/$defs/FatalErrorCode"
+    },
+    "request_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/RequestId"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "schema_version": {
+      "const": "stylo-worker-fatal-error-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stage": {
+      "$ref": "#/$defs/FatalStage"
+    },
+    "status": {
+      "const": "fatal_error",
+      "title": "Status",
+      "type": "string"
+    },
+    "worker_version": {
+      "const": "stylo-worker-v1",
+      "title": "Worker Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "worker_version",
+    "status",
+    "stage",
+    "error_code"
+  ],
+  "title": "WorkerFatalErrorV1",
+  "type": "object"
+}

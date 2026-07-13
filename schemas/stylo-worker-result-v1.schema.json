@@ -1,0 +1,618 @@
+{
+  "$defs": {
+    "AggregateCount": {
+      "maximum": 150000000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "AnalysisOutcome": {
+      "enum": [
+        "complete",
+        "partial",
+        "failed"
+      ],
+      "title": "AnalysisOutcome",
+      "type": "string"
+    },
+    "BoundedCardinality": {
+      "maximum": 20000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "CellComplete": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_id": {
+          "$ref": "#/$defs/CellId"
+        },
+        "distance": {
+          "$ref": "#/$defs/DistanceMeasure"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "matrix": {
+          "$ref": "#/$defs/DistanceMatrix"
+        },
+        "status": {
+          "const": "complete",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cell_id",
+        "fit_id",
+        "distance",
+        "status",
+        "matrix"
+      ],
+      "title": "CellComplete",
+      "type": "object"
+    },
+    "CellErrorCode": {
+      "enum": [
+        "fit_unavailable",
+        "distance_calculation_failed"
+      ],
+      "title": "CellErrorCode",
+      "type": "string"
+    },
+    "CellFailed": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_id": {
+          "$ref": "#/$defs/CellId"
+        },
+        "distance": {
+          "$ref": "#/$defs/DistanceMeasure"
+        },
+        "error_code": {
+          "$ref": "#/$defs/CellErrorCode"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "status": {
+          "const": "failed",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cell_id",
+        "fit_id",
+        "distance",
+        "status",
+        "error_code"
+      ],
+      "title": "CellFailed",
+      "type": "object"
+    },
+    "CellId": {
+      "pattern": "^cell_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "CellNotEnoughFeatures": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_id": {
+          "$ref": "#/$defs/CellId"
+        },
+        "distance": {
+          "$ref": "#/$defs/DistanceMeasure"
+        },
+        "error_code": {
+          "const": "not_enough_features",
+          "title": "Error Code",
+          "type": "string"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "status": {
+          "const": "not_enough_features",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "cell_id",
+        "fit_id",
+        "distance",
+        "status",
+        "error_code"
+      ],
+      "title": "CellNotEnoughFeatures",
+      "type": "object"
+    },
+    "CellResult": {
+      "discriminator": {
+        "mapping": {
+          "complete": "#/$defs/CellComplete",
+          "failed": "#/$defs/CellFailed",
+          "not_enough_features": "#/$defs/CellNotEnoughFeatures"
+        },
+        "propertyName": "status"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/CellComplete"
+        },
+        {
+          "$ref": "#/$defs/CellNotEnoughFeatures"
+        },
+        {
+          "$ref": "#/$defs/CellFailed"
+        }
+      ]
+    },
+    "DistanceMatrix": {
+      "additionalProperties": false,
+      "properties": {
+        "document_ids": {
+          "items": {
+            "$ref": "#/$defs/DocumentId"
+          },
+          "maxItems": 50,
+          "minItems": 2,
+          "title": "Document Ids",
+          "type": "array"
+        },
+        "values": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/FiniteNumber"
+            },
+            "type": "array"
+          },
+          "maxItems": 50,
+          "minItems": 2,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "document_ids",
+        "values"
+      ],
+      "title": "DistanceMatrix",
+      "type": "object"
+    },
+    "DistanceMeasure": {
+      "enum": [
+        "classic_delta",
+        "eders_delta",
+        "cosine_delta"
+      ],
+      "title": "DistanceMeasure",
+      "type": "string"
+    },
+    "DocumentId": {
+      "pattern": "^doc_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "Feature": {
+      "maxLength": 64,
+      "minLength": 1,
+      "type": "string"
+    },
+    "FiniteNumber": {
+      "maximum": 1.7976931348623157e+308,
+      "minimum": -1.7976931348623157e+308,
+      "type": "number"
+    },
+    "FitComplete": {
+      "additionalProperties": false,
+      "properties": {
+        "culling_percent": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "eligible_feature_count": {
+          "$ref": "#/$defs/BoundedCardinality"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "means": {
+          "items": {
+            "$ref": "#/$defs/FiniteNumber"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Means",
+          "type": "array"
+        },
+        "mfw": {
+          "$ref": "#/$defs/MfwCount"
+        },
+        "selected_features": {
+          "items": {
+            "$ref": "#/$defs/Feature"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Selected Features",
+          "type": "array"
+        },
+        "standard_deviations": {
+          "items": {
+            "$ref": "#/$defs/FiniteNumber"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Standard Deviations",
+          "type": "array"
+        },
+        "status": {
+          "const": "complete",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fit_id",
+        "mfw",
+        "culling_percent",
+        "status",
+        "eligible_feature_count",
+        "selected_features",
+        "means",
+        "standard_deviations"
+      ],
+      "title": "FitComplete",
+      "type": "object"
+    },
+    "FitErrorCode": {
+      "enum": [
+        "non_positive_standard_deviation",
+        "calculation_failed"
+      ],
+      "title": "FitErrorCode",
+      "type": "string"
+    },
+    "FitFailed": {
+      "additionalProperties": false,
+      "properties": {
+        "culling_percent": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "eligible_feature_count": {
+          "$ref": "#/$defs/BoundedCardinality"
+        },
+        "error_code": {
+          "$ref": "#/$defs/FitErrorCode"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "mfw": {
+          "$ref": "#/$defs/MfwCount"
+        },
+        "status": {
+          "const": "failed",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fit_id",
+        "mfw",
+        "culling_percent",
+        "status",
+        "eligible_feature_count",
+        "error_code"
+      ],
+      "title": "FitFailed",
+      "type": "object"
+    },
+    "FitId": {
+      "pattern": "^fit_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "FitNotEnoughFeatures": {
+      "additionalProperties": false,
+      "properties": {
+        "culling_percent": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "eligible_feature_count": {
+          "$ref": "#/$defs/BoundedCardinality"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "mfw": {
+          "$ref": "#/$defs/MfwCount"
+        },
+        "status": {
+          "const": "not_enough_features",
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fit_id",
+        "mfw",
+        "culling_percent",
+        "status",
+        "eligible_feature_count"
+      ],
+      "title": "FitNotEnoughFeatures",
+      "type": "object"
+    },
+    "FitResult": {
+      "discriminator": {
+        "mapping": {
+          "complete": "#/$defs/FitComplete",
+          "failed": "#/$defs/FitFailed",
+          "not_enough_features": "#/$defs/FitNotEnoughFeatures"
+        },
+        "propertyName": "status"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/FitComplete"
+        },
+        {
+          "$ref": "#/$defs/FitNotEnoughFeatures"
+        },
+        {
+          "$ref": "#/$defs/FitFailed"
+        }
+      ]
+    },
+    "FittingBasis": {
+      "additionalProperties": false,
+      "properties": {
+        "known_document_ids": {
+          "items": {
+            "$ref": "#/$defs/DocumentId"
+          },
+          "maxItems": 50,
+          "minItems": 2,
+          "title": "Known Document Ids",
+          "type": "array"
+        },
+        "ranked_features": {
+          "items": {
+            "$ref": "#/$defs/RankedFeature"
+          },
+          "maxItems": 20000,
+          "title": "Ranked Features",
+          "type": "array"
+        }
+      },
+      "required": [
+        "known_document_ids",
+        "ranked_features"
+      ],
+      "title": "FittingBasis",
+      "type": "object"
+    },
+    "MfwCount": {
+      "maximum": 1000,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "Percentage": {
+      "maximum": 100,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "RSessionInfoV1": {
+      "additionalProperties": false,
+      "properties": {
+        "blas": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._()+-]{0,127}$",
+          "title": "Blas",
+          "type": "string"
+        },
+        "jsonlite_version": {
+          "const": "2.0.0",
+          "title": "Jsonlite Version",
+          "type": "string"
+        },
+        "lang": {
+          "const": "C.UTF-8",
+          "title": "Lang",
+          "type": "string"
+        },
+        "lapack": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._()+-]{0,127}$",
+          "title": "Lapack",
+          "type": "string"
+        },
+        "lc_collate": {
+          "const": "C.UTF-8",
+          "title": "Lc Collate",
+          "type": "string"
+        },
+        "lc_ctype": {
+          "const": "C.UTF-8",
+          "title": "Lc Ctype",
+          "type": "string"
+        },
+        "lc_numeric": {
+          "const": "C",
+          "title": "Lc Numeric",
+          "type": "string"
+        },
+        "operating_system": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._()+-]{0,127}$",
+          "title": "Operating System",
+          "type": "string"
+        },
+        "platform": {
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._()+-]{0,127}$",
+          "title": "Platform",
+          "type": "string"
+        },
+        "r_version": {
+          "const": "4.5.2",
+          "title": "R Version",
+          "type": "string"
+        },
+        "rng_generator": {
+          "const": "Mersenne-Twister",
+          "title": "Rng Generator",
+          "type": "string"
+        },
+        "rng_normal_generator": {
+          "const": "Inversion",
+          "title": "Rng Normal Generator",
+          "type": "string"
+        },
+        "rng_sample_kind": {
+          "const": "Rejection",
+          "title": "Rng Sample Kind",
+          "type": "string"
+        },
+        "seed": {
+          "const": 20260713,
+          "title": "Seed",
+          "type": "integer"
+        },
+        "stylo_version": {
+          "const": "0.7.71",
+          "title": "Stylo Version",
+          "type": "string"
+        },
+        "timezone": {
+          "const": "UTC",
+          "title": "Timezone",
+          "type": "string"
+        },
+        "unicode_normalization": {
+          "const": "NFC",
+          "title": "Unicode Normalization",
+          "type": "string"
+        }
+      },
+      "required": [
+        "r_version",
+        "stylo_version",
+        "jsonlite_version",
+        "platform",
+        "operating_system",
+        "lang",
+        "lc_collate",
+        "lc_ctype",
+        "lc_numeric",
+        "timezone",
+        "unicode_normalization",
+        "rng_generator",
+        "rng_normal_generator",
+        "rng_sample_kind",
+        "seed",
+        "blas",
+        "lapack"
+      ],
+      "title": "RSessionInfoV1",
+      "type": "object"
+    },
+    "RankedFeature": {
+      "additionalProperties": false,
+      "properties": {
+        "feature": {
+          "$ref": "#/$defs/Feature"
+        },
+        "known_document_count": {
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Known Document Count",
+          "type": "integer"
+        },
+        "known_total_count": {
+          "$ref": "#/$defs/AggregateCount"
+        }
+      },
+      "required": [
+        "feature",
+        "known_total_count",
+        "known_document_count"
+      ],
+      "title": "RankedFeature",
+      "type": "object"
+    },
+    "RequestId": {
+      "pattern": "^request_[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/stylo-worker-result-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis_unit": {
+      "const": "whole_text",
+      "title": "Analysis Unit",
+      "type": "string"
+    },
+    "cells": {
+      "items": {
+        "$ref": "#/$defs/CellResult"
+      },
+      "maxItems": 192,
+      "minItems": 1,
+      "title": "Cells",
+      "type": "array"
+    },
+    "fits": {
+      "items": {
+        "$ref": "#/$defs/FitResult"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Fits",
+      "type": "array"
+    },
+    "fitting_basis": {
+      "$ref": "#/$defs/FittingBasis"
+    },
+    "limit_profile": {
+      "const": "stylo-worker-contract-limits-v1",
+      "title": "Limit Profile",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/AnalysisOutcome"
+    },
+    "request_id": {
+      "$ref": "#/$defs/RequestId"
+    },
+    "schema_version": {
+      "const": "stylo-worker-result-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "const": 20260713,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "session": {
+      "$ref": "#/$defs/RSessionInfoV1"
+    },
+    "worker_version": {
+      "const": "stylo-worker-v1",
+      "title": "Worker Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "limit_profile",
+    "analysis_unit",
+    "seed",
+    "worker_version",
+    "outcome",
+    "fitting_basis",
+    "fits",
+    "cells",
+    "session"
+  ],
+  "title": "WorkerResultV1",
+  "type": "object"
+}

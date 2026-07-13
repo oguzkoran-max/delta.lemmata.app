@@ -1,35 +1,53 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-13
+**Güncellendi:** 2026-07-14
 
 **Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
-Worker and Computational Parity aktif ve başlangıç paketi hazırlanıyor
+Worker and Computational Parity aktif; sözleşme/finalizer checkpoint'i yerel olarak
+doğrulandı, exact commit ve Linux CI bekliyor
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
 validated-payload staging, capability-first application service, synthetic POSIX
 process controller, kalıcı content-free deletion ledger, continuous fake-clock
 janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
-recovery receipt var;
-public analysis hâlâ kilitli ve scientific computation yok
+recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict tek-parse
+parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
+finalizer ve bounded no-follow workspace read var; public analysis, R worker,
+direct-stylo oracle, parity ve durable scientific-result entegrasyonu hâlâ yok
 
 **Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
 
 **Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** P006 opening package gate'ini geçir; ardından versioned
-input/output/error şemaları, strict parser, semantic validator, opaque artifact
-contract ve process sonucundan ayrı validated scientific finalizer uygula. Human
-method decision kaydedilmeden direct-stylo oracle üretme. Preprocessing P007, public
-workflow P008, benchmark P010/P011, FAIR package P012, Pinokyo P013 ve production
-isolation P014'te kalır.
+**Sıradaki tek ana iş:** Sözleşme/finalizer checkpoint'ini kanıt, commit ve Linux CI
+ile dondur; sonra ayrı `C.UTF-8` trusted execution profile kullanan fixed
+`Rscript --vanilla` worker ve bağımsız direct-stylo fixture oracle uygula. Guardian
+ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
+P006-AC-03 altında yapılabilir. Preprocessing P007, public workflow P008, benchmark
+P010/P011, FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
 
 **P006 başlangıç bulgusu:** Process exit zero bilimsel başarı değildir. Guardian ACK
 öncesi output schema ve scientific invariant doğrulaması gerekir. stylo 0.7.71
 `perform.delta` Wurzburg yolu combined known/unknown table'ı yeniden scale edebilir;
 P006 Cosine Delta known-derived z-scores üzerinde `dist.cosine` kullanacaktır.
-Önerilen CC0 fixture, C.UTF-8/UTC, seed 20260713, 1e-6 parity ve 1e-12
-structural/tie protokolü Oğuz HumanDecision kaydı bekler.
+CC0 fixture, C.UTF-8/UTC, seed 20260713, 1e-6 parity ve 1e-12 structural/tie
+protokolü `HD-20260713-0002` ile kabul edildi. Bu karar parity sonucu veya P006
+kabulü değildir.
+
+**P006 sözleşme checkpoint'i:** Üç bağımsız denetim iki bilimsel ve beş güvenlik/
+mimari blocker buldu. Aggregate count ayrı 150 milyon sınırına alındı; büyük JSON
+integer fail-closed oldu; zero-overlap projection, culling equality, unknown-only
+feature, token-total denominator ve UTF-8 tie testleri eklendi; FIFO pre-open
+reddi, nonblocking read, tek JSON parse ve current-area rebinding uygulandı. Erken
+validated-ACK kodu crash-safe olmadığı için tamamen çıkarıldı ve AC-03 pending
+kaldı. Ara local `./scripts/verify.sh`: 1.073 test, 7.215 statement, 1.898 branch,
+yüzde 100 kapsam kapısında geçti. Son bilimsel yeniden denetim, erişilebilir Classic Delta
+değerlerini kesen keyfi `1e12` sınırını buldu; sınır finite IEEE-754 double alanına
+çıkarıldı ve `>1e12` regresyonu eklendi. Normal dosyadan FIFO'ya pre-open yarış testi
+de eklendikten sonra final local `./scripts/verify.sh`: 1.075 test, 7.216 statement,
+1.898 branch, yüzde 100 coverage; metadata, 80 provenance record, repository scan ve
+R lock geçti. Bilimsel denetçinin son dar yeniden incelemesi PASS verdi.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

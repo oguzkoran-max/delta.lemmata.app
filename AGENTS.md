@@ -13,8 +13,9 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P000-P005 kapanmıştır. Tek aktif implementation Ticket P006'dır; başlangıç
-  paketi geçmeden worker koduna, HumanDecision olmadan referans oracle çıktısına geçme.
+- P000-P005 kapanmıştır. Tek aktif implementation Ticket P006'dır. Başlangıç paketi
+  ve `HD-20260713-0002` geçmiştir; sözleşme checkpoint'i exact Linux CI ile
+  dondurulmadan worker/oracle sonucunu parity kanıtı sayma.
 - P003/P004 kanıtını production retention, gerçek `stylo` veya host isolation kanıtı gibi genişletme.
 - P005'te application-managed deletion ile secure erase, snapshot, swap, backup veya production isolation iddiasını karıştırma.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.

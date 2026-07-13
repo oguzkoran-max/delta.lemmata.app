@@ -63,6 +63,33 @@ def test_create_verify_write_and_idempotent_cleanup(tmp_path: Path) -> None:
     assert first.read_bytes() == b"private corpus"
     assert mode(first) == 0o600
     assert mode(second) == 0o600
+    assert (
+        workspaces.read_file(
+            layout,
+            WorkspaceArea.INPUT,
+            FILE,
+            maximum_bytes=len(b"private corpus"),
+        )
+        == b"private corpus"
+    )
+    assert (
+        workspaces.read_file(
+            layout,
+            WorkspaceArea.CONTROL,
+            "d" * 64,
+            maximum_bytes=0,
+        )
+        == b""
+    )
+    assert (
+        workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            "e" * 64,
+            maximum_bytes=1,
+        )
+        is None
+    )
     workspaces.verify(layout)
 
     assert workspaces.cleanup(layout) == CleanupReport(2, len(b"private corpus"), False)
@@ -376,6 +403,413 @@ def test_file_creation_is_exclusive_and_does_not_follow_symlink(tmp_path: Path) 
         lambda: workspaces.create_file(layout, WorkspaceArea.INPUT, link_name, b"changed"),
     )
     assert canary.read_bytes() == b"outside"
+
+
+@pytest.mark.parametrize(
+    "maximum_bytes",
+    [True, "1", -1, workspace._MAX_FILE_READ_BYTES + 1],
+)
+def test_file_read_rejects_unbounded_limits(
+    tmp_path: Path,
+    maximum_bytes: object,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"result")
+
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=maximum_bytes,  # type: ignore[arg-type]
+        ),
+    )
+
+
+def test_file_read_rejects_oversize_wrong_mode_hardlink_and_symlink(tmp_path: Path) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    target = workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"result")
+
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=5,
+        ),
+    )
+
+    os.chmod(target, 0o644)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+    os.chmod(target, 0o600)
+
+    hardlink_name = "d" * 64
+    os.link(target, layout.result / hardlink_name)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+    (layout.result / hardlink_name).unlink()
+
+    external = tmp_path / "read-canary"
+    external.write_bytes(b"preserve")
+    os.chmod(external, 0o600)
+    symlink_name = "e" * 64
+    (layout.result / symlink_name).symlink_to(external)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            symlink_name,
+            maximum_bytes=8,
+        ),
+    )
+    assert external.read_bytes() == b"preserve"
+
+
+def test_file_read_rejects_fifo_before_opening_or_reading(tmp_path: Path) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    os.mkfifo(layout.result / FILE, mode=0o600)
+
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=1,
+        ),
+    )
+
+
+def test_file_read_rejects_regular_file_replaced_by_fifo_without_blocking(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    target = workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"x")
+    real_open = workspace.os.open
+    real_stat = workspace.os.stat
+    observed_flags: list[int] = []
+    swapped = False
+
+    def swap_after_preopen_stat(name: object, **kwargs: object) -> os.stat_result:
+        nonlocal swapped
+        result = real_stat(name, **kwargs)
+        if name == FILE and not swapped:
+            swapped = True
+            target.unlink()
+            os.mkfifo(target, mode=0o600)
+        return result
+
+    def capture_open(path: object, flags: int, *args: object, **kwargs: object) -> int:
+        if path == FILE:
+            observed_flags.append(flags)
+        return real_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(workspace.os, "stat", swap_after_preopen_stat)
+    monkeypatch.setattr(workspace.os, "open", capture_open)
+
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=1,
+        ),
+    )
+
+    assert swapped is True
+    assert observed_flags
+    assert observed_flags[-1] & os.O_NONBLOCK
+
+
+def test_file_read_rejects_short_or_oversized_descriptor_reads(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"x")
+
+    monkeypatch.setattr(workspace.os, "read", lambda _fd, _size: b"")
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=1,
+        ),
+    )
+
+    monkeypatch.setattr(workspace.os, "read", lambda _fd, _size: b"xx")
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=1,
+        ),
+    )
+
+
+def test_file_read_detaches_preopen_stat_open_and_descriptor_failures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"result")
+    real_stat = workspace.os.stat
+
+    def fail_file_stat(name: object, **kwargs: object) -> os.stat_result:
+        if name == FILE:
+            raise OSError("private")
+        return real_stat(name, **kwargs)
+
+    monkeypatch.setattr(workspace.os, "stat", fail_file_stat)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+    monkeypatch.undo()
+
+    real_open = workspace.os.open
+
+    def fail_file_open(path: object, *args: object, **kwargs: object) -> int:
+        if path == FILE:
+            raise OSError("private")
+        return real_open(path, *args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(workspace.os, "open", fail_file_open)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+    monkeypatch.undo()
+
+    real_fstat = workspace.os.fstat
+
+    def tamper_open_file(descriptor: int) -> os.stat_result:
+        info = real_fstat(descriptor)
+        if stat.S_ISREG(info.st_mode):
+            values = list(info)
+            values[0] = stat.S_IFREG | 0o644
+            return os.stat_result(values)
+        return info
+
+    monkeypatch.setattr(workspace.os, "fstat", tamper_open_file)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+
+
+def test_file_read_rejects_in_place_change_and_post_read_path_swap(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    target = workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"original")
+    real_read = workspace.os.read
+    changed = False
+
+    def mutate(descriptor: int, size: int) -> bytes:
+        nonlocal changed
+        chunk = real_read(descriptor, size)
+        if not changed:
+            changed = True
+            target.write_bytes(b"modified")
+            os.chmod(target, 0o600)
+        return chunk
+
+    monkeypatch.setattr(workspace.os, "read", mutate)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=8,
+        ),
+    )
+
+    monkeypatch.setattr(workspace.os, "read", real_read)
+    real_stat = workspace.os.stat
+    file_stats = 0
+
+    def swap(name: object, **kwargs: object) -> os.stat_result:
+        nonlocal file_stats
+        if name == FILE:
+            file_stats += 1
+            if file_stats == 2:
+                target.rename(layout.result / ("f" * 64))
+                target.write_bytes(b"replaced")
+                os.chmod(target, 0o600)
+        return real_stat(name, **kwargs)
+
+    monkeypatch.setattr(workspace.os, "stat", swap)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=8,
+        ),
+    )
+    assert target.read_bytes() == b"replaced"
+
+
+def test_file_read_rebinds_the_area_to_the_current_workspace_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"result")
+    real_read = workspace.os.read
+    moved = False
+    saved = layout.result.with_name("saved-result")
+
+    def move_area(descriptor: int, size: int) -> bytes:
+        nonlocal moved
+        chunk = real_read(descriptor, size)
+        if not moved:
+            moved = True
+            layout.result.rename(saved)
+            layout.result.mkdir(mode=0o700)
+        return chunk
+
+    monkeypatch.setattr(workspace.os, "read", move_area)
+    expect_code(
+        WorkspaceErrorCode.INVALID_LAYOUT,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+
+
+def test_file_read_rejects_descriptor_tamper_read_failure_and_close_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspaces = manager(tmp_path)
+    layout = workspaces.create(OWNER, JOB)
+    workspaces.create_file(layout, WorkspaceArea.RESULT, FILE, b"result")
+    real_read = workspace.os.read
+    real_fstat = workspace.os.fstat
+    file_calls = 0
+
+    def tampered(descriptor: int) -> os.stat_result:
+        nonlocal file_calls
+        info = real_fstat(descriptor)
+        if stat.S_ISREG(info.st_mode):
+            file_calls += 1
+            if file_calls == 2:
+                values = list(info)
+                values[0] = stat.S_IFREG | 0o644
+                return os.stat_result(values)
+        return info
+
+    monkeypatch.setattr(workspace.os, "fstat", tampered)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+
+    monkeypatch.setattr(workspace.os, "fstat", real_fstat)
+    monkeypatch.setattr(
+        workspace.os,
+        "read",
+        lambda _descriptor, _size: (_ for _ in ()).throw(OSError()),
+    )
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
+
+    real_open = workspace.os.open
+    real_close = workspace.os.close
+    opened_file = -1
+
+    def capture_open(path: object, *args: object, **kwargs: object) -> int:
+        nonlocal opened_file
+        descriptor = real_open(path, *args, **kwargs)  # type: ignore[arg-type]
+        if path == FILE:
+            opened_file = descriptor
+        return descriptor
+
+    def fail_file_close(descriptor: int) -> None:
+        if descriptor == opened_file:
+            real_close(descriptor)
+            raise OSError
+        real_close(descriptor)
+
+    monkeypatch.setattr(workspace.os, "read", real_read)
+    monkeypatch.setattr(workspace.os, "open", capture_open)
+    monkeypatch.setattr(workspace.os, "close", fail_file_close)
+    expect_code(
+        WorkspaceErrorCode.READ_FAILED,
+        lambda: workspaces.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            FILE,
+            maximum_bytes=6,
+        ),
+    )
 
 
 def test_verify_rejects_extra_entry_and_tampered_layout_value(tmp_path: Path) -> None:

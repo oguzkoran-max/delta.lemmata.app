@@ -1,14 +1,17 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-13
+**Son güncelleme:** 2026-07-14
 
-**Durum:** P005 tamamlandı; P006 aktif, başlangıç paketi ve yöntem kararı hazırlanıyor
+**Durum:** P005 tamamlandı; P006 aktif, yöntem kararı kabul edildi ve kapalı
+worker-sözleşmesi checkpoint'i yerel kapıdan geçti
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
 workspace, guardian-managed POSIX process control, durable terminal ACK,
-execution-bound recovery receipt ve conservative lifecycle projection;
-public analiz ve bilimsel hesaplama henüz yok
+execution-bound recovery receipt ve conservative lifecycle projection var. P006
+input/result/fatal-error modelleri, strict parser, semantic validator, saf scientific
+finalizer ve güvenli bounded workspace read eklendi; public analiz, R worker, parity
+ve durable scientific-result entegrasyonu henüz yok
 
 **P006 başlangıcı:** `codex/p006-stylo-worker` dalı ve
 `provenance/tickets/P006.json` açıldı. Dört kullanılabilir read-only mercek ile
@@ -20,7 +23,23 @@ terminal state ve guardian ACK'den önce gelir. stylo 0.7.71 kaynak incelemesi,
 Wurzburg yolunun combined matrix'i yeniden scale edebildiğini gösterdi; known/unknown
 Cosine Delta known-derived z-scores üzerinde `dist.cosine` kullanacaktır. Önerilen
 CC0 fixture, C.UTF-8/UTC, seed 20260713, 1e-6 parity ve 1e-12 structural/tie
-protokolü ayrı HumanDecision olmadan dondurulmayacaktır.
+protokolü `HD-20260713-0002` ile kabul edildi.
+
+**P006 sözleşme checkpoint'i:** Kapalı v1 wire profili en çok 20.000 özellik, 50
+belge, 64 fit, 192 hücre ve 1.000 MFW kabul eder; 32 MiB input/result üst sınırları
+en kötü durum kanonik JSON hesabıyla profile bağlanır. Known-only MFW sırası,
+culling, yüzde relative frequency, sample standard deviation, complete/partial/
+failed türetimi ve matris invariants doğrulanır. Unknown-only özellik ve sıfır
+candidate-overlap geçerlidir fakat fitting'i etkileyemez. Üç bağımsız denetim;
+aggregate-count, dev JSON integer, FIFO, çift JSON parse, culling sınırı, unknown
+canary, denominator ve UTF-8 tie açıklarını buldu; tamamı kapatıldı. Aynı denetim,
+erken guardian entegrasyonunun artifact kimliği ve crash recovery taşımadığını
+gösterdiği için bu kod geri çıkarıldı. P006-AC-03 açık kalır; generic P005 ACK
+bilimsel başarı kanıtı değildir. Son yerel kapı 1.073 test, 7.215 statement ve
+1.898 branch ile ilk düzeltmeleri geçti; son bilimsel yeniden denetimde erişilebilir
+Delta uzaklıklarını kesen keyfi `1e12` sınırı da kaldırıldı. Güncel doğrulama 1.075
+test, 7.216 statement ve 1.898 branch ile yüzde 100 geçti; exact commit ve Linux CI
+henüz kaydedilmedi.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,

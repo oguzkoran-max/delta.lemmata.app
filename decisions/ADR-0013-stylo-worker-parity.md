@@ -1,6 +1,6 @@
 # ADR-0013: Versioned stylo Worker and Parity Protocol
 
-**Status:** Engineering baseline proposed; human method decision is required before reference outputs are frozen
+**Status:** Accepted by `HD-20260713-0002`; implementation and evidence remain pending
 
 **Date:** 2026-07-13
 
@@ -25,7 +25,7 @@ Direct inspection of stylo 0.7.71 found an additional unknown-leakage hazard.
 training-derived z-scores but then calls `dist.wurzburg`, which scales the combined
 matrix again. P006 must not use that path for known/unknown Cosine Delta.
 
-## Proposed Decision
+## Accepted Decision
 
 - P006 input is a closed, versioned whole-text candidate-feature and raw-count
   table. P007 will later own how real raw text becomes that table.
@@ -51,14 +51,15 @@ matrix again. P006 must not use that path for known/unknown Cosine Delta.
   digest-like names and does not introduce human-readable worker paths.
 - An independent base-R plus stylo reference harness runs before worker comparison
   and shares no Delta calculation helper. Its outputs are checksum-frozen.
-- Proposed fixtures are deterministic project-authored synthetic token corpora,
-  not literary texts. Proposed publication license is CC0-1.0.
-- Proposed canonical settings are R 4.5.2, stylo 0.7.71, `C.UTF-8`, UTC, NFC input,
+- Fixtures are deterministic project-authored synthetic token corpora,
+  not literary texts. Their publication license is CC0-1.0.
+- Canonical settings are R 4.5.2, stylo 0.7.71, `C.UTF-8`, UTC, NFC input,
   seed 20260713, exact ordered feature equality, matrix parity `<=1e-6`, structural
   tolerance `<=1e-12`, and tie grouping threshold `1e-12`.
-- These fixture, license, environment, tolerance, metric, and claim settings remain
-  proposals until Oğuz records a separate HumanDecision. No reference output may be
-  frozen before that decision.
+- Oğuz accepted the fixture, license, environment, tolerance, metric, known-only
+  fitting, and claim settings in `HD-20260713-0002`. Reference outputs may be
+  generated only under this protocol and must be checksum-frozen before worker
+  comparison.
 
 ## Rejected Alternatives
 
@@ -97,14 +98,33 @@ remains P010-P015.
 
 - P006 begins schema-first and finalizer-first, not with an R analysis script.
 - Guardian acknowledgement semantics need an explicit validated-output phase.
-- Reference fixtures and outputs cannot be generated until a human method decision
-  accepts or revises the proposed protocol.
+- Reference fixtures and outputs may now be generated under the accepted protocol,
+  but only after the closed schemas and scientific finalizer are verified.
 - The public analysis control remains locked through P007 and P008.
 - P006 closure language must remain fixture-local and version-specific.
+
+## Contract Checkpoint, 2026-07-14
+
+- The accepted v1 transport profile is bounded to 20,000 candidate features, 50
+  documents, 64 fitting configurations, 192 requested cells, and 1,000 MFW.
+- Feature strings are NFC and at most 64 UTF-8 bytes. Document-local counts are
+  bounded separately from the 150,000,000 corpus aggregate. Scientific numbers
+  must be finite IEEE-754 doubles; no lower arbitrary distance ceiling is imposed.
+- Input and result envelopes are each capped at 32 MiB. Conservative worst-case
+  canonical-JSON bounds are computed in the contract module and tested below the
+  transport caps.
+- A document may have zero overlap with the candidate inventory. Unknown-only
+  features remain excluded because ranking and culling use known rows alone.
+- The pure finalizer now classifies process and validated worker output, but it is
+  not connected to durable job success or guardian acknowledgement yet.
+- An early ACK integration was removed after independent review showed that it did
+  not bind an artifact digest/size and was not crash-recoverable between database
+  commit and guardian acknowledgement. P006-AC-03 therefore remains open.
 
 ## Evidence Links
 
 - `provenance/evidence/P006/architecture-audit.md`
 - `provenance/evidence/P006/start-validation.md`
+- `provenance/evidence/P006/contracts-finalizer-validation.md`
 - `prompts/P006-start.md`
 - `provenance/tickets/P006.json`

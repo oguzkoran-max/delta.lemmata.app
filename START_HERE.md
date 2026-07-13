@@ -126,11 +126,13 @@ Closure tree `029248b`, normal CI run `29269051028` içinde verify ve canonical
 container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
 `provenance/evidence/P005/final-ci-validation.md` içinde tutulur.
 
-P006 Ticket, PromptEvent, branch, proposed ADR-0013 ve başlangıç denetimi açılmıştır.
-Sıradaki tek iş, opening package doğrulamasından sonra versioned worker şemaları,
-strict parser, semantic validator ve process sonucundan ayrı scientific finalizer
-uygulamaktır. Oğuz ayrı HumanDecision kaydetmeden sentetik fixture oracle çıktısı
-üretilmez veya dondurulmaz.
+P006 Ticket, PromptEvent, branch ve accepted ADR-0013 açıktır. Yöntem protokolü
+`HD-20260713-0002` ile kabul edildi. Versioned worker şemaları, strict tek-parse
+parser, semantic validator, saf scientific finalizer ve bounded workspace read
+yerel tam kapıda geçti. Sıradaki tek iş bu dar checkpoint'i exact commit ve Linux
+CI ile dondurmak; ardından fixed R worker ve bağımsız direct-stylo oracle üretmektir.
+Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri
+çıkarılmıştır; AC-03 hâlâ pending'dir.
 
 P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. P006 da
 preprocessing, public Start analysis, production limitleri, secure erase veya
