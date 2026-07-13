@@ -1,0 +1,248 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.6",
+  "version": 1,
+  "metadata": {
+    "component": {
+      "type": "application",
+      "name": "delta-lemmata",
+      "version": "0.0.0.dev0"
+    }
+  },
+  "components": [
+    {
+      "type": "library",
+      "name": "ape",
+      "version": "5.8-1",
+      "purl": "pkg:cran/ape@5.8-1",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-2 | GPL-3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "class",
+      "version": "7.3-23",
+      "purl": "pkg:cran/class@7.3-23",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-2 | GPL-3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "cluster",
+      "version": "2.1.8.1",
+      "purl": "pkg:cran/cluster@2.1.8.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 2)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "digest",
+      "version": "0.6.39",
+      "purl": "pkg:cran/digest@0.6.39",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 2)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "e1071",
+      "version": "1.7-17",
+      "purl": "pkg:cran/e1071@1.7-17",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-2 | GPL-3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "jsonlite",
+      "version": "2.0.0",
+      "purl": "pkg:cran/jsonlite@2.0.0",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT + file LICENSE"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "lattice",
+      "version": "0.22-7",
+      "purl": "pkg:cran/lattice@0.22-7",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 2)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "MASS",
+      "version": "7.3-65",
+      "purl": "pkg:cran/MASS@7.3-65",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-2 | GPL-3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Matrix",
+      "version": "1.7-4",
+      "purl": "pkg:cran/Matrix@1.7-4",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 2) | file LICENCE"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "nlme",
+      "version": "3.1-168",
+      "purl": "pkg:cran/nlme@3.1-168",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 2)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "pamr",
+      "version": "1.57",
+      "purl": "pkg:cran/pamr@1.57",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-2"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "proxy",
+      "version": "0.4-29",
+      "purl": "pkg:cran/proxy@0.4-29",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL-2 | GPL-3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "Rcpp",
+      "version": "1.1.2",
+      "purl": "pkg:cran/Rcpp@1.1.2",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 2)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "renv",
+      "version": "1.2.3",
+      "purl": "pkg:cran/renv@1.2.3",
+      "licenses": [
+        {
+          "license": {
+            "name": "MIT + file LICENSE"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "stylo",
+      "version": "0.7.71",
+      "purl": "pkg:cran/stylo@0.7.71",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL (>= 3)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "survival",
+      "version": "3.8-3",
+      "purl": "pkg:cran/survival@3.8-3",
+      "licenses": [
+        {
+          "license": {
+            "name": "LGPL (>= 2)"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tcltk2",
+      "version": "1.6.1",
+      "purl": "pkg:cran/tcltk2@1.6.1",
+      "licenses": [
+        {
+          "license": {
+            "name": "LGPL-3"
+          }
+        }
+      ]
+    },
+    {
+      "type": "library",
+      "name": "tsne",
+      "version": "0.2-0",
+      "purl": "pkg:cran/tsne@0.2-0",
+      "licenses": [
+        {
+          "license": {
+            "name": "GPL"
+          }
+        }
+      ]
+    }
+  ]
+}
