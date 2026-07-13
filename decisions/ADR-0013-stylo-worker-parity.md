@@ -106,7 +106,11 @@ remains P010-P015.
 ## Contract Checkpoint, 2026-07-14
 
 - The accepted v1 transport profile is bounded to 20,000 candidate features, 50
-  documents, 64 fitting configurations, 192 requested cells, and 1,000 MFW.
+  documents, 64 fitting configurations, 192 requested cells, and MFW values
+  from 2 through 1,000.
+  The lower bound is two because the locked `stylo` 0.7.71 distance functions
+  reject one-column inputs; P006 does not replace that behavior with a local
+  one-feature formula.
 - Feature strings are NFC and at most 64 UTF-8 bytes. Document-local counts are
   bounded separately from the 150,000,000 corpus aggregate. Scientific numbers
   must be finite IEEE-754 doubles; no lower arbitrary distance ceiling is imposed.
@@ -117,6 +121,9 @@ remains P010-P015.
   features remain excluded because ranking and culling use known rows alone.
 - The pure finalizer now classifies process and validated worker output, but it is
   not connected to durable job success or guardian acknowledgement yet.
+- Independent reference evidence uses the separate
+  `direct-stylo-oracle-v1` envelope. It binds an exact canonical input SHA-256
+  and reuses the scientific invariants without claiming to be worker output.
 - An early ACK integration was removed after independent review showed that it did
   not bind an artifact digest/size and was not crash-recoverable between database
   commit and guardian acknowledgement. P006-AC-03 therefore remains open.

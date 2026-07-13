@@ -8,6 +8,7 @@ results before lifecycle success can be persisted.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import sys
@@ -82,7 +83,7 @@ type Feature = Annotated[str, Field(min_length=1, max_length=MAX_FEATURE_BYTES)]
 type Count = Annotated[StrictInt, Field(ge=0, le=MAX_TOKEN_COUNT)]
 type AggregateCount = Annotated[StrictInt, Field(ge=0, le=MAX_AGGREGATE_COUNT)]
 type PositiveCount = Annotated[StrictInt, Field(ge=1, le=MAX_TOKEN_COUNT)]
-type MfwCount = Annotated[StrictInt, Field(ge=1, le=MAX_MFW)]
+type MfwCount = Annotated[StrictInt, Field(ge=2, le=MAX_MFW)]
 type Percentage = Annotated[StrictInt, Field(ge=0, le=100)]
 type BoundedCardinality = Annotated[StrictInt, Field(ge=0, le=MAX_FEATURES)]
 type FiniteNumber = Annotated[
@@ -508,6 +509,40 @@ class WorkerResultV1(WireModel):
         return self
 
 
+class DirectStyloOracleV1(WireModel):
+    """Independent direct-stylo evidence envelope for the frozen P006 fixtures."""
+
+    schema_version: Literal["direct-stylo-oracle-v1"]
+    fixture_ref: Annotated[str, Field(pattern=r"^fixture_[0-9a-f]{64}$")]
+    input_sha256: Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+    request_id: RequestId
+    limit_profile: Literal["stylo-worker-contract-limits-v1"]
+    analysis_unit: Literal["whole_text"]
+    seed: Literal[20260713]
+    oracle_version: Literal["p006-direct-stylo-v1"]
+    outcome: AnalysisOutcome = Field(strict=False)
+    fitting_basis: FittingBasis
+    fits: tuple[FitResult, ...] = Field(
+        min_length=1,
+        max_length=MAX_FITS,
+        strict=False,
+    )
+    cells: tuple[CellResult, ...] = Field(
+        min_length=1,
+        max_length=MAX_CELLS,
+        strict=False,
+    )
+    session: RSessionInfoV1
+
+    @model_validator(mode="after")
+    def require_unique_result_graph(self) -> Self:
+        fit_ids = tuple(fit.fit_id for fit in self.fits)
+        cell_ids = tuple(cell.cell_id for cell in self.cells)
+        if len(fit_ids) != len(set(fit_ids)) or len(cell_ids) != len(set(cell_ids)):
+            raise ValueError("result identifiers must be unique")
+        return self
+
+
 _FATAL_CODES_BY_STAGE = {
     FatalStage.INPUT_READ: frozenset(
         {FatalErrorCode.INPUT_MISSING, FatalErrorCode.INPUT_TOO_LARGE}
@@ -652,12 +687,16 @@ def parse_worker_result(payload: bytes) -> WorkerResultV1:
     return _parse_payload(payload, maximum=RESULT_MAX_BYTES, model=WorkerResultV1)
 
 
+def parse_direct_stylo_oracle(payload: bytes) -> DirectStyloOracleV1:
+    return _parse_payload(payload, maximum=RESULT_MAX_BYTES, model=DirectStyloOracleV1)
+
+
 def parse_worker_fatal_error(payload: bytes) -> WorkerFatalErrorV1:
     return _parse_payload(payload, maximum=FATAL_ERROR_MAX_BYTES, model=WorkerFatalErrorV1)
 
 
 def canonical_worker_json(
-    record: WorkerInputV1 | WorkerResultV1 | WorkerFatalErrorV1,
+    record: WorkerInputV1 | WorkerResultV1 | WorkerFatalErrorV1 | DirectStyloOracleV1,
 ) -> bytes:
     """Serialize one already validated worker record without non-standard numbers."""
 
@@ -675,7 +714,7 @@ def canonical_worker_json(
         INPUT_MAX_BYTES
         if isinstance(record, WorkerInputV1)
         else RESULT_MAX_BYTES
-        if isinstance(record, WorkerResultV1)
+        if isinstance(record, (WorkerResultV1, DirectStyloOracleV1))
         else FATAL_ERROR_MAX_BYTES
     )
     if len(payload) > maximum:
@@ -861,6 +900,32 @@ def validate_worker_result(request: WorkerInputV1, result: WorkerResultV1) -> Wo
     return result
 
 
+def validate_direct_stylo_oracle(
+    request: WorkerInputV1,
+    oracle: DirectStyloOracleV1,
+) -> DirectStyloOracleV1:
+    """Bind independent oracle evidence to exact input bytes and scientific semantics."""
+
+    expected_digest = hashlib.sha256(canonical_worker_json(request)).hexdigest()
+    if oracle.input_sha256 != expected_digest:
+        raise StyloContractError(StyloContractErrorCode.SEMANTIC_INVALID) from None
+    worker_equivalent = WorkerResultV1(
+        schema_version="stylo-worker-result-v1",
+        request_id=oracle.request_id,
+        limit_profile=oracle.limit_profile,
+        analysis_unit=oracle.analysis_unit,
+        seed=oracle.seed,
+        worker_version="stylo-worker-v1",
+        outcome=oracle.outcome,
+        fitting_basis=oracle.fitting_basis,
+        fits=oracle.fits,
+        cells=oracle.cells,
+        session=oracle.session,
+    )
+    validate_worker_result(request, worker_equivalent)
+    return oracle
+
+
 def validate_worker_fatal_error(
     request: WorkerInputV1,
     error: WorkerFatalErrorV1,
@@ -887,6 +952,7 @@ __all__ = [
     "CellRequest",
     "DistanceMatrix",
     "DistanceMeasure",
+    "DirectStyloOracleV1",
     "DocumentCounts",
     "DocumentRole",
     "FatalErrorCode",
@@ -907,8 +973,10 @@ __all__ = [
     "canonical_worker_json",
     "export_stylo_schema",
     "parse_worker_fatal_error",
+    "parse_direct_stylo_oracle",
     "parse_worker_input",
     "parse_worker_result",
     "validate_worker_fatal_error",
+    "validate_direct_stylo_oracle",
     "validate_worker_result",
 ]

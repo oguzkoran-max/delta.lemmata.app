@@ -9,6 +9,7 @@ from pathlib import Path
 from pydantic import BaseModel
 
 from delta_lemmata.stylo_contracts import (
+    DirectStyloOracleV1,
     WorkerFatalErrorV1,
     WorkerInputV1,
     WorkerResultV1,
@@ -18,6 +19,7 @@ from delta_lemmata.stylo_contracts import (
 ROOT = Path(__file__).resolve().parents[1]
 SCHEMA_DIR = ROOT / "schemas"
 SCHEMAS: dict[str, type[BaseModel]] = {
+    "direct-stylo-oracle-v1.schema.json": DirectStyloOracleV1,
     "stylo-worker-input-v1.schema.json": WorkerInputV1,
     "stylo-worker-result-v1.schema.json": WorkerResultV1,
     "stylo-worker-fatal-error-v1.schema.json": WorkerFatalErrorV1,

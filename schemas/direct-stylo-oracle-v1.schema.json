@@ -540,9 +540,10 @@
       "type": "string"
     }
   },
-  "$id": "https://delta.lemmata.app/schemas/stylo-worker-result-v1.schema.json",
+  "$id": "https://delta.lemmata.app/schemas/direct-stylo-oracle-v1.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
+  "description": "Independent direct-stylo evidence envelope for the frozen P006 fixtures.",
   "properties": {
     "analysis_unit": {
       "const": "whole_text",
@@ -570,9 +571,24 @@
     "fitting_basis": {
       "$ref": "#/$defs/FittingBasis"
     },
+    "fixture_ref": {
+      "pattern": "^fixture_[0-9a-f]{64}$",
+      "title": "Fixture Ref",
+      "type": "string"
+    },
+    "input_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Input Sha256",
+      "type": "string"
+    },
     "limit_profile": {
       "const": "stylo-worker-contract-limits-v1",
       "title": "Limit Profile",
+      "type": "string"
+    },
+    "oracle_version": {
+      "const": "p006-direct-stylo-v1",
+      "title": "Oracle Version",
       "type": "string"
     },
     "outcome": {
@@ -582,7 +598,7 @@
       "$ref": "#/$defs/RequestId"
     },
     "schema_version": {
-      "const": "stylo-worker-result-v1",
+      "const": "direct-stylo-oracle-v1",
       "title": "Schema Version",
       "type": "string"
     },
@@ -593,26 +609,23 @@
     },
     "session": {
       "$ref": "#/$defs/RSessionInfoV1"
-    },
-    "worker_version": {
-      "const": "stylo-worker-v1",
-      "title": "Worker Version",
-      "type": "string"
     }
   },
   "required": [
     "schema_version",
+    "fixture_ref",
+    "input_sha256",
     "request_id",
     "limit_profile",
     "analysis_unit",
     "seed",
-    "worker_version",
+    "oracle_version",
     "outcome",
     "fitting_basis",
     "fits",
     "cells",
     "session"
   ],
-  "title": "WorkerResultV1",
+  "title": "DirectStyloOracleV1",
   "type": "object"
 }

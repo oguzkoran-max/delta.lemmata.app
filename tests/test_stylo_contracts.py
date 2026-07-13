@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import json
 import statistics
 from pathlib import Path
@@ -19,6 +20,7 @@ from delta_lemmata.stylo_contracts import (
     CellFailed,
     CellNotEnoughFeatures,
     CellRequest,
+    DirectStyloOracleV1,
     DistanceMatrix,
     DistanceMeasure,
     DocumentCounts,
@@ -40,9 +42,11 @@ from delta_lemmata.stylo_contracts import (
     WorkerResultV1,
     canonical_worker_json,
     export_stylo_schema,
+    parse_direct_stylo_oracle,
     parse_worker_fatal_error,
     parse_worker_input,
     parse_worker_result,
+    validate_direct_stylo_oracle,
     validate_worker_fatal_error,
     validate_worker_result,
 )
@@ -218,6 +222,25 @@ def fatal_fixture(request: WorkerInputV1) -> WorkerFatalErrorV1:
     )
 
 
+def oracle_fixture(request: WorkerInputV1) -> DirectStyloOracleV1:
+    result = result_fixture(request)
+    return DirectStyloOracleV1(
+        schema_version="direct-stylo-oracle-v1",
+        fixture_ref=opaque("fixture", 1),
+        input_sha256=hashlib.sha256(canonical_worker_json(request)).hexdigest(),
+        request_id=result.request_id,
+        limit_profile=result.limit_profile,
+        analysis_unit=result.analysis_unit,
+        seed=result.seed,
+        oracle_version="p006-direct-stylo-v1",
+        outcome=result.outcome,
+        fitting_basis=result.fitting_basis,
+        fits=result.fits,
+        cells=result.cells,
+        session=result.session,
+    )
+
+
 def expect_contract_error(
     code: StyloContractErrorCode,
     action: Any,
@@ -237,9 +260,12 @@ def test_closed_contracts_round_trip_through_canonical_json_and_semantics() -> N
     request = request_fixture()
     result = result_fixture(request)
     fatal = fatal_fixture(request)
+    oracle = oracle_fixture(request)
     assert parse_worker_input(canonical_worker_json(request)) == request
     parsed_result = parse_worker_result(canonical_worker_json(result))
     assert validate_worker_result(request, parsed_result) == result
+    parsed_oracle = parse_direct_stylo_oracle(canonical_worker_json(oracle))
+    assert validate_direct_stylo_oracle(request, parsed_oracle) == oracle
     assert (
         validate_worker_fatal_error(
             request,
@@ -248,6 +274,34 @@ def test_closed_contracts_round_trip_through_canonical_json_and_semantics() -> N
         == fatal
     )
     assert canonical_worker_json(request).endswith(b"\n")
+
+
+def test_direct_oracle_must_bind_exact_input_bytes_and_scientific_semantics() -> None:
+    request = request_fixture()
+    oracle = oracle_fixture(request)
+    wrong_digest = oracle.model_copy(update={"input_sha256": "0" * 64})
+    expect_contract_error(
+        StyloContractErrorCode.SEMANTIC_INVALID,
+        lambda: validate_direct_stylo_oracle(request, wrong_digest),
+    )
+    wrong_request = oracle.model_copy(update={"request_id": opaque("request", 99)})
+    expect_contract_error(
+        StyloContractErrorCode.SEMANTIC_INVALID,
+        lambda: validate_direct_stylo_oracle(request, wrong_request),
+    )
+
+
+@pytest.mark.parametrize("field", ["fits", "cells"])
+def test_direct_oracle_rejects_duplicate_result_identifiers(field: str) -> None:
+    payload = oracle_fixture(request_fixture()).model_dump(mode="python")
+    payload[field] = (payload[field][0], payload[field][0])
+    with pytest.raises(ValidationError):
+        DirectStyloOracleV1.model_validate(payload)
+
+
+def test_mfw_one_is_rejected_before_stylo_execution() -> None:
+    with pytest.raises(ValidationError):
+        FitRequest(fit_id=opaque("fit", 99), mfw=1, culling_percent=0)
 
 
 @pytest.mark.parametrize(
@@ -779,11 +833,11 @@ def test_aggregate_counts_exceed_one_document_limit_without_escaping_validation(
             work_ref=opaque("work", index),
             role=DocumentRole.KNOWN,
             token_total=count,
-            counts=(count,),
+            counts=(count, 0),
         )
         for index, count in enumerate((2_000_000, 1_999_999), start=1)
     )
-    fit = FitRequest(fit_id=opaque("fit", 20), mfw=1, culling_percent=0)
+    fit = FitRequest(fit_id=opaque("fit", 20), mfw=2, culling_percent=0)
     cell = CellRequest(
         cell_id=opaque("cell", 20),
         fit_id=fit.fit_id,
@@ -795,7 +849,7 @@ def test_aggregate_counts_exceed_one_document_limit_without_escaping_validation(
         limit_profile="stylo-worker-contract-limits-v1",
         analysis_unit="whole_text",
         seed=20260713,
-        candidate_features=("alpha",),
+        candidate_features=("alpha", "beta"),
         documents=documents,
         fits=(fit,),
         cells=(cell,),
@@ -815,22 +869,21 @@ def test_aggregate_counts_exceed_one_document_limit_without_escaping_validation(
             ranked_features=ranked,
         ),
         fits=(
-            FitFailed(
+            FitNotEnoughFeatures(
                 fit_id=fit.fit_id,
-                mfw=1,
+                mfw=2,
                 culling_percent=0,
-                status="failed",
+                status="not_enough_features",
                 eligible_feature_count=1,
-                error_code=FitErrorCode.NON_POSITIVE_STANDARD_DEVIATION,
             ),
         ),
         cells=(
-            CellFailed(
+            CellNotEnoughFeatures(
                 cell_id=cell.cell_id,
                 fit_id=fit.fit_id,
                 distance=cell.distance,
-                status="failed",
-                error_code=CellErrorCode.FIT_UNAVAILABLE,
+                status="not_enough_features",
+                error_code="not_enough_features",
             ),
         ),
         session=session_fixture(),
@@ -909,7 +962,7 @@ def test_relative_frequencies_use_token_total_not_candidate_sum() -> None:
         )
         for index, (token_total, counts) in enumerate(((100, (10, 20)), (200, (20, 10))))
     )
-    fit = FitRequest(fit_id=opaque("fit", 40), mfw=1, culling_percent=0)
+    fit = FitRequest(fit_id=opaque("fit", 40), mfw=2, culling_percent=0)
     request = WorkerInputV1(
         schema_version="stylo-worker-input-v1",
         request_id=opaque("request", 40),
@@ -945,7 +998,7 @@ def test_equal_frequency_ranking_uses_locked_utf8_byte_order() -> None:
         )
         for index in range(2)
     )
-    fit = FitRequest(fit_id=opaque("fit", 50), mfw=1, culling_percent=0)
+    fit = FitRequest(fit_id=opaque("fit", 50), mfw=2, culling_percent=0)
     request = WorkerInputV1(
         schema_version="stylo-worker-input-v1",
         request_id=opaque("request", 50),
@@ -994,6 +1047,11 @@ def test_fatal_semantics_require_the_exact_trusted_request() -> None:
 @pytest.mark.parametrize(
     ("filename", "model", "record"),
     [
+        (
+            "direct-stylo-oracle-v1.schema.json",
+            DirectStyloOracleV1,
+            lambda request: oracle_fixture(request),
+        ),
         (
             "stylo-worker-input-v1.schema.json",
             WorkerInputV1,
