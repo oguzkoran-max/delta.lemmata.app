@@ -1,24 +1,101 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-12
+**Güncellendi:** 2026-07-13
 
-**Aşama:** P004 Metadata, Corpus Inventory, and Rights teknik olarak tamamlandı; P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
+**Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; aktif
+implementation Ticket yok, P006 henüz açılmadı
 
-**Kod durumu:** English-only workbench'te secure intake, versioned corpus domain,
-58-column metadata CSV, individual-TXT veya member-catalog'lu ZIP Guided Upload ->
-Describe -> Review, selectable timeline, exact correction routing ve hash-bound
-final documentation confirmation adayı var; scientific computation yok
+**Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
+256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
+validated-payload staging, capability-first application service, synthetic POSIX
+process controller, kalıcı content-free deletion ledger, continuous fake-clock
+janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
+recovery receipt var;
+public analysis hâlâ kilitli ve scientific computation yok
 
-**Aktif ticket:** Yok; P004 kapanış commit'i doğrulanıp `main`e alındıktan sonra P005 açılacak
+**Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
 
-**Sıradaki tek ana iş:** P004 kapanış ağacını doğrula ve `main`e al; ardından P005'i
-tek aktif ticket olarak açıp lifecycle/retention sözleşmesini uygula
+**Sıradaki tek ana iş:** P006 R `stylo` Worker and Computational Parity için ayrı
+Ticket, PromptEvent, branch ve başlangıç denetimi aç. Önce doğrudan `stylo` referans
+fixture'ı, versioned worker input/output şeması, fixed argv, unknown leakage sınırı,
+finite-number kontrolleri ve sayısal tolerans planını dondur. P006 açılmadan gerçek
+worker kodu yazma; P005'e production isolation, deployment veya Pinokyo analizi
+ekleme.
+
+**P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
+exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence
+commit `2eff470` ve `RUN-20260713-0004` ile geçti. Geçici write workflow'u kaldıran
+`029248b`, normal closure CI run `29269051028` içinde verify job `86881820484` ve
+container job `86881820512` ile yeşildir. P005-AC-01--AC-08 passed; blocker yoktur.
+Bu kapanış gerçek R/stylo, production retention/isolation, secure erase, deployment
+ve final owner walkthrough iddiası değildir.
+
+**P005 acceptance checkpoint:** İlk bağımsız closure denetimi capability-first
+authorization, zero-allocation admission, cleanup-failure accounting, cancellation
+delivery, reciprocal guardian ACK ve descriptor-bound process start açıkları buldu;
+tamamı kapatıldı. Final exact replay `RUN-20260713-0003`, commit `2a17ec6` üzerinde
+950 test, 6.551 statement, 1.732 branch, yüzde 100 coverage, clean clone ve iki
+browser harness ile geçti. Linux CI önce emergency reap'te unreaped leader buldu,
+sonra platform-dependent coverage branch'i buldu; ikisi de düzeltildi. Final run
+`29220278021` Linux verify, evidence generation ve canonical container'ı geçirdi.
+Upload GitHub quota recalculation nedeniyle reddedildi; hard gate korunuyor. Kanıt:
+`provenance/evidence/P005/acceptance-hardening-validation.md`,
+`provenance/evidence/P005/final-ci-validation.md` ve
+`memory/checkpoints/2026-07-13-p005-acceptance.md`.
+
+**P005 guardian checkpoint:** Ayrı POSIX-session guardian, app-liveness pipe,
+`waitid(..., WNOWAIT)` leader ownership, durable SQLite terminal ACK ve
+job+execution-bound HMAC recovery receipt uygulandı. Running-worker ve
+post-completion app-loss yarışları gerçek `SIGKILL` ile geçti; thread-start,
+malformed control, double-control-failure ve persistent reap yolları kapatıldı. Dört
+bağımsız adversarial turdaki bütün P0/P1 bulguları kapandı. Full gate 878 test,
+6.060 statement, 1.602 branch ve yüzde 100 coverage ile geçti. Kanıt:
+`provenance/evidence/P005/guardian-app-loss-validation.md`.
+Exact implementation commit aynı kilitlerden fresh no-hardlinks clone'da yeniden
+kuruldu; 878-test gate geçti ve clone temiz kaldı (`RUN-20260713-0001`).
+Provenance-link commit `cfb503c`, GitHub CI run `29215163561` içinde verify job
+`86709522502` ve container job `86709522510` ile tamamen yeşildir. Kanıt:
+`provenance/evidence/P005/guardian-exact-commit-ci.md`.
+
+**P005 retention checkpoint:** `0e84b10` ile SQLite deletion ledger, schema-v1
+migration, fail-closed optional workspace load, exact staged/queue/result/export
+deadlines, continuous janitor, success-before-publication cleanup ve verified-absence
+tombstone purge uygulandı. Full gate 795 test, 5.262 statement, 1.404 branch ve yüzde
+100 coverage ile geçti. Kanıt:
+`provenance/evidence/P005/retention-janitor-validation.md`.
+
+**P005 tarihsel P0 bulgu, kapatıldı:** Bağımsız süreç denetimi eski daemon monitorün
+app process ile öldüğünü ve worker grubunu bırakabildiğini doğrulamıştı. Kalıcı
+PID/PGID çözümü identifier reuse nedeniyle reddedildi; `3c746d1` guardian katmanı bu
+yerel macOS açığını kapattı. Final Linux verify ve container artık geçti; yalnız
+retained supply-chain artifact ve P005-AC-08 kapanışı açıktır.
+
+**P005 foundation checkpoint:** Commit'ler `bce5bb2`, `0da9a1b`, `5e1cbba` ve
+`eca5357`; full gate 769 test, 4.947 statement, 1.304 branch ve yüzde 100 coverage
+ile geçti. SQLite concurrency/ownership, macOS-safe `setrlimit + execve` launcher,
+nested process cancellation, workspace load/selective cleanup ve fail-closed canary
+testleri dahildir. Kanıt:
+`provenance/evidence/P005/foundation-validation.md`. Bu ara checkpoint P005 kapanışı,
+Linux CI, production isolation, gerçek R/stylo veya CE-14/CE-15 doğrulaması değildir.
+
+**P005 başlangıç baseline'ı:** P004 merge commit `d13e63c`, main CI run
+`29208223198` içinde verify, SBOM/dependency audit ve Linux amd64 container
+işlerinde geçti. Dört read-only ajan security, lifecycle/retention, accessible UX
+ve FAIR/claim mercekleriyle P005'i denetledi. Kanonik baseline:
+`decisions/ADR-0012-job-lifecycle-retention.md` ve
+`provenance/evidence/P005/architecture-audit.md`.
+
+**P005 kritik sınır:** Job ID ownership değildir; ayrı session capability ve
+payload-free SQLite control store kullanılır. Execution outcome cleanup state'inden
+ayrıdır. Public P004 flow P006/P008'e kadar payload-free ve analysis-locked kalır.
+P005 yalnız application-managed local deletion ve intra-Delta session isolation
+kanıtı üretebilir; CE-14 production dili ve CE-15 P014/P015'e aittir.
 
 **İnsan kabul sırası değişikliği:** Oğuz `HD-20260712-0002` ile ara testleri
 Codex'in yürütmesini, ortak walkthrough'un ürün hazır olduğunda yapılmasını istedi.
-Bu karar P004'ü kendiliğinden kabul etmez; automated technical closure ancak expanded
-browser, full repository, exact-commit ve CI kapıları geçerse ilerleyebilir. Safari,
-VoiceOver, bilimsel sonuç ve final release kabulü bu otomatik kanıttan türetilmez.
+Bu karar P004'ü tek başına kabul etmedi; ardından expanded browser, full repository,
+exact-commit ve CI kapıları geçerek teknik kapanış yapıldı. Safari, VoiceOver,
+bilimsel sonuç ve final release kabulü bu otomatik kanıttan türetilmez.
 
 **P004 otomatik kabul provası:** Tracked browser harness'a permission-required
 blocker, exact rights correction, guided-value restoration, analysis-only action
@@ -106,7 +183,8 @@ sonra temiz kaldı. `RUN-20260712-0001` ve
 `provenance/evidence/P004/guided-ui-exact-commit/report.md` bu kapıyı kaydeder.
 Provenance-link commit'i `4c3bb8a` GitHub CI run `29190917436` üzerinde verify,
 SBOM/audit ve canonical Linux amd64 container işlerinde geçti. Kanıt:
-`provenance/evidence/P004/guided-ui-ci.md`. Yalnız Oğuz insan kabulü açıktır.
+`provenance/evidence/P004/guided-ui-ci.md`. Bu checkpointte insan kabulü açıktı;
+sonraki `HD-20260712-0002` teknik kapanış sırasını P015 final walkthrough'undan ayırdı.
 
 **P004 beginner-first entry revizyonu:** İlk Purpose/Upload yüzeyi artık stilometriyi
 ölçülebilir dil kullanım örüntülerinin corpus-relative karşılaştırılması olarak
@@ -122,7 +200,8 @@ gate 467 test, 3.167 statement, 880 branch ve yüzde 100 coverage ile geçti.
 Implementation commit `b538807`, `RUN-20260712-0002` ile fresh no-hardlinks
 detached clone'da aynı full gate ve browser audit'ten geçti; clone temiz kaldı. CI
 run `29192912269`, provenance-link commit `26a04e3` için verify, SBOM/dependency
-audit ve Linux amd64 container işlerinde geçti. Yalnız revize insan kabulü açıktır.
+audit ve Linux amd64 container işlerinde geçti. Bu checkpointte revize insan kabulü
+açıktı; sonraki otomatik teknik kapanış kaydı bu tarihsel durumu supersede etti.
 
 **P004 Lemmata aile paleti ve parametre yönlendirmesi:** Canlı `lemmata.app` ve
 `lda.lemmata.app` denetiminden koyu yeşil eylem, açık gri canvas/sidebar ve soft
@@ -141,7 +220,8 @@ Exact implementation commit `54e479d`, `RUN-20260712-0003` ile fresh
 no-hardlinks detached clone'da bootstrap, 468 test, yüzde 100 coverage ve aynı
 browser audit'inden geçti; clone temiz kaldı. Provenance-link commit `5d95ce4`,
 GitHub CI run `29201459098` içinde verify, SBOM/dependency audit ve Linux amd64
-container işlerinde geçti. Yalnız insan kabulü açıktır.
+container işlerinde geçti. Bu checkpointte insan kabulü açıktı; P004 daha sonra
+`HD-20260712-0002` sınırlarıyla teknik olarak kapatıldı.
 
 ## Önce Oku
 

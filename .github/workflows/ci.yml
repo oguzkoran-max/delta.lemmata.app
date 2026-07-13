@@ -37,7 +37,7 @@ jobs:
       - name: Verify source, metadata, schemas, and records
         run: ./scripts/verify.sh
 
-      - name: Generate SBOM and audit dependencies
+      - name: Generate and validate SBOM and audit evidence
         run: ./scripts/generate_evidence.sh
 
   container:

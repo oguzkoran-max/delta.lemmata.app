@@ -2,9 +2,11 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights teknik kabul
-kapılarıyla tamamlandı. Sıradaki tek ticket P005 Job Lifecycle, Isolation, and
-Retention'dır; bilimsel `stylo` hesaplaması henüz uygulanmadı.
+**Güncel aşama:** P005 Job Lifecycle, Isolation, and Retention sekiz acceptance
+ölçütünün tamamını geçerek kapandı. Exact Git-backed Linux capture, checksum paketi
+ve normal closure CI yeşildir. Aktif implementation Ticket yoktur; sıradaki aday
+P006 R `stylo` Worker and Computational Parity'dir. Bilimsel `stylo` hesaplaması
+henüz uygulanmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -116,6 +118,18 @@ clean-clone ve GitHub CI kapıları geçti. Kapanış `RUN-20260712-0005`,
 Final owner walkthrough P015 ürün-hazır kapısında ayrıca yapılacaktır; P004 kapanışı
 Safari, VoiceOver, genel usability, bilimsel sonuç veya deployment iddiası değildir.
 
-Sıradaki iş P005'i tek aktif ticket olarak açıp job workspace, session ownership,
-queue, cancellation, timeout, crash/restart cleanup ve retention sözleşmesini
-uygulamaktır. Hedef süreler bu aşamada test edilmeden ürün vaadi yapılmaz.
+P005 kaydı `provenance/tickets/P005.json` içinde `complete` durumundadır. Final
+implementation `RUN-20260713-0003` ile clean-clone ve browser katmanlarında;
+Git-backed exact Linux package `RUN-20260713-0004` ile SBOM, audit, checksum ve
+container katmanlarında geçti. Geçici write-capable capture workflow'u kaldırıldı.
+Closure tree `029248b`, normal CI run `29269051028` içinde verify ve canonical
+container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
+`provenance/evidence/P005/final-ci-validation.md` içinde tutulur.
+
+Sıradaki tek iş P006'yı ayrı Ticket, PromptEvent, branch ve başlangıç denetimiyle
+açmaktır. P006 açılmadan gerçek R/stylo worker kodu yazılmaz. Önce
+`SESSION_HANDOFF.md` ve P006 roadmap bölümü okunur.
+
+P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
+analysis, gerçek R/stylo, production limitleri, secure erase veya Delta-LDA host
+isolation iddiası P005'e eklenmez.

@@ -16,20 +16,21 @@ fi
 OUTPUT=provenance/evidence/P001/generated
 mkdir -p "$OUTPUT"
 
-"$UV_BIN" run cyclonedx-py environment .venv \
-  --pyproject pyproject.toml \
-  --output-reproducible \
-  --output-format JSON \
-  --output-file "$OUTPUT/python-sbom.cdx.json"
-
-Rscript --vanilla scripts/generate_r_sbom.R "$OUTPUT/r-sbom.cdx.json"
-
 "$UV_BIN" export --format requirements.txt \
   --no-dev \
   --no-emit-project \
   --frozen \
   --quiet \
   --output-file "$OUTPUT/runtime-requirements.txt"
+
+"$UV_BIN" run cyclonedx-py environment .venv \
+  --pyproject pyproject.toml \
+  --output-reproducible \
+  --output-format JSON \
+  --output-file "$OUTPUT/python-sbom.cdx.json"
+"$UV_BIN" run python scripts/normalize_python_sbom.py "$OUTPUT/python-sbom.cdx.json"
+
+Rscript --vanilla scripts/generate_r_sbom.R "$OUTPUT/r-sbom.cdx.json"
 
 "$UV_BIN" run pip-audit --requirement "$OUTPUT/runtime-requirements.txt" \
   --require-hashes \
@@ -43,7 +44,7 @@ Rscript --vanilla scripts/generate_r_sbom.R "$OUTPUT/r-sbom.cdx.json"
   --no-verify \
   > "$OUTPUT/detect-secrets.json"
 
-"$UV_BIN" pip freeze > "$OUTPUT/python-environment.txt"
+"$UV_BIN" pip freeze --exclude-editable > "$OUTPUT/python-environment.txt"
 Rscript --vanilla -e 'source("renv/activate.R"); sessionInfo()' > "$OUTPUT/r-session-info.txt"
 
 shasum -a 256 \
@@ -55,5 +56,8 @@ shasum -a 256 \
   containers/base-images.lock.json \
   containers/ci-actions.lock.json \
   > "$OUTPUT/checksums.sha256"
+
+"$UV_BIN" run python scripts/validate_generated_evidence.py "$OUTPUT"
+shasum -a 256 -c "$OUTPUT/checksums.sha256"
 
 printf '%s\n' "evidence-generated path=$OUTPUT"

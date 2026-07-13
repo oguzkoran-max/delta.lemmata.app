@@ -1,7 +1,7 @@
 # Delta Supported Environment Matrix
 
-**Durum:** P001 sürüm baseline'ı kilitlendi; container build ve browser matrisi henüz doğrulanmadı  
-**Tarih:** 2026-07-10
+**Durum:** P001 sürüm baseline'ı kilitlendi; canonical image build doğrulandı, runtime/parity ve tam browser matrisi henüz doğrulanmadı
+**Tarih:** 2026-07-13
 
 ## 1. Destek İlkesi
 
@@ -11,7 +11,7 @@ Delta'nın bilimsel olarak kanonik çalışma ortamı, pinlenmiş Linux OCI imag
 
 | Ortam | Platform | Rol | Destek düzeyi | Zorunlu kanıt |
 |---|---|---|---|---|
-| Canonical runtime | Linux x86_64 OCI container | Python orchestration, Streamlit, R `stylo`, public service | Tam destek | P001 lock/install; P006 parity; P014 load/isolation |
+| Canonical runtime | Linux x86_64 OCI container | Python orchestration, Streamlit, R `stylo`, public service | Image build doğrulandı; bilimsel/runtime desteği bekliyor | P006 parity; P014 load/isolation |
 | CI | GitHub-hosted Linux x86_64 veya eşdeğer temiz runner | Unit, integration, schema, security ve build kontrolleri | Tam destek | Her commit CI; release'te temiz build |
 | Production | Mevcut VPS üzerindeki Linux x86_64 container runtime | `delta.lemmata.app` | Tam destek, P014 sonrası | Lemmata smoke, rollback, resource ve retention audit |
 | Clean rerun | Temiz Linux x86_64 host ve pinlenmiş OCI image | FAIR package yeniden koşumu | Tam destek, P012 sonrası | İkinci ortam rerun ve checksum/tolerance raporu |
@@ -46,9 +46,11 @@ Delta'nın bilimsel olarak kanonik çalışma ortamı, pinlenmiş Linux OCI imag
 | Linux base | `rocker/r-ver:4.5.2` | `containers/base-images.lock.json` |
 | Base manifest digest | `sha256:fd4ccdd3a4a6f7ef805e2daeee2a0fe3bf126bc231f36351223baecf5a595a4c` | Docker Registry API V2, 2026-07-10 |
 
-Yerel Mac'te Docker ve XQuartz yoktur. Bu nedenle container build ile local
-`stylo` namespace load doğrulanmış sayılmaz. Ayrıntı
-`docs/development/local-runtime-limitations.md` içindedir.
+Canonical Linux amd64 image, GitHub Actions run `29215163561` içinde commit
+`cfb503c` için build edilmiştir. Bu kanıt image'ın oluşturulabildiğini gösterir;
+container runtime davranışı, R/`stylo` parity, production isolation veya load sonucu
+değildir. Yerel macOS sınırlamaları
+`docs/development/local-runtime-limitations.md` içinde ayrıca kayıtlıdır.
 
 ## 4. Browser Politikası
 

@@ -1,12 +1,23 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-12
+**Son güncelleme:** 2026-07-13
 
-**Durum:** P004 Metadata, Corpus Inventory, and Rights tamamlandı; P005 Job Lifecycle, Isolation, and Retention sıradaki ticket
+**Durum:** P005 tamamlandı; aktif implementation Ticket yok, P006 henüz açılmadı
 
-**Kod:** English-only workbench'te secure intake, versioned corpus documentation,
-individual TXT ve member-catalog'lu ZIP guided flow, selectable Review timeline,
-correction routing ve hash-bound final confirmation var; bilimsel hesaplama henüz yok
+**Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
+foundation var: ayrı session/job identity, payload-free SQLite queue, private
+workspace, guardian-managed POSIX process control, durable terminal ACK,
+execution-bound recovery receipt ve conservative lifecycle projection;
+public analiz ve bilimsel hesaplama henüz yok
+
+**P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
+commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,
+execution-bound signed receipt ve gerçek app-loss yarışları uygulandı. 878 test ve
+full measured statement/branch coverage geçti; `RUN-20260713-0001` exact-commit
+clean-clone replay'i de geçti. Provenance-link commit `cfb503c`, GitHub CI run
+`29215163561` içinde Linux verify, SBOM/dependency audit ve canonical amd64
+container kapılarından geçti. P005 acceptance audit açıktır. Ayrıntı:
+`provenance/evidence/P005/guardian-app-loss-validation.md`.
 
 Bu dosya bağlam sıkıştırması, ajan değişimi ve Claude/Codex geçişlerinde kaybolmaması gereken uzun ömürlü proje hafızasıdır. Tam sohbet dökümü değildir. Kararları, gerekçeleri, reddedilen yolları, kanıtları ve açık soruları tutar.
 
@@ -74,6 +85,7 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 | Gönderim hedefi | Şubat 2027 | Geliştirme, doğrulama, release ve yazım için aşamalı takvim |
 | Ajan mimarisi | Agent-nötr sözleşme ve ince adaptörler | Codex ve Claude arasında kayıpsız geçiş |
 | Hafıza | Sürekli checkpoint, yalnız pre-compaction değil | Sıkıştırma önceden haber vermeyebilir |
+| P005 CI kanıt kanalı | Exact Linux CI'nin sekiz dosyalı path-neutral paketi outer SHA-256 manifestiyle Git'e bağlanır; geçici write workflow'u yakalamadan sonra kaldırılır | Kota-bağımlı artifact servisini zorunlu kılmadan inspectable ve kalıcı FAIR-oriented kanıt sağlamak |
 
 ## P004 Beginner-First Entry Experience
 
@@ -383,8 +395,9 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
 - Provenance-link commit `9864db4`, GitHub CI run `29204391922` içinde Linux
   verify, SBOM/dependency audit ve canonical amd64 container işlerinde geçti.
 - Ajan raporları 10k bütçeyi aştığı için independent approval değildir.
-- P004 hâlâ Oğuz'un revised human walkthrough ve açık kabul/ret kararı için
-  in-progress durumundadır.
+- Bu checkpointte P004 revised human walkthrough için in-progress idi. Sonraki
+  `HD-20260712-0002`, exact-commit ve CI kanıtı P004'ü teknik olarak kapattı; final
+  product-ready owner walkthrough P015'e taşındı.
 
 ## P004 Otomatik Kabul Provası Kararı (2026-07-12)
 
@@ -417,3 +430,85 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   walkthrough P015'te yapılacaktır.
 - Sıradaki tek iş P005 lifecycle, session isolation, bounded queue, cancellation,
   crash/restart cleanup ve retention modelidir.
+
+## P005 Job Lifecycle Baseline (2026-07-12)
+
+- P004 merge commit `d13e63c`, main CI `29208223198` üzerinde verify,
+  SBOM/dependency audit ve Linux amd64 container kapılarından geçti.
+- P005 branch `codex/p005-job-lifecycle`, Ticket
+  `provenance/tickets/P005.json`, brief `prompts/P005-start.md`.
+- Dört read-only ajan security, lifecycle/retention, accessible UX ve FAIR/claim
+  sınırlarını bağımsız inceledi. Ortak P0 bulguları
+  `provenance/evidence/P005/architecture-audit.md` içinde birleştirildi.
+- Job ID ownership değildir. Server-generated session capability ayrı tutulur ve
+  SQLite control store yalnız keyed owner digest ile content-free state saklar.
+- Execution outcome, cancel request ve artifact cleanup orthogonal state'tir.
+  Cleanup terminal sonucu silmez; illegal veya yarışan ikinci terminal outcome
+  compare-and-swap ile reddedilir.
+- P005 bir session-owned staged input API hazırlar: session başına bir, global dört,
+  absolute bir saat TTL. P004 public UI payload-free kalır; bağlantı P008'de yapılır.
+- Queue bir running ve en fazla üç queued job'dur. Queue/staging reddi job ID,
+  workspace, process veya event ayırmaz. Queued deadline 15 dakikadır.
+- Startup recovery yanında sürekli deadline-driven janitor gerekir. Success export
+  ancak raw/normalized cleanup doğrulandıktan sonra görünür; failure/cancel/timeout/
+  crash/abandon en geç 15 dakika, result/export bir saat, content-free events yedi
+  gün içinde application-managed namespace'ten silinir.
+- P005 sentetik finite-limit worker ile process control mekanizmasını doğrular.
+  Gerçek R/stylo worker ve parity P006, production resource sayıları ve host
+  isolation P014'tür.
+- P005 kapanışı secure erase, swap/snapshot/backup, proxy buffer, CE-15 veya tam
+  CE-14 production claim'i kuramaz. Final owner walkthrough P015'te kalır.
+
+## P005 Retention ve Guardian Kararı (2026-07-13)
+
+- `0e84b10` SQLite deletion ledger, schema migration, continuous janitor, exact
+  deadline sınırları, success cleanup-before-publication, result/export expiry ve
+  verified-absence tombstone purge katmanını tamamladı.
+- Full local gate 795 test, 5.262 statement, 1.404 branch ve yüzde 100 coverage ile
+  geçti. Kanıt `provenance/evidence/P005/retention-janitor-validation.md`.
+- Running startup recovery yalnız dışarıdan doğrulanmış worker-stop kanıtıyla
+  `abandoned` geçişi yapar. Kanıt yoksa row ve workspace korunur; başarı uydurulmaz.
+- Bağımsız denetim, mevcut daemon monitorün app `SIGKILL` sonrasında worker grubunu
+  geride bırakabildiğini buldu. PID/PGID persist edip restart'ta `killpg` çağırma
+  yaklaşımı identifier reuse nedeniyle reddedildi.
+- Kabul edilen sıradaki mimari yön: app-liveness pipe kullanan ayrı per-job guardian,
+  PGID reuse penceresini kapatan owned group anchor, content-free authenticated
+  recovery evidence ve gerçek macOS/Linux parent-loss testi.
+- Guardian ayrıca unattended unsuccessful cleanup deadline'ını taşıyamazsa P005-AC-06
+  açık kalır. Bu checkpoint production isolation, secure erase veya CE-14/CE-15
+  doğrulaması değildir.
+
+## P005 Git-Backed Linux Kanıt Kararı (2026-07-13)
+
+- Final implementation commit `2a17ec6` için GitHub run `29220278021` dört denemede
+  Linux verify, supply-chain generation ve canonical container katmanlarını geçti;
+  yalnız hesap düzeyindeki `upload-artifact` kotası paketin tutulmasını reddetti.
+- Job loglarını tek başına yeterli saymak ve belirsiz kota hesabını beklemek
+  reddedildi. Oğuz `HD-20260713-0001` ile permanent Git-backed exact Linux evidence
+  yolunu kabul etti.
+- Paket tam sekiz non-empty UTF-8 dosya, JSON root validation, source checksum
+  inventory, private path taraması ve sibling outer SHA-256 manifesti taşır.
+- Capture yalnız disposable `codex/p005-evidence-capture` dalında write permission
+  alır. Exact paket doğrulandıktan sonra workflow kaldırılacaktır.
+- Bu karar P005'i kabul etmez, AC-08'i otomatik geçirmez ve scientific result,
+  deployment, secure erase ya da production isolation iddiası kurmaz.
+
+## P005 Kapanışı (2026-07-13)
+
+- Path-neutral evidence source commit `d3ca0f6`, exact Ubuntu capture run
+  `29268150070` ve normal CI run `29268150409` üzerinde 970 test, 6.551 statement,
+  1.732 branch, yüzde 100 coverage, SBOM, audit ve canonical container kapılarını
+  geçti.
+- GitHub bot evidence commit `2eff470`, sekiz dosyalı paketi ve outer SHA-256
+  manifestini kalıcılaştırdı. Detached replay bütün outer ve nested checksumları,
+  JSON yapılarını, Python dependency graph'ını ve private-path absence kapısını
+  doğruladı: `RUN-20260713-0004`.
+- Geçici `contents: write` capture workflow'u kaldırıldı. Closure tree `029248b`,
+  normal CI run `29269051028` içinde verify `86881820484` ve container
+  `86881820512` ile geçti.
+- P005-AC-01--AC-08 passed, Ticket complete ve blocker sıfırdır. Bu sonuç yalnız
+  application-managed lifecycle, synthetic worker ve kayıtlı CI sınırındadır.
+- Gerçek R/stylo computation ve parity P006; corpus health P007; public end-to-end
+  workflow P008; production isolation, swap, snapshot, backup ve deployment P014;
+  final owner walkthrough P015 kapsamındadır.
+- Sıradaki aday P006'dır, fakat ayrı Ticket ve PromptEvent açılmadan kodlanmaz.

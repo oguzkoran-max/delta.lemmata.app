@@ -1,0 +1,172 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260713-0004",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P005"
+  ],
+  "started_at_utc": "2026-07-13T16:51:58Z",
+  "ended_at_utc": "2026-07-13T16:55:06Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "d3ca0f67a6a08f2e6a232b0b686b36842ef819e9",
+  "environment": {
+    "os": "GitHub-hosted Ubuntu 24.04",
+    "architecture": "x86_64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2",
+    "capture_workflow_run": "29268150070",
+    "capture_job": "86878774447",
+    "normal_ci_run": "29268150409",
+    "normal_ci_verify_job": "86878775588",
+    "normal_ci_container_job": "86878775601",
+    "evidence_commit": "2eff470e4e06a1b1586c4aec251ba99162770dbc"
+  },
+  "command": "GitHub Actions workflow .github/workflows/p005-evidence-capture.yml at d3ca0f67a6a08f2e6a232b0b686b36842ef819e9 (run 29268150070); GitHub Actions workflow .github/workflows/ci.yml at d3ca0f67a6a08f2e6a232b0b686b36842ef819e9 (run 29268150409)",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "42d9369d7630793b213a1664ddb4deccac1cdd05269e8b5e9db996d005467992"
+    },
+    {
+      "path": ".github/workflows/p005-evidence-capture.yml",
+      "sha256": "b4dd9eb115c48de6db307cf2e2bc1d51a4c037758b00620765a7930f1f901007"
+    },
+    {
+      "path": "containers/ci-actions.lock.json",
+      "sha256": "e1666161e7ad35c1c757989f0bd6cacb2e24f2bae87a865f55d80c9479ac6afc"
+    },
+    {
+      "path": "containers/base-images.lock.json",
+      "sha256": "b0cfcc4c5a1ba42bf65b4589160db5f7e8547a6562134da7c4d318aeffceaabe"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/generate_evidence.sh",
+      "sha256": "9560806f4e5b1d113d69a3330d9000cf4bc291e8d9a51eb41e8f951f62780e00"
+    },
+    {
+      "path": "scripts/normalize_python_sbom.py",
+      "sha256": "f10bea015faf3ec8b243314335d8e06fc18c28219feef52ca09fb96bc09abcb4"
+    },
+    {
+      "path": "scripts/validate_generated_evidence.py",
+      "sha256": "f641c7f7c5b8e55d936bc831eef681d212fff7e8004a3cf1c44dcdca01cc0dac"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "GitHub-hosted Ubuntu 24.04 workspaces checked out at exact source commit d3ca0f67a6a08f2e6a232b0b686b36842ef819e9",
+    "command": "GitHub Actions workflow .github/workflows/p005-evidence-capture.yml at d3ca0f67a6a08f2e6a232b0b686b36842ef819e9 (run 29268150070); GitHub Actions workflow .github/workflows/ci.yml at d3ca0f67a6a08f2e6a232b0b686b36842ef819e9 (run 29268150409)",
+    "limitations": [
+      "The GitHub-hosted Ubuntu image is named but not represented by an immutable runner image digest; actions, Python, uv, R, project dependencies, and the canonical container base are separately pinned.",
+      "Environment restoration and pip-audit used the network; this is not an offline clean-room rerun.",
+      "The detect-secrets output is a retained unverified candidate report, not a universal no-secret attestation.",
+      "Only synthetic process and corpus fixtures were used; no user or research corpus content entered the evidence package.",
+      "Real R/stylo computation, production isolation, secure erase, deployment, Safari, VoiceOver, and product-owner acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [
+    {
+      "run_id": "RUN-20260713-0003",
+      "fields": [
+        "replay.limitations",
+        "output_artifacts",
+        "retained Linux supply-chain evidence"
+      ],
+      "reason": "This run completes the retained Linux supply-chain evidence subgate that RUN-20260713-0003 left externally blocked; it does not supersede that run's lifecycle, browser, or clean-clone results."
+    }
+  ],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "42d9369d7630793b213a1664ddb4deccac1cdd05269e8b5e9db996d005467992"
+    },
+    {
+      "path": ".github/workflows/p005-evidence-capture.yml",
+      "sha256": "b4dd9eb115c48de6db307cf2e2bc1d51a4c037758b00620765a7930f1f901007"
+    },
+    {
+      "path": "containers/ci-actions.lock.json",
+      "sha256": "e1666161e7ad35c1c757989f0bd6cacb2e24f2bae87a865f55d80c9479ac6afc"
+    },
+    {
+      "path": "containers/base-images.lock.json",
+      "sha256": "b0cfcc4c5a1ba42bf65b4589160db5f7e8547a6562134da7c4d318aeffceaabe"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/generate_evidence.sh",
+      "sha256": "9560806f4e5b1d113d69a3330d9000cf4bc291e8d9a51eb41e8f951f62780e00"
+    },
+    {
+      "path": "scripts/normalize_python_sbom.py",
+      "sha256": "f10bea015faf3ec8b243314335d8e06fc18c28219feef52ca09fb96bc09abcb4"
+    },
+    {
+      "path": "scripts/validate_generated_evidence.py",
+      "sha256": "f641c7f7c5b8e55d936bc831eef681d212fff7e8004a3cf1c44dcdca01cc0dac"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P005/git-backed-linux-evidence-validation.md",
+      "sha256": "a3291bf84555db54170e5e43f6e19dcbba37c99f7745b5237615f969250c05df"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6.sha256",
+      "sha256": "08cd96c7586938a6a8c08eb240e1f461ca64f4e096f6dda8a9e7ec3d282269f6"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/checksums.sha256",
+      "sha256": "e426fae4e1a6e5bc4bf7ab0f34954b54aa5bb4a12a100343a931cb24dbe9bd57"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/detect-secrets.json",
+      "sha256": "6b5ef8fde0255dd714358fdc67bc0dc2b9df7ec27e69aa55afa8bc4ed0137ce8"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/pip-audit.json",
+      "sha256": "fae8c18f803f7347a548a3adbc3f6e1b9459935d595d671f7af9a7de6d77fe76"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/python-environment.txt",
+      "sha256": "dbebf5b335b885171443ef785d4d1df6efdd629c8bdfb536220b18f7578aec05"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/python-sbom.cdx.json",
+      "sha256": "62de7dc1ccc85d243b84a8c1db08d90f5722a3e8f074cafcf9cf41c60f54727a"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/r-sbom.cdx.json",
+      "sha256": "2b19db27bb1d5ab5b7c7b0f3fddf4e2c5989e4a39fa8bd6904dd6fef60427872"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/r-session-info.txt",
+      "sha256": "0a0a28694379170f142fb81856815047e45253c9395c6fafb9705cbb8b492ed9"
+    },
+    {
+      "path": "provenance/evidence/P005/ci-supply-chain-d3ca0f6/runtime-requirements.txt",
+      "sha256": "2110dae3b82c86dad240e70ab4b3c4e80db0e5265d2ce5075b3000b8980794d2"
+    }
+  ],
+  "notes": "Exact source d3ca0f6 passed capture run 29268150070 and normal CI run 29268150409. Both Linux verification paths passed 970 tests, 6,551 statements, 1,732 branches, 100% measured coverage, 73 provenance records, repository scanning, locked R checks, SBOM and audit generation; the normal CI canonical amd64 container also passed. Evidence commit 2eff470 retains the exact eight-file package and sibling manifest. Detached replay verified all outer and nested checksums, JSON roots, the complete Python dependency graph, zero known dependency vulnerabilities, and absence of private path markers."
+}

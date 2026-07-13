@@ -1,0 +1,37 @@
+{
+  "schema_version": "1.0.0",
+  "git_commit": "4b8a2e819ee06203ba7241c2a0261b9ba685b0a2",
+  "git_dirty": false,
+  "audit_method": "Tracked Python Playwright harness and generated lifecycle HTML.",
+  "public_wiring": "Not connected before P008; this is the P005 component boundary.",
+  "state_count": 16,
+  "audits": [
+    {
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "region_count": 16,
+      "semantics_pass": true,
+      "horizontal_overflow": false,
+      "forbidden_marker_present": false,
+      "screenshot": "provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/screenshots/lifecycle-1280x900.png"
+    },
+    {
+      "viewport": {
+        "width": 320,
+        "height": 800
+      },
+      "region_count": 16,
+      "semantics_pass": true,
+      "horizontal_overflow": false,
+      "forbidden_marker_present": false,
+      "screenshot": "provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/screenshots/lifecycle-320x800.png"
+    }
+  ],
+  "result": "passed",
+  "limitations": [
+    "This is Chromium component evidence, not Safari or VoiceOver evidence.",
+    "It does not activate public analysis or verify production deployment."
+  ]
+}

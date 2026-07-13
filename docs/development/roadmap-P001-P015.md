@@ -45,6 +45,7 @@ flowchart TD
     P001 --> P006["P006 R stylo worker and parity"]
     P003 --> P004["P004 Metadata, inventory, and rights"]
     P003 --> P005["P005 Job lifecycle and retention"]
+    P004 --> P005
     P004 --> P007["P007 Preprocessing and corpus health"]
     P006 --> P007
     P002 --> P008["P008 Guided and Research workflows"]
@@ -209,19 +210,28 @@ expanded Chromium ve GitHub CI teknik kapıları geçti; final ürün walkthroug
 
 ### P005: Job Lifecycle, Isolation, and Retention
 
-**Amaç:** Her analizi sınırlandırılmış, iptal edilebilir ve süre sonunda iz bırakmadan temizlenen bir job olarak çalıştırmak.
+**Durum:** `complete` (2026-07-13); `codex/p005-job-lifecycle`,
+`provenance/tickets/P005.json`, `RUN-20260713-0003/0004`.
 
-**Bağımlılık:** P003.
+**Amaç:** Her analizi sınırlandırılmış, session-owned, iptal edilebilir ve
+application-managed artifact'ları deadline sonunda doğrulanarak temizlenen bir job
+olarak çalıştırmak.
+
+**Bağımlılık:** P003 ve P004. Lifecycle çekirdeği P003 sınırını kullanır; staged
+input ile Review-to-job bağlantısı P004 inventory kimliğine dayanır.
 
 **Deliverable'lar:**
 
 - Kriptografik job kimliği ve server-side session ownership.
+- Payload-free transactional SQLite control store ve ayrı execution/artifact state.
+- Session başına bir, global en fazla dört staged input lease; bir saat absolute TTL.
 - Koşuma özel input, work, result ve export dizinleri.
 - Bir çalışan ve en fazla üç bekleyen R job queue politikası.
 - CPU, RAM, PID, timeout ve cancellation sözleşmesi; process-tree kill.
 - Başarı, hata, kullanıcı iptali, worker crash ve uygulama restart'ı için lifecycle state machine.
-- Başarıda export sonrası raw/normalized silme; hatada en çok 15 dakika; disk export'ta en çok 1 saat; content-free loglarda 7 gün.
-- Startup janitor ve orphan workspace taraması.
+- Başarıda export görünmeden önce raw/normalized silme; queued veya hatalı job'da en
+  çok 15 dakika; disk result/export'ta en çok 1 saat; content-free loglarda 7 gün.
+- Startup recovery ve sürekli deadline-driven janitor.
 
 **Acceptance kapısı:**
 
@@ -229,9 +239,12 @@ expanded Chromium ve GitHub CI teknik kapıları geçti; final ürün walkthroug
 - Timeout, cancellation, OOM simülasyonu ve restart sonrasında child process ve corpus artığı kalmaz.
 - Queue limiti aşıldığında yeni iş fail-safe reddedilir ve kaynak ayırmaz.
 - Canary metin, log ve başka session export'unda bulunmaz.
+- Terminal outcome cleanup sonrasında korunur; illegal ve yarışan transition ikinci
+  bir terminal sonuç üretemez.
 
 **Kanıt:** Concurrency, crash cleanup, retention ve canary raporları.  
-**Claim/tehdit bağlantısı:** CE-14, CE-15; SEC-07, SEC-09, SEC-11, SEC-12, SEC-13.  
+**Claim/tehdit bağlantısı:** CE-14 ve CE-15 hazırlık kanıtı; production claim'leri
+P014/P015'e kadar verified değildir. SEC-07, SEC-09, SEC-11, SEC-12, SEC-13.
 **Non-goal:** Dağıtık queue, kullanıcı geçmişi veya kalıcı proje depolama.  
 **Sahip/denetçi:** Geliştirme ajanı uygular; P014'te server koşullarıyla yeniden doğrulanır.
 

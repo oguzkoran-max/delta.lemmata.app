@@ -36,8 +36,10 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P003 Secure Ingestion bütün kapıları geçerek `main`e alınmıştır. Aktif kayıt
-`provenance/tickets/P004.json`, dal `codex/p004-metadata-rights`, execution brief
-`prompts/P004-start.md` dosyasındadır. Metadata anlamı, canonical inventory,
-rights state machine ve chronology readiness P004 kapsamındadır; retention,
-`stylo`, nihai Pinokyo corpus'u ve deployment ekleme.
+P005 Job Lifecycle, Isolation, and Retention bütün acceptance ölçütlerini geçerek
+`provenance/tickets/P005.json` içinde tamamlanmıştır. Exact Linux capture,
+checksum-bound supply-chain package ve normal closure CI kanıtları korunur. Aktif
+implementation Ticket yoktur. Sıradaki aday P006 R `stylo` Worker and
+Computational Parity'dir; ayrı Ticket, PromptEvent, branch ve başlangıç kanıtı
+açılmadan kod yazma. Production isolation, secure erase, nihai Pinokyo corpus'u ve
+deployment P006 kapsamına eklenmez.

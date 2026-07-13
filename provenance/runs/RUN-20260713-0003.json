@@ -1,0 +1,177 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260713-0003",
+  "run_type": "rerun",
+  "status": "passed",
+  "ticket_ids": [
+    "P005"
+  ],
+  "started_at_utc": "2026-07-13T02:57:39Z",
+  "ended_at_utc": "2026-07-13T03:01:07Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "2a17ec60ed62695e1e47383ad930330bef52f134",
+  "environment": {
+    "os": "macOS 26.5.2",
+    "architecture": "arm64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "pytest": "8.4.2",
+    "browser": "Chromium via Playwright 1.61.0"
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P005/browser-boundary-exact-2a17ec6; .venv/bin/python scripts/browser_audit_p005.py --output provenance/evidence/P005/lifecycle-component-exact-2a17ec6",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh --no-hardlinks local clones at the recorded exact commit",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; .venv/bin/python scripts/browser_audit_p004.py --output provenance/evidence/P005/browser-boundary-exact-2a17ec6; .venv/bin/python scripts/browser_audit_p005.py --output provenance/evidence/P005/lifecycle-component-exact-2a17ec6",
+    "limitations": [
+      "The clean clones used the same Mac and may reuse locked Python and R package caches.",
+      "Only synthetic process and corpus fixtures were used.",
+      "Browser evidence covers Chromium, not Safari or VoiceOver.",
+      "Final-commit Linux verification and the canonical container passed, but retained CI artifact upload remains blocked by delayed GitHub storage-quota recalculation.",
+      "Production isolation, reboot recovery, secure erasure, R/stylo computation, deployment, and product-owner acceptance remain outside this run."
+    ]
+  },
+  "supersedes": [
+    {
+      "run_id": "RUN-20260713-0002",
+      "fields": [
+        "git_commit",
+        "input_artifacts",
+        "output_artifacts",
+        "evidence_manifest"
+      ],
+      "reason": "The final implementation adds the Linux emergency-reap correction and deterministic cross-platform coverage test discovered after RUN-20260713-0002."
+    }
+  ],
+  "evidence_manifest": {
+    "path": "provenance/evidence/P005/final-exact-commit.sha256",
+    "sha256": "d67d0f4dcbf7d2c38574a9a5ba43224d6cf92187818aa1f010b26c3dc0df0294",
+    "covers": [
+      "provenance/evidence/P005/final-exact-commit",
+      "provenance/evidence/P005/browser-boundary-exact-2a17ec6",
+      "provenance/evidence/P005/lifecycle-component-exact-2a17ec6"
+    ]
+  },
+  "input_artifacts": [
+    {
+      "path": "pyproject.toml",
+      "sha256": "323d2a4ea5fe0c56bb58aa9edc84e00e13bd6b40ec8a9574fef32830a7af58d7"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": ".streamlit/config.toml",
+      "sha256": "a53d95446dca6bf80b3630ae14b54481e25d1fcb36b5eab70a1562763ee2d7e7"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "9bcbe07609006859418a98b2e587e5b197118faceca910b6bd3cd2181f45207e"
+    },
+    {
+      "path": "scripts/browser_audit_p004.py",
+      "sha256": "8312471bf585e74222f8d97cd9355bdda4d03453c6eba58d7e212e551cf2b564"
+    },
+    {
+      "path": "scripts/browser_audit_p005.py",
+      "sha256": "8ad71b3a70a78933b2159cc2bce7aa99924b7743182ff85b68e26e7be1c770bd"
+    },
+    {
+      "path": "src/delta_lemmata/job_models.py",
+      "sha256": "28b00768d9fb353d600c73e6d88bced86f3ef31027f2a1b564f3bb316ddcf140"
+    },
+    {
+      "path": "src/delta_lemmata/job_store.py",
+      "sha256": "b3b8fce3300e7b3f6d4bf9c3a0c468ccdba291a3c8311f7dd097fc1ecee07965"
+    },
+    {
+      "path": "src/delta_lemmata/job_service.py",
+      "sha256": "28bb61fcbac993349c167c1acd89c035e621434df358a791a0c097a0d379d63f"
+    },
+    {
+      "path": "src/delta_lemmata/job_workspace.py",
+      "sha256": "e94439aec2366dcc764900dc6934e90081e2f82599b012e4db45a0e472c372cc"
+    },
+    {
+      "path": "src/delta_lemmata/process_controller.py",
+      "sha256": "dcad23cd24aada9515cdc849987f2ed56d2968dd0cc7048b507aceeedd364a22"
+    },
+    {
+      "path": "src/delta_lemmata/guardian_controller.py",
+      "sha256": "8b0857fdee5c6c9d26f7ee43a7f0eddb9a098d393baf7e45eb6ae009a4b2de10"
+    },
+    {
+      "path": "src/delta_lemmata/job_janitor.py",
+      "sha256": "d420fe71919abde451f6c336a803f346c8dcb9e4a68264d02fcd50afa8d3eaf3"
+    },
+    {
+      "path": "src/delta_lemmata/job_events.py",
+      "sha256": "4d891142cc9b3ea40bdc03e54a32d9f07ff12d410b0e310a014e1f16642a2f98"
+    },
+    {
+      "path": "src/delta_lemmata/job_projection.py",
+      "sha256": "f1a46b32ed7486f647b5be79b58d32f10362433c9ad4d82ca6d4e60f2c45ebd5"
+    },
+    {
+      "path": "src/delta_lemmata/job_ui.py",
+      "sha256": "a06282f161cafca762ab080d36ae95a01d2a31998edead0066f8a740c7f3acef"
+    },
+    {
+      "path": "tests/test_job_service.py",
+      "sha256": "322766e4fb607e8bdc5872067b0fe9886acb2ada8c09e3171b475867bf28cff2"
+    },
+    {
+      "path": "tests/test_job_store.py",
+      "sha256": "8d5074eea4809ae85b79456b1e7f1aa823f44be78cdab3db5acdf9b67e13d04f"
+    },
+    {
+      "path": "tests/test_process_controller.py",
+      "sha256": "95296b94e2b430252727ef084b9adadc80cbd0375e8fa580b1743d654ef5b642"
+    },
+    {
+      "path": "tests/test_guardian_controller.py",
+      "sha256": "5e62d77841ac9b29413b95a9654aa32c5b186630ece869323e625e02076f3bbe"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P005/final-exact-commit/report.md",
+      "sha256": "826e1e8b6faed6229a0ce71cc5eb60d2452fc85c35699c75e9df74251c31c534"
+    },
+    {
+      "path": "provenance/evidence/P005/browser-boundary-exact-2a17ec6/browser-audit.json",
+      "sha256": "4636b82d72655e06edd2c8725d85b138f4b2323ab75bc4b8f3c81f51813dbfef"
+    },
+    {
+      "path": "provenance/evidence/P005/lifecycle-component-exact-2a17ec6/browser-audit.json",
+      "sha256": "41594b473827fa9a831c292f066ccba3c27e8816cf40b7de1db548e8a8242bfc"
+    }
+  ],
+  "notes": "Final implementation commit 2a17ec6 was rebuilt in fresh no-hardlinks clones. The complete repository gate passed 950 tests with full measured coverage and a clean post-run tree. Tracked Chromium harnesses independently passed the P004 public boundary and all 16 P005 lifecycle projections from clean exact-commit states. Linux source verification, evidence generation, and the canonical container also passed; only retained artifact upload remains externally blocked by delayed GitHub quota recalculation."
+}

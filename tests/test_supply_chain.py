@@ -29,13 +29,27 @@ def test_ci_verify_fetches_complete_history_for_provenance() -> None:
     assert "fetch-depth: 0" in verify_job
 
 
+def test_temporary_p005_write_workflow_was_removed_after_capture() -> None:
+    workflows = ROOT / ".github" / "workflows"
+    capture = workflows / "p005-evidence-capture.yml"
+    normal_ci = (workflows / "ci.yml").read_text(encoding="utf-8")
+
+    assert not capture.exists()
+    assert "codex/p005-evidence-capture" not in normal_ci
+    assert "contents: write" not in normal_ci
+
+
 def test_container_base_digest_matches_lock() -> None:
     dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
     lock = load_json(ROOT / "containers" / "base-images.lock.json")
     expected = f"{lock['repository']}:{lock['tag']}@{lock['manifest_list_digest']}"
     assert expected in dockerfile
     assert "--platform=linux/amd64" in dockerfile
-    assert lock["verification_status"] == "digest-verified-build-not-run"
+    assert lock["verification_status"] == "digest-verified-ci-build-passed"
+    assert lock["verification_commit"] == "cfb503c1c5b8fc7d03e9d80fce557a98b86b977c"
+    assert lock["verification_run"] == "29215163561"
+    assert lock["verification_job"] == "86709522510"
+    assert lock["verified_at_utc"] == "2026-07-13T00:23:44Z"
 
 
 def test_python_direct_dependencies_are_locked() -> None:
