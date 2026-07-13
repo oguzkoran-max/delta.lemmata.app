@@ -42,7 +42,9 @@
     "SEC-12",
     "SEC-13"
   ],
-  "decision_ids": [],
+  "decision_ids": [
+    "HD-20260713-0001"
+  ],
   "prompt_event_ids": [
     "PE-20260712-0011"
   ],
@@ -249,6 +251,6 @@
     }
   ],
   "blockers": [
-    "GitHub Actions artifact-storage usage must recalculate after deletion of seven already-expired build artifacts; rerun 29220278021 or a later final-commit CI and verify the downloaded supply-chain checksums before P005-AC-08 can pass."
+    "The accepted Git-backed evidence channel still requires one exact-source Ubuntu capture, package and manifest verification, reciprocal Run evidence, and green final CI before P005-AC-08 can pass."
   ]
 }

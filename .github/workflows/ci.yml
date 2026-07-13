@@ -37,16 +37,8 @@ jobs:
       - name: Verify source, metadata, schemas, and records
         run: ./scripts/verify.sh
 
-      - name: Generate SBOM and audit dependencies
+      - name: Generate and validate SBOM and audit evidence
         run: ./scripts/generate_evidence.sh
-
-      - name: Preserve SBOM and audit evidence
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: supply-chain-${{ github.sha }}
-          path: provenance/evidence/P001/generated
-          if-no-files-found: error
-          retention-days: 90
 
   container:
     runs-on: ubuntu-24.04

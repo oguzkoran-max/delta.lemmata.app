@@ -2,8 +2,8 @@
 
 **Güncellendi:** 2026-07-13
 
-**Aşama:** P004 `main`e alındı; P005 AC-01--AC-07 geçti, AC-08 retained CI
-artifact kotası nedeniyle açık
+**Aşama:** P004 `main`e alındı; P005 AC-01--AC-07 geçti, AC-08 için Git-backed
+exact Linux evidence capture sürüyor
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -15,14 +15,15 @@ public analysis hâlâ kilitli ve scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** GitHub artifact kotası yeniden hesaplandıktan sonra, en
-erken 2026-07-13 18:55 TRT'de, final implementation commit `2a17ec6` için run
-`29220278021` failed job'unu bir kez rerun et. 12:55 TRT'deki dördüncü deneme,
-verify job `86786405954`, tüm teknik kapıları ve sekiz dosyalı paket üretimini geçti;
-GitHub depolama kotası yalnız upload aşamasını yeniden reddetti.
-Upload geçerse `supply-chain-2a17ec6...` artifactini indir, iç checksumları doğrula,
-`final-ci-validation.md` ve P005-AC-08'i güncelle, sonra yerel kanıt commitini push et.
-Yerel dal temizdir ve remote'dan bir kanıt commiti ileridedir.
+**Sıradaki tek ana iş:** `HD-20260713-0001` ile kabul edilen Git-backed kanıt
+yolunu tamamla. Path-neutral üretim ve sekiz dosyalı paket validatorü yerelde 25
+odak test, repository scan ve 970-test yüzde 100 coverage katmanını geçti. Geçici,
+yalnız `codex/p005-evidence-capture` push'una açık Ubuntu 24.04 workflow'unu commit
+et ve çalıştır; botun checksum-bound paketi aynı dala yazmasını bekle. Exact Linux
+dosyalarını ve outer manifesti doğruladıktan sonra Run/Ticket/ADR/PromptEvent
+bağlarını tamamla, geçici write workflow'unu kaldır, final full gate ve normal CI'yi
+geçir. P005 ancak bundan sonra kapanabilir. Yerel dal remote'dan bir tarihsel kanıt
+commiti ileride ve bu yeni çalışma dilimi nedeniyle şu anda değişiklik içeriyor.
 
 **P005 acceptance checkpoint:** İlk bağımsız closure denetimi capability-first
 authorization, zero-allocation admission, cleanup-failure accounting, cancellation

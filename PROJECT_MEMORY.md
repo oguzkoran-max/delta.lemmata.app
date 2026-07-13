@@ -1,8 +1,8 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-12
+**Son güncelleme:** 2026-07-13
 
-**Durum:** P004 `main`e alındı; P005 Job Lifecycle, Isolation, and Retention aktif
+**Durum:** P004 `main`e alındı; P005 AC-08 Git-backed Linux evidence capture aktif
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -85,6 +85,7 @@ Geliştirme süreci de aynı no-code eşiğini araştırır. Oğuz formal Python
 | Gönderim hedefi | Şubat 2027 | Geliştirme, doğrulama, release ve yazım için aşamalı takvim |
 | Ajan mimarisi | Agent-nötr sözleşme ve ince adaptörler | Codex ve Claude arasında kayıpsız geçiş |
 | Hafıza | Sürekli checkpoint, yalnız pre-compaction değil | Sıkıştırma önceden haber vermeyebilir |
+| P005 CI kanıt kanalı | Exact Linux CI'nin sekiz dosyalı path-neutral paketi outer SHA-256 manifestiyle Git'e bağlanır; geçici write workflow'u yakalamadan sonra kaldırılır | Kota-bağımlı artifact servisini zorunlu kılmadan inspectable ve kalıcı FAIR-oriented kanıt sağlamak |
 
 ## P004 Beginner-First Entry Experience
 
@@ -476,3 +477,18 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
 - Guardian ayrıca unattended unsuccessful cleanup deadline'ını taşıyamazsa P005-AC-06
   açık kalır. Bu checkpoint production isolation, secure erase veya CE-14/CE-15
   doğrulaması değildir.
+
+## P005 Git-Backed Linux Kanıt Kararı (2026-07-13)
+
+- Final implementation commit `2a17ec6` için GitHub run `29220278021` dört denemede
+  Linux verify, supply-chain generation ve canonical container katmanlarını geçti;
+  yalnız hesap düzeyindeki `upload-artifact` kotası paketin tutulmasını reddetti.
+- Job loglarını tek başına yeterli saymak ve belirsiz kota hesabını beklemek
+  reddedildi. Oğuz `HD-20260713-0001` ile permanent Git-backed exact Linux evidence
+  yolunu kabul etti.
+- Paket tam sekiz non-empty UTF-8 dosya, JSON root validation, source checksum
+  inventory, private path taraması ve sibling outer SHA-256 manifesti taşır.
+- Capture yalnız disposable `codex/p005-evidence-capture` dalında write permission
+  alır. Exact paket doğrulandıktan sonra workflow kaldırılacaktır.
+- Bu karar P005'i kabul etmez, AC-08'i otomatik geçirmez ve scientific result,
+  deployment, secure erase ya da production isolation iddiası kurmaz.

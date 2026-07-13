@@ -79,6 +79,20 @@ alana sıkıştırır.
   durumu ayrı accessible live region olarak sunulur. Owner cleanup yayımlanmış
   export'u ayrıca withdraw eder.
 
+## 2026-07-13 Kanıt Kanalı Ek Kararı
+
+P005-AC-08 için GitHub'ın geçici artifact depolama servisi zorunlu kanıt kanalı
+değildir. Dört final-commit denemesi Linux doğrulama, SBOM üretimi ve canonical
+container işini geçtiği halde hesap düzeyindeki artifact kotasında durdu. Oğuz
+Koran, `HD-20260713-0001` ile exact Ubuntu koşumunda üretilen path-neutral sekiz
+dosyalı paketin outer SHA-256 manifestiyle Git geçmişine bağlanmasını kabul etti.
+
+Yakalama workflow'u yalnız disposable `codex/p005-evidence-capture` dalı push'unda
+çalışır, corpus içeriği almaz, paketi yapı ve özel-yol markerları bakımından fail
+closed doğrular ve başarıdan sonra kaldırılır. Job logları tek başına yeterli kanıt
+sayılmaz. Bu karar P005 acceptance kriterini gevşetmez; yalnız retained bytes için
+kota-bağımlı geçici servisi kalıcı ve denetlenebilir Git kanalıyla değiştirir.
+
 ## Reddedilen Alternatifler
 
 ### Module-Level Dictionary ve Streamlit Session State

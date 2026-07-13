@@ -4,7 +4,8 @@
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights `main`e alındı. P005
 Job Lifecycle, Isolation, and Retention `codex/p005-job-lifecycle` dalında aktiftir;
-AC-01--AC-07 geçti, AC-08 yalnız retained CI artifact kotası nedeniyle açıktır.
+AC-01--AC-07 geçti. AC-08 için `HD-20260713-0001` ile kalıcı, checksum-bound,
+Git-backed Linux CI kanıtı kabul edildi; exact capture ve final CI henüz açıktır.
 Bilimsel `stylo` hesaplaması henüz uygulanmadı.
 
 ## 1. Her Oturumda Oku
@@ -122,13 +123,13 @@ Final implementation commit `2a17ec6`, `RUN-20260713-0003` clean-clone replay'in
 950 test, 6.551 statement, 1.732 branch, yüzde 100 coverage ve iki tracked browser
 harness ile geçti. GitHub run `29220278021` aynı committe Linux verify,
 SBOM/dependency-audit generation ve canonical amd64 container kapılarını geçti;
-yalnız `upload-artifact`, hesap kotası yeniden hesaplanmadığı için reddedildi. Yedi
-zaten expired Windows build artifact'i silindi. 12:55 TRT'deki dördüncü denemede
-verify job `86786405954` tüm teknik kapıları ve sekiz dosyalı paket üretimini yeniden
-geçti; upload kotası yine açılmadı. Sıradaki tek deneme 18:55 TRT'den sonra run
-`29220278021` failed job'unu rerun etmek, üretilen `supply-chain-2a17ec6...` paketini
-indirmek ve checksumlarını doğrulamaktır. Güncel yerel kanıt commiti bu sınırı
-kaydeder ve henüz remote'a push edilmemiştir. Önce
+yalnız hesap düzeyindeki `upload-artifact` kotası dört kez reddedildi. Bu tarihsel
+hata korunur, fakat artık kapı ona bağlı değildir. `HD-20260713-0001` uyarınca
+sıradaki tek iş, geçici `codex/p005-evidence-capture` dalında exact Ubuntu 24.04
+koşumuyla path-neutral sekiz dosyalı paketi üretmek, outer SHA-256 manifestiyle Git'e
+bağlamak, Run/Ticket karşılıklı bağlantılarını tamamlamak ve write-capable geçici
+workflow'u kaldırmaktır. Ardından final full gate ve normal GitHub CI yeşil olursa
+P005-AC-08 kapatılır. Önce
 `memory/checkpoints/2026-07-13-p005-acceptance.md` okunur.
 
 P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
