@@ -179,7 +179,7 @@ def _find_ps() -> str:
 def _process_group_usage(ps_path: str, process_group_id: int) -> tuple[int, int]:
     try:
         completed = subprocess.run(
-            (ps_path, "-e", "-o", "pgid=,rss="),
+            (ps_path, "-e", "-o", "pid=,pgid=,rss="),
             check=True,
             shell=False,
             stdin=subprocess.DEVNULL,
@@ -192,7 +192,7 @@ def _process_group_usage(ps_path: str, process_group_id: int) -> tuple[int, int]
         count = 0
         resident_kib = 0
         for raw_row in completed.stdout.splitlines():
-            raw_group, raw_resident = raw_row.split()
+            _raw_pid, raw_group, raw_resident = raw_row.split()
             if int(raw_group) == process_group_id:
                 count += 1
                 resident_kib += int(raw_resident)
@@ -203,6 +203,49 @@ def _process_group_usage(ps_path: str, process_group_id: int) -> tuple[int, int]
 
 def _count_process_group(ps_path: str, process_group_id: int) -> int:
     return _process_group_usage(ps_path, process_group_id)[0]
+
+
+def _count_group_descendants(
+    ps_path: str,
+    process_group_id: int,
+    leader_pid: int,
+) -> int:
+    try:
+        completed = subprocess.run(
+            (ps_path, "-e", "-o", "pid=,pgid="),
+            check=True,
+            shell=False,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            close_fds=True,
+            env=_CONTROL_ENVIRONMENT,
+            timeout=_PS_TIMEOUT_SECONDS,
+        )
+        count = 0
+        for raw_row in completed.stdout.splitlines():
+            raw_pid, raw_group = raw_row.split()
+            if int(raw_group) == process_group_id and int(raw_pid) != leader_pid:
+                count += 1
+        return count
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
+        raise _ControlFailure from error
+
+
+def _leader_exited(process: subprocess.Popen[bytes]) -> bool:
+    """Observe child completion without reaping its PID/process-group identity."""
+
+    if not isinstance(process.pid, int):
+        return process.poll() is not None
+    try:
+        status = os.waitid(
+            os.P_PID,
+            process.pid,
+            os.WEXITED | os.WNOHANG | os.WNOWAIT,
+        )
+    except (ChildProcessError, OSError) as error:
+        raise _ReapFailure from error
+    return status is not None
 
 
 def _group_exists(process_group_id: int) -> bool:
@@ -324,7 +367,24 @@ class ProcessController:
                 name="delta-synthetic-worker-monitor",
                 daemon=True,
             )
-            monitor.start()
+            failure_code: ProcessControllerErrorCode | None
+            try:
+                monitor.start()
+            except RuntimeError:
+                failure_code = ProcessControllerErrorCode.START_FAILED
+                try:
+                    self._terminate_and_reap(process, process.pid)
+                except (_ControlFailure, _ReapFailure):
+                    try:
+                        self._emergency_kill_and_reap(process, process.pid)
+                    except _ReapFailure:
+                        failure_code = ProcessControllerErrorCode.REAP_FAILED
+            else:
+                failure_code = None
+            if failure_code is not None:
+                self._error = ProcessControllerError(failure_code)
+                self._condition.notify_all()
+                raise ProcessControllerError(failure_code)
 
     def run(self) -> ProcessResult:
         """Start and wait for the single content-free terminal result."""
@@ -351,12 +411,34 @@ class ProcessController:
             if self._error is not None:
                 raise ProcessControllerError(self._error.code)
             if self._winner is None:
-                if self._process.poll() is None:
+                if not _leader_exited(self._process):
                     self._winner = _Winner.CANCELLATION
                 else:
                     self._winner = _Winner.COMPLETION
                 self._condition.notify_all()
             return self._wait_locked()
+
+    def reap_until_absent(self) -> None:
+        """Retain ownership and retry safe group reaping until absence is proven."""
+
+        with self._condition:
+            process = self._process
+            process_group_id = self._process_group_id
+        if process is None or process_group_id is None:
+            raise ProcessControllerError(ProcessControllerErrorCode.INVALID_STATE)
+        while True:
+            if process.returncode is not None:
+                if not _group_exists(process_group_id):
+                    return
+                time.sleep(_MONITOR_INTERVAL_SECONDS)
+                continue
+            try:
+                _signal_group(process_group_id, signal.SIGKILL)
+                if self._wait_for_group_absence(process, process_group_id):
+                    return
+            except (_ControlFailure, _ReapFailure):
+                pass
+            time.sleep(_MONITOR_INTERVAL_SECONDS)
 
     def _wait_locked(self) -> ProcessResult:
         while self._result is None and self._error is None:
@@ -378,14 +460,21 @@ class ProcessController:
             winner = self._choose_winner(process, process_group_id, deadline)
             result = self._settle(process, process_group_id, winner)
         except _ReapFailure:
+            try:
+                self._emergency_kill_and_reap(process, process_group_id)
+            except _ReapFailure:
+                pass
             self._publish_error(ProcessControllerErrorCode.REAP_FAILED)
             return
         except (OSError, subprocess.SubprocessError, _ControlFailure):
             try:
                 self._force_reap(process, process_group_id)
-            except _ReapFailure:
-                self._publish_error(ProcessControllerErrorCode.REAP_FAILED)
-                return
+            except (_ControlFailure, _ReapFailure):
+                try:
+                    self._emergency_kill_and_reap(process, process_group_id)
+                except _ReapFailure:
+                    self._publish_error(ProcessControllerErrorCode.REAP_FAILED)
+                    return
             self._publish_error(ProcessControllerErrorCode.CONTROL_FAILED)
             return
         with self._condition:
@@ -402,7 +491,7 @@ class ProcessController:
             with self._condition:
                 if self._winner is not None:
                     return self._winner
-                if process.poll() is not None:
+                if _leader_exited(process):
                     self._winner = _Winner.COMPLETION
                     return self._winner
                 remaining = deadline - time.monotonic()
@@ -413,7 +502,7 @@ class ProcessController:
             with self._condition:
                 if self._winner is not None:
                     return self._winner
-                if process.poll() is not None:
+                if _leader_exited(process):
                     self._winner = _Winner.COMPLETION
                     return self._winner
                 if process_count > self._limits.max_processes:
@@ -431,8 +520,7 @@ class ProcessController:
         winner: _Winner,
     ) -> ProcessResult:
         if winner is _Winner.COMPLETION:
-            return_code = process.wait()
-            self._remove_remaining_group(process, process_group_id)
+            return_code = self._reap_completed_group(process, process_group_id)
             return self._classify_completion(return_code)
         self._terminate_and_reap(process, process_group_id)
         if winner is _Winner.CANCELLATION:
@@ -459,13 +547,24 @@ class ProcessController:
             return ProcessResult(ProcessOutcome.CRASHED)
         return ProcessResult(ProcessOutcome.FAILED)
 
-    def _remove_remaining_group(
+    def _reap_completed_group(
         self,
         process: subprocess.Popen[bytes],
         process_group_id: int,
-    ) -> None:
+    ) -> int:
+        if _count_group_descendants(self._ps_path, process_group_id, process.pid):
+            _signal_group(process_group_id, signal.SIGTERM)
+            if not self._wait_for_descendant_absence(process_group_id, process.pid):
+                _signal_group(process_group_id, signal.SIGKILL)
+                if not self._wait_for_descendant_absence(process_group_id, process.pid):
+                    raise _ReapFailure
+        try:
+            return_code = process.wait(timeout=self._limits.terminate_grace_seconds)
+        except subprocess.TimeoutExpired as error:
+            raise _ReapFailure from error
         if _group_exists(process_group_id):
-            self._terminate_and_reap(process, process_group_id)
+            raise _ReapFailure
+        return return_code
 
     def _terminate_and_reap(
         self,
@@ -477,18 +576,45 @@ class ProcessController:
             _signal_group(process_group_id, signal.SIGKILL)
             if not self._wait_for_group_absence(process, process_group_id):
                 raise _ReapFailure
-        process.wait(timeout=self._limits.terminate_grace_seconds)
 
     def _force_reap(
         self,
         process: subprocess.Popen[bytes],
         process_group_id: int,
     ) -> None:
-        _signal_group(process_group_id, signal.SIGKILL)
         try:
-            process.wait(timeout=self._limits.terminate_grace_seconds)
+            _signal_group(process_group_id, signal.SIGKILL)
+        except _ReapFailure:
+            try:
+                process.kill()
+            except ProcessLookupError:
+                pass
+            except OSError as error:
+                raise _ReapFailure from error
+        if not self._wait_for_group_absence(process, process_group_id):
+            raise _ReapFailure
+
+    def _emergency_kill_and_reap(
+        self,
+        process: subprocess.Popen[bytes],
+        process_group_id: int,
+    ) -> None:
+        """Best-effort fallback when process enumeration itself is unavailable."""
+
+        try:
+            _signal_group(process_group_id, signal.SIGKILL)
+        except _ReapFailure:
+            try:
+                process.kill()
+            except OSError:
+                pass
+        try:
+            process.wait(timeout=self._limits.terminate_grace_seconds + 2)
         except subprocess.TimeoutExpired as error:
             raise _ReapFailure from error
+        deadline = time.monotonic() + self._limits.terminate_grace_seconds + 2
+        while _group_exists(process_group_id) and time.monotonic() < deadline:
+            time.sleep(_MONITOR_INTERVAL_SECONDS)
         if _group_exists(process_group_id):
             raise _ReapFailure
 
@@ -499,12 +625,24 @@ class ProcessController:
     ) -> bool:
         deadline = time.monotonic() + self._limits.terminate_grace_seconds
         while time.monotonic() < deadline:
-            if process.poll() is not None:
-                process.wait()
-            if not _group_exists(process_group_id):
+            if _leader_exited(process) and not _count_group_descendants(
+                self._ps_path, process_group_id, process.pid
+            ):
+                try:
+                    process.wait(timeout=self._limits.terminate_grace_seconds)
+                except subprocess.TimeoutExpired as error:
+                    raise _ReapFailure from error
+                return not _group_exists(process_group_id)
+            time.sleep(_MONITOR_INTERVAL_SECONDS)
+        return False
+
+    def _wait_for_descendant_absence(self, process_group_id: int, leader_pid: int) -> bool:
+        deadline = time.monotonic() + self._limits.terminate_grace_seconds
+        while time.monotonic() < deadline:
+            if not _count_group_descendants(self._ps_path, process_group_id, leader_pid):
                 return True
             time.sleep(_MONITOR_INTERVAL_SECONDS)
-        return not _group_exists(process_group_id)
+        return not _count_group_descendants(self._ps_path, process_group_id, leader_pid)
 
     def _publish_error(self, code: ProcessControllerErrorCode) -> None:
         with self._condition:

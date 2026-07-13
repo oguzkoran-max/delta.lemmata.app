@@ -967,3 +967,79 @@ def test_identity_verifier_failure_is_a_content_free_corruption(
         JobStoreErrorCode.CORRUPT_RECORD,
         lambda: store.get_job(job_id=staged.job_id, capability=owner),
     )
+
+
+def test_terminal_transition_proof_binds_version_outcome_and_running_operation(
+    tmp_path: Path,
+) -> None:
+    store = make_store(tmp_path / "control.sqlite3", factory=lambda: job_id(1))
+    owner = capability(1)
+    staged = store.stage_job(capability=owner, at_utc=NOW)
+    queued = store.enqueue_job(
+        job_id=staged.job_id,
+        capability=owner,
+        at_utc=NOW + timedelta(seconds=1),
+        expected_version=staged.version,
+        operation_id=operation(1),
+    )
+    running = store.claim_next(
+        at_utc=NOW + timedelta(seconds=2),
+        operation_id=operation(2),
+    )
+    assert running is not None
+    terminal = transition_execution(
+        running,
+        target=ExecutionState.TERMINAL,
+        outcome=TerminalOutcome.SUCCEEDED,
+        at_utc=NOW + timedelta(seconds=3),
+        tombstone_expires_at_utc=NOW + timedelta(days=7),
+        expected_version=running.version,
+        operation_id=operation(3),
+    )
+    saved = store.maintenance_compare_and_swap(
+        job_id=running.job_id,
+        expected_version=running.version,
+        updated=terminal,
+        at_utc=NOW + timedelta(seconds=3),
+    )
+    assert queued.job_id == saved.job_id
+    assert store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+    )
+    assert not store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(1),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+    )
+    assert not store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=saved.version - 1,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+    )
+    assert not store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.FAILED,
+    )
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.terminal_transition_matches(
+            job_id=saved.job_id,
+            execution_reference="bad",
+            expected_version=saved.version,
+            expected_outcome=TerminalOutcome.SUCCEEDED,
+        ),
+    )
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.purge_expired(
+            at_utc=NOW,
+            workspace_absent_job_ids=cast(Any, set()),
+        ),
+    )

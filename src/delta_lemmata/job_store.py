@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import re
 import sqlite3
 import stat
 from collections.abc import Callable, Iterator
@@ -50,6 +51,7 @@ _DATABASE_MODE = 0o600
 _BUSY_TIMEOUT_MILLISECONDS = 30_000
 _SCHEMA_VERSION = 2
 _ZERO_DIGEST = bytes(32)
+_OPERATION_REFERENCE = re.compile(r"^op_[0-9a-f]{64}$", flags=re.ASCII)
 
 _SELECT_JOB = """
 SELECT job_id, owner_digest, execution_state, deadline_at_utc,
@@ -885,6 +887,39 @@ class SQLiteJobStore:
             return updated
 
     save_job = compare_and_swap
+
+    @_content_free
+    def terminal_transition_matches(
+        self,
+        *,
+        job_id: JobId | str,
+        execution_reference: str,
+        expected_version: int,
+        expected_outcome: TerminalOutcome,
+    ) -> bool:
+        """Verify a durable terminal row before the app releases its guardian."""
+
+        if (
+            not isinstance(execution_reference, str)
+            or _OPERATION_REFERENCE.fullmatch(execution_reference) is None
+            or not isinstance(expected_version, int)
+            or expected_version < 0
+            or not isinstance(expected_outcome, TerminalOutcome)
+        ):
+            _invalid_update()
+        with self._read_connection() as connection:
+            job, _queue_sequence = self._load_system(connection, job_id=job_id)
+        return bool(
+            job.version == expected_version
+            and job.execution.state is ExecutionState.TERMINAL
+            and job.outcome is not None
+            and job.outcome.kind is expected_outcome
+            and any(
+                operation.operation_id == execution_reference
+                and operation.action == "execution:running:none"
+                for operation in job.operations
+            )
+        )
 
     @_content_free
     def list_jobs_for_maintenance(self) -> tuple[JobRecord, ...]:
