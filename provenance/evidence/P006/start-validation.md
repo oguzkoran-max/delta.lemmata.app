@@ -81,6 +81,20 @@ After the deterministic regression test was added, the complete package passed
 This correction establishes a repeatable opening gate only. It is not worker,
 scientific-output, parity, or Linux execution evidence.
 
+## Exact Start-Commit CI
+
+GitHub Actions run `29283400493` passed for exact start commit
+`82cc6799017be87dde1b07133646b511fac2798d`:
+
+- verify job `86929907608` passed pinned Python and R restoration, source tests,
+  measured coverage, metadata, schemas, provenance records, SBOM generation, and
+  dependency-audit evidence;
+- container job `86929907606` built the canonical Linux amd64 image successfully.
+
+This CI run verifies the opening package and deterministic regression test. It did
+not execute a P006 R worker or establish scientific-output, parity, leakage,
+production-isolation, or public-analysis evidence.
+
 ## Verdict
 
 P006 may proceed only to schema-first and scientific-finalizer implementation. No R

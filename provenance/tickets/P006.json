@@ -47,7 +47,9 @@
   "prompt_event_ids": [
     "PE-20260713-0002"
   ],
-  "commit_ids": [],
+  "commit_ids": [
+    "82cc6799017be87dde1b07133646b511fac2798d"
+  ],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -137,6 +139,12 @@
       "command": "./scripts/verify.sh",
       "exit_code": 0,
       "result": "The corrected P006 opening package passed 971 tests, 100% of 6,551 statements and 1,732 branches, strict typing, metadata, 77 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29283400493",
+      "exit_code": 0,
+      "result": "Exact start commit 82cc679 passed Linux source, schema, record, SBOM, dependency-audit, and canonical Linux amd64 container jobs; it establishes opening-package integrity only, not R worker parity.",
       "evidence": "provenance/evidence/P006/start-validation.md"
     }
   ],
