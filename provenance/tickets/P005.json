@@ -53,10 +53,12 @@
     "5e1cbbaadd49215c03e6a2708927774f8a609caf",
     "eca535773a237d304b8c12397e1295df49295d3f",
     "0e84b106b10ca979b0ebb7d5cd9b6ff5de73c2bb",
-    "3c746d160769e50baddf2e6ec1c3c13db14fd019"
+    "3c746d160769e50baddf2e6ec1c3c13db14fd019",
+    "4b8a2e819ee06203ba7241c2a0261b9ba685b0a2"
   ],
   "run_ids": [
-    "RUN-20260713-0001"
+    "RUN-20260713-0001",
+    "RUN-20260713-0002"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -78,6 +80,12 @@
     "provenance/evidence/P005/guardian-exact-commit/report.md",
     "provenance/evidence/P005/guardian-exact-commit.sha256",
     "provenance/evidence/P005/guardian-exact-commit-ci.md",
+    "provenance/evidence/P005/acceptance-hardening-validation.md",
+    "provenance/runs/RUN-20260713-0002.json",
+    "provenance/evidence/P005/acceptance-exact-commit/report.md",
+    "provenance/evidence/P005/acceptance-exact-commit.sha256",
+    "provenance/evidence/P005/browser-boundary-exact-4b8a2e8/browser-audit.json",
+    "provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/browser-audit.json",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
@@ -86,44 +94,67 @@
     {
       "id": "P005-AC-01",
       "criterion": "A versioned policy and deterministic state model separate execution outcome, cancellation, artifact lifecycle, immutable deadlines, and deletion evidence; every illegal or conflicting transition fails closed while repeated operations are idempotent.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-02",
       "criterion": "Session capability and job ID are independently generated with at least 256 bits of entropy; every status, cancel, result, export, and cleanup operation enforces server-side ownership, and unauthorized versus unknown requests expose no existence oracle.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-03",
       "criterion": "Staging and queue admission enforce one staged or active job per session, at most four staged leases, one running job, and three queued jobs transactionally; any rejected submission allocates no identifier, workspace, process, queue slot, or event.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-04",
       "criterion": "Job workspaces use only trusted roots and server identifiers, apply private modes, reject symlink, hardlink, path, and rename-swap attacks, and never alter an external canary during materialization or cleanup.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-05",
       "criterion": "A generic fixture worker cannot start without finite wall, CPU, RAM, and PID limits; timeout and idempotent cancellation terminate and reap the complete tested process tree, and completion races produce one terminal outcome without publishing partial output.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-06",
       "criterion": "Success publishes export only after verified raw and normalized cleanup; failure, cancellation, timeout, crash, abandonment, staged expiry, queue expiry, result/export expiry, event expiry, and restart orphan recovery meet their versioned deadlines under a fake clock and a continuously running janitor.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-07",
       "criterion": "SQLite, WAL, event logs, deletion ledger, errors, DOM, session state, other sessions, results, and exports contain no canary corpus, filename, scholarly metadata, absolute path, stdout/stderr, or traceback; user-facing lifecycle projections remain accessible and do not activate or imitate scientific analysis.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P005/acceptance-hardening-validation.md",
+        "provenance/evidence/P005/browser-boundary-exact-4b8a2e8/browser-audit.json",
+        "provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/browser-audit.json",
+        "provenance/runs/RUN-20260713-0002.json"
+      ]
     },
     {
       "id": "P005-AC-08",
@@ -136,7 +167,8 @@
     "P005 execution brief, independent four-lens architecture audit, proposed lifecycle ADR, active Ticket, and synchronized startup pointers",
     "Lifecycle identity, policy, immutable state model, payload-free SQLite store, private workspace, validated-payload staging, synthetic process controller, deletion-event model, and conservative UI projection",
     "Persistent content-free deletion ledger, fail-closed optional workspace recovery, continuous fake-clock janitor, exact retention deadlines, success publication ordering, and verified-absence tombstone purge",
-    "Per-job app-loss guardian, unreaped leader ownership, durable SQLite terminal acknowledgement, execution-bound signed recovery receipt, and real running/completed worker SIGKILL races"
+    "Per-job app-loss guardian, unreaped leader ownership, durable SQLite terminal acknowledgement, execution-bound signed recovery receipt, and real running/completed worker SIGKILL races",
+    "Acceptance hardening for capability-first service operations, zero-allocation admission, cleanup-failure accounting, cancellation delivery, reciprocal guardian acknowledgement, descriptor-bound process startup, exact browser evidence, and retained CI supply-chain output"
   ],
   "commands": [
     {
@@ -174,6 +206,12 @@
       "exit_code": 0,
       "result": "GitHub commit cfb503c passed Linux source/schema/record verification with 878 tests and full measured coverage, SBOM generation and dependency audit, and the canonical Linux amd64 container build.",
       "evidence": "provenance/evidence/P005/guardian-exact-commit-ci.md"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; tracked P004 and P005 browser harnesses",
+      "exit_code": 0,
+      "result": "RUN-20260713-0002 rebuilt exact implementation commit 4b8a2e8 in fresh no-hardlinks clones; 950 tests, full measured coverage, every repository gate, the P004 browser boundary, all 16 P005 lifecycle projections, and clean exact-commit state passed.",
+      "evidence": "provenance/runs/RUN-20260713-0002.json"
     }
   ],
   "blockers": []

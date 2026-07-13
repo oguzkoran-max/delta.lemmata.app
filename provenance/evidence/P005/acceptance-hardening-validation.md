@@ -1,7 +1,7 @@
 # P005 Acceptance Hardening Validation
 
-**Status:** Intermediate candidate evidence. Exact-commit replay, final Linux CI,
-artifact download verification, and final independent acceptance remain open.
+**Status:** Exact-commit local candidate passed. Final Linux CI, downloaded
+supply-chain artifact verification, and product-owner acceptance remain open.
 
 **Date:** 2026-07-13
 
@@ -94,8 +94,8 @@ The concurrent admission test initially exposed an intermittent
 `JOB_STORE_INVALID_DATABASE`. A diagnostic run traced it to an opened WAL/SHM
 sidecar being unlinked between `open` and `fstat`, not to capacity arithmetic. The
 sidecar race was fixed without relaxing main-database identity checks; the same
-public test then passed 100 separate interpreter runs. Exact clean-clone and Linux
-repetitions remain required.
+public test then passed 100 separate interpreter runs. The exact clean-clone
+repetition is recorded below; Linux repetition remains required.
 
 Independent re-audit reproduced five service/store P1 paths before repair: store
 finalization orphaning, unbounded cleanup-failure workspaces, launch compensation,
@@ -117,6 +117,29 @@ hosts, no console errors, and payload-absence checks all passed.
 1280x900 and 320x800. Region count, role, live-region semantics, heading presence,
 escaping, forbidden markers, and horizontal overflow checks passed. This first
 component run used the dirty candidate and is not exact-commit evidence.
+
+## Exact-Commit Evidence
+
+`RUN-20260713-0002` reconstructed commit
+`4b8a2e819ee06203ba7241c2a0261b9ba685b0a2` in fresh `--no-hardlinks`
+clones. Locked bootstrap, all repository gates, 950 tests, 6,541 measured
+statements, 1,728 measured branches, and 100% coverage passed. The verification
+clone remained clean.
+
+The tracked P004 browser harness then passed from a clean exact-commit state. Its
+record reports `git_dirty: false`, no external host, no console error, and no
+browser-visible payload or analysis activation. The P005 component harness ran in
+a separate clean clone and passed all 16 lifecycle projections at 1280x900 and
+320x800 with correct live-region semantics and no horizontal overflow. It also
+reports the exact commit and `git_dirty: false`.
+
+The report, both machine-readable browser records, screenshots, and their external
+SHA-256 manifest are retained under:
+
+- `provenance/evidence/P005/acceptance-exact-commit/`
+- `provenance/evidence/P005/browser-boundary-exact-4b8a2e8/`
+- `provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/`
+- `provenance/evidence/P005/acceptance-exact-commit.sha256`
 
 ## Claim Boundary
 
