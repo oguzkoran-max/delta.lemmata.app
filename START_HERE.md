@@ -2,11 +2,11 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights `main`e alındı. P005
-Job Lifecycle, Isolation, and Retention `codex/p005-job-lifecycle` dalında aktiftir;
-AC-01--AC-07 geçti. AC-08 için `HD-20260713-0001` ile kalıcı, checksum-bound,
-Git-backed Linux CI kanıtı kabul edildi; exact capture ve final CI henüz açıktır.
-Bilimsel `stylo` hesaplaması henüz uygulanmadı.
+**Güncel aşama:** P005 Job Lifecycle, Isolation, and Retention sekiz acceptance
+ölçütünün tamamını geçerek kapandı. Exact Git-backed Linux capture, checksum paketi
+ve normal closure CI yeşildir. Aktif implementation Ticket yoktur; sıradaki aday
+P006 R `stylo` Worker and Computational Parity'dir. Bilimsel `stylo` hesaplaması
+henüz uygulanmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -118,19 +118,17 @@ clean-clone ve GitHub CI kapıları geçti. Kapanış `RUN-20260712-0005`,
 Final owner walkthrough P015 ürün-hazır kapısında ayrıca yapılacaktır; P004 kapanışı
 Safari, VoiceOver, genel usability, bilimsel sonuç veya deployment iddiası değildir.
 
-Aktif iş `provenance/tickets/P005.json` içindeki son dış kapıyı kapatmaktır.
-Final implementation commit `2a17ec6`, `RUN-20260713-0003` clean-clone replay'inde
-950 test, 6.551 statement, 1.732 branch, yüzde 100 coverage ve iki tracked browser
-harness ile geçti. GitHub run `29220278021` aynı committe Linux verify,
-SBOM/dependency-audit generation ve canonical amd64 container kapılarını geçti;
-yalnız hesap düzeyindeki `upload-artifact` kotası dört kez reddedildi. Bu tarihsel
-hata korunur, fakat artık kapı ona bağlı değildir. `HD-20260713-0001` uyarınca
-sıradaki tek iş, geçici `codex/p005-evidence-capture` dalında exact Ubuntu 24.04
-koşumuyla path-neutral sekiz dosyalı paketi üretmek, outer SHA-256 manifestiyle Git'e
-bağlamak, Run/Ticket karşılıklı bağlantılarını tamamlamak ve write-capable geçici
-workflow'u kaldırmaktır. Ardından final full gate ve normal GitHub CI yeşil olursa
-P005-AC-08 kapatılır. Önce
-`memory/checkpoints/2026-07-13-p005-acceptance.md` okunur.
+P005 kaydı `provenance/tickets/P005.json` içinde `complete` durumundadır. Final
+implementation `RUN-20260713-0003` ile clean-clone ve browser katmanlarında;
+Git-backed exact Linux package `RUN-20260713-0004` ile SBOM, audit, checksum ve
+container katmanlarında geçti. Geçici write-capable capture workflow'u kaldırıldı.
+Closure tree `029248b`, normal CI run `29269051028` içinde verify ve canonical
+container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
+`provenance/evidence/P005/final-ci-validation.md` içinde tutulur.
+
+Sıradaki tek iş P006'yı ayrı Ticket, PromptEvent, branch ve başlangıç denetimiyle
+açmaktır. P006 açılmadan gerçek R/stylo worker kodu yazılmaz. Önce
+`SESSION_HANDOFF.md` ve P006 roadmap bölümü okunur.
 
 P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
 analysis, gerçek R/stylo, production limitleri, secure erase veya Delta-LDA host

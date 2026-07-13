@@ -2,8 +2,8 @@
 
 **Güncellendi:** 2026-07-13
 
-**Aşama:** P004 `main`e alındı; P005 AC-01--AC-07 geçti, AC-08 için Git-backed
-exact Linux evidence capture sürüyor
+**Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; aktif
+implementation Ticket yok, P006 henüz açılmadı
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -13,17 +13,22 @@ janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
 recovery receipt var;
 public analysis hâlâ kilitli ve scientific computation yok
 
-**Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
+**Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
 
-**Sıradaki tek ana iş:** `HD-20260713-0001` ile kabul edilen Git-backed kanıt
-yolunu tamamla. Path-neutral üretim ve sekiz dosyalı paket validatorü yerelde 25
-odak test, repository scan ve 970-test yüzde 100 coverage katmanını geçti. Geçici,
-yalnız `codex/p005-evidence-capture` push'una açık Ubuntu 24.04 workflow'unu commit
-et ve çalıştır; botun checksum-bound paketi aynı dala yazmasını bekle. Exact Linux
-dosyalarını ve outer manifesti doğruladıktan sonra Run/Ticket/ADR/PromptEvent
-bağlarını tamamla, geçici write workflow'unu kaldır, final full gate ve normal CI'yi
-geçir. P005 ancak bundan sonra kapanabilir. Yerel dal remote'dan bir tarihsel kanıt
-commiti ileride ve bu yeni çalışma dilimi nedeniyle şu anda değişiklik içeriyor.
+**Sıradaki tek ana iş:** P006 R `stylo` Worker and Computational Parity için ayrı
+Ticket, PromptEvent, branch ve başlangıç denetimi aç. Önce doğrudan `stylo` referans
+fixture'ı, versioned worker input/output şeması, fixed argv, unknown leakage sınırı,
+finite-number kontrolleri ve sayısal tolerans planını dondur. P006 açılmadan gerçek
+worker kodu yazma; P005'e production isolation, deployment veya Pinokyo analizi
+ekleme.
+
+**P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
+exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence
+commit `2eff470` ve `RUN-20260713-0004` ile geçti. Geçici write workflow'u kaldıran
+`029248b`, normal closure CI run `29269051028` içinde verify job `86881820484` ve
+container job `86881820512` ile yeşildir. P005-AC-01--AC-08 passed; blocker yoktur.
+Bu kapanış gerçek R/stylo, production retention/isolation, secure erase, deployment
+ve final owner walkthrough iddiası değildir.
 
 **P005 acceptance checkpoint:** İlk bağımsız closure denetimi capability-first
 authorization, zero-allocation admission, cleanup-failure accounting, cancellation

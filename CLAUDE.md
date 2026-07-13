@@ -36,9 +36,10 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P004 Metadata, Corpus Inventory, and Rights bütün teknik kapıları geçerek `main`e
-alınmıştır. Aktif kayıt `provenance/tickets/P005.json`, dal
-`codex/p005-job-lifecycle`, execution brief `prompts/P005-start.md` dosyasındadır.
-Session ownership, bounded queue, process lifecycle ve application-managed
-retention P005 kapsamındadır; gerçek `stylo`, production isolation, secure erase,
-nihai Pinokyo corpus'u veya deployment ekleme.
+P005 Job Lifecycle, Isolation, and Retention bütün acceptance ölçütlerini geçerek
+`provenance/tickets/P005.json` içinde tamamlanmıştır. Exact Linux capture,
+checksum-bound supply-chain package ve normal closure CI kanıtları korunur. Aktif
+implementation Ticket yoktur. Sıradaki aday P006 R `stylo` Worker and
+Computational Parity'dir; ayrı Ticket, PromptEvent, branch ve başlangıç kanıtı
+açılmadan kod yazma. Production isolation, secure erase, nihai Pinokyo corpus'u ve
+deployment P006 kapsamına eklenmez.

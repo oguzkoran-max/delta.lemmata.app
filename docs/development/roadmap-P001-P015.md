@@ -210,7 +210,8 @@ expanded Chromium ve GitHub CI teknik kapıları geçti; final ürün walkthroug
 
 ### P005: Job Lifecycle, Isolation, and Retention
 
-**Durum:** `in-progress`; `codex/p005-job-lifecycle`, `provenance/tickets/P005.json`.
+**Durum:** `complete` (2026-07-13); `codex/p005-job-lifecycle`,
+`provenance/tickets/P005.json`, `RUN-20260713-0003/0004`.
 
 **Amaç:** Her analizi sınırlandırılmış, session-owned, iptal edilebilir ve
 application-managed artifact'ları deadline sonunda doğrulanarak temizlenen bir job

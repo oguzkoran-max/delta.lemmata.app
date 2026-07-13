@@ -94,6 +94,18 @@ P003 yalnız application intake sınırını kanıtlar. "Uploads are transient"
 fallback cümlesi bile production altyapısı için P005/P014 öncesinde kesin
 silme sözüne dönüştürülmez.
 
+### P005 Claim Durum Kaydı
+
+| Claim | Durum | P005 kanıtı | Kalan kapı |
+|---|---|---|---|
+| CE-14 | `implemented: application-managed mechanism; production not verified` | Success/failure/cancel/timeout/crash/app-loss lifecycle, continuous janitor, deletion ledger, canary scan, exact-commit replay, `RUN-20260713-0003/0004` ve Git-backed Linux CI kanıtı | P014 gerçek deployment, load, reboot, proxy, swap, snapshot ve backup audit'i; P015 release doğrulaması |
+| CE-15 | `not verified; P005 preparation only` | Session ownership, private workspaces, bounded queue ve P014-only sınırların açık tutulması | Ayrı Unix identity, container/network/volume/env/port/secret/resource isolation, Delta stresi altında LDA smoke ve rollback P014'te |
+
+P005 kapanışı yalnız application-managed namespace ve sentetik worker mekanizmasını
+doğrular. Site ve makale CE-14 için fallback language kullanmaya devam eder;
+`production configuration` veya Delta-LDA operational isolation claim'i P014/P015
+geçmeden kurulmaz.
+
 ## 6. Claim Embargoları
 
 - CE-04 geçmeden genel `stylo parity` denmez; yalnız doğrulanan fixture adı verilir.

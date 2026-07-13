@@ -2,7 +2,7 @@
 
 **Son güncelleme:** 2026-07-13
 
-**Durum:** P004 `main`e alındı; P005 AC-08 Git-backed Linux evidence capture aktif
+**Durum:** P005 tamamlandı; aktif implementation Ticket yok, P006 henüz açılmadı
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -492,3 +492,23 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
   alır. Exact paket doğrulandıktan sonra workflow kaldırılacaktır.
 - Bu karar P005'i kabul etmez, AC-08'i otomatik geçirmez ve scientific result,
   deployment, secure erase ya da production isolation iddiası kurmaz.
+
+## P005 Kapanışı (2026-07-13)
+
+- Path-neutral evidence source commit `d3ca0f6`, exact Ubuntu capture run
+  `29268150070` ve normal CI run `29268150409` üzerinde 970 test, 6.551 statement,
+  1.732 branch, yüzde 100 coverage, SBOM, audit ve canonical container kapılarını
+  geçti.
+- GitHub bot evidence commit `2eff470`, sekiz dosyalı paketi ve outer SHA-256
+  manifestini kalıcılaştırdı. Detached replay bütün outer ve nested checksumları,
+  JSON yapılarını, Python dependency graph'ını ve private-path absence kapısını
+  doğruladı: `RUN-20260713-0004`.
+- Geçici `contents: write` capture workflow'u kaldırıldı. Closure tree `029248b`,
+  normal CI run `29269051028` içinde verify `86881820484` ve container
+  `86881820512` ile geçti.
+- P005-AC-01--AC-08 passed, Ticket complete ve blocker sıfırdır. Bu sonuç yalnız
+  application-managed lifecycle, synthetic worker ve kayıtlı CI sınırındadır.
+- Gerçek R/stylo computation ve parity P006; corpus health P007; public end-to-end
+  workflow P008; production isolation, swap, snapshot, backup ve deployment P014;
+  final owner walkthrough P015 kapsamındadır.
+- Sıradaki aday P006'dır, fakat ayrı Ticket ve PromptEvent açılmadan kodlanmaz.

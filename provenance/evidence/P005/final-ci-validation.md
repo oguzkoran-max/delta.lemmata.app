@@ -65,3 +65,20 @@ were replayed in a detached worktree. Full details and exact file hashes are in
 The earlier red run was not rewritten or ignored. It now documents why the
 kota-dependent evidence channel was rejected. P005 closure still requires removing
 the temporary write-capable capture workflow and passing the final normal CI tree.
+
+## Closure Tree CI
+
+The temporary write-capable workflow was removed in commit
+`029248b07b6952e9bccdca88ae46cf7cc51c050b`. Normal CI run `29269051028`
+completed with `success`:
+
+- verify job `86881820484`: 970 tests, 6,551 statements, 1,732 branches, 100%
+  measured coverage, 75 records, repository scan, locked R boundary, SBOM,
+  dependency audit, and path-neutral package validation passed;
+- container job `86881820512`: canonical Linux amd64 image build passed;
+- no retained-artifact upload or write-capable capture step remained.
+
+Together with `RUN-20260713-0003`, `RUN-20260713-0004`, and the retained package,
+this closes P005-AC-08. Production resource values, secure erase, backup/snapshot
+behavior, deployment isolation, real stylo computation, and final owner acceptance
+remain explicitly unverified.
