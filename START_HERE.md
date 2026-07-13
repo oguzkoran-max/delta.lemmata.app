@@ -129,8 +129,8 @@ container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
 P006 Ticket, PromptEvent, branch ve accepted ADR-0013 açıktır. Yöntem protokolü
 `HD-20260713-0002` ile kabul edildi. Versioned worker şemaları, strict tek-parse
 parser, semantic validator, saf scientific finalizer ve bounded workspace read
-yerel tam kapıda geçti. Sıradaki tek iş bu dar checkpoint'i exact commit ve Linux
-CI ile dondurmak; ardından fixed R worker ve bağımsız direct-stylo oracle üretmektir.
+exact implementation commit `3c6ebe5` ve Linux CI run `29291282495` kapılarında
+geçti. Sıradaki tek iş fixed R worker ve bağımsız direct-stylo oracle üretmektir.
 Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri
 çıkarılmıştır; AC-03 hâlâ pending'dir.
 

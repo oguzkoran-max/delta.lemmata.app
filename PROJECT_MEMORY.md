@@ -3,7 +3,7 @@
 **Son güncelleme:** 2026-07-14
 
 **Durum:** P005 tamamlandı; P006 aktif, yöntem kararı kabul edildi ve kapalı
-worker-sözleşmesi checkpoint'i yerel kapıdan geçti
+worker-sözleşmesi checkpoint'i exact Linux CI kapısından geçti
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -38,8 +38,11 @@ gösterdiği için bu kod geri çıkarıldı. P006-AC-03 açık kalır; generic 
 bilimsel başarı kanıtı değildir. Son yerel kapı 1.073 test, 7.215 statement ve
 1.898 branch ile ilk düzeltmeleri geçti; son bilimsel yeniden denetimde erişilebilir
 Delta uzaklıklarını kesen keyfi `1e12` sınırı da kaldırıldı. Güncel doğrulama 1.075
-test, 7.216 statement ve 1.898 branch ile yüzde 100 geçti; exact commit ve Linux CI
-henüz kaydedilmedi.
+test, 7.216 statement ve 1.898 branch ile yüzde 100 geçti. Exact implementation
+commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`, GitHub Actions run
+`29291282495` içinde verify, SBOM/dependency audit ve canonical Linux amd64
+container kapılarından geçti.
+P006-AC-01 ve P006-AC-05 bu dar kanıtla geçti; R worker, parity ve AC-03 açıktır.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,

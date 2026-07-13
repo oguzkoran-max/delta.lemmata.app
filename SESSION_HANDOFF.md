@@ -3,8 +3,8 @@
 **Güncellendi:** 2026-07-14
 
 **Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
-Worker and Computational Parity aktif; sözleşme/finalizer checkpoint'i yerel olarak
-doğrulandı, exact commit ve Linux CI bekliyor
+Worker and Computational Parity aktif; sözleşme/finalizer checkpoint'i exact commit
+ve Linux CI ile doğrulandı
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -20,8 +20,7 @@ direct-stylo oracle, parity ve durable scientific-result entegrasyonu hâlâ yok
 
 **Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Sözleşme/finalizer checkpoint'ini kanıt, commit ve Linux CI
-ile dondur; sonra ayrı `C.UTF-8` trusted execution profile kullanan fixed
+**Sıradaki tek ana iş:** Ayrı `C.UTF-8` trusted execution profile kullanan fixed
 `Rscript --vanilla` worker ve bağımsız direct-stylo fixture oracle uygula. Guardian
 ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
 P006-AC-03 altında yapılabilir. Preprocessing P007, public workflow P008, benchmark
@@ -42,12 +41,17 @@ feature, token-total denominator ve UTF-8 tie testleri eklendi; FIFO pre-open
 reddi, nonblocking read, tek JSON parse ve current-area rebinding uygulandı. Erken
 validated-ACK kodu crash-safe olmadığı için tamamen çıkarıldı ve AC-03 pending
 kaldı. Ara local `./scripts/verify.sh`: 1.073 test, 7.215 statement, 1.898 branch,
-yüzde 100 kapsam kapısında geçti. Son bilimsel yeniden denetim, erişilebilir Classic Delta
-değerlerini kesen keyfi `1e12` sınırını buldu; sınır finite IEEE-754 double alanına
-çıkarıldı ve `>1e12` regresyonu eklendi. Normal dosyadan FIFO'ya pre-open yarış testi
-de eklendikten sonra final local `./scripts/verify.sh`: 1.075 test, 7.216 statement,
-1.898 branch, yüzde 100 coverage; metadata, 80 provenance record, repository scan ve
-R lock geçti. Bilimsel denetçinin son dar yeniden incelemesi PASS verdi.
+yüzde 100 kapsam kapısında geçti. Son bilimsel yeniden denetim, erişilebilir Classic
+Delta değerlerini kesen keyfi `1e12` sınırını buldu; sınır finite IEEE-754 double
+alanına çıkarıldı ve `>1e12` regresyonu eklendi. Normal dosyadan FIFO'ya pre-open
+yarış testi de eklendikten sonra final local `./scripts/verify.sh`: 1.075 test,
+7.216 statement, 1.898 branch, yüzde 100 coverage; metadata, 80 provenance record,
+repository scan ve R lock geçti. Bilimsel denetçinin son dar yeniden incelemesi PASS
+verdi.
+Exact implementation commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`,
+GitHub Actions run `29291282495` içinde verify job `86955214522`, SBOM/dependency
+audit ve canonical Linux amd64 container job `86955214531` kapılarından geçti.
+P006-AC-01 ve P006-AC-05 passed; AC-03 ve worker/parity ölçütleri pending kaldı.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

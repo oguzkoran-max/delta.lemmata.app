@@ -18,6 +18,9 @@ ADR-0013.
 - Bounded nonblocking private workspace output read with mutation and path-rebind
   checks.
 - 1,075 tests; 7,216 statements and 1,898 branches at 100%; full local gate green.
+- Exact implementation commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`
+  passed GitHub Actions run `29291282495`, including Linux verification,
+  SBOM/dependency audit, and the canonical Linux amd64 container build.
 
 ## Independent Review Outcome
 
@@ -35,5 +38,5 @@ directly proves use of nonblocking open.
 
 This checkpoint is not an R worker, parity result, or lifecycle success path.
 P006-AC-03 remains pending until a digest/size-bound, crash-safe durable result
-handoff exists. Exact commit and Linux CI are the next gate; then fixed R worker and
-independent direct-stylo oracle implementation may begin.
+handoff exists. P006-AC-01 and P006-AC-05 pass at this bounded checkpoint. Fixed R
+worker and independent direct-stylo oracle implementation are next.

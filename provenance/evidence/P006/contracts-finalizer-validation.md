@@ -120,6 +120,20 @@ The local macOS gate deliberately reports `stylo-namespace-load-deferred` becaus
 XQuartz is absent. It is a dependency-lock check, not R worker execution or parity
 evidence.
 
+## Exact Contract-Checkpoint CI
+
+GitHub Actions run `29291282495` passed for exact implementation commit
+`3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`:
+
+- verify job `86955214522` restored the pinned Python and R environments, passed
+  source, metadata, schema, provenance, measured-coverage, SBOM, and dependency
+  audit gates;
+- container job `86955214531` built the canonical Linux amd64 image successfully.
+
+This CI run establishes only the closed contracts, pure finalizer, and bounded
+workspace-read checkpoint. It did not run an R worker, generate an oracle, compare
+distances, or establish public analysis or production isolation.
+
 ## Explicit Nonclaims and Open Gates
 
 - No R worker or fixed Python-to-R adapter exists yet.
@@ -130,4 +144,5 @@ evidence.
 - No preprocessing, segmentation, corpus-health, accuracy, threshold, FAIR run
   package, Pinocchio, production isolation, deployment, or public analysis claim is
   established.
-- Exact-commit Linux CI remains required for this checkpoint.
+- Fixed R worker execution, independent direct-stylo oracle generation, and parity
+  comparison remain the next P006 gates.
