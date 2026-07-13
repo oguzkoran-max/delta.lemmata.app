@@ -851,6 +851,17 @@ def test_force_and_emergency_reap_fallback_branches(
         runner._emergency_kill_and_reap(process, 123)
 
     process.wait.reset_mock()
+    monkeypatch.setattr(process_control, "_leader_exited", Mock(return_value=True))
+    monkeypatch.setattr(
+        process_control,
+        "_count_group_descendants",
+        Mock(side_effect=process_control._ControlFailure),
+    )
+    with pytest.raises(process_control._ReapFailure):
+        runner._emergency_kill_and_reap(process, 123)
+    process.wait.assert_called_once_with(timeout=runner._limits.terminate_grace_seconds)
+
+    process.wait.reset_mock()
     monkeypatch.setattr(process_control, "_leader_exited", Mock(side_effect=(False, True)))
     monkeypatch.setattr(process_control, "_count_group_descendants", Mock(side_effect=(1, 0)))
     monkeypatch.setattr(process_control, "_group_exists", Mock(return_value=False))
@@ -859,6 +870,21 @@ def test_force_and_emergency_reap_fallback_branches(
     monkeypatch.setattr(time, "sleep", sleep)
     runner._emergency_kill_and_reap(process, 123)
     sleep.assert_called_once_with(process_control._MONITOR_INTERVAL_SECONDS)
+
+    process.wait.reset_mock()
+    monkeypatch.setattr(process_control, "_leader_exited", Mock(return_value=False))
+    monkeypatch.setattr(
+        process_control,
+        "_count_group_descendants",
+        Mock(side_effect=process_control._ControlFailure),
+    )
+    moments = iter((0.0, 0.0, 5.0))
+    monkeypatch.setattr(time, "monotonic", lambda: next(moments))
+    sleep.reset_mock()
+    with pytest.raises(process_control._ReapFailure):
+        runner._emergency_kill_and_reap(process, 123)
+    sleep.assert_called_once_with(process_control._MONITOR_INTERVAL_SECONDS)
+    process.wait.assert_not_called()
 
     process.wait.reset_mock()
     monkeypatch.setattr(

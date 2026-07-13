@@ -636,19 +636,32 @@ class ProcessController:
         while time.monotonic() < deadline:
             try:
                 leader_exited = _leader_exited(process)
+            except _ReapFailure:
+                time.sleep(_MONITOR_INTERVAL_SECONDS)
+                continue
+            descendants_unavailable = False
+            try:
                 descendants = _count_group_descendants(
                     self._ps_path,
                     process_group_id,
                     process.pid,
                 )
-            except (_ControlFailure, _ReapFailure):
-                time.sleep(_MONITOR_INTERVAL_SECONDS)
-                continue
+            except _ControlFailure:
+                if leader_exited:
+                    descendants = 0
+                    descendants_unavailable = True
+                else:
+                    time.sleep(_MONITOR_INTERVAL_SECONDS)
+                    continue
             if leader_exited and descendants == 0:
                 try:
                     process.wait(timeout=self._limits.terminate_grace_seconds)
                 except subprocess.TimeoutExpired as error:
                     raise _ReapFailure from error
+                if descendants_unavailable:
+                    # The leader is owned and must not be left as a zombie.  Once
+                    # reaped, do not signal the possibly reusable process-group ID.
+                    raise _ReapFailure
                 if not _group_exists(process_group_id):
                     return
                 raise _ReapFailure
