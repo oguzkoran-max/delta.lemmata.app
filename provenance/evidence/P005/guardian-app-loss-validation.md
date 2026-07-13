@@ -70,6 +70,11 @@ status. Report and checksum manifest:
 `provenance/evidence/P005/guardian-exact-commit/` and
 `provenance/evidence/P005/guardian-exact-commit.sha256`.
 
+The additive provenance-link commit `cfb503c` then passed GitHub Actions run
+`29215163561`: Linux verification, SBOM generation/dependency audit, and the
+canonical amd64 container build all succeeded. Details are recorded in
+`provenance/evidence/P005/guardian-exact-commit-ci.md`.
+
 ## Real and Adversarial Cases
 
 - app session receives `SIGKILL` while a nested three-process worker group runs;

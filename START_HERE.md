@@ -121,7 +121,9 @@ workspace, transactional SQLite control store, one-running/three-queued admissio
 cancellation/timeout, process-tree cleanup, restart recovery ve retention
 sözleşmesini uygulamaktır. Local macOS guardian katmanı `3c746d1` ile uygulanmış,
 full gate ve `RUN-20260713-0001` exact-commit clean-clone replay'inden geçmiştir;
-sıradaki kapı Linux CI'dır.
+provenance-link commit `cfb503c` de GitHub CI run `29215163561` içinde Linux
+verify, SBOM/dependency audit ve canonical amd64 container kapılarından geçmiştir.
+Sıradaki kapı bağımsız P005 acceptance audit'idir.
 `prompts/P005-start.md`, ADR-0012 ve
 `provenance/evidence/P005/architecture-audit.md` önce okunur.
 

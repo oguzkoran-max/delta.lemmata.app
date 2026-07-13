@@ -77,6 +77,7 @@
     "provenance/runs/RUN-20260713-0001.json",
     "provenance/evidence/P005/guardian-exact-commit/report.md",
     "provenance/evidence/P005/guardian-exact-commit.sha256",
+    "provenance/evidence/P005/guardian-exact-commit-ci.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
@@ -167,6 +168,12 @@
       "exit_code": 0,
       "result": "RUN-20260713-0001 rebuilt exact implementation commit 3c746d1 in a fresh detached no-hardlinks clone; 878 tests, full measured coverage, all repository gates, and post-run clean status passed.",
       "evidence": "provenance/runs/RUN-20260713-0001.json"
+    },
+    {
+      "command": "GitHub Actions CI run 29215163561",
+      "exit_code": 0,
+      "result": "GitHub commit cfb503c passed Linux source/schema/record verification with 878 tests and full measured coverage, SBOM generation and dependency audit, and the canonical Linux amd64 container build.",
+      "evidence": "provenance/evidence/P005/guardian-exact-commit-ci.md"
     }
   ],
   "blockers": []

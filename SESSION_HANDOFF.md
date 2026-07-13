@@ -13,9 +13,10 @@ public analysis hâlâ kilitli ve scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Guardian exact-commit replay'i `RUN-20260713-0001` ile
-geçti; branch'i push et ve Linux GitHub CI, canonical container, SBOM ile P005
-acceptance audit kapılarını tamamla
+**Sıradaki tek ana iş:** Guardian exact-commit replay'i `RUN-20260713-0001` ile,
+provenance-link commit `cfb503c` ise GitHub CI run `29215163561` içinde Linux
+verify, SBOM/dependency audit ve canonical amd64 container kapılarıyla geçti.
+Bağımsız P005 acceptance audit'i tamamla.
 
 **P005 guardian checkpoint:** Ayrı POSIX-session guardian, app-liveness pipe,
 `waitid(..., WNOWAIT)` leader ownership, durable SQLite terminal ACK ve
@@ -27,6 +28,9 @@ bağımsız adversarial turdaki bütün P0/P1 bulguları kapandı. Full gate 878
 `provenance/evidence/P005/guardian-app-loss-validation.md`.
 Exact implementation commit aynı kilitlerden fresh no-hardlinks clone'da yeniden
 kuruldu; 878-test gate geçti ve clone temiz kaldı (`RUN-20260713-0001`).
+Provenance-link commit `cfb503c`, GitHub CI run `29215163561` içinde verify job
+`86709522502` ve container job `86709522510` ile tamamen yeşildir. Kanıt:
+`provenance/evidence/P005/guardian-exact-commit-ci.md`.
 
 **P005 retention checkpoint:** `0e84b10` ile SQLite deletion ledger, schema-v1
 migration, fail-closed optional workspace load, exact staged/queue/result/export
