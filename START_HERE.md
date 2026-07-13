@@ -3,10 +3,10 @@
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **Güncel aşama:** P005 Job Lifecycle, Isolation, and Retention sekiz acceptance
-ölçütünün tamamını geçerek kapandı. Exact Git-backed Linux capture, checksum paketi
-ve normal closure CI yeşildir. Aktif implementation Ticket yoktur; sıradaki aday
-P006 R `stylo` Worker and Computational Parity'dir. Bilimsel `stylo` hesaplaması
-henüz uygulanmadı.
+ölçütünün tamamını geçerek kapandı. P006 R `stylo` Worker and Computational Parity
+`codex/p006-stylo-worker` dalında aktif Ticket olarak açıldı. Başlangıç paketi
+schema-first ve validated-finalizer-first ilerler; bilimsel `stylo` parity henüz
+uygulanmadı veya doğrulanmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -126,10 +126,13 @@ Closure tree `029248b`, normal CI run `29269051028` içinde verify ve canonical
 container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
 `provenance/evidence/P005/final-ci-validation.md` içinde tutulur.
 
-Sıradaki tek iş P006'yı ayrı Ticket, PromptEvent, branch ve başlangıç denetimiyle
-açmaktır. P006 açılmadan gerçek R/stylo worker kodu yazılmaz. Önce
-`SESSION_HANDOFF.md` ve P006 roadmap bölümü okunur.
+P006 Ticket, PromptEvent, branch, proposed ADR-0013 ve başlangıç denetimi açılmıştır.
+Sıradaki tek iş, opening package doğrulamasından sonra versioned worker şemaları,
+strict parser, semantic validator ve process sonucundan ayrı scientific finalizer
+uygulamaktır. Oğuz ayrı HumanDecision kaydetmeden sentetik fixture oracle çıktısı
+üretilmez veya dondurulmaz.
 
-P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
-analysis, gerçek R/stylo, production limitleri, secure erase veya Delta-LDA host
-isolation iddiası P005'e eklenmez.
+P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. P006 da
+preprocessing, public Start analysis, production limitleri, secure erase veya
+Delta-LDA host isolation iddiası kurmaz. Full CE-04 P007'yi, full CE-07 P010/P011'i
+bekler.

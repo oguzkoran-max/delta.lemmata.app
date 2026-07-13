@@ -571,6 +571,24 @@ def test_completion_detected_after_usage_sample_wins_deterministically(
     )
 
 
+def test_completion_detected_before_usage_sample_skips_sampling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = controller(tmp_path, "success")
+    process = cast(
+        subprocess.Popen[bytes],
+        Mock(poll=Mock(return_value=0)),
+    )
+    usage = Mock(return_value=(1, 1024))
+    monkeypatch.setattr(process_control, "_process_group_usage", usage)
+
+    assert (
+        runner._choose_winner(process, 123, time.monotonic() + 1)
+        is process_control._Winner.COMPLETION
+    )
+    usage.assert_not_called()
+
+
 def test_preselected_winner_returns_before_process_sampling(tmp_path: Path) -> None:
     runner = controller(tmp_path, "success")
     runner._winner = process_control._Winner.CANCELLATION

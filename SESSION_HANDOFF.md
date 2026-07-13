@@ -2,8 +2,8 @@
 
 **Güncellendi:** 2026-07-13
 
-**Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; aktif
-implementation Ticket yok, P006 henüz açılmadı
+**Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
+Worker and Computational Parity aktif ve başlangıç paketi hazırlanıyor
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -15,12 +15,21 @@ public analysis hâlâ kilitli ve scientific computation yok
 
 **Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
 
-**Sıradaki tek ana iş:** P006 R `stylo` Worker and Computational Parity için ayrı
-Ticket, PromptEvent, branch ve başlangıç denetimi aç. Önce doğrudan `stylo` referans
-fixture'ı, versioned worker input/output şeması, fixed argv, unknown leakage sınırı,
-finite-number kontrolleri ve sayısal tolerans planını dondur. P006 açılmadan gerçek
-worker kodu yazma; P005'e production isolation, deployment veya Pinokyo analizi
-ekleme.
+**Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
+
+**Sıradaki tek ana iş:** P006 opening package gate'ini geçir; ardından versioned
+input/output/error şemaları, strict parser, semantic validator, opaque artifact
+contract ve process sonucundan ayrı validated scientific finalizer uygula. Human
+method decision kaydedilmeden direct-stylo oracle üretme. Preprocessing P007, public
+workflow P008, benchmark P010/P011, FAIR package P012, Pinokyo P013 ve production
+isolation P014'te kalır.
+
+**P006 başlangıç bulgusu:** Process exit zero bilimsel başarı değildir. Guardian ACK
+öncesi output schema ve scientific invariant doğrulaması gerekir. stylo 0.7.71
+`perform.delta` Wurzburg yolu combined known/unknown table'ı yeniden scale edebilir;
+P006 Cosine Delta known-derived z-scores üzerinde `dist.cosine` kullanacaktır.
+Önerilen CC0 fixture, C.UTF-8/UTC, seed 20260713, 1e-6 parity ve 1e-12
+structural/tie protokolü Oğuz HumanDecision kaydı bekler.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

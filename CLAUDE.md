@@ -37,9 +37,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 ## Güncel Başlangıç
 
 P005 Job Lifecycle, Isolation, and Retention bütün acceptance ölçütlerini geçerek
-`provenance/tickets/P005.json` içinde tamamlanmıştır. Exact Linux capture,
-checksum-bound supply-chain package ve normal closure CI kanıtları korunur. Aktif
-implementation Ticket yoktur. Sıradaki aday P006 R `stylo` Worker and
-Computational Parity'dir; ayrı Ticket, PromptEvent, branch ve başlangıç kanıtı
-açılmadan kod yazma. Production isolation, secure erase, nihai Pinokyo corpus'u ve
-deployment P006 kapsamına eklenmez.
+`provenance/tickets/P005.json` içinde tamamlanmıştır. Tek aktif implementation
+Ticket `provenance/tickets/P006.json` içindeki P006 R `stylo` Worker and
+Computational Parity'dir. Önce şema ve validated scientific finalizer uygulanır;
+process exit tek başına success değildir. Oğuz ayrı HumanDecision kaydetmeden
+fixture/oracle çıktısı dondurulmaz. Production isolation, preprocessing, public
+analysis, nihai Pinokyo corpus'u ve deployment P006 kapsamına eklenmez.

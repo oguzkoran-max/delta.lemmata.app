@@ -2,13 +2,25 @@
 
 **Son güncelleme:** 2026-07-13
 
-**Durum:** P005 tamamlandı; aktif implementation Ticket yok, P006 henüz açılmadı
+**Durum:** P005 tamamlandı; P006 aktif, başlangıç paketi ve yöntem kararı hazırlanıyor
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
 workspace, guardian-managed POSIX process control, durable terminal ACK,
 execution-bound recovery receipt ve conservative lifecycle projection;
 public analiz ve bilimsel hesaplama henüz yok
+
+**P006 başlangıcı:** `codex/p006-stylo-worker` dalı ve
+`provenance/tickets/P006.json` açıldı. Dört kullanılabilir read-only mercek ile
+schema/provenance, FAIR/claim, yöntem ve security/lifecycle sınırları incelendi; iki
+ilk deneme büyük parent wiki nedeniyle bütçede kaldı ve approval sayılmadı. P006
+whole-text feature-count boundary kullanacak; preprocessing P007'de kalacak. Process
+exit zero scientific success değildir; strict output ve semantic validation durable
+terminal state ve guardian ACK'den önce gelir. stylo 0.7.71 kaynak incelemesi,
+Wurzburg yolunun combined matrix'i yeniden scale edebildiğini gösterdi; known/unknown
+Cosine Delta known-derived z-scores üzerinde `dist.cosine` kullanacaktır. Önerilen
+CC0 fixture, C.UTF-8/UTC, seed 20260713, 1e-6 parity ve 1e-12 structural/tie
+protokolü ayrı HumanDecision olmadan dondurulmayacaktır.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,
@@ -511,4 +523,5 @@ Her onaylanmış karar bu dosyaya hemen eklenir. Oturum sonuna veya bağlam sık
 - Gerçek R/stylo computation ve parity P006; corpus health P007; public end-to-end
   workflow P008; production isolation, swap, snapshot, backup ve deployment P014;
   final owner walkthrough P015 kapsamındadır.
-- Sıradaki aday P006'dır, fakat ayrı Ticket ve PromptEvent açılmadan kodlanmaz.
+- Bu kapanışta sıradaki aday P006 olarak kaydedildi. P006 daha sonra ayrı Ticket,
+  PromptEvent ve branch ile açıldı; üstteki güncel P006 başlangıç kaydı geçerlidir.

@@ -1,0 +1,144 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P006",
+  "title": "R stylo Worker and Computational Parity",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-13T18:55:28Z",
+  "closed_at_utc": null,
+  "objective": "Run versioned whole-text stylometric calculations through a fixed R stylo worker, validate every scientific output before lifecycle success, and establish fixture-local computational parity and known-only fitting invariance without claiming preprocessing, benchmark, or production validation.",
+  "scope": [
+    "Closed versioned input, output, and error contracts for whole-text feature-count analysis",
+    "Fixed Rscript entrypoint and Python adapter with no shell interpolation or user-controlled argv, environment, or path syntax",
+    "A validated scientific-finalization phase that separates process exit from accepted analysis outcome",
+    "Known-only MFW ranking, culling, scaling, and feature inventory with unknown projection after fitting",
+    "Classic Burrows Delta as the primary distance and Eder's Delta plus Cosine Delta as separate sensitivity distances",
+    "Finite-number, non-negative distance, matrix shape, symmetry, diagonal, label, cardinality, and cell-outcome validation",
+    "Deterministic project-authored CC0 fixture proposals and an independent direct-stylo reference harness",
+    "Canonical Linux environment evidence including R, stylo, package, locale, timezone, RNG, BLAS, LAPACK, and protocol versions",
+    "Parity, leakage-canary, injection, malformed-output, timeout, cancellation, partial-failure, clean-clone, and CI evidence"
+  ],
+  "non_goals": [
+    "Raw-text tokenization, Unicode normalization, punctuation or number removal, segmentation, duplicate detection, or corpus-health validation, which belong to P007",
+    "Public Upload-to-Run activation, parameter wizard completion, or browser end-to-end analysis, which belong to P008",
+    "Interpretation cards, result graphics, stability labels, or open-set behavior, which belong to P009 and P011",
+    "Known-author accuracy, diachronic benchmark performance, threshold calibration, or complete leakage validation, which belong to P010 and P011",
+    "FAIR-oriented run package, clean-room rerun, or general reproducibility claim, which belongs to P012 and P015",
+    "Pinocchio, LiberLiber, or any literary case-study result, which belongs to P013",
+    "Production resource numbers, egress denial, container hardening, host isolation, or deployment, which belongs to P014",
+    "A new Delta formula, replacement of stylo, general stylo parity, CE-04 completion before P007, or CE-07 completion before P010 and P011"
+  ],
+  "dependencies": [
+    "P001",
+    "P004",
+    "P005"
+  ],
+  "claim_ids": [
+    "CE-04",
+    "CE-07"
+  ],
+  "threat_ids": [
+    "SEC-06",
+    "SEC-07",
+    "SEC-08",
+    "RP-05",
+    "EPI-03"
+  ],
+  "decision_ids": [],
+  "prompt_event_ids": [
+    "PE-20260713-0002"
+  ],
+  "commit_ids": [],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "OpenAI Codex",
+    "OpenAI Codex independent review agents"
+  ],
+  "supplemental_evidence": [
+    "prompts/P006-start.md",
+    "decisions/ADR-0013-stylo-worker-parity.md",
+    "provenance/evidence/P006/architecture-audit.md",
+    "provenance/evidence/P006/start-validation.md",
+    "memory/checkpoints/2026-07-13-p006-start.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/development/local-runtime-limitations.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P006-AC-01",
+      "criterion": "Versioned input, output, and error schemas plus canonical Python models, duplicate-key and non-finite rejection, and semantic validators pass positive and adversarial contract fixtures.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-02",
+      "criterion": "The adapter uses a fixed Rscript --vanilla entrypoint, shell false, fixed trusted files and cwd, a minimal allowlisted environment, private output creation, and no user value in argv, R code, environment names, or filesystem paths; injection fixtures execute no command or code.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-03",
+      "criterion": "Process exit, output capture, schema validation, scientific validation, durable terminal state, and guardian acknowledgement occur in that order; exit zero with missing, malformed, non-finite, asymmetric, mislabeled, duplicate, or cardinality-invalid output never becomes success.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-04",
+      "criterion": "MFW ranking, culling, means, standard deviations, and selected features use known documents only; changing an unknown canary leaves all fitting artifacts and known-known distances exactly unchanged.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-05",
+      "criterion": "Every requested cell appears exactly once; not-enough-features remains explicit, complete, partial, and failed analysis outcomes are derived deterministically, and omitted or corrupt cells invalidate the envelope rather than being projected as completion.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-06",
+      "criterion": "For the predeclared whole-text synthetic fixture suite and locked R/stylo environment, ordered feature inventories match the independent direct-stylo oracle exactly, distance matrices differ by at most 1e-6, and nearest-neighbor tie groups match at the predeclared threshold.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-07",
+      "criterion": "Canonical Linux runs retain fixture and input hashes, direct-reference and worker outputs, parity and leakage reports, complete session information, package and image identity, locale and timezone, and all expected failed cells without private paths or research payload leakage.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P006-AC-08",
+      "criterion": "Exact-commit clean-clone and Linux CI gates pass with full measured source coverage; a separate HumanDecision accepts the fixture, environment, tolerance, and claim protocol before oracle outputs are frozen, while public analysis and P007-P015 claims remain explicitly locked.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [
+    "P006 execution brief, native PromptEvent, method/security architecture audit, proposed parity ADR, active Ticket, checkpoint, and synchronized startup pointers",
+    "Deterministic pre-sample process-completion regression coverage added after the repeated opening gate exposed timing-dependent coverage"
+  ],
+  "commands": [
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The P006 opening package passed 970 tests, 100% of 6,551 statements and 1,732 branches, strict typing, metadata, 77 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "A repeated opening gate passed all 970 tests but reached 99.96% measured coverage because the pre-sample completion branch depended on real-process timing; the failure is retained and a deterministic regression test was added without changing production source.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected P006 opening package passed 971 tests, 100% of 6,551 statements and 1,732 branches, strict typing, metadata, 77 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    }
+  ],
+  "blockers": []
+}

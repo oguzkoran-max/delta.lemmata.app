@@ -13,8 +13,8 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P000-P005 kapanmıştır. Aktif implementation Ticket yoktur; P006 kodundan önce
-  ayrı Ticket, PromptEvent, branch ve başlangıç kanıtı aç.
+- P000-P005 kapanmıştır. Tek aktif implementation Ticket P006'dır; başlangıç
+  paketi geçmeden worker koduna, HumanDecision olmadan referans oracle çıktısına geçme.
 - P003/P004 kanıtını production retention, gerçek `stylo` veya host isolation kanıtı gibi genişletme.
 - P005'te application-managed deletion ile secure erase, snapshot, swap, backup veya production isolation iddiasını karıştırma.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.
@@ -22,6 +22,9 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 - Runtime AI, dış API, analytics, login veya kalıcı proje saklama ekleme.
 - lda.lemmata.app koduna, environment'ına, portuna veya verisine dokunma.
 - R styloyu gizleme veya kendi Delta formülünü kanonik motor gibi sunma.
+- P006 process exit code 0 değerini tek başına scientific success kabul etme;
+  strict output ve semantic validation guardian ACK'den önce tamamlanmalıdır.
+- Unknown metni MFW, culling, mean, standard deviation veya feature selection'a katma.
 - Kesin yazarlık, nedensellik veya pure style dili üretme.
 - Pinokyo'yu makalenin ana araştırma nesnesine dönüştürme; worked example olarak tut.
 - Pinokyo'yu authorship demo'ya veya iki sürümlü PhiloEditor benzeri karşılaştırmaya geri döndürme.

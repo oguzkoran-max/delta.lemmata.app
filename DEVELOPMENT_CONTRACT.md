@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P005 Job Lifecycle, Isolation, and Retention tamamlandı, P006 henüz açılmadı
+**Durum:** Kanonik; P005 tamamlandı, P006 R stylo Worker and Computational Parity aktif
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P005 lifecycle ve application-managed retention mekanizması doğrulandı; bilimsel R/stylo worker ve analiz henüz uygulanmadı
+**Aşama:** P006 schema-first worker ve scientific-finalization başlangıcı; R/stylo parity henüz doğrulanmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.

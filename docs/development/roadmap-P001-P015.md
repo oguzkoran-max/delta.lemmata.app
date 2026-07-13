@@ -250,9 +250,13 @@ P014/P015'e kadar verified değildir. SEC-07, SEC-09, SEC-11, SEC-12, SEC-13.
 
 ### P006: R `stylo` Worker and Computational Parity
 
+**Durum:** In progress; Ticket `provenance/tickets/P006.json`, proposed protocol
+`decisions/ADR-0013-stylo-worker-parity.md`.
+
 **Amaç:** Kanonik hesaplamayı güvenli, sürümlü ve doğrudan `stylo` referansıyla karşılaştırılabilir R worker içinde çalıştırmak.
 
-**Bağımlılık:** P001.
+**Bağımlılık:** P001 environment/locks; current integration also requires completed
+P004 inventory identities and P005 process/workspace lifecycle.
 
 **Deliverable'lar:**
 
