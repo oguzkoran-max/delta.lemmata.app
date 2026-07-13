@@ -4,7 +4,8 @@
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **Güncel aşama:** P004 Metadata, Corpus Inventory, and Rights `main`e alındı. P005
 Job Lifecycle, Isolation, and Retention `codex/p005-job-lifecycle` dalında aktiftir;
-bilimsel `stylo` hesaplaması henüz uygulanmadı.
+AC-01--AC-07 geçti, AC-08 yalnız retained CI artifact kotası nedeniyle açıktır.
+Bilimsel `stylo` hesaplaması henüz uygulanmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -116,16 +117,19 @@ clean-clone ve GitHub CI kapıları geçti. Kapanış `RUN-20260712-0005`,
 Final owner walkthrough P015 ürün-hazır kapısında ayrıca yapılacaktır; P004 kapanışı
 Safari, VoiceOver, genel usability, bilimsel sonuç veya deployment iddiası değildir.
 
-Aktif iş `provenance/tickets/P005.json` kabul ölçütlerine göre session-owned job
-workspace, transactional SQLite control store, one-running/three-queued admission,
-cancellation/timeout, process-tree cleanup, restart recovery ve retention
-sözleşmesini uygulamaktır. Local macOS guardian katmanı `3c746d1` ile uygulanmış,
-full gate ve `RUN-20260713-0001` exact-commit clean-clone replay'inden geçmiştir;
-provenance-link commit `cfb503c` de GitHub CI run `29215163561` içinde Linux
-verify, SBOM/dependency audit ve canonical amd64 container kapılarından geçmiştir.
-Sıradaki kapı bağımsız P005 acceptance audit'idir.
-`prompts/P005-start.md`, ADR-0012 ve
-`provenance/evidence/P005/architecture-audit.md` önce okunur.
+Aktif iş `provenance/tickets/P005.json` içindeki son dış kapıyı kapatmaktır.
+Final implementation commit `2a17ec6`, `RUN-20260713-0003` clean-clone replay'inde
+950 test, 6.551 statement, 1.732 branch, yüzde 100 coverage ve iki tracked browser
+harness ile geçti. GitHub run `29220278021` aynı committe Linux verify,
+SBOM/dependency-audit generation ve canonical amd64 container kapılarını geçti;
+yalnız `upload-artifact`, hesap kotası yeniden hesaplanmadığı için reddedildi. Yedi
+zaten expired Windows build artifact'i silindi. 12:55 TRT'deki dördüncü denemede
+verify job `86786405954` tüm teknik kapıları ve sekiz dosyalı paket üretimini yeniden
+geçti; upload kotası yine açılmadı. Sıradaki tek deneme 18:55 TRT'den sonra run
+`29220278021` failed job'unu rerun etmek, üretilen `supply-chain-2a17ec6...` paketini
+indirmek ve checksumlarını doğrulamaktır. Güncel yerel kanıt commiti bu sınırı
+kaydeder ve henüz remote'a push edilmemiştir. Önce
+`memory/checkpoints/2026-07-13-p005-acceptance.md` okunur.
 
 P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
 analysis, gerçek R/stylo, production limitleri, secure erase veya Delta-LDA host

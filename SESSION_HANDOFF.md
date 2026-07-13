@@ -2,21 +2,40 @@
 
 **Güncellendi:** 2026-07-13
 
-**Aşama:** P004 `main`e alındı; P005 Job Lifecycle, Isolation, and Retention aktif
+**Aşama:** P004 `main`e alındı; P005 AC-01--AC-07 geçti, AC-08 retained CI
+artifact kotası nedeniyle açık
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
-validated-payload staging, synthetic POSIX process controller, kalıcı content-free
-deletion ledger, continuous fake-clock janitor, ayrı app-loss guardian, durable
-SQLite terminal ACK ve execution-bound recovery receipt var;
+validated-payload staging, capability-first application service, synthetic POSIX
+process controller, kalıcı content-free deletion ledger, continuous fake-clock
+janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
+recovery receipt var;
 public analysis hâlâ kilitli ve scientific computation yok
 
 **Aktif ticket:** `provenance/tickets/P005.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Guardian exact-commit replay'i `RUN-20260713-0001` ile,
-provenance-link commit `cfb503c` ise GitHub CI run `29215163561` içinde Linux
-verify, SBOM/dependency audit ve canonical amd64 container kapılarıyla geçti.
-Bağımsız P005 acceptance audit'i tamamla.
+**Sıradaki tek ana iş:** GitHub artifact kotası yeniden hesaplandıktan sonra, en
+erken 2026-07-13 18:55 TRT'de, final implementation commit `2a17ec6` için run
+`29220278021` failed job'unu bir kez rerun et. 12:55 TRT'deki dördüncü deneme,
+verify job `86786405954`, tüm teknik kapıları ve sekiz dosyalı paket üretimini geçti;
+GitHub depolama kotası yalnız upload aşamasını yeniden reddetti.
+Upload geçerse `supply-chain-2a17ec6...` artifactini indir, iç checksumları doğrula,
+`final-ci-validation.md` ve P005-AC-08'i güncelle, sonra yerel kanıt commitini push et.
+Yerel dal temizdir ve remote'dan bir kanıt commiti ileridedir.
+
+**P005 acceptance checkpoint:** İlk bağımsız closure denetimi capability-first
+authorization, zero-allocation admission, cleanup-failure accounting, cancellation
+delivery, reciprocal guardian ACK ve descriptor-bound process start açıkları buldu;
+tamamı kapatıldı. Final exact replay `RUN-20260713-0003`, commit `2a17ec6` üzerinde
+950 test, 6.551 statement, 1.732 branch, yüzde 100 coverage, clean clone ve iki
+browser harness ile geçti. Linux CI önce emergency reap'te unreaped leader buldu,
+sonra platform-dependent coverage branch'i buldu; ikisi de düzeltildi. Final run
+`29220278021` Linux verify, evidence generation ve canonical container'ı geçirdi.
+Upload GitHub quota recalculation nedeniyle reddedildi; hard gate korunuyor. Kanıt:
+`provenance/evidence/P005/acceptance-hardening-validation.md`,
+`provenance/evidence/P005/final-ci-validation.md` ve
+`memory/checkpoints/2026-07-13-p005-acceptance.md`.
 
 **P005 guardian checkpoint:** Ayrı POSIX-session guardian, app-liveness pipe,
 `waitid(..., WNOWAIT)` leader ownership, durable SQLite terminal ACK ve
@@ -42,7 +61,8 @@ tombstone purge uygulandı. Full gate 795 test, 5.262 statement, 1.404 branch ve
 **P005 tarihsel P0 bulgu, kapatıldı:** Bağımsız süreç denetimi eski daemon monitorün
 app process ile öldüğünü ve worker grubunu bırakabildiğini doğrulamıştı. Kalıcı
 PID/PGID çözümü identifier reuse nedeniyle reddedildi; `3c746d1` guardian katmanı bu
-yerel macOS açığını kapattı. Linux parity ve P005 kapanışı hâlâ açıktır.
+yerel macOS açığını kapattı. Final Linux verify ve container artık geçti; yalnız
+retained supply-chain artifact ve P005-AC-08 kapanışı açıktır.
 
 **P005 foundation checkpoint:** Commit'ler `bce5bb2`, `0da9a1b`, `5e1cbba` ve
 `eca5357`; full gate 769 test, 4.947 statement, 1.304 branch ve yüzde 100 coverage

@@ -1,7 +1,8 @@
 # P005 Acceptance Hardening Validation
 
-**Status:** Exact-commit local candidate passed. Final Linux CI, downloaded
-supply-chain artifact verification, and product-owner acceptance remain open.
+**Status:** Final exact-commit candidate passed. Linux verification, evidence
+generation, and the canonical container passed; retained supply-chain artifact
+upload and product-owner acceptance remain open.
 
 **Date:** 2026-07-13
 
@@ -140,6 +141,37 @@ SHA-256 manifest are retained under:
 - `provenance/evidence/P005/browser-boundary-exact-4b8a2e8/`
 - `provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/`
 - `provenance/evidence/P005/acceptance-exact-commit.sha256`
+
+## Final-Commit Correction And Replay
+
+The first Linux closure run exposed a real emergency-reap defect: when process
+enumeration failed again after `SIGKILL`, the controller could publish an error
+without collecting the killed leader. The fallback now collects the owned leader,
+does not re-signal a potentially reusable process-group identifier, and still
+returns `REAP_FAILED` because descendant absence was not proven.
+
+The next Linux run passed all 950 tests but exposed one platform-dependent coverage
+branch. A deterministic fake-clock case now executes that branch on both macOS and
+Linux. `RUN-20260713-0003` then rebuilt final implementation commit
+`2a17ec60ed62695e1e47383ad930330bef52f134`: 950 tests, 6,551 statements,
+1,732 branches, 100% coverage, all repository gates, both tracked browser
+harnesses, and clean exact-commit status passed.
+
+Final exact-commit artifacts are retained under:
+
+- `provenance/evidence/P005/final-exact-commit/`
+- `provenance/evidence/P005/browser-boundary-exact-2a17ec6/`
+- `provenance/evidence/P005/lifecycle-component-exact-2a17ec6/`
+- `provenance/evidence/P005/final-exact-commit.sha256`
+
+For final commit `2a17ec6`, GitHub run `29220278021` passed Linux verification,
+100% coverage, SBOM/dependency-audit generation, and the canonical Linux amd64
+container. Upload alone failed because GitHub reported an account artifact-storage
+quota. Seven already-expired Windows build artifacts totaling about 2.5 GB were
+removed; the immediate retry was still rejected because GitHub documents a 6-12
+hour usage-recalculation delay. The upload remains a hard gate rather than a
+`continue-on-error` step. Full sequence:
+`provenance/evidence/P005/final-ci-validation.md`.
 
 ## Claim Boundary
 

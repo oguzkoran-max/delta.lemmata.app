@@ -54,11 +54,15 @@
     "eca535773a237d304b8c12397e1295df49295d3f",
     "0e84b106b10ca979b0ebb7d5cd9b6ff5de73c2bb",
     "3c746d160769e50baddf2e6ec1c3c13db14fd019",
-    "4b8a2e819ee06203ba7241c2a0261b9ba685b0a2"
+    "4b8a2e819ee06203ba7241c2a0261b9ba685b0a2",
+    "c537a579f75774f4435e58f28a2e83ce4004574b",
+    "9597a5f1028354ec22ed661ce9a530b943afd380",
+    "2a17ec60ed62695e1e47383ad930330bef52f134"
   ],
   "run_ids": [
     "RUN-20260713-0001",
-    "RUN-20260713-0002"
+    "RUN-20260713-0002",
+    "RUN-20260713-0003"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -88,7 +92,14 @@
     "provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/browser-audit.json",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
-    "docs/security/threat-model.md"
+    "docs/security/threat-model.md",
+    "provenance/runs/RUN-20260713-0003.json",
+    "provenance/evidence/P005/final-exact-commit/report.md",
+    "provenance/evidence/P005/final-exact-commit.sha256",
+    "provenance/evidence/P005/browser-boundary-exact-2a17ec6/browser-audit.json",
+    "provenance/evidence/P005/lifecycle-component-exact-2a17ec6/browser-audit.json",
+    "provenance/evidence/P005/final-ci-validation.md",
+    "memory/checkpoints/2026-07-13-p005-acceptance.md"
   ],
   "acceptance": [
     {
@@ -97,7 +108,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P005/acceptance-hardening-validation.md",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
@@ -106,7 +118,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P005/acceptance-hardening-validation.md",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
@@ -115,7 +128,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P005/acceptance-hardening-validation.md",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
@@ -124,7 +138,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P005/acceptance-hardening-validation.md",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
@@ -133,7 +148,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P005/acceptance-hardening-validation.md",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
@@ -142,7 +158,8 @@
       "status": "passed",
       "evidence": [
         "provenance/evidence/P005/acceptance-hardening-validation.md",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
@@ -153,14 +170,18 @@
         "provenance/evidence/P005/acceptance-hardening-validation.md",
         "provenance/evidence/P005/browser-boundary-exact-4b8a2e8/browser-audit.json",
         "provenance/evidence/P005/lifecycle-component-exact-4b8a2e8/browser-audit.json",
-        "provenance/runs/RUN-20260713-0002.json"
+        "provenance/runs/RUN-20260713-0002.json",
+        "provenance/runs/RUN-20260713-0003.json"
       ]
     },
     {
       "id": "P005-AC-08",
       "criterion": "Concurrency, race, crash, OOM, process-tree, retention, canary, browser-boundary, clean-clone, Linux CI, SBOM, and canonical container gates pass with full measured source coverage, while P014-only production limits remain explicitly unverified.",
       "status": "pending",
-      "evidence": []
+      "evidence": [
+        "provenance/runs/RUN-20260713-0003.json",
+        "provenance/evidence/P005/final-ci-validation.md"
+      ]
     }
   ],
   "changed_files": [
@@ -168,7 +189,8 @@
     "Lifecycle identity, policy, immutable state model, payload-free SQLite store, private workspace, validated-payload staging, synthetic process controller, deletion-event model, and conservative UI projection",
     "Persistent content-free deletion ledger, fail-closed optional workspace recovery, continuous fake-clock janitor, exact retention deadlines, success publication ordering, and verified-absence tombstone purge",
     "Per-job app-loss guardian, unreaped leader ownership, durable SQLite terminal acknowledgement, execution-bound signed recovery receipt, and real running/completed worker SIGKILL races",
-    "Acceptance hardening for capability-first service operations, zero-allocation admission, cleanup-failure accounting, cancellation delivery, reciprocal guardian acknowledgement, descriptor-bound process startup, exact browser evidence, and retained CI supply-chain output"
+    "Acceptance hardening for capability-first service operations, zero-allocation admission, cleanup-failure accounting, cancellation delivery, reciprocal guardian acknowledgement, descriptor-bound process startup, exact browser evidence, and retained CI supply-chain output",
+    "Linux emergency-reap correction, deterministic cross-platform branch coverage, final exact-commit replay, transparent failed-CI sequence, and external artifact-quota boundary"
   ],
   "commands": [
     {
@@ -212,7 +234,21 @@
       "exit_code": 0,
       "result": "RUN-20260713-0002 rebuilt exact implementation commit 4b8a2e8 in fresh no-hardlinks clones; 950 tests, full measured coverage, every repository gate, the P004 browser boundary, all 16 P005 lifecycle projections, and clean exact-commit state passed.",
       "evidence": "provenance/runs/RUN-20260713-0002.json"
+    },
+    {
+      "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; tracked P004 and P005 browser harnesses at final commit",
+      "exit_code": 0,
+      "result": "RUN-20260713-0003 rebuilt final implementation commit 2a17ec6 in fresh no-hardlinks clones; 950 tests, 6,551 statements, 1,732 branches, full measured coverage, every repository gate, the P004 browser boundary, all 16 P005 lifecycle projections, and clean exact-commit state passed.",
+      "evidence": "provenance/runs/RUN-20260713-0003.json"
+    },
+    {
+      "command": "GitHub Actions CI run 29220278021",
+      "exit_code": 1,
+      "result": "Final commit 2a17ec6 passed 950 Linux tests, 100% measured coverage, metadata, schemas, records, repository scanning, locked R checks, supply-chain generation, and the canonical Linux amd64 container. GitHub rejected only artifact upload while account storage usage awaited recalculation.",
+      "evidence": "provenance/evidence/P005/final-ci-validation.md"
     }
   ],
-  "blockers": []
+  "blockers": [
+    "GitHub Actions artifact-storage usage must recalculate after deletion of seven already-expired build artifacts; rerun 29220278021 or a later final-commit CI and verify the downloaded supply-chain checksums before P005-AC-08 can pass."
+  ]
 }

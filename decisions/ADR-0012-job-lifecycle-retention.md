@@ -69,6 +69,9 @@ alana sıkıştırır.
   execution'a dönüşmez.
 - Normal ve emergency reap birlikte başarısız olursa guardian hata verip çıkmaz;
   process-group yokluğu kanıtlanana kadar sahipliği koruyarak reap'i tekrarlar.
+- Emergency cleanup'ta lider öldükten sonra descendant enumeration bozulursa owned
+  leader zombi bırakılmaz: `wait()` ile toplanır, temizlik doğrulanmış sayılmaz ve
+  yeniden kullanılabilecek PGID'ye yeni sinyal gönderilmeden `REAP_FAILED` üretilir.
 - Kullanıcı yüzeyi lifecycle projection hazırlayabilir, fakat P006/P008 öncesi aktif
   Start analysis veya scientific result göstermez.
 - Terminal outcome cleanup sonucu değildir. Artifact yokluğu doğrulanmadan
