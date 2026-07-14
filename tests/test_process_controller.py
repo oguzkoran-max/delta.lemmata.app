@@ -23,6 +23,7 @@ from delta_lemmata.process_controller import (
     ProcessController,
     ProcessControllerError,
     ProcessControllerErrorCode,
+    ProcessEnvironmentProfile,
     ProcessLimit,
     ProcessOutcome,
     ProcessResult,
@@ -454,13 +455,14 @@ def test_private_stable_classification_and_signal_helpers(
     [
         [],
         ["wrong", "1", "1", sys.executable],
-        [process_control._LAUNCHER_MARKER, "bad", "1", sys.executable],
-        [process_control._LAUNCHER_MARKER, "0", "1", sys.executable],
-        [process_control._LAUNCHER_MARKER, "1", "0", sys.executable],
-        [process_control._LAUNCHER_MARKER, "1", "1", "bad", sys.executable],
-        [process_control._LAUNCHER_MARKER, "1", "1", "-1", sys.executable],
-        [process_control._LAUNCHER_MARKER, "1", "1", "1", "relative"],
-        [process_control._LAUNCHER_MARKER, "1", "1", "relative"],
+        [process_control._LAUNCHER_MARKER, "bad", "1", "1", "synthetic", sys.executable],
+        [process_control._LAUNCHER_MARKER, "0", "1", "1", "synthetic", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "0", "1", "synthetic", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "bad", "synthetic", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "-1", "synthetic", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "1", "unknown", sys.executable],
+        [process_control._LAUNCHER_MARKER, "1", "1", "1", "synthetic", "relative"],
+        [process_control._LAUNCHER_MARKER, "1", "1", "1", "synthetic"],
     ],
 )
 def test_launcher_rejects_malformed_contract(arguments: list[str]) -> None:
@@ -490,11 +492,52 @@ def test_launcher_applies_limits_and_fails_closed_if_exec_fails(
                 "2",
                 "1024",
                 str(cwd_descriptor),
+                ProcessEnvironmentProfile.SYNTHETIC.value,
                 sys.executable,
             ]
         )
     assert caught.value.code == 126
     assert applied == [(2, 1024)]
+
+
+def test_closed_r_stylo_environment_is_locale_fixed_and_secret_free() -> None:
+    environment = process_control._target_environment(ProcessEnvironmentProfile.R_STYLO)
+    assert environment == {
+        "LANG": "C.UTF-8",
+        "LC_COLLATE": "C.UTF-8",
+        "LC_CTYPE": "C.UTF-8",
+        "LC_NUMERIC": "C",
+        "OMP_NUM_THREADS": "1",
+        "OPENBLAS_NUM_THREADS": "1",
+        "MKL_NUM_THREADS": "1",
+        "RENV_CONFIG_LOCKING_ENABLED": "FALSE",
+        "RENV_CONFIG_SANDBOX_ENABLED": "FALSE",
+        "RENV_CONFIG_STARTUP_QUIET": "TRUE",
+        "RENV_CONFIG_SYNCHRONIZED_CHECK": "FALSE",
+        "RENV_PATHS_CACHE": "/opt/renv/cache",
+        "R_ENVIRON_USER": "/dev/null",
+        "R_PROFILE_USER": "/dev/null",
+        "TZ": "UTC",
+        "VECLIB_MAXIMUM_THREADS": "1",
+    }
+    assert (
+        process_control._target_environment(ProcessEnvironmentProfile.SYNTHETIC)
+        is process_control._CLEAN_WORKER_ENVIRONMENT
+    )
+    assert "PATH" not in environment
+    assert "HOME" not in environment
+
+
+def test_process_controller_rejects_untyped_environment_profile(tmp_path: Path) -> None:
+    expect_error(
+        ProcessControllerErrorCode.INVALID_CONFIGURATION,
+        lambda: ProcessController(
+            argv=(sys.executable,),
+            cwd=tmp_path,
+            limits=limits(),
+            environment_profile=cast(ProcessEnvironmentProfile, "r_stylo"),
+        ),
+    )
 
 
 def test_cancel_and_wait_surface_stored_errors_and_completion_race(tmp_path: Path) -> None:
@@ -569,6 +612,24 @@ def test_completion_detected_after_usage_sample_wins_deterministically(
         runner._choose_winner(process, 123, time.monotonic() + 1)
         is process_control._Winner.COMPLETION
     )
+
+
+def test_completion_detected_before_usage_sample_skips_sampling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    runner = controller(tmp_path, "success")
+    process = cast(
+        subprocess.Popen[bytes],
+        Mock(poll=Mock(return_value=0)),
+    )
+    usage = Mock(return_value=(1, 1024))
+    monkeypatch.setattr(process_control, "_process_group_usage", usage)
+
+    assert (
+        runner._choose_winner(process, 123, time.monotonic() + 1)
+        is process_control._Winner.COMPLETION
+    )
+    usage.assert_not_called()
 
 
 def test_preselected_winner_returns_before_process_sampling(tmp_path: Path) -> None:

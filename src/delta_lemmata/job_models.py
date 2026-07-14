@@ -2,9 +2,10 @@
 
 from __future__ import annotations
 
+import hashlib
 from datetime import datetime, timedelta
 from enum import StrEnum
-from typing import Annotated, Self, cast
+from typing import Annotated, Literal, Self, cast
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
@@ -17,6 +18,8 @@ JobIdText = Annotated[
 ]
 OwnerDigest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 OperationId = Annotated[str, Field(pattern=r"^op_[0-9a-f]{64}$")]
+Sha256Digest = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
+ScientificRequestId = Annotated[str, Field(pattern=r"^request_[0-9a-f]{64}$")]
 
 
 class FrozenModel(BaseModel):
@@ -185,6 +188,43 @@ class AppliedOperation(FrozenModel):
     action: str = Field(pattern=r"^[a-z][a-z0-9_:]*$")
 
 
+class ScientificResultReceipt(FrozenModel):
+    """Content-free commitment to one validated P006 result artifact."""
+
+    schema_version: Literal["scientific-result-receipt-v1"]
+    request_id: ScientificRequestId
+    request_sha256: Sha256Digest
+    worker_version: Literal["stylo-worker-v1"]
+    result_schema_version: Literal["stylo-worker-result-v1"]
+    analysis_outcome: Literal["complete", "partial"]
+    artifact_component: Literal["053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"]
+    byte_size: int = Field(strict=True, ge=1, le=32 * 1024 * 1024)
+    sha256: Sha256Digest
+
+
+def _scientific_result_commitment(receipt: ScientificResultReceipt) -> str:
+    fields = (
+        receipt.schema_version,
+        receipt.request_id,
+        receipt.request_sha256,
+        receipt.worker_version,
+        receipt.result_schema_version,
+        receipt.analysis_outcome,
+        receipt.artifact_component,
+        str(receipt.byte_size),
+        receipt.sha256,
+    )
+    return hashlib.sha256("\0".join(fields).encode("ascii")).hexdigest()
+
+
+def _scientific_result_action(receipt: ScientificResultReceipt) -> str:
+    return f"scientific:terminal:succeeded:{_scientific_result_commitment(receipt)}"
+
+
+def _scientific_confirmation_action(receipt: ScientificResultReceipt) -> str:
+    return f"scientific:guardian:confirmed:{_scientific_result_commitment(receipt)}"
+
+
 class JobRecord(FrozenModel):
     job_id: JobIdText
     owner_digest: OwnerDigest
@@ -193,6 +233,8 @@ class JobRecord(FrozenModel):
     outcome: Outcome | None = None
     cancellation: Cancellation = Cancellation()
     artifacts: ArtifactLifecycle
+    scientific_result: ScientificResultReceipt | None = None
+    scientific_result_confirmed: bool = Field(default=False, strict=True)
     export_available: bool = False
     event_expires_at_utc: datetime
     tombstone_expires_at_utc: datetime | None = None
@@ -241,6 +283,66 @@ class JobRecord(FrozenModel):
             raise ValueError("cancelled outcome requires a cancellation request")
         if self.export_available and not self.can_publish_export:
             raise ValueError("export cannot be available before successful verified cleanup")
+        scientific_claims = tuple(
+            operation.action
+            for operation in self.operations
+            if operation.action == "scientific:execution:claimed"
+        )
+        running_operations = tuple(
+            operation.action
+            for operation in self.operations
+            if operation.action == "execution:running:none"
+        )
+        if scientific_claims and (
+            scientific_claims != ("scientific:execution:claimed",)
+            or running_operations != ("execution:running:none",)
+            or self.execution.state not in {ExecutionState.RUNNING, ExecutionState.TERMINAL}
+        ):
+            raise ValueError("scientific execution claim requires one running execution")
+        if (
+            scientific_claims
+            and self.outcome is not None
+            and self.outcome.kind is TerminalOutcome.SUCCEEDED
+            and self.scientific_result is None
+        ):
+            raise ValueError("scientific execution cannot succeed without a result receipt")
+        confirmation_actions = tuple(
+            operation.action
+            for operation in self.operations
+            if operation.action.startswith("scientific:guardian:confirmed:")
+        )
+        if self.scientific_result is not None:
+            scientific_actions = tuple(
+                operation.action
+                for operation in self.operations
+                if operation.action.startswith("scientific:terminal:succeeded:")
+            )
+            if (
+                self.outcome is None
+                or self.outcome.kind is not TerminalOutcome.SUCCEEDED
+                or self.execution.state is not ExecutionState.TERMINAL
+                or self.artifacts.result.state is CleanupState.NOT_CREATED
+                or scientific_claims != ("scientific:execution:claimed",)
+                or scientific_actions != (_scientific_result_action(self.scientific_result),)
+            ):
+                raise ValueError(
+                    "scientific result requires a committed successful scientific transition"
+                )
+            expected_confirmation = _scientific_confirmation_action(self.scientific_result)
+            if self.scientific_result_confirmed:
+                if confirmation_actions != (expected_confirmation,):
+                    raise ValueError(
+                        "confirmed scientific result requires its exact guardian commitment"
+                    )
+            elif confirmation_actions:
+                raise ValueError("guardian confirmation requires a confirmed scientific result")
+        elif any(
+            operation.action.startswith("scientific:terminal:succeeded:")
+            for operation in self.operations
+        ):
+            raise ValueError("scientific transition requires a result receipt")
+        elif self.scientific_result_confirmed or confirmation_actions:
+            raise ValueError("scientific confirmation requires a result receipt")
         execution_deadline_cap = {
             ExecutionState.STAGED: self.execution.entered_at_utc
             + timedelta(seconds=policy.staged_ttl_seconds),
@@ -280,7 +382,26 @@ class JobRecord(FrozenModel):
             and self.artifacts.input.state is CleanupState.VERIFIED_ABSENT
             and self.artifacts.work.state is CleanupState.VERIFIED_ABSENT
             and self.artifacts.export.state is CleanupState.PRESENT
+            and (self.scientific_result is None or self.scientific_result_confirmed)
         )
+
+
+def terminal_operation_version(job: JobRecord) -> int | None:
+    """Return the immutable operation version that committed a terminal outcome."""
+
+    if job.execution.state is not ExecutionState.TERMINAL or job.outcome is None:
+        return None
+    expected_action = (
+        _scientific_result_action(job.scientific_result)
+        if job.scientific_result is not None
+        else f"execution:terminal:{job.outcome.kind.value}"
+    )
+    versions = tuple(
+        index
+        for index, operation in enumerate(job.operations, start=1)
+        if operation.action == expected_action
+    )
+    return versions[0] if len(versions) == 1 else None
 
 
 _LEGAL_EXECUTION_TRANSITIONS = {
@@ -419,6 +540,10 @@ def transition_execution(
     if target is ExecutionState.TERMINAL:
         if outcome not in _LEGAL_OUTCOMES[source] or tombstone_expires_at_utc is None:
             raise IllegalTransitionError
+        if outcome is TerminalOutcome.SUCCEEDED and any(
+            operation.action == "scientific:execution:claimed" for operation in job.operations
+        ):
+            raise IllegalTransitionError
         if (
             outcome is TerminalOutcome.CANCELLED
             and job.cancellation.state is not CancellationState.REQUESTED
@@ -481,6 +606,136 @@ def transition_execution(
             "tombstone_expires_at_utc": tombstone_expires_at_utc,
             "artifacts": artifacts,
         },
+    )
+
+
+def transition_scientific_success(
+    job: JobRecord,
+    *,
+    receipt: ScientificResultReceipt,
+    at_utc: datetime,
+    tombstone_expires_at_utc: datetime,
+    expected_version: int,
+    operation_id: str,
+) -> JobRecord:
+    """Atomically bind one accepted result to its successful terminal state."""
+
+    if not isinstance(receipt, ScientificResultReceipt):
+        raise IllegalTransitionError
+    action = _scientific_result_action(receipt)
+    if _check_operation(job, operation_id, action):
+        return job
+    _check_version(job, expected_version)
+    at_utc = require_utc(at_utc, field_name="at_utc")
+    tombstone_expires_at_utc = require_utc(
+        tombstone_expires_at_utc,
+        field_name="tombstone_expires_at_utc",
+    )
+    if (
+        job.execution.state is not ExecutionState.RUNNING
+        or tuple(
+            operation.action
+            for operation in job.operations
+            if operation.action == "scientific:execution:claimed"
+        )
+        != ("scientific:execution:claimed",)
+        or job.scientific_result is not None
+        or job.artifacts.result.state is not CleanupState.NOT_CREATED
+        or at_utc < job.execution.entered_at_utc
+        or tombstone_expires_at_utc <= at_utc
+        or tombstone_expires_at_utc
+        > at_utc + timedelta(seconds=DEFAULT_JOB_POLICY.tombstone_ttl_seconds)
+    ):
+        raise IllegalTransitionError
+    execution = ExecutionStatus(
+        state=ExecutionState.TERMINAL,
+        entered_at_utc=at_utc,
+    )
+    outcome = Outcome(kind=TerminalOutcome.SUCCEEDED, occurred_at_utc=at_utc)
+    anchor = job.model_copy(
+        update={
+            "execution": execution,
+            "outcome": outcome,
+            "tombstone_expires_at_utc": tombstone_expires_at_utc,
+        }
+    )
+    caps = {kind: _artifact_deadline_cap(anchor, kind) for kind in ArtifactKind}
+    artifacts = _retime_artifacts(job.artifacts, caps)
+    artifact_payload = artifacts.model_dump(mode="python")
+    artifact_payload[ArtifactKind.RESULT.value] = ArtifactStatus(
+        state=CleanupState.PRESENT,
+        delete_by_utc=caps[ArtifactKind.RESULT],
+    )
+    return _updated(
+        job,
+        operation_id=operation_id,
+        action=action,
+        updates={
+            "execution": execution,
+            "outcome": outcome,
+            "tombstone_expires_at_utc": tombstone_expires_at_utc,
+            "artifacts": ArtifactLifecycle.model_validate(artifact_payload),
+            "scientific_result": receipt,
+        },
+    )
+
+
+def transition_scientific_execution_claim(
+    job: JobRecord,
+    *,
+    expected_version: int,
+    operation_id: str,
+) -> JobRecord:
+    """Claim one running row before any scientific filesystem side effect."""
+
+    action = "scientific:execution:claimed"
+    if _check_operation(job, operation_id, action):
+        return job
+    _check_version(job, expected_version)
+    if (
+        job.execution.state is not ExecutionState.RUNNING
+        or job.scientific_result is not None
+        or job.scientific_result_confirmed
+        or job.artifacts.result.state is not CleanupState.NOT_CREATED
+        or any(operation.action == action for operation in job.operations)
+    ):
+        raise IllegalTransitionError
+    return _updated(
+        job,
+        operation_id=operation_id,
+        action=action,
+        updates={},
+    )
+
+
+def confirm_scientific_result(
+    job: JobRecord,
+    *,
+    expected_version: int,
+    operation_id: str,
+) -> JobRecord:
+    """Persist guardian acceptance for one exact pending scientific result."""
+
+    receipt = job.scientific_result
+    if receipt is None:
+        raise IllegalTransitionError
+    action = _scientific_confirmation_action(receipt)
+    if _check_operation(job, operation_id, action):
+        return job
+    _check_version(job, expected_version)
+    if (
+        job.execution.state is not ExecutionState.TERMINAL
+        or job.outcome is None
+        or job.outcome.kind is not TerminalOutcome.SUCCEEDED
+        or job.scientific_result_confirmed
+        or job.artifacts.result.state is not CleanupState.PRESENT
+    ):
+        raise IllegalTransitionError
+    return _updated(
+        job,
+        operation_id=operation_id,
+        action=action,
+        updates={"scientific_result_confirmed": True},
     )
 
 
@@ -726,13 +981,18 @@ __all__ = [
     "JobRecord",
     "OperationConflictError",
     "Outcome",
+    "ScientificResultReceipt",
     "TerminalOutcome",
     "VersionConflictError",
+    "confirm_scientific_result",
     "new_staged_job",
     "publish_export",
     "retire_export",
     "request_cancellation",
+    "terminal_operation_version",
     "transition_artifact",
     "transition_execution",
+    "transition_scientific_execution_claim",
+    "transition_scientific_success",
     "withdraw_export",
 ]

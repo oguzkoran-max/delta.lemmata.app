@@ -20,6 +20,13 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_valida
 
 from delta_lemmata.clock import require_utc
 from delta_lemmata.job_events import MAX_EVENT_TTL_SECONDS
+from delta_lemmata.job_models import (
+    CleanupState,
+    ExecutionState,
+    JobRecord,
+    TerminalOutcome,
+    terminal_operation_version,
+)
 from delta_lemmata.session_identity import (
     MINIMUM_OWNER_SECRET_BYTES,
     JobId,
@@ -46,6 +53,14 @@ class RecoveryReceiptErrorCode(StrEnum):
     INVALID_ROOT = "RECOVERY_RECEIPT_INVALID_ROOT"
     INVALID_RECORD = "RECOVERY_RECEIPT_INVALID_RECORD"
     WRITE_FAILED = "RECOVERY_RECEIPT_WRITE_FAILED"
+
+
+class ScientificRecoveryDisposition(StrEnum):
+    """Closed startup decision for one pending scientific result."""
+
+    ACCEPTED = "accepted"
+    RECOVERY_REQUIRED = "recovery_required"
+    UNRESOLVED = "unresolved"
 
 
 class RecoveryReceiptError(RuntimeError):
@@ -88,10 +103,13 @@ class RecoveryReceipt(BaseModel):
 
     model_config = ConfigDict(extra="forbid", frozen=True, str_strip_whitespace=True)
 
-    schema_version: Literal["guardian-recovery-receipt-v1"] = "guardian-recovery-receipt-v1"
+    schema_version: Literal[
+        "guardian-recovery-receipt-v1",
+        "guardian-disposition-receipt-v2",
+    ] = "guardian-recovery-receipt-v1"
     job_reference_digest: ReceiptDigest
     execution_reference_digest: ReceiptDigest
-    outcome: Literal["recovery_required"] = "recovery_required"
+    outcome: Literal["recovery_required", "accepted"] = "recovery_required"
     occurred_at_utc: datetime
     worker_group_verified_absent: Literal[True] = True
     workspace_verified_absent: bool
@@ -99,6 +117,15 @@ class RecoveryReceipt(BaseModel):
     byte_count: int = Field(ge=0)
     policy_version: Literal["job-policy-v1"]
     expires_at_utc: datetime
+    terminal_version: int | None = Field(default=None, strict=True, ge=0)
+    terminal_outcome: TerminalOutcome | None = None
+    artifact_sha256: ReceiptDigest | None = None
+    artifact_byte_size: int | None = Field(
+        default=None,
+        strict=True,
+        ge=1,
+        le=32 * 1024 * 1024,
+    )
     signature: ReceiptSignature
 
     @field_validator("occurred_at_utc", "expires_at_utc")
@@ -113,12 +140,40 @@ class RecoveryReceipt(BaseModel):
             raise ValueError("recovery receipt must expire within seven days")
         if not self.workspace_verified_absent and (self.file_count or self.byte_count):
             raise ValueError("unverified cleanup cannot publish deletion counts")
+        commitment = (self.artifact_sha256 is not None) == (self.artifact_byte_size is not None)
+        if not commitment:
+            raise ValueError("artifact digest and size must agree")
+        if self.outcome == "recovery_required":
+            if (
+                self.schema_version != "guardian-recovery-receipt-v1"
+                or self.terminal_version is not None
+                or self.terminal_outcome is not None
+                or self.artifact_sha256 is not None
+            ):
+                raise ValueError("recovery receipt cannot carry an accepted commitment")
+        elif (
+            self.schema_version != "guardian-disposition-receipt-v2"
+            or self.terminal_version is None
+            or self.terminal_outcome is None
+            or self.workspace_verified_absent
+            or (
+                (self.terminal_outcome is TerminalOutcome.SUCCEEDED)
+                != (self.artifact_sha256 is not None)
+            )
+        ):
+            raise ValueError("accepted receipt requires one consistent terminal commitment")
         return self
 
 
 def _unsigned_payload(receipt: RecoveryReceipt | dict[str, object]) -> bytes:
-    source = receipt.model_dump(mode="python") if isinstance(receipt, RecoveryReceipt) else receipt
-    payload = {key: value for key, value in source.items() if key != "signature"}
+    source = (
+        receipt.model_dump(mode="python", exclude_none=True)
+        if isinstance(receipt, RecoveryReceipt)
+        else receipt
+    )
+    payload = {
+        key: value for key, value in source.items() if key != "signature" and value is not None
+    }
     for key in ("occurred_at_utc", "expires_at_utc"):
         value = payload[key]
         if not isinstance(value, datetime):
@@ -184,6 +239,61 @@ def new_recovery_receipt(
         "byte_count": byte_count,
         "policy_version": "job-policy-v1",
         "expires_at_utc": occurred_at_utc + timedelta(seconds=event_ttl_seconds),
+    }
+    signature = hmac.digest(
+        signing_secret,
+        _SIGNATURE_DOMAIN + _unsigned_payload(payload),
+        "sha256",
+    )
+    payload["signature"] = signature.hex()
+    return RecoveryReceipt.model_validate(payload)
+
+
+def new_acceptance_receipt(
+    *,
+    job_id: JobId,
+    execution_reference: str,
+    occurred_at_utc: datetime,
+    terminal_version: int,
+    terminal_outcome: TerminalOutcome,
+    artifact_sha256: str | None,
+    artifact_byte_size: int | None,
+    signing_secret: bytes,
+    event_ttl_seconds: int,
+) -> RecoveryReceipt:
+    """Create one signed proof before a scientific guardian confirms release."""
+
+    occurred_at_utc = require_utc(occurred_at_utc, field_name="occurred_at_utc")
+    if (
+        not isinstance(job_id, JobId)
+        or not isinstance(execution_reference, str)
+        or _EXECUTION_REFERENCE.fullmatch(execution_reference) is None
+        or isinstance(terminal_version, bool)
+        or not isinstance(terminal_version, int)
+        or terminal_version < 0
+        or not isinstance(terminal_outcome, TerminalOutcome)
+        or not isinstance(signing_secret, bytes)
+        or len(signing_secret) < MINIMUM_OWNER_SECRET_BYTES
+        or event_ttl_seconds <= 0
+        or event_ttl_seconds > MAX_EVENT_TTL_SECONDS
+    ):
+        raise ValueError("invalid acceptance receipt inputs")
+    payload: dict[str, object] = {
+        "schema_version": "guardian-disposition-receipt-v2",
+        "job_reference_digest": workspace_component(job_id),
+        "execution_reference_digest": _execution_digest(job_id, execution_reference),
+        "outcome": "accepted",
+        "occurred_at_utc": occurred_at_utc,
+        "worker_group_verified_absent": True,
+        "workspace_verified_absent": False,
+        "file_count": 0,
+        "byte_count": 0,
+        "policy_version": "job-policy-v1",
+        "expires_at_utc": occurred_at_utc + timedelta(seconds=event_ttl_seconds),
+        "terminal_version": terminal_version,
+        "terminal_outcome": terminal_outcome,
+        "artifact_sha256": artifact_sha256,
+        "artifact_byte_size": artifact_byte_size,
     }
     signature = hmac.digest(
         signing_secret,
@@ -317,10 +427,101 @@ class RecoveryReceiptStore:
         receipt = self.read(job_id, execution_reference)
         return bool(
             receipt is not None
+            and receipt.outcome == "recovery_required"
             and receipt.expires_at_utc > at_utc
             and receipt.worker_group_verified_absent
             and receipt.workspace_verified_absent
         )
+
+    @_content_free
+    def proves_job_recovery(self, job: JobRecord, *, at_utc: datetime) -> bool:
+        if not isinstance(job, JobRecord):
+            _reject(RecoveryReceiptErrorCode.INVALID_RECORD)
+        references = tuple(
+            operation.operation_id
+            for operation in job.operations
+            if operation.action == "execution:running:none"
+        )
+        if len(references) != 1:
+            _reject(RecoveryReceiptErrorCode.INVALID_RECORD)
+        return self.proves_recovery(
+            JobId.from_urlsafe(job.job_id),
+            references[0],
+            at_utc=at_utc,
+        )
+
+    @_content_free
+    def proves_acceptance(
+        self,
+        job_id: JobId,
+        execution_reference: str,
+        *,
+        terminal_version: int,
+        terminal_outcome: TerminalOutcome,
+        artifact_sha256: str | None,
+        artifact_byte_size: int | None,
+        at_utc: datetime,
+    ) -> bool:
+        at_utc = require_utc(at_utc, field_name="at_utc")
+        receipt = self.read(job_id, execution_reference)
+        return bool(
+            receipt is not None
+            and receipt.outcome == "accepted"
+            and receipt.expires_at_utc > at_utc
+            and receipt.worker_group_verified_absent
+            and not receipt.workspace_verified_absent
+            and receipt.terminal_version == terminal_version
+            and receipt.terminal_outcome is terminal_outcome
+            and receipt.artifact_sha256 == artifact_sha256
+            and receipt.artifact_byte_size == artifact_byte_size
+        )
+
+    @_content_free
+    def scientific_disposition(
+        self,
+        job: JobRecord,
+        *,
+        at_utc: datetime,
+    ) -> ScientificRecoveryDisposition:
+        """Classify signed guardian evidence for one pending scientific success."""
+
+        at_utc = require_utc(at_utc, field_name="at_utc")
+        if (
+            not isinstance(job, JobRecord)
+            or job.execution.state is not ExecutionState.TERMINAL
+            or job.outcome is None
+            or job.outcome.kind is not TerminalOutcome.SUCCEEDED
+            or job.scientific_result is None
+            or job.scientific_result_confirmed
+            or job.artifacts.result.state is not CleanupState.PRESENT
+        ):
+            _reject(RecoveryReceiptErrorCode.INVALID_RECORD)
+        references = tuple(
+            operation.operation_id
+            for operation in job.operations
+            if operation.action == "execution:running:none"
+        )
+        terminal_version = terminal_operation_version(job)
+        if len(references) != 1 or terminal_version is None:
+            _reject(RecoveryReceiptErrorCode.INVALID_RECORD)
+        receipt = self.read(JobId.from_urlsafe(job.job_id), references[0])
+        if receipt is None or receipt.expires_at_utc <= at_utc:
+            return ScientificRecoveryDisposition.UNRESOLVED
+        if receipt.outcome == "recovery_required":
+            if receipt.worker_group_verified_absent and receipt.workspace_verified_absent:
+                return ScientificRecoveryDisposition.RECOVERY_REQUIRED
+            return ScientificRecoveryDisposition.UNRESOLVED
+        result = job.scientific_result
+        if (
+            receipt.worker_group_verified_absent
+            and not receipt.workspace_verified_absent
+            and receipt.terminal_version == terminal_version
+            and receipt.terminal_outcome is TerminalOutcome.SUCCEEDED
+            and receipt.artifact_sha256 == result.sha256
+            and receipt.artifact_byte_size == result.byte_size
+        ):
+            return ScientificRecoveryDisposition.ACCEPTED
+        return ScientificRecoveryDisposition.UNRESOLVED
 
     @_content_free
     def purge_expired(self, *, at_utc: datetime) -> int:
@@ -413,5 +614,7 @@ __all__ = [
     "RecoveryReceiptError",
     "RecoveryReceiptErrorCode",
     "RecoveryReceiptStore",
+    "ScientificRecoveryDisposition",
+    "new_acceptance_receipt",
     "new_recovery_receipt",
 ]

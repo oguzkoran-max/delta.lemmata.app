@@ -3,7 +3,7 @@ from __future__ import annotations
 import threading
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, NoReturn, cast
 
 import pytest
 
@@ -15,11 +15,14 @@ from delta_lemmata.job_models import (
     CleanupState,
     ExecutionState,
     JobRecord,
+    ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
     request_cancellation,
     transition_artifact,
     transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
 from delta_lemmata.job_store import SQLiteJobStore, StorePurgeReport
@@ -31,14 +34,34 @@ from delta_lemmata.job_workspace import (
     WorkspaceLayout,
     WorkspaceManager,
 )
+from delta_lemmata.recovery_receipt import (
+    RecoveryReceiptStore,
+    new_acceptance_receipt,
+    new_recovery_receipt,
+)
 from delta_lemmata.session_identity import JobId, SessionCapability, workspace_component
 
 NOW = datetime(2026, 7, 13, 15, tzinfo=UTC)
 SECRET = b"janitor-owner-secret-v1-32-bytes!!"
+RECEIPT_SECRET = b"janitor-receipt-secret-v1-32bytes"
 
 
 def operation(number: int) -> str:
     return "op_" + f"{number:064x}"
+
+
+def scientific_receipt() -> ScientificResultReceipt:
+    return ScientificResultReceipt(
+        schema_version="scientific-result-receipt-v1",
+        request_id="request_" + "1" * 64,
+        request_sha256="2" * 64,
+        worker_version="stylo-worker-v1",
+        result_schema_version="stylo-worker-result-v1",
+        analysis_outcome="complete",
+        artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
+        byte_size=4096,
+        sha256="3" * 64,
+    )
 
 
 def capability(number: int = 1) -> SessionCapability:
@@ -77,6 +100,36 @@ def layout_for(workspaces: WorkspaceManager, job: JobRecord) -> WorkspaceLayout:
     return workspaces.create(
         job.owner_digest,
         workspace_component(JobId.from_urlsafe(job.job_id)),
+    )
+
+
+def receipt_store(tmp_path: Path) -> RecoveryReceiptStore:
+    root = tmp_path / "receipts"
+    root.mkdir(mode=0o700, parents=True)
+    return RecoveryReceiptStore(root, signing_secret=RECEIPT_SECRET)
+
+
+def scientific_running_reference(job: JobRecord) -> str:
+    references = tuple(
+        operation.operation_id
+        for operation in job.operations
+        if operation.action == "execution:running:none"
+    )
+    assert len(references) == 1
+    return references[0]
+
+
+def bind_scientific_janitor(
+    store: SQLiteJobStore,
+    workspaces: WorkspaceManager,
+    clock: FakeClock,
+    receipts: RecoveryReceiptStore,
+) -> JobJanitor:
+    return JobJanitor(
+        store=store,
+        workspaces=workspaces,
+        clock=clock,
+        recovery_receipts=receipts,
     )
 
 
@@ -155,6 +208,38 @@ def terminal_job(
         operation_id=operation(terminal_operation),
     )
     return persist(store, owner, current, terminal, terminal_at)
+
+
+def scientific_terminal_job(
+    store: SQLiteJobStore,
+    owner: SessionCapability,
+    *,
+    base_operation: int = 70,
+) -> JobRecord:
+    running = running_job(store, owner, base_operation=base_operation)
+    claim = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=operation(base_operation + 2),
+    )
+    claimed = persist(
+        store,
+        owner,
+        running,
+        claim,
+        NOW + timedelta(seconds=2, microseconds=1),
+    )
+    terminal_at = NOW + timedelta(seconds=3)
+    scientific = transition_scientific_success(
+        claimed,
+        receipt=scientific_receipt(),
+        at_utc=terminal_at,
+        tombstone_expires_at_utc=terminal_at
+        + timedelta(seconds=DEFAULT_JOB_POLICY.tombstone_ttl_seconds),
+        expected_version=claimed.version,
+        operation_id=operation(base_operation + 3),
+    )
+    return persist(store, owner, claimed, scientific, terminal_at)
 
 
 def add_artifact(
@@ -459,6 +544,180 @@ def test_startup_recovery_requires_guardian_proof_and_records_abandonment(tmp_pa
     assert store.list_deletion_events()[0].reason is DeletionReason.STARTUP_RECOVERY
 
 
+def test_startup_recovery_proof_verifies_all_scientific_artifacts_without_losing_receipt(
+    tmp_path: Path,
+) -> None:
+    store, workspaces, clock, _janitor = environment(tmp_path)
+    owner = capability()
+    scientific = scientific_terminal_job(store, owner)
+    original_outcome = scientific.outcome
+    original_receipt = scientific.scientific_result
+    receipts = receipt_store(tmp_path)
+    receipts.write(
+        new_recovery_receipt(
+            job_id=JobId.from_urlsafe(scientific.job_id),
+            execution_reference=scientific_running_reference(scientific),
+            occurred_at_utc=NOW + timedelta(seconds=3),
+            workspace_verified_absent=True,
+            file_count=0,
+            byte_count=0,
+            signing_secret=RECEIPT_SECRET,
+            event_ttl_seconds=DEFAULT_JOB_POLICY.event_ttl_seconds,
+        )
+    )
+    janitor = bind_scientific_janitor(store, workspaces, clock, receipts)
+    clock.set(NOW + timedelta(seconds=4))
+
+    report = janitor.recover_startup()
+    recovered = store.get_job(job_id=scientific.job_id, capability=owner)
+    assert report.scientific_results_recovered == 1
+    assert report.scientific_recovery_unresolved == 0
+    assert report.running_jobs_recovered == 0
+    assert report.running_recovery_unresolved == 0
+    assert report.cleanup_attempts == 1
+    assert report.artifacts_verified_absent == len(ArtifactKind)
+    assert all(
+        recovered.artifacts.for_kind(kind).state is CleanupState.VERIFIED_ABSENT
+        for kind in ArtifactKind
+    )
+    assert recovered.outcome == original_outcome
+    assert recovered.scientific_result == original_receipt
+    assert store.list_deletion_events()[0].reason is DeletionReason.STARTUP_RECOVERY
+
+
+def test_startup_unresolved_scientific_recovery_retains_result(tmp_path: Path) -> None:
+    store, workspaces, clock, _janitor = environment(tmp_path)
+    owner = capability()
+    scientific = scientific_terminal_job(store, owner)
+    result_receipt = scientific.scientific_result
+    assert result_receipt is not None
+    layout = layout_for(workspaces, scientific)
+    workspaces.create_file(
+        layout,
+        WorkspaceArea.RESULT,
+        result_receipt.artifact_component,
+        b"pending-result",
+    )
+    janitor = bind_scientific_janitor(
+        store,
+        workspaces,
+        clock,
+        receipt_store(tmp_path),
+    )
+    clock.set(NOW + timedelta(seconds=4))
+
+    report = janitor.recover_startup()
+    retained = store.get_job(job_id=scientific.job_id, capability=owner)
+    assert report.scientific_results_recovered == 0
+    assert report.scientific_recovery_unresolved == 1
+    assert retained.artifacts.result == scientific.artifacts.result
+    assert retained.artifacts.result.state is CleanupState.PRESENT
+    assert retained.outcome == scientific.outcome
+    assert retained.scientific_result == scientific.scientific_result
+    assert retained.artifacts.input.state is CleanupState.VERIFIED_ABSENT
+    assert retained.artifacts.work.state is CleanupState.VERIFIED_ABSENT
+    assert retained.artifacts.result.state is CleanupState.PRESENT
+    assert (layout.result / result_receipt.artifact_component).is_file()
+    assert store.list_deletion_events()[0].reason is DeletionReason.SUCCESSFUL_TERMINAL
+
+    result_deadline = retained.artifacts.result.delete_by_utc
+    assert result_deadline is not None
+    clock.set(result_deadline)
+    expired_report = janitor.run_once()
+    expired = store.get_job(job_id=scientific.job_id, capability=owner)
+    assert expired_report.scientific_recovery_unresolved == 1
+    assert expired.artifacts.result.state is CleanupState.VERIFIED_ABSENT
+    assert expired.scientific_result == result_receipt
+    assert not layout.job.exists()
+
+
+def test_startup_without_recovery_callback_retains_scientific_result(tmp_path: Path) -> None:
+    store, _workspaces, clock, janitor = environment(tmp_path)
+    owner = capability()
+    scientific = scientific_terminal_job(store, owner)
+    clock.set(NOW + timedelta(seconds=4))
+
+    report = janitor.recover_startup()
+    retained = store.get_job(job_id=scientific.job_id, capability=owner)
+    assert report.scientific_results_recovered == 0
+    assert report.scientific_recovery_unresolved == 1
+    assert retained.outcome == scientific.outcome
+    assert retained.scientific_result == scientific.scientific_result
+    assert retained.scientific_result_confirmed is False
+    assert retained.artifacts.input.state is CleanupState.VERIFIED_ABSENT
+    assert retained.artifacts.work.state is CleanupState.VERIFIED_ABSENT
+    assert store.list_deletion_events()[0].reason is DeletionReason.SUCCESSFUL_TERMINAL
+
+
+def test_startup_scientific_recovery_callback_exception_is_counted_and_retained(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    store, workspaces, clock, _janitor = environment(tmp_path)
+    owner = capability()
+    scientific = scientific_terminal_job(store, owner)
+    receipts = receipt_store(tmp_path)
+    janitor = bind_scientific_janitor(store, workspaces, clock, receipts)
+    clock.set(NOW + timedelta(seconds=4))
+
+    def failed_proof(_job: JobRecord, *, at_utc: datetime) -> NoReturn:
+        assert at_utc == clock.now()
+        raise RuntimeError("private callback failure")
+
+    monkeypatch.setattr(receipts, "scientific_disposition", failed_proof)
+    report = janitor.recover_startup()
+    retained = store.get_job(job_id=scientific.job_id, capability=owner)
+    assert report.scientific_results_recovered == 0
+    assert report.scientific_recovery_unresolved == 1
+    assert report.running_recovery_unresolved == 0
+    assert retained.artifacts.result == scientific.artifacts.result
+    assert retained.artifacts.result.state is CleanupState.PRESENT
+    assert retained.outcome == scientific.outcome
+    assert retained.scientific_result == scientific.scientific_result
+
+
+def test_startup_accepted_scientific_result_is_confirmed_before_cleanup(
+    tmp_path: Path,
+) -> None:
+    store, workspaces, clock, initial_janitor = environment(tmp_path)
+    owner = capability()
+    scientific = scientific_terminal_job(store, owner)
+    item = scientific.scientific_result
+    assert item is not None
+    clock.set(NOW + timedelta(seconds=4))
+    assert initial_janitor.run_once().scientific_recovery_unresolved == 1
+    advanced = store.get_job(job_id=scientific.job_id, capability=owner)
+    assert advanced.version > scientific.version
+    assert advanced.artifacts.result.state is CleanupState.PRESENT
+    receipts = receipt_store(tmp_path)
+    receipts.write(
+        new_acceptance_receipt(
+            job_id=JobId.from_urlsafe(scientific.job_id),
+            execution_reference=scientific_running_reference(scientific),
+            occurred_at_utc=NOW + timedelta(seconds=3),
+            terminal_version=scientific.version,
+            terminal_outcome=TerminalOutcome.SUCCEEDED,
+            artifact_sha256=item.sha256,
+            artifact_byte_size=item.byte_size,
+            signing_secret=RECEIPT_SECRET,
+            event_ttl_seconds=DEFAULT_JOB_POLICY.event_ttl_seconds,
+        )
+    )
+    janitor = bind_scientific_janitor(store, workspaces, clock, receipts)
+
+    report = janitor.recover_startup()
+    confirmed = store.get_job(job_id=scientific.job_id, capability=owner)
+
+    assert report.scientific_results_confirmed == 1
+    assert report.scientific_results_recovered == 0
+    assert report.scientific_recovery_unresolved == 0
+    assert confirmed.scientific_result_confirmed is True
+    assert confirmed.scientific_result == scientific.scientific_result
+    assert confirmed.artifacts.result.state is CleanupState.PRESENT
+    assert confirmed.artifacts.input.state is CleanupState.VERIFIED_ABSENT
+    assert confirmed.artifacts.work.state is CleanupState.VERIFIED_ABSENT
+
+
 def test_startup_recovery_removes_only_untracked_verified_workspaces(tmp_path: Path) -> None:
     store, workspaces, _clock, janitor = environment(tmp_path)
     owner = capability()
@@ -508,6 +767,13 @@ def test_janitor_configuration_loop_and_conflict_paths_are_fail_closed(
         )
     with pytest.raises(ValueError, match="INVALID_RECOVERY"):
         janitor.recover_startup(cast(Any, object()))
+    with pytest.raises(ValueError, match="INVALID_CONFIGURATION"):
+        JobJanitor(
+            store=store,
+            workspaces=workspaces,
+            clock=clock,
+            recovery_receipts=cast(Any, object()),
+        )
     with pytest.raises(ValueError, match="INVALID_LOOP"):
         janitor.run_continuously(stop_event=threading.Event(), interval_seconds=0)
     with pytest.raises(ValueError, match="INVALID_LOOP"):

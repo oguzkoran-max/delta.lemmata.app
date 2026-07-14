@@ -27,14 +27,19 @@ from delta_lemmata.job_models import (
     ExecutionState,
     JobModelError,
     JobRecord,
+    ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    confirm_scientific_result,
     new_staged_job,
     publish_export,
     request_cancellation,
     retire_export,
+    terminal_operation_version,
     transition_artifact,
     transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
     withdraw_export,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY, JobPolicy
@@ -636,7 +641,13 @@ class SQLiteJobStore:
         operation = updated.operations[-1]
         action = operation.action
         try:
-            if action.startswith("execution:"):
+            if action == "scientific:execution:claimed":
+                expected = transition_scientific_execution_claim(
+                    previous,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
+                )
+            elif action.startswith("execution:"):
                 if updated.execution.state is not ExecutionState.TERMINAL:
                     _invalid_update()
                 outcome = cast(TerminalOutcome, updated.outcome.kind if updated.outcome else None)
@@ -649,6 +660,29 @@ class SQLiteJobStore:
                     deadline_at_utc=updated.execution.deadline_at_utc,
                     outcome=outcome,
                     tombstone_expires_at_utc=updated.tombstone_expires_at_utc,
+                )
+            elif action.startswith("scientific:terminal:succeeded:"):
+                tombstone_expires_at_utc = updated.tombstone_expires_at_utc
+                if (
+                    updated.execution.state is not ExecutionState.TERMINAL
+                    or updated.outcome is None
+                    or updated.scientific_result is None
+                    or tombstone_expires_at_utc is None
+                ):
+                    _invalid_update()
+                expected = transition_scientific_success(
+                    previous,
+                    receipt=updated.scientific_result,
+                    at_utc=updated.execution.entered_at_utc,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
+                    tombstone_expires_at_utc=tombstone_expires_at_utc,
+                )
+            elif action.startswith("scientific:guardian:confirmed:"):
+                expected = confirm_scientific_result(
+                    previous,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
                 )
             elif action == "cancellation:requested":
                 if updated.cancellation.requested_at_utc is None:
@@ -1083,6 +1117,7 @@ class SQLiteJobStore:
         execution_reference: str,
         expected_version: int,
         expected_outcome: TerminalOutcome,
+        expected_result: ScientificResultReceipt | None = None,
     ) -> bool:
         """Verify a durable terminal row before the app releases its guardian."""
 
@@ -1092,21 +1127,80 @@ class SQLiteJobStore:
             or not isinstance(expected_version, int)
             or expected_version < 0
             or not isinstance(expected_outcome, TerminalOutcome)
+            or (
+                expected_result is not None
+                and not isinstance(expected_result, ScientificResultReceipt)
+            )
         ):
             _invalid_update()
         with self._read_connection() as connection:
             job, _queue_sequence = self._load_system(connection, job_id=job_id)
         return bool(
-            job.version == expected_version
+            terminal_operation_version(job) == expected_version
             and job.execution.state is ExecutionState.TERMINAL
             and job.outcome is not None
             and job.outcome.kind is expected_outcome
+            and job.scientific_result == expected_result
+            and (expected_result is None or job.artifacts.result.state is CleanupState.PRESENT)
             and any(
                 operation.operation_id == execution_reference
                 and operation.action == "execution:running:none"
                 for operation in job.operations
             )
         )
+
+    @_content_free
+    def confirm_scientific_result_after_guardian(
+        self,
+        *,
+        job_id: JobId | str,
+        expected_terminal_version: int,
+        expected_result: ScientificResultReceipt,
+        operation_id: str,
+        at_utc: datetime,
+    ) -> JobRecord:
+        """Atomically confirm an exact guardian-accepted scientific result."""
+
+        at_utc = require_utc(at_utc, field_name="at_utc")
+        if (
+            not isinstance(expected_terminal_version, int)
+            or isinstance(expected_terminal_version, bool)
+            or expected_terminal_version < 0
+            or not isinstance(expected_result, ScientificResultReceipt)
+            or not isinstance(operation_id, str)
+            or _OPERATION_REFERENCE.fullmatch(operation_id) is None
+        ):
+            _invalid_update()
+        with self._immediate() as connection:
+            previous, queue_sequence = self._load_system(connection, job_id=job_id)
+            if (
+                terminal_operation_version(previous) != expected_terminal_version
+                or previous.scientific_result != expected_result
+            ):
+                _invalid_update()
+            if previous.scientific_result_confirmed:
+                return previous
+            if previous.artifacts.result.state is not CleanupState.PRESENT:
+                _invalid_update()
+            updated = confirm_scientific_result(
+                previous,
+                expected_version=previous.version,
+                operation_id=operation_id,
+            )
+            self._validate_successor(previous, updated)
+            self._insert_event(
+                connection,
+                job=updated,
+                event_code="JOB_UPDATED",
+                at_utc=at_utc,
+            )
+            self._write_job(
+                connection,
+                previous=previous,
+                updated=updated,
+                queue_sequence=queue_sequence,
+            )
+            return updated
 
     @_content_free
     def list_jobs_for_maintenance(self) -> tuple[JobRecord, ...]:

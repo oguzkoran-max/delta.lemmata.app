@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260714-0005",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P006"
+  ],
+  "started_at_utc": "2026-07-14T16:55:16Z",
+  "ended_at_utc": "2026-07-14T16:57:39Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "d676d90aa1bebea6197f2f18b5f988c8e6d11794",
+  "environment": {
+    "ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "uv": "0.11.28",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "jsonlite": "2.0.0",
+      "locale": "C.UTF-8",
+      "timezone": "UTC",
+      "run": "29350106890",
+      "verify_job": "87143854938",
+      "container_job": "87143854913",
+      "built_image_id": "sha256:f331a0fd306f84d87f097622aad4752beabb6b5d87430e231456b1df7649ecf4",
+      "tests_passed": 1247,
+      "measured_statements": 7768,
+      "measured_branches": 2080,
+      "coverage_percent": 100,
+      "worker_parity": "passed",
+      "scientific_handoff": "passed",
+      "sbom_dependency_secret_gates": "passed"
+    },
+    "clean_clone": {
+      "os": "macOS 26.5.2",
+      "architecture": "arm64",
+      "python": "3.13.9",
+      "uv": "0.11.28",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "jsonlite": "2.0.0",
+      "origin": "https://github.com/oguzkoran-max/delta.lemmata.app.git",
+      "clone_mode": "remote no-hardlinks detached exact commit",
+      "bootstrap": "passed",
+      "tests_passed": 1246,
+      "tests_skipped": 1,
+      "skipped_reason": "canonical R worker integration requires Linux",
+      "measured_statements": 7768,
+      "measured_branches": 2080,
+      "coverage_percent": 100,
+      "post_run_worktree": "clean"
+    }
+  },
+  "command": "set -eu; clean_root=$(mktemp -d \"${TMPDIR:-/tmp}/delta-p006-clean.XXXXXX\"); git clone --no-hardlinks --no-checkout https://github.com/oguzkoran-max/delta.lemmata.app.git \"$clean_root/repository\"; cd \"$clean_root/repository\"; git checkout --detach d676d90aa1bebea6197f2f18b5f988c8e6d11794; ./scripts/bootstrap.sh; ./scripts/verify.sh; test -z \"$(git status --porcelain --untracked-files=all)\"; gh run watch 29350106890 --exit-status",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "42d9369d7630793b213a1664ddb4deccac1cdd05269e8b5e9db996d005467992"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "scripts/bootstrap.sh",
+      "sha256": "f841b3fee16a26ac00668bf82a74c5e69a3bdd2a818688c50270d8337f1df67b"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "b534b87fa11eca18a057e0983c74254b14cb38a2cfb7886dbce6fcdfbd5e3fa6"
+    },
+    {
+      "path": "scripts/validate_p006_worker_evidence.py",
+      "sha256": "b5f2744c83dd7822a057bcbbf132dc33f2f09df8f97b9deff948fbfcb51efbdb"
+    }
+  ],
+  "replay": {
+    "level": "full",
+    "working_directory": "Fresh remote no-hardlinks clone at detached exact commit d676d90aa1bebea6197f2f18b5f988c8e6d11794",
+    "command": "set -eu; clean_root=$(mktemp -d \"${TMPDIR:-/tmp}/delta-p006-clean.XXXXXX\"); git clone --no-hardlinks --no-checkout https://github.com/oguzkoran-max/delta.lemmata.app.git \"$clean_root/repository\"; cd \"$clean_root/repository\"; git checkout --detach d676d90aa1bebea6197f2f18b5f988c8e6d11794; ./scripts/bootstrap.sh; ./scripts/verify.sh; test -z \"$(git status --porcelain --untracked-files=all)\"; gh run watch 29350106890 --exit-status",
+    "limitations": [
+      "The clean clone used the same Mac and could reuse content-addressed Python and R package caches; dependency identities remained locked by uv.lock and renv.lock.",
+      "Dependency restoration used network access. The P006 closure does not establish production egress denial or host isolation.",
+      "The local clean clone skipped the Linux-only R worker integration test. The same exact commit separately passed all 1,247 tests, worker parity, scientific handoff, SBOM, dependency, secret, and container gates in GitHub-hosted Ubuntu CI.",
+      "The GitHub-hosted runner image is named but is not represented by an immutable runner-image digest; source, actions, base image, Python, uv, R, packages, and the built container image are separately pinned or recorded.",
+      "This closure is limited to the named synthetic whole-text fixtures and fixed worker boundary. It does not establish raw-text preprocessing, literary-corpus validity, benchmark accuracy, stability calibration, public workflow behavior, FAIR run export, Pinocchio findings, or production deployment."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "42d9369d7630793b213a1664ddb4deccac1cdd05269e8b5e9db996d005467992"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "scripts/bootstrap.sh",
+      "sha256": "f841b3fee16a26ac00668bf82a74c5e69a3bdd2a818688c50270d8337f1df67b"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "b534b87fa11eca18a057e0983c74254b14cb38a2cfb7886dbce6fcdfbd5e3fa6"
+    },
+    {
+      "path": "scripts/validate_p006_worker_evidence.py",
+      "sha256": "b5f2744c83dd7822a057bcbbf132dc33f2f09df8f97b9deff948fbfcb51efbdb"
+    },
+    {
+      "path": "provenance/runs/RUN-20260714-0004.json",
+      "sha256": "7992af631b5234eae6dd0f981abf0b1f8336ab1fe345594213f33025e9f2b774"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-capture-transport.json",
+      "sha256": "948f2786d7244c6e96cf9fb29d96c02717522143b11635d2ac63aa6f7dade1ee"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/worker-evidence.sha256",
+      "sha256": "2933eaa90d196c4e4672c9199eb995471e8756829ef02625e6844886b4af5c6b"
+    },
+    {
+      "path": "provenance/tickets/P006.json",
+      "sha256": "9baf3b217be0b6fa42678da8cd278f999ac92529be3369977a4f9997e9916d0f"
+    },
+    {
+      "path": "decisions/ADR-0013-stylo-worker-parity.md",
+      "sha256": "389f1be677815db733ac8ac2dc5976c7e990bc69f8cffcf332235bc531e6b1c1"
+    },
+    {
+      "path": "provenance/human-decision-ledger.jsonl",
+      "sha256": "f4c242ec39fcffd29f986c61cf3c422fa54142db8842e86e9e9126c871781a46"
+    }
+  ],
+  "output_artifacts": [],
+  "notes": "Exact audit commit d676d90 was fetched from the GitHub origin into a fresh remote no-hardlinks clone, checked out detached, restored from committed Python and R lockfiles, and passed the complete local repository gate with 1,246 tests, one declared Linux-only skip, 100% measured statement and branch coverage, all frozen evidence validators, metadata, 84 provenance records, repository scanning, R parsing, and the R lock gate. The post-run clone remained versionably clean. The same exact commit passed GitHub-hosted Ubuntu CI run 29350106890 with all 1,247 tests, the fixed worker parity and scientific handoff validators, 100% measured coverage, SBOM/dependency/secret gates, and canonical Linux amd64 container construction. This run satisfies P006-AC-08 only within the declared fixture-local worker boundary; P007-P015 claims remain locked."
+}

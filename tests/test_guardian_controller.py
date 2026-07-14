@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import hashlib
 import os
 import signal
 import subprocess
@@ -18,6 +19,7 @@ import delta_lemmata.process_controller as process_control
 from delta_lemmata.clock import FakeClock
 from delta_lemmata.guardian_controller import (
     GUARDIAN_PROCESS_BOUNDARY,
+    GuardianArtifactBinding,
     GuardianController,
     GuardianControllerError,
     GuardianControllerErrorCode,
@@ -27,27 +29,42 @@ from delta_lemmata.job_models import (
     ArtifactKind,
     CleanupState,
     ExecutionState,
+    ScientificResultReceipt,
     TerminalOutcome,
     request_cancellation,
     transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY, WorkerLimitProfile
 from delta_lemmata.job_store import JobStoreError, JobStoreErrorCode, SQLiteJobStore
-from delta_lemmata.job_workspace import WorkspaceArea, WorkspaceLayout, WorkspaceManager
+from delta_lemmata.job_workspace import (
+    WorkspaceArea,
+    WorkspaceError,
+    WorkspaceErrorCode,
+    WorkspaceLayout,
+    WorkspaceManager,
+)
 from delta_lemmata.process_controller import (
     ProcessControllerError,
     ProcessControllerErrorCode,
+    ProcessEnvironmentProfile,
     ProcessLimit,
     ProcessOutcome,
     ProcessResult,
 )
-from delta_lemmata.recovery_receipt import RecoveryReceiptStore
+from delta_lemmata.recovery_receipt import (
+    RecoveryReceiptError,
+    RecoveryReceiptErrorCode,
+    RecoveryReceiptStore,
+)
 from delta_lemmata.session_identity import JobId, SessionCapability, workspace_component
 
 WORKER = Path(__file__).parent / "fixtures" / "synthetic_worker.py"
 APP = Path(__file__).parent / "fixtures" / "guardian_app.py"
 SECRET = b"guardian-app-loss-secret-v1-32bytes"
 OWNER_SECRET = b"guardian-job-owner-secret-v1-32bytes"
+RESULT_COMPONENT = "053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"
 
 
 def operation(number: int) -> str:
@@ -78,6 +95,7 @@ def controller(
     mode: str,
     *,
     profile: WorkerLimitProfile | None = None,
+    artifact_binding: GuardianArtifactBinding | None = None,
 ) -> tuple[
     GuardianController,
     WorkspaceManager,
@@ -125,11 +143,32 @@ def controller(
         owner_component=owner,
         job_component=component,
         receipt_store=receipts,
+        artifact_binding=artifact_binding,
     )
     return item, workspaces, layout, receipts, job_id
 
 
-def persist_terminal(item: GuardianController, result: ProcessResult) -> int:
+def scientific_receipt(payload: bytes, *, digest: str | None = None) -> ScientificResultReceipt:
+    return ScientificResultReceipt(
+        schema_version="scientific-result-receipt-v1",
+        request_id="request_" + "3" * 64,
+        request_sha256="4" * 64,
+        worker_version="stylo-worker-v1",
+        result_schema_version="stylo-worker-result-v1",
+        analysis_outcome="complete",
+        artifact_component=RESULT_COMPONENT,
+        byte_size=len(payload),
+        sha256=digest or hashlib.sha256(payload).hexdigest(),
+    )
+
+
+def persist_terminal(
+    item: GuardianController,
+    result: ProcessResult,
+    *,
+    expected_outcome: TerminalOutcome | None = None,
+    receipt: ScientificResultReceipt | None = None,
+) -> int:
     job = next(
         job
         for job in item._store.list_jobs_for_maintenance()
@@ -150,15 +189,37 @@ def persist_terminal(item: GuardianController, result: ProcessResult) -> int:
             at_utc=at_utc,
         )
         at_utc += timedelta(microseconds=1)
-    terminal = transition_execution(
-        job,
-        target=ExecutionState.TERMINAL,
-        outcome=guardian._terminal_outcome(result),
-        at_utc=at_utc,
-        tombstone_expires_at_utc=at_utc + timedelta(days=7),
-        expected_version=job.version,
-        operation_id=operation(91),
-    )
+    if receipt is None:
+        terminal = transition_execution(
+            job,
+            target=ExecutionState.TERMINAL,
+            outcome=expected_outcome or guardian._terminal_outcome(result),
+            at_utc=at_utc,
+            tombstone_expires_at_utc=at_utc + timedelta(days=7),
+            expected_version=job.version,
+            operation_id=operation(91),
+        )
+    else:
+        claimed = transition_scientific_execution_claim(
+            job,
+            expected_version=job.version,
+            operation_id=operation(89),
+        )
+        job = item._store.maintenance_compare_and_swap(
+            job_id=job.job_id,
+            expected_version=job.version,
+            updated=claimed,
+            at_utc=at_utc,
+        )
+        at_utc += timedelta(microseconds=1)
+        terminal = transition_scientific_success(
+            job,
+            receipt=receipt,
+            at_utc=at_utc,
+            tombstone_expires_at_utc=at_utc + timedelta(days=7),
+            expected_version=job.version,
+            operation_id=operation(91),
+        )
     saved = item._store.maintenance_compare_and_swap(
         job_id=job.job_id,
         expected_version=job.version,
@@ -204,6 +265,108 @@ def test_guardian_preserves_normal_content_free_results_without_cleanup(
     assert item.boundary == GUARDIAN_PROCESS_BOUNDARY
     assert layout.job.exists()
     assert receipts.read(job_id, operation(2)) is None
+
+
+def test_scientific_guardian_binds_terminal_receipt_to_retained_result(
+    tmp_path: Path,
+) -> None:
+    binding = GuardianArtifactBinding(
+        component=RESULT_COMPONENT,
+        maximum_bytes=1024,
+    )
+    item, workspaces, layout, receipts, job_id = controller(
+        tmp_path,
+        "success",
+        artifact_binding=binding,
+    )
+    item.start()
+    result = item.wait()
+    payload = b'{"validated":true}'
+    workspaces.create_file(layout, WorkspaceArea.RESULT, RESULT_COMPONENT, payload)
+    receipt = scientific_receipt(payload)
+    terminal_version = persist_terminal(item, result, receipt=receipt)
+
+    item.acknowledge_terminal_persisted(
+        expected_version=terminal_version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=receipt,
+    )
+    item.acknowledge_terminal_persisted(
+        expected_version=terminal_version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=receipt,
+    )
+
+    disposition = receipts.read(job_id, operation(2))
+    assert disposition is not None
+    assert disposition.outcome == "accepted"
+    assert disposition.terminal_version == terminal_version
+    assert disposition.terminal_outcome is TerminalOutcome.SUCCEEDED
+    assert disposition.artifact_sha256 == receipt.sha256
+    assert disposition.artifact_byte_size == receipt.byte_size
+    assert layout.job.exists()
+
+
+def test_scientific_guardian_accepts_validated_failure_despite_zero_exit(
+    tmp_path: Path,
+) -> None:
+    binding = GuardianArtifactBinding(component=RESULT_COMPONENT, maximum_bytes=1024)
+    item, _workspaces, layout, receipts, job_id = controller(
+        tmp_path,
+        "success",
+        artifact_binding=binding,
+    )
+    item.start()
+    result = item.wait()
+    terminal_version = persist_terminal(
+        item,
+        result,
+        expected_outcome=TerminalOutcome.FAILED,
+    )
+
+    item.acknowledge_terminal_persisted(
+        expected_version=terminal_version,
+        expected_outcome=TerminalOutcome.FAILED,
+    )
+
+    disposition = receipts.read(job_id, operation(2))
+    assert disposition is not None
+    assert disposition.outcome == "accepted"
+    assert disposition.terminal_outcome is TerminalOutcome.FAILED
+    assert disposition.artifact_sha256 is None
+    assert layout.job.exists()
+
+
+def test_scientific_guardian_rejects_digest_mismatch_and_recovers(
+    tmp_path: Path,
+) -> None:
+    binding = GuardianArtifactBinding(component=RESULT_COMPONENT, maximum_bytes=1024)
+    item, workspaces, layout, receipts, job_id = controller(
+        tmp_path,
+        "success",
+        artifact_binding=binding,
+    )
+    item.start()
+    result = item.wait()
+    payload = b'{"validated":true}'
+    workspaces.create_file(layout, WorkspaceArea.RESULT, RESULT_COMPONENT, payload)
+    receipt = scientific_receipt(payload, digest="f" * 64)
+    terminal_version = persist_terminal(item, result, receipt=receipt)
+
+    expect_error(
+        GuardianControllerErrorCode.CONTROL_FAILED,
+        lambda: item.acknowledge_terminal_persisted(
+            expected_version=terminal_version,
+            expected_outcome=TerminalOutcome.SUCCEEDED,
+            expected_result=receipt,
+        ),
+    )
+
+    disposition = receipts.read(job_id, operation(2))
+    assert disposition is not None
+    assert disposition.outcome == "recovery_required"
+    assert disposition.workspace_verified_absent
+    assert not layout.job.exists()
 
 
 def test_guardian_cancel_and_wall_timeout_reap_before_return(tmp_path: Path) -> None:
@@ -1220,3 +1383,372 @@ def test_constructor_rejects_type_confusion(tmp_path: Path) -> None:
             receipt_store=receipts,
         ),
     )
+
+
+@pytest.mark.parametrize(
+    ("component", "maximum_bytes"),
+    [
+        (cast(Any, 1), 1),
+        ("bad", 1),
+        (RESULT_COMPONENT, True),
+        (RESULT_COMPONENT, cast(Any, "1")),
+        (RESULT_COMPONENT, 0),
+        (RESULT_COMPONENT, 64 * 1024 * 1024 + 1),
+    ],
+)
+def test_scientific_artifact_binding_rejects_invalid_values(
+    component: str,
+    maximum_bytes: int,
+) -> None:
+    with pytest.raises(ValueError, match="invalid guardian artifact binding"):
+        GuardianArtifactBinding(component=component, maximum_bytes=maximum_bytes)
+
+
+def test_scientific_ack_parser_accepts_only_bound_terminal_frames() -> None:
+    digest = "d" * 64
+    assert guardian._parse_scientific_ack_line(f"A 3 succeeded {digest} 17\n".encode("ascii")) == (
+        3,
+        TerminalOutcome.SUCCEEDED,
+        digest,
+        17,
+    )
+    assert guardian._parse_scientific_ack_line(b"A 4 failed none 0\n") == (
+        4,
+        TerminalOutcome.FAILED,
+        None,
+        0,
+    )
+    invalid = (
+        b"\xff\n",
+        b"A 1 failed none\n",
+        b"A nope failed none 0\n",
+        b"A 1 unknown none 0\n",
+        b"A 1 failed none nope\n",
+        b"X 1 failed none 0\n",
+        b"A -1 failed none 0\n",
+        b"A 1 failed none -1\n",
+        b"A 1 failed bad 1\n",
+        b"A 1 failed none 1\n",
+        f"A 1 failed {digest} 0\n".encode("ascii"),
+        b"A 1 succeeded none 0\n",
+        f"A 1 failed {digest} 1\n".encode("ascii"),
+    )
+    for line in invalid:
+        with pytest.raises(ValueError):
+            guardian._parse_scientific_ack_line(line)
+
+
+def test_parent_ack_rejects_wrong_generic_and_scientific_commitments(tmp_path: Path) -> None:
+    (tmp_path / "generic").mkdir(mode=0o700)
+    generic, _workspaces, _layout, _receipts, _job_id = controller(
+        tmp_path / "generic",
+        "success",
+    )
+    generic.start()
+    process = generic.wait()
+    terminal_version = persist_terminal(generic, process)
+    expect_error(
+        GuardianControllerErrorCode.CONTROL_FAILED,
+        lambda: generic.acknowledge_terminal_persisted(
+            expected_version=terminal_version,
+            expected_outcome=TerminalOutcome.FAILED,
+        ),
+    )
+    expect_error(
+        GuardianControllerErrorCode.CONTROL_FAILED,
+        lambda: generic.acknowledge_terminal_persisted(
+            expected_version=terminal_version,
+            expected_result=scientific_receipt(b"x"),
+        ),
+    )
+    generic.acknowledge_terminal_persisted(expected_version=terminal_version)
+
+    binding = GuardianArtifactBinding(component=RESULT_COMPONENT, maximum_bytes=1024)
+    (tmp_path / "scientific").mkdir(mode=0o700)
+    scientific, workspaces, layout, _receipts, _job_id = controller(
+        tmp_path / "scientific",
+        "success",
+        artifact_binding=binding,
+    )
+    scientific.start()
+    process = scientific.wait()
+    payload = b"x"
+    workspaces.create_file(layout, WorkspaceArea.RESULT, RESULT_COMPONENT, payload)
+    receipt = scientific_receipt(payload)
+    invalid_calls = (
+        {"expected_version": 3},
+        {
+            "expected_version": 3,
+            "expected_outcome": TerminalOutcome.SUCCEEDED,
+        },
+        {
+            "expected_version": 3,
+            "expected_outcome": TerminalOutcome.FAILED,
+            "expected_result": receipt,
+        },
+        {
+            "expected_version": 3,
+            "expected_outcome": TerminalOutcome.SUCCEEDED,
+            "expected_result": receipt.model_copy(update={"artifact_component": "e" * 64}),
+        },
+        {
+            "expected_version": 3,
+            "expected_outcome": TerminalOutcome.SUCCEEDED,
+            "expected_result": receipt.model_copy(update={"byte_size": 2048}),
+        },
+    )
+    for arguments in invalid_calls:
+        expect_error(
+            GuardianControllerErrorCode.CONTROL_FAILED,
+            lambda arguments=arguments: scientific.acknowledge_terminal_persisted(**arguments),
+        )
+    terminal_version = persist_terminal(scientific, process, receipt=receipt)
+    scientific.acknowledge_terminal_persisted(
+        expected_version=terminal_version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=receipt,
+    )
+
+
+@pytest.mark.parametrize("proof_mode", ["false", "error"])
+def test_parent_fails_closed_when_acceptance_proof_is_unavailable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    proof_mode: str,
+) -> None:
+    binding = GuardianArtifactBinding(component=RESULT_COMPONENT, maximum_bytes=1024)
+    item, workspaces, layout, receipts, _job_id = controller(
+        tmp_path,
+        "success",
+        artifact_binding=binding,
+    )
+    item.start()
+    result = item.wait()
+    payload = b'{"validated":true}'
+    workspaces.create_file(layout, WorkspaceArea.RESULT, RESULT_COMPONENT, payload)
+    receipt = scientific_receipt(payload)
+    terminal_version = persist_terminal(item, result, receipt=receipt)
+
+    def unavailable(*_args: object, **_kwargs: object) -> bool:
+        if proof_mode == "error":
+            raise RecoveryReceiptError(RecoveryReceiptErrorCode.INVALID_RECORD)
+        return False
+
+    monkeypatch.setattr(RecoveryReceiptStore, "proves_acceptance", unavailable)
+    expect_error(
+        GuardianControllerErrorCode.CONTROL_FAILED,
+        lambda: item.acknowledge_terminal_persisted(
+            expected_version=terminal_version,
+            expected_outcome=TerminalOutcome.SUCCEEDED,
+            expected_result=receipt,
+        ),
+    )
+    disposition = receipts.read(fixed_job(), operation(2))
+    assert disposition is not None
+    assert disposition.outcome == "accepted"
+
+
+@pytest.mark.parametrize(
+    ("commands", "expected"),
+    [
+        (
+            f"A 3 succeeded {'d' * 64} 17\n".encode("ascii"),
+            (3, TerminalOutcome.SUCCEEDED, "d" * 64, 17),
+        ),
+        (b"CA 4 failed none 0\n", (4, TerminalOutcome.FAILED, None, 0)),
+        (b"bad\n", None),
+        (b"", None),
+        (b"x" * guardian._MAX_PROTOCOL_LINE, None),
+    ],
+)
+def test_scientific_ack_reader_is_bounded_and_fail_closed(
+    commands: bytes,
+    expected: tuple[int, TerminalOutcome, str | None, int] | None,
+) -> None:
+    read_fd, write_fd = os.pipe()
+    if commands:
+        os.write(write_fd, commands)
+    os.close(write_fd)
+    assert guardian._await_scientific_persistence_ack(read_fd) == expected
+    os.close(read_fd)
+
+
+def test_scientific_ack_reader_timeouts_fail_closed(monkeypatch: pytest.MonkeyPatch) -> None:
+    moments = iter((0.0, guardian._SCIENTIFIC_ACK_TIMEOUT_SECONDS + 1.0))
+    monkeypatch.setattr(time, "monotonic", lambda: next(moments))
+    assert guardian._await_scientific_persistence_ack(1) is None
+
+    monkeypatch.setattr(time, "monotonic", lambda: 0.0)
+    monkeypatch.setattr(guardian.select, "select", lambda *_args: ([], [], []))
+    assert guardian._await_scientific_persistence_ack(1) is None
+
+
+def test_scientific_artifact_match_rehashes_the_fixed_result(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    workspace_root = tmp_path / "workspaces"
+    workspace_root.mkdir(mode=0o700)
+    manager = WorkspaceManager(workspace_root)
+    owner = "a" * 64
+    job = "b" * 64
+    layout = manager.create(owner, job)
+    payload = b"validated-result"
+    manager.create_file(layout, WorkspaceArea.RESULT, RESULT_COMPONENT, payload)
+    binding = GuardianArtifactBinding(component=RESULT_COMPONENT, maximum_bytes=1024)
+    digest = hashlib.sha256(payload).hexdigest()
+    arguments = {
+        "workspace_root": workspace_root,
+        "owner_component": owner,
+        "job_component": job,
+        "binding": binding,
+    }
+    assert guardian._scientific_artifact_matches(
+        **arguments,
+        expected_digest=digest,
+        expected_size=len(payload),
+    )
+    assert not guardian._scientific_artifact_matches(
+        **arguments,
+        expected_digest="f" * 64,
+        expected_size=len(payload),
+    )
+    assert not guardian._scientific_artifact_matches(
+        **arguments,
+        expected_digest=digest,
+        expected_size=len(payload) + 1,
+    )
+    empty_job = "c" * 64
+    manager.create(owner, empty_job)
+    assert not guardian._scientific_artifact_matches(
+        **(arguments | {"job_component": empty_job}),
+        expected_digest=digest,
+        expected_size=len(payload),
+    )
+    assert not guardian._scientific_artifact_matches(
+        **(arguments | {"owner_component": "d" * 64}),
+        expected_digest=digest,
+        expected_size=len(payload),
+    )
+
+    def reject_read(*_args: object, **_kwargs: object) -> bytes | None:
+        raise WorkspaceError(WorkspaceErrorCode.READ_FAILED)
+
+    monkeypatch.setattr(WorkspaceManager, "read_file", reject_read)
+    assert not guardian._scientific_artifact_matches(
+        **arguments,
+        expected_digest=digest,
+        expected_size=len(payload),
+    )
+
+
+def test_private_scientific_guardian_accepts_or_recovers_exact_commitments(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def invoke(
+        name: str,
+        acknowledgement: tuple[int, TerminalOutcome, str | None, int] | None,
+        *,
+        artifact_matches: bool,
+    ) -> tuple[bytes, object]:
+        case_root = tmp_path / name
+        case_root.mkdir(mode=0o700)
+        workspace_root, receipt_root = roots(case_root)
+        identifier = fixed_job(ord(name[0]) % 250 + 1)
+        owner = f"{ord(name[-1]) % 16:x}" * 64
+        component = workspace_component(identifier)
+        WorkspaceManager(workspace_root).create(owner, component)
+        control_read, control_write = os.pipe()
+        result_read, result_write = os.pipe()
+        secret_read, secret_write = os.pipe()
+        os.write(secret_write, SECRET)
+        os.close(secret_write)
+        fake = Mock()
+        fake.process_group_id = 321
+        fake.start.return_value = None
+        process_controller = Mock(return_value=fake)
+        monkeypatch.setattr(guardian, "ProcessController", process_controller)
+        monkeypatch.setattr(
+            guardian,
+            "_guardian_wait",
+            Mock(return_value=(ProcessResult(ProcessOutcome.SUCCEEDED), False)),
+        )
+        monkeypatch.setattr(
+            guardian,
+            "_await_scientific_persistence_ack",
+            Mock(return_value=acknowledgement),
+        )
+        match = Mock(return_value=artifact_matches)
+        monkeypatch.setattr(guardian, "_scientific_artifact_matches", match)
+        arguments = [
+            guardian._GUARDIAN_MARKER,
+            str(control_read),
+            str(result_write),
+            str(secret_read),
+            identifier.to_urlsafe(),
+            str(workspace_root),
+            owner,
+            component,
+            str(receipt_root),
+            limits().model_dump_json(),
+            guardian._encoded_argv((sys.executable, str(WORKER.resolve()), "success")),
+            operation(2),
+            str(os.open(case_root, guardian._DIRECTORY_FLAGS)),
+            RESULT_COMPONENT,
+            "1024",
+            ProcessEnvironmentProfile.R_STYLO.value,
+        ]
+        previous_cwd = Path.cwd()
+        try:
+            assert guardian._run_guardian(arguments) == 0
+        finally:
+            os.chdir(previous_cwd)
+        assert process_controller.call_args.kwargs["environment_profile"] is (
+            ProcessEnvironmentProfile.R_STYLO
+        )
+        os.close(control_write)
+        protocol = os.read(result_read, 1024)
+        os.close(result_read)
+        disposition = RecoveryReceiptStore(receipt_root, signing_secret=SECRET).read(
+            identifier,
+            operation(2),
+        )
+        return protocol, disposition
+
+    digest = "d" * 64
+    protocol, accepted = invoke(
+        "success",
+        (3, TerminalOutcome.SUCCEEDED, digest, 17),
+        artifact_matches=True,
+    )
+    assert protocol == b"R 321\nF succeeded none\nA\n"
+    assert accepted is not None
+    assert accepted.outcome == "accepted"
+    assert accepted.artifact_sha256 == digest
+    assert accepted.artifact_byte_size == 17
+
+    protocol, accepted_failure = invoke(
+        "failure",
+        (4, TerminalOutcome.FAILED, None, 0),
+        artifact_matches=True,
+    )
+    assert protocol == b"R 321\nF succeeded none\nA\n"
+    assert accepted_failure is not None
+    assert accepted_failure.outcome == "accepted"
+    assert accepted_failure.artifact_sha256 is None
+    assert accepted_failure.artifact_byte_size is None
+
+    for name, acknowledgement, matches in (
+        ("missing", None, True),
+        ("digestless", (5, TerminalOutcome.SUCCEEDED, None, 0), True),
+        ("mismatch", (6, TerminalOutcome.SUCCEEDED, digest, 17), False),
+    ):
+        protocol, recovered = invoke(
+            name,
+            acknowledgement,
+            artifact_matches=matches,
+        )
+        assert protocol == b"R 321\nF succeeded none\nX\n"
+        assert recovered is not None
+        assert recovered.outcome == "recovery_required"

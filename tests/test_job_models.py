@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from datetime import UTC, datetime, timedelta, timezone
-from typing import Any
+from typing import Any, Literal, cast
 
 import pytest
 from pydantic import ValidationError
@@ -19,14 +19,19 @@ from delta_lemmata.job_models import (
     JobRecord,
     OperationConflictError,
     Outcome,
+    ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    confirm_scientific_result,
     new_staged_job,
     publish_export,
     request_cancellation,
     retire_export,
+    terminal_operation_version,
     transition_artifact,
     transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
     withdraw_export,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
@@ -38,6 +43,22 @@ OWNER_DIGEST = "2" * 64
 
 def _operation(number: int) -> str:
     return "op_" + f"{number:064x}"
+
+
+def _receipt(
+    analysis_outcome: Literal["complete", "partial"] = "complete",
+) -> ScientificResultReceipt:
+    return ScientificResultReceipt(
+        schema_version="scientific-result-receipt-v1",
+        request_id="request_" + "1" * 64,
+        request_sha256="2" * 64,
+        worker_version="stylo-worker-v1",
+        result_schema_version="stylo-worker-result-v1",
+        analysis_outcome=analysis_outcome,
+        artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
+        byte_size=4096,
+        sha256="3" * 64,
+    )
 
 
 def _job() -> JobRecord:
@@ -75,6 +96,15 @@ def _running() -> JobRecord:
     )
 
 
+def _scientific_running() -> JobRecord:
+    running = _running()
+    return transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=_operation(79),
+    )
+
+
 def _terminal(outcome: TerminalOutcome = TerminalOutcome.SUCCEEDED) -> JobRecord:
     job = _running()
     operation_number = 3
@@ -95,6 +125,46 @@ def _terminal(outcome: TerminalOutcome = TerminalOutcome.SUCCEEDED) -> JobRecord
         expected_version=job.version,
         operation_id=_operation(operation_number),
     )
+
+
+def test_terminal_operation_version_is_stable_across_later_operations() -> None:
+    assert terminal_operation_version(_running()) is None
+
+    terminal = _terminal()
+    assert terminal_operation_version(terminal) == terminal.version
+    cleaned = transition_artifact(
+        terminal,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.VERIFIED_ABSENT,
+        at_utc=NOW + timedelta(seconds=4),
+        expected_version=terminal.version,
+        operation_id=_operation(70),
+    )
+    assert terminal_operation_version(cleaned) == terminal.version
+
+    duplicate = cleaned.model_copy(
+        update={
+            "operations": (
+                *cleaned.operations,
+                AppliedOperation(
+                    operation_id=_operation(71),
+                    action="execution:terminal:succeeded",
+                ),
+            )
+        }
+    )
+    assert terminal_operation_version(duplicate) is None
+
+    scientific = _scientific_running()
+    scientific = transition_scientific_success(
+        scientific,
+        receipt=_receipt(),
+        at_utc=NOW + timedelta(seconds=3),
+        tombstone_expires_at_utc=NOW + timedelta(days=7),
+        expected_version=scientific.version,
+        operation_id=_operation(72),
+    )
+    assert terminal_operation_version(scientific) == scientific.version
 
 
 def test_new_staged_job_is_content_free_immutable_and_uses_absolute_deadlines() -> None:
@@ -345,6 +415,395 @@ def test_job_record_rejects_duplicate_operations_and_inconsistent_terminal_state
     payload["cancellation"] = Cancellation()
     with pytest.raises(ValidationError, match="requires a cancellation request"):
         JobRecord.model_validate(payload)
+
+
+@pytest.mark.parametrize("field_name", tuple(ScientificResultReceipt.model_fields))
+def test_scientific_result_receipt_requires_every_committed_field(field_name: str) -> None:
+    payload = _receipt().model_dump(mode="python")
+    del payload[field_name]
+    with pytest.raises(ValidationError):
+        ScientificResultReceipt.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    ("field_name", "invalid_value"),
+    [
+        ("schema_version", "scientific-result-receipt-v2"),
+        ("request_id", "request_short"),
+        ("request_sha256", "A" * 64),
+        ("worker_version", "stylo-worker-v2"),
+        ("result_schema_version", "stylo-worker-result-v2"),
+        ("analysis_outcome", "failed"),
+        ("artifact_component", "f" * 64),
+        ("byte_size", True),
+        ("byte_size", "4096"),
+        ("byte_size", 0),
+        ("byte_size", 32 * 1024 * 1024 + 1),
+        ("sha256", "short"),
+        ("unexpected", "payload"),
+    ],
+)
+def test_scientific_result_receipt_strictly_rejects_invalid_values(
+    field_name: str,
+    invalid_value: object,
+) -> None:
+    payload = _receipt().model_dump(mode="python")
+    payload[field_name] = invalid_value
+    with pytest.raises(ValidationError):
+        ScientificResultReceipt.model_validate(payload)
+
+
+def test_scientific_execution_claim_is_single_use_and_retry_idempotent() -> None:
+    running = _running()
+    claimed = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=_operation(79),
+    )
+
+    assert claimed.version == running.version + 1
+    assert claimed.operations[-1] == AppliedOperation(
+        operation_id=_operation(79),
+        action="scientific:execution:claimed",
+    )
+    assert (
+        transition_scientific_execution_claim(
+            claimed,
+            expected_version=running.version,
+            operation_id=_operation(79),
+        )
+        is claimed
+    )
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        transition_scientific_execution_claim(
+            claimed,
+            expected_version=claimed.version,
+            operation_id=_operation(78),
+        )
+
+    duplicated = claimed.model_dump(mode="python")
+    duplicated["operations"] = (
+        *claimed.operations,
+        AppliedOperation(
+            operation_id=_operation(77),
+            action="scientific:execution:claimed",
+        ),
+    )
+    with pytest.raises(ValidationError, match="claim requires one running execution"):
+        JobRecord.model_validate(duplicated)
+
+
+@pytest.mark.parametrize(
+    ("analysis_outcome", "commitment"),
+    [
+        ("complete", "4ee3ba989c2cdc8aca3e9ad4498b60e0f554a07cbae52d5bcf3a119621b587d0"),
+        ("partial", "afc2c731c78cf453145c1fc61232afa6b51dfd41e65a7b74c9089db7148e4a46"),
+    ],
+)
+def test_scientific_success_commits_the_exact_complete_or_partial_receipt(
+    analysis_outcome: Literal["complete", "partial"],
+    commitment: str,
+) -> None:
+    running = _scientific_running()
+    item = _receipt(analysis_outcome)
+    at_utc = NOW + timedelta(seconds=3)
+    tombstone = at_utc + timedelta(days=7)
+    terminal = transition_scientific_success(
+        running,
+        receipt=item,
+        at_utc=at_utc,
+        tombstone_expires_at_utc=tombstone,
+        expected_version=running.version,
+        operation_id=_operation(80),
+    )
+
+    assert terminal.execution.state is ExecutionState.TERMINAL
+    assert terminal.outcome == Outcome(
+        kind=TerminalOutcome.SUCCEEDED,
+        occurred_at_utc=at_utc,
+    )
+    assert terminal.scientific_result == item
+    assert terminal.scientific_result_confirmed is False
+    assert terminal.artifacts.result.state is CleanupState.PRESENT
+    assert terminal.artifacts.result.delete_by_utc == at_utc + timedelta(
+        seconds=DEFAULT_JOB_POLICY.result_ttl_seconds
+    )
+    assert terminal.operations[-1] == AppliedOperation(
+        operation_id=_operation(80),
+        action=f"scientific:terminal:succeeded:{commitment}",
+    )
+    assert (
+        transition_scientific_success(
+            terminal,
+            receipt=item,
+            at_utc=at_utc,
+            tombstone_expires_at_utc=tombstone,
+            expected_version=running.version,
+            operation_id=_operation(80),
+        )
+        is terminal
+    )
+    confirmed = confirm_scientific_result(
+        terminal,
+        expected_version=terminal.version,
+        operation_id=_operation(85),
+    )
+    assert confirmed.scientific_result_confirmed is True
+    assert confirmed.operations[-1] == AppliedOperation(
+        operation_id=_operation(85),
+        action=f"scientific:guardian:confirmed:{commitment}",
+    )
+    assert (
+        confirm_scientific_result(
+            confirmed,
+            expected_version=terminal.version,
+            operation_id=_operation(85),
+        )
+        is confirmed
+    )
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        confirm_scientific_result(
+            confirmed,
+            expected_version=confirmed.version,
+            operation_id=_operation(86),
+        )
+
+
+@pytest.mark.parametrize(
+    ("field_name", "replacement"),
+    [
+        ("schema_version", "scientific-result-receipt-v2"),
+        ("request_id", "request_" + "9" * 64),
+        ("request_sha256", "4" * 64),
+        ("worker_version", "stylo-worker-v2"),
+        ("result_schema_version", "stylo-worker-result-v2"),
+        ("analysis_outcome", "partial"),
+        ("artifact_component", "5" * 64),
+        ("byte_size", 4097),
+        ("sha256", "6" * 64),
+    ],
+)
+def test_scientific_success_same_operation_rejects_any_receipt_difference(
+    field_name: str,
+    replacement: object,
+) -> None:
+    running = _scientific_running()
+    item = _receipt()
+    at_utc = NOW + timedelta(seconds=3)
+    tombstone = at_utc + timedelta(days=7)
+    terminal = transition_scientific_success(
+        running,
+        receipt=item,
+        at_utc=at_utc,
+        tombstone_expires_at_utc=tombstone,
+        expected_version=running.version,
+        operation_id=_operation(81),
+    )
+    different = item.model_copy(update={field_name: replacement})
+
+    with pytest.raises(OperationConflictError, match="JOB_OPERATION_CONFLICT"):
+        transition_scientific_success(
+            terminal,
+            receipt=different,
+            at_utc=at_utc,
+            tombstone_expires_at_utc=tombstone,
+            expected_version=terminal.version,
+            operation_id=_operation(81),
+        )
+
+
+def test_scientific_success_rejects_wrong_receipt_type_and_nonrunning_job() -> None:
+    running = _scientific_running()
+    at_utc = NOW + timedelta(seconds=3)
+    tombstone = at_utc + timedelta(days=7)
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        transition_scientific_success(
+            running,
+            receipt=cast(Any, object()),
+            at_utc=at_utc,
+            tombstone_expires_at_utc=tombstone,
+            expected_version=running.version,
+            operation_id=_operation(83),
+        )
+    unclaimed = _running()
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        transition_scientific_success(
+            unclaimed,
+            receipt=_receipt(),
+            at_utc=at_utc,
+            tombstone_expires_at_utc=tombstone,
+            expected_version=unclaimed.version,
+            operation_id=_operation(89),
+        )
+    staged = _job()
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        transition_scientific_success(
+            staged,
+            receipt=_receipt(),
+            at_utc=at_utc,
+            tombstone_expires_at_utc=tombstone,
+            expected_version=staged.version,
+            operation_id=_operation(84),
+        )
+
+    claimed = _scientific_running()
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        transition_execution(
+            claimed,
+            target=ExecutionState.TERMINAL,
+            outcome=TerminalOutcome.SUCCEEDED,
+            at_utc=at_utc,
+            tombstone_expires_at_utc=tombstone,
+            expected_version=claimed.version,
+            operation_id=_operation(90),
+        )
+    failed = transition_execution(
+        claimed,
+        target=ExecutionState.TERMINAL,
+        outcome=TerminalOutcome.FAILED,
+        at_utc=at_utc,
+        tombstone_expires_at_utc=tombstone,
+        expected_version=claimed.version,
+        operation_id=_operation(91),
+    )
+    forged_success = failed.model_dump(mode="python")
+    forged_success["outcome"]["kind"] = TerminalOutcome.SUCCEEDED
+    with pytest.raises(ValidationError, match="cannot succeed without a result receipt"):
+        JobRecord.model_validate(forged_success)
+
+
+def test_pending_scientific_result_cannot_publish_export_before_confirmation() -> None:
+    running = _scientific_running()
+    terminal_at = NOW + timedelta(seconds=3)
+    current = transition_scientific_success(
+        running,
+        receipt=_receipt(),
+        at_utc=terminal_at,
+        tombstone_expires_at_utc=terminal_at + timedelta(days=7),
+        expected_version=running.version,
+        operation_id=_operation(100),
+    )
+    for number, kind in enumerate((ArtifactKind.INPUT, ArtifactKind.WORK), start=101):
+        current = transition_artifact(
+            current,
+            kind=kind,
+            target=CleanupState.VERIFIED_ABSENT,
+            at_utc=terminal_at + timedelta(seconds=1),
+            expected_version=current.version,
+            operation_id=_operation(number),
+        )
+    current = transition_artifact(
+        current,
+        kind=ArtifactKind.EXPORT,
+        target=CleanupState.PRESENT,
+        at_utc=terminal_at + timedelta(seconds=1),
+        delete_by_utc=terminal_at + timedelta(seconds=DEFAULT_JOB_POLICY.export_ttl_seconds),
+        expected_version=current.version,
+        operation_id=_operation(103),
+    )
+
+    assert current.can_publish_export is False
+    confirmed = confirm_scientific_result(
+        current,
+        expected_version=current.version,
+        operation_id=_operation(104),
+    )
+    assert confirmed.can_publish_export is True
+
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        confirm_scientific_result(
+            _terminal(),
+            expected_version=_terminal().version,
+            operation_id=_operation(105),
+        )
+
+
+def test_job_record_rejects_forged_missing_or_mismatched_scientific_operations() -> None:
+    running = _scientific_running()
+    terminal = transition_scientific_success(
+        running,
+        receipt=_receipt(),
+        at_utc=NOW + timedelta(seconds=3),
+        tombstone_expires_at_utc=NOW + timedelta(days=7),
+        expected_version=running.version,
+        operation_id=_operation(82),
+    )
+
+    missing_operation = terminal.model_dump(mode="python")
+    missing_operation["operations"] = terminal.operations[:-1]
+    with pytest.raises(ValidationError, match="committed successful scientific transition"):
+        JobRecord.model_validate(missing_operation)
+
+    missing_claim = terminal.model_dump(mode="python")
+    missing_claim["operations"] = tuple(
+        operation
+        for operation in terminal.operations
+        if operation.action != "scientific:execution:claimed"
+    )
+    with pytest.raises(ValidationError, match="committed successful scientific transition"):
+        JobRecord.model_validate(missing_claim)
+
+    forged_operation = terminal.model_dump(mode="python")
+    forged_operation["operations"] = (
+        *terminal.operations[:-1],
+        terminal.operations[-1].model_copy(
+            update={"action": "scientific:terminal:succeeded:" + "f" * 64}
+        ),
+    )
+    with pytest.raises(ValidationError, match="committed successful scientific transition"):
+        JobRecord.model_validate(forged_operation)
+
+    mismatched_receipt = terminal.model_dump(mode="python")
+    mismatched_receipt["scientific_result"] = _receipt("partial")
+    with pytest.raises(ValidationError, match="committed successful scientific transition"):
+        JobRecord.model_validate(mismatched_receipt)
+
+    missing_receipt = terminal.model_dump(mode="python")
+    missing_receipt["scientific_result"] = None
+    with pytest.raises(ValidationError, match="cannot succeed without a result receipt"):
+        JobRecord.model_validate(missing_receipt)
+
+    transition_without_receipt = _terminal().model_dump(mode="python")
+    transition_without_receipt["operations"] = (
+        *_terminal().operations,
+        AppliedOperation(
+            operation_id=_operation(106),
+            action="scientific:terminal:succeeded:" + "f" * 64,
+        ),
+    )
+    with pytest.raises(ValidationError, match="scientific transition requires"):
+        JobRecord.model_validate(transition_without_receipt)
+
+    forged_result = _terminal().model_dump(mode="python")
+    forged_result["scientific_result"] = _receipt()
+    with pytest.raises(ValidationError, match="committed successful scientific transition"):
+        JobRecord.model_validate(forged_result)
+
+    confirmation_without_result = _terminal().model_dump(mode="python")
+    confirmation_without_result["scientific_result_confirmed"] = True
+    with pytest.raises(ValidationError, match="confirmation requires a result receipt"):
+        JobRecord.model_validate(confirmation_without_result)
+
+    confirmed = confirm_scientific_result(
+        terminal,
+        expected_version=terminal.version,
+        operation_id=_operation(87),
+    )
+    missing_confirmation = confirmed.model_dump(mode="python")
+    missing_confirmation["operations"] = confirmed.operations[:-1]
+    with pytest.raises(ValidationError, match="exact guardian commitment"):
+        JobRecord.model_validate(missing_confirmation)
+
+    forged_confirmation = terminal.model_dump(mode="python")
+    forged_confirmation["operations"] = (
+        *terminal.operations,
+        AppliedOperation(
+            operation_id=_operation(88),
+            action="scientific:guardian:confirmed:" + "f" * 64,
+        ),
+    )
+    with pytest.raises(ValidationError, match="guardian confirmation requires"):
+        JobRecord.model_validate(forged_confirmation)
 
 
 def test_execution_legal_path_increments_version_and_is_idempotent() -> None:

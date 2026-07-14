@@ -17,6 +17,7 @@ from delta_lemmata.job_models import (
     JobRecord,
     TerminalOutcome,
     VersionConflictError,
+    confirm_scientific_result,
     publish_export,
     retire_export,
     transition_artifact,
@@ -34,6 +35,10 @@ from delta_lemmata.job_workspace import (
     WorkspaceError,
     WorkspaceLayout,
     WorkspaceManager,
+)
+from delta_lemmata.recovery_receipt import (
+    RecoveryReceiptStore,
+    ScientificRecoveryDisposition,
 )
 from delta_lemmata.session_identity import JobId, workspace_component
 
@@ -59,6 +64,9 @@ class JanitorRunReport:
     deletion_events_recorded: int
     purge: StorePurgeReport
     untracked_workspaces_removed: int = 0
+    scientific_results_recovered: int = 0
+    scientific_results_confirmed: int = 0
+    scientific_recovery_unresolved: int = 0
 
 
 def _operation_id(job: JobRecord, action: str, at_utc: datetime) -> str:
@@ -83,18 +91,24 @@ class JobJanitor:
         workspaces: WorkspaceManager,
         clock: Clock,
         policy: JobPolicy = DEFAULT_JOB_POLICY,
+        recovery_receipts: RecoveryReceiptStore | None = None,
     ) -> None:
         if (
             not isinstance(store, SQLiteJobStore)
             or not isinstance(workspaces, WorkspaceManager)
             or not hasattr(clock, "now")
             or not isinstance(policy, JobPolicy)
+            or (
+                recovery_receipts is not None
+                and not isinstance(recovery_receipts, RecoveryReceiptStore)
+            )
         ):
             raise ValueError("JOB_JANITOR_INVALID_CONFIGURATION")
         self._store = store
         self._workspaces = workspaces
         self._clock = clock
         self._policy = policy
+        self._recovery_receipts = recovery_receipts
 
     def run_once(self) -> JanitorRunReport:
         """Apply every deadline due at the current clock instant exactly once."""
@@ -219,6 +233,9 @@ class JobJanitor:
             "exports_published": 0,
             "workspaces_removed": 0,
             "deletion_events_recorded": 0,
+            "scientific_results_confirmed": 0,
+            "scientific_results_recovered": 0,
+            "scientific_recovery_unresolved": 0,
         }
         jobs = self._store.list_jobs_for_maintenance()
         workspace_absent: set[str] = set()
@@ -252,8 +269,52 @@ class JobJanitor:
                             else DeletionReason.QUEUE_EXPIRED
                         )
                 if job.execution.state is ExecutionState.TERMINAL:
-                    reason = reason_overrides.get(job.job_id)
-                    job = self._maintain_terminal(job, now, reason, counters)
+                    pending_scientific_result = (
+                        job.scientific_result is not None
+                        and not job.scientific_result_confirmed
+                        and job.artifacts.result.state is CleanupState.PRESENT
+                    )
+                    disposition = ScientificRecoveryDisposition.UNRESOLVED
+                    if pending_scientific_result and self._recovery_receipts is not None:
+                        try:
+                            disposition = self._recovery_receipts.scientific_disposition(
+                                job,
+                                at_utc=now,
+                            )
+                        except Exception:
+                            disposition = ScientificRecoveryDisposition.UNRESOLVED
+                    if disposition is ScientificRecoveryDisposition.ACCEPTED:
+                        confirmed = confirm_scientific_result(
+                            job,
+                            expected_version=job.version,
+                            operation_id=_operation_id(
+                                job,
+                                "scientific:guardian:confirm",
+                                now,
+                            ),
+                        )
+                        job = self._store.maintenance_compare_and_swap(
+                            job_id=job.job_id,
+                            expected_version=job.version,
+                            updated=confirmed,
+                            at_utc=now,
+                        )
+                        counters["scientific_results_confirmed"] += 1
+                        pending_scientific_result = False
+                    if disposition is ScientificRecoveryDisposition.RECOVERY_REQUIRED:
+                        job = self._cleanup_unsuccessful(
+                            job,
+                            now,
+                            DeletionReason.STARTUP_RECOVERY,
+                            counters,
+                        )
+                        counters["scientific_results_recovered"] += 1
+                    elif pending_scientific_result:
+                        counters["scientific_recovery_unresolved"] += 1
+                        job = self._cleanup_success(job, now, counters)
+                    else:
+                        reason = reason_overrides.get(job.job_id)
+                        job = self._maintain_terminal(job, now, reason, counters)
                     if self._layout(job) is None:
                         workspace_absent.add(job.job_id)
             except WorkspaceError:
@@ -277,6 +338,9 @@ class JobJanitor:
             workspaces_removed=counters["workspaces_removed"],
             deletion_events_recorded=counters["deletion_events_recorded"],
             purge=purge,
+            scientific_results_recovered=counters["scientific_results_recovered"],
+            scientific_results_confirmed=counters["scientific_results_confirmed"],
+            scientific_recovery_unresolved=counters["scientific_recovery_unresolved"],
         )
 
     def _maintain_terminal(
@@ -535,4 +599,8 @@ class JobJanitor:
         return self._workspaces.load_optional(job.owner_digest, workspace_component(job_id))
 
 
-__all__ = ["JanitorRunReport", "JobJanitor", "RunningRecovery"]
+__all__ = [
+    "JanitorRunReport",
+    "JobJanitor",
+    "RunningRecovery",
+]

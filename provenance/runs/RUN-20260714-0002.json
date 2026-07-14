@@ -1,0 +1,213 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260714-0002",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P006"
+  ],
+  "started_at_utc": "2026-07-14T01:55:54Z",
+  "ended_at_utc": "2026-07-14T02:05:39Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "c6a07e1b62440d56feabf76fd7c58e4b58b63477",
+  "environment": {
+    "os": "GitHub-hosted Ubuntu 24.04",
+    "architecture": "x86_64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "jsonlite": "2.0.0",
+    "locale": "C.UTF-8",
+    "timezone": "UTC",
+    "oracle_network": "none",
+    "oracle_run_count": 2,
+    "built_image_id": "sha256:73bbf04a2eacd059f1b1b9f319f3645c0a1d552aafb4ac0cbe4a0129d182eabc",
+    "normal_source_ci_run": "29299641848",
+    "normal_source_ci_verify_job": "86980527225",
+    "normal_source_ci_container_job": "86980527228",
+    "capture_workflow_run": "29299793944",
+    "capture_job": "86980971428",
+    "capture_verify_job": "86980971766",
+    "capture_container_job": "86980971385",
+    "transport_schema": "p006-log-transport-v1",
+    "transport_envelope_sha256": "c94f84b3eb341fc0b16e8bee134f32841080f24ac35d333c838950501db4216c",
+    "transport_chunk_count": 137,
+    "transport_envelope_bytes": 78355,
+    "evidence_commit": "42fe09b690d953fbcf45fcf48fa6d8f462fb8251",
+    "evidence_publication_ci_run": "29300077689",
+    "evidence_publication_ci_verify_job": "86981809318",
+    "evidence_publication_ci_container_job": "86981809317"
+  },
+  "command": "GitHub Actions workflow .github/workflows/ci.yml at c6a07e1b62440d56feabf76fd7c58e4b58b63477: normal source run 29299641848 and manual capture run 29299793944; fail-closed local extraction; evidence commit 42fe09b690d953fbcf45fcf48fa6d8f462fb8251; publication CI run 29300077689",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "3a3b56578fd678248dce7d0583b0220fada39c16b8db9b5233ed0c7ae300c265"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "8935705128aa80032c0cc3b43b0b13c501fd4b9cddcbd28f222530a85805c1b5"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "schemas/direct-stylo-oracle-v1.schema.json",
+      "sha256": "8adca72f556ab3e1c46d800bdab889e9de5f5ba769b23d86dd6caa15729519e2"
+    },
+    {
+      "path": "scripts/freeze_p006_oracle.py",
+      "sha256": "3b2cd964cf142ba28709bbd4b6078b66098da67f10881631f194d91e0487dae1"
+    },
+    {
+      "path": "scripts/generate_p006_fixtures_v2.py",
+      "sha256": "dfe4af662aadcb71012e8e3e50675ba6e52a04bbd73b70a641ffb71398f1faa1"
+    },
+    {
+      "path": "scripts/oracles/p006-direct-stylo-v1.R",
+      "sha256": "61c08e25831a54df6bb25a3f96ce90908be181241bcc3165d09f1be8773e0630"
+    },
+    {
+      "path": "scripts/p006_log_transport.py",
+      "sha256": "fe45c53649ae70061cd24a3d17eb9d7efe215e5757637d4284c427984880edd4"
+    },
+    {
+      "path": "scripts/validate_p006_fixture_v2.py",
+      "sha256": "407620528c9b2662b831d53a18d2590bb6a24ee7bc65deee77663cb756b22a29"
+    },
+    {
+      "path": "scripts/validate_p006_oracle_outputs.py",
+      "sha256": "ef8850cbd5abe6fa59bf3f85ba0cf76d55870f12a52e6961293df5e5a6c5d1ce"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "125cd3207cd27fac78c93df75f7a3a6e207e3bb17bc5bc5f9055e0df303010bc"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_contracts.py",
+      "sha256": "a85d1c76302fa705556ea793ae5e3f23814df6c5abb4964d078e320a55dad383"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/LICENSE",
+      "sha256": "3fd1bdd2f50ee0d1f3b2cbec65d0f3075ceaa8a76d67fa71719a921995b5ebdd"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/fixture-manifest.json",
+      "sha256": "1b642c51e0573f8d253050e1fbd80cb8e22ce238ee6007a2af2497393f8138a8"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub-hosted Ubuntu 24.04 checkout at exact source commit c6a07e1b62440d56feabf76fd7c58e4b58b63477",
+    "command": "GitHub Actions workflow .github/workflows/ci.yml at c6a07e1b62440d56feabf76fd7c58e4b58b63477: normal source run 29299641848 and manual capture run 29299793944; fail-closed local extraction; evidence commit 42fe09b690d953fbcf45fcf48fa6d8f462fb8251; publication CI run 29300077689",
+    "limitations": [
+      "The GitHub-hosted runner image is named but not represented by an immutable runner-image digest; the base image, R, packages, Python, uv, actions, source commit, built image ID, and generated evidence are separately bound.",
+      "Dependency restoration and image construction used network access; both scientific oracle executions used no network, a read-only root filesystem, fixed locale and timezone, and bounded resources.",
+      "The built OCI image is identified by SHA-256 but is not retained, so replay requires rebuilding it from the bound source and digest-pinned base image.",
+      "The job-log transport is retained by GitHub according to platform log-retention policy. The final six-file evidence package is retained in Git and validated without requiring future access to that log.",
+      "The first local extraction attempt correctly rejected the macOS /tmp symlink. Extraction from the real /private/tmp parent passed without relaxing the path policy.",
+      "This run covers only the named CC0 adversarial whole-text fixtures and independent direct-stylo outputs. It contains no fixed-worker comparison, real corpus, preprocessing, benchmark, public workflow, production-isolation, or general reproducibility result."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "3a3b56578fd678248dce7d0583b0220fada39c16b8db9b5233ed0c7ae300c265"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "8935705128aa80032c0cc3b43b0b13c501fd4b9cddcbd28f222530a85805c1b5"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "schemas/direct-stylo-oracle-v1.schema.json",
+      "sha256": "8adca72f556ab3e1c46d800bdab889e9de5f5ba769b23d86dd6caa15729519e2"
+    },
+    {
+      "path": "scripts/freeze_p006_oracle.py",
+      "sha256": "3b2cd964cf142ba28709bbd4b6078b66098da67f10881631f194d91e0487dae1"
+    },
+    {
+      "path": "scripts/generate_p006_fixtures_v2.py",
+      "sha256": "dfe4af662aadcb71012e8e3e50675ba6e52a04bbd73b70a641ffb71398f1faa1"
+    },
+    {
+      "path": "scripts/oracles/p006-direct-stylo-v1.R",
+      "sha256": "61c08e25831a54df6bb25a3f96ce90908be181241bcc3165d09f1be8773e0630"
+    },
+    {
+      "path": "scripts/p006_log_transport.py",
+      "sha256": "fe45c53649ae70061cd24a3d17eb9d7efe215e5757637d4284c427984880edd4"
+    },
+    {
+      "path": "scripts/validate_p006_fixture_v2.py",
+      "sha256": "407620528c9b2662b831d53a18d2590bb6a24ee7bc65deee77663cb756b22a29"
+    },
+    {
+      "path": "scripts/validate_p006_oracle_outputs.py",
+      "sha256": "ef8850cbd5abe6fa59bf3f85ba0cf76d55870f12a52e6961293df5e5a6c5d1ce"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "125cd3207cd27fac78c93df75f7a3a6e207e3bb17bc5bc5f9055e0df303010bc"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_contracts.py",
+      "sha256": "a85d1c76302fa705556ea793ae5e3f23814df6c5abb4964d078e320a55dad383"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/LICENSE",
+      "sha256": "3fd1bdd2f50ee0d1f3b2cbec65d0f3075ceaa8a76d67fa71719a921995b5ebdd"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/fixture-manifest.json",
+      "sha256": "1b642c51e0573f8d253050e1fbd80cb8e22ce238ee6007a2af2497393f8138a8"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/normalization-base.input.json",
+      "sha256": "3d2f24d47dbfdab20cbaa0fb767503039cbd4bd642f7a2f4e95f275e932ce8cf"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/normalization-canary.input.json",
+      "sha256": "13fe22e907f39188f14e39e188b27d93bca6f8928c4e6fb6ecfc57c72888a0cb"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/order-permutation.input.json",
+      "sha256": "0daa6da49635e7ea5568c98c30d67dc7d6b99c462b8026c61ecda207491ebf08"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P006/oracle-v2/direct-reference/normalization-base.direct.json",
+      "sha256": "54a819d6d1fcf013169b9da150af9a93d55084a71bd416b99f82bb631095021c"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v2/direct-reference/normalization-canary.direct.json",
+      "sha256": "de659155f0825047c408ec18fa2113de2085ac2228ad1735b65e2e5233a1f98c"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v2/direct-reference/order-permutation.direct.json",
+      "sha256": "98413a403a20de7928a51fceb96f8c648544d881ffe642aeb4318e18e820fb4a"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v2/oracle-freeze.json",
+      "sha256": "25beaf3cf15117a12e4a3ef284bba2f8db8746d4ccbd83e8195b22e47c94f8ef"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v2/oracle-freeze.sha256",
+      "sha256": "cf085c9db2d92c6d29922fe827c3d450f55279f0237a6e772e77bf5c4602ab74"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v2/session-info.json",
+      "sha256": "7016cf083b10e3dce8e9e6759ea02247d01e09d6c33b0fce4b501199bf03a1b0"
+    }
+  ],
+  "notes": "Exact source c6a07e1 passed normal Linux CI and a separate manual read-only capture. The canonical Linux amd64 image loaded R 4.5.2, stylo 0.7.71, and jsonlite 2.0.0; the independent direct-stylo oracle ran twice without network and produced byte-identical outputs. V2 validation confirmed unequal-total normalization sensitivity, explicit interleaved roles, two-unknown canary invariance for all known fitting artifacts and known-known distances, full order-permutation equivariance by document ID, and separation from a raw-count counterfactual for every fit and distance family. The first artifact-based dispatch failed only at GitHub quota transport and published nothing. The successful capture used a canonical SHA-256-bound job-log envelope, which was independently extracted and validated before evidence-only commit 42fe09b; that commit then passed normal publication CI. This freezes an adversarial fixture-local oracle prerequisite, not fixed-worker parity or P006 acceptance."
+}

@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P005 Job Lifecycle, Isolation, and Retention tamamlandı, P006 henüz açılmadı
+**Durum:** Kanonik; P001-P006 tamamlandı, sıradaki planlanan ticket P007
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P005 lifecycle ve application-managed retention mekanizması doğrulandı; bilimsel R/stylo worker ve analiz henüz uygulanmadı
+**Aşama:** P006 fixed worker, fixture-local parity, retained Linux evidence, exact-commit CI ve clean-clone kapılarıyla tamamlandı; P007 henüz açılmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.
@@ -659,7 +659,9 @@ P001 çıktıları:
 - Kilitli Python/R ortamları, metadata, provenance şemaları ve CI/security scaffold'u
 - Temiz Git klonunda tek komut bootstrap ve 24 testlik doğrulama
 - Machine-readable Ticket, PromptEvent, HumanDecision ve Run kayıtları
-- Açık sınırlamalar: Docker build/CI remote çalışması ve gerçek `stylo` parity henüz doğrulanmadı
+- P001 checkpointindeki tarihsel sınırlamalar: Docker build/CI remote çalışması ve
+  gerçek `stylo` parity henüz doğrulanmamıştı; ikisi de sonraki ticket'larda dar
+  acceptance sınırlarıyla kapatıldı
 
 P002 çıktıları:
 

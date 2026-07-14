@@ -36,6 +36,24 @@ _CLEAN_WORKER_ENVIRONMENT = {
     "PYTHONHASHSEED": "0",
     "TZ": "UTC",
 }
+_R_STYLO_WORKER_ENVIRONMENT = {
+    "LANG": "C.UTF-8",
+    "LC_COLLATE": "C.UTF-8",
+    "LC_CTYPE": "C.UTF-8",
+    "LC_NUMERIC": "C",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "MKL_NUM_THREADS": "1",
+    "RENV_CONFIG_LOCKING_ENABLED": "FALSE",
+    "RENV_CONFIG_SANDBOX_ENABLED": "FALSE",
+    "RENV_CONFIG_STARTUP_QUIET": "TRUE",
+    "RENV_CONFIG_SYNCHRONIZED_CHECK": "FALSE",
+    "RENV_PATHS_CACHE": "/opt/renv/cache",
+    "R_ENVIRON_USER": "/dev/null",
+    "R_PROFILE_USER": "/dev/null",
+    "TZ": "UTC",
+    "VECLIB_MAXIMUM_THREADS": "1",
+}
 _CONTROL_ENVIRONMENT = {"LC_ALL": "C"}
 _MONITOR_INTERVAL_SECONDS = 0.025
 _PS_TIMEOUT_SECONDS = 1.0
@@ -66,6 +84,13 @@ class ProcessLimit(StrEnum):
     CPU = "cpu"
     MEMORY = "memory"
     PROCESSES = "processes"
+
+
+class ProcessEnvironmentProfile(StrEnum):
+    """Closed target environments selected only by trusted application code."""
+
+    SYNTHETIC = "synthetic"
+    R_STYLO = "r_stylo"
 
 
 @dataclass(frozen=True, slots=True)
@@ -137,6 +162,7 @@ def _launcher_argv(
     argv: tuple[str, ...],
     limits: WorkerLimitProfile,
     cwd_descriptor: int,
+    environment_profile: ProcessEnvironmentProfile,
 ) -> tuple[str, ...]:
     return (
         sys.executable,
@@ -146,22 +172,30 @@ def _launcher_argv(
         str(limits.cpu_time_seconds),
         str(limits.memory_bytes),
         str(cwd_descriptor),
+        environment_profile.value,
         *argv,
     )
+
+
+def _target_environment(profile: ProcessEnvironmentProfile) -> dict[str, str]:
+    if profile is ProcessEnvironmentProfile.R_STYLO:
+        return _R_STYLO_WORKER_ENVIRONMENT
+    return _CLEAN_WORKER_ENVIRONMENT
 
 
 def _run_launcher(arguments: list[str]) -> NoReturn:
     """Set limits after fork in a single-threaded interpreter, then replace it."""
 
-    if len(arguments) < 5 or arguments[0] != _LAUNCHER_MARKER:
+    if len(arguments) < 6 or arguments[0] != _LAUNCHER_MARKER:
         raise SystemExit(126)
     try:
         cpu_time_seconds = int(arguments[1])
         memory_bytes = int(arguments[2])
         cwd_descriptor = int(arguments[3])
+        environment_profile = ProcessEnvironmentProfile(arguments[4])
     except ValueError:
         raise SystemExit(126) from None
-    target = tuple(arguments[4:])
+    target = tuple(arguments[5:])
     if (
         cpu_time_seconds <= 0
         or memory_bytes <= 0
@@ -174,7 +208,7 @@ def _run_launcher(arguments: list[str]) -> NoReturn:
         os.fchdir(cwd_descriptor)
         os.close(cwd_descriptor)
         _apply_worker_limits(cpu_time_seconds, memory_bytes)
-        os.execve(target[0], target, _CLEAN_WORKER_ENVIRONMENT)
+        os.execve(target[0], target, _target_environment(environment_profile))
     except (OSError, ValueError):
         raise SystemExit(126) from None
 
@@ -286,11 +320,18 @@ class ProcessController:
         argv: tuple[str, ...],
         cwd: Path,
         limits: WorkerLimitProfile,
+        environment_profile: ProcessEnvironmentProfile = ProcessEnvironmentProfile.SYNTHETIC,
     ) -> None:
-        self._cwd_identity = self._validate_configuration(argv=argv, cwd=cwd, limits=limits)
+        self._cwd_identity = self._validate_configuration(
+            argv=argv,
+            cwd=cwd,
+            limits=limits,
+            environment_profile=environment_profile,
+        )
         self._argv = argv
         self._cwd = cwd
         self._limits = limits
+        self._environment_profile = environment_profile
         self._ps_path = _find_ps()
         self._condition = threading.Condition(threading.Lock())
         self._started = False
@@ -307,10 +348,13 @@ class ProcessController:
         argv: tuple[str, ...],
         cwd: Path,
         limits: WorkerLimitProfile,
+        environment_profile: ProcessEnvironmentProfile = ProcessEnvironmentProfile.SYNTHETIC,
     ) -> tuple[int, int]:
         if os.name != "posix" or not hasattr(os, "killpg"):
             raise ProcessControllerError(ProcessControllerErrorCode.POSIX_REQUIRED)
-        if not isinstance(limits, WorkerLimitProfile):
+        if not isinstance(limits, WorkerLimitProfile) or not isinstance(
+            environment_profile, ProcessEnvironmentProfile
+        ):
             raise ProcessControllerError(ProcessControllerErrorCode.INVALID_CONFIGURATION)
         if (
             not isinstance(argv, tuple)
@@ -363,7 +407,12 @@ class ProcessController:
                 ):
                     raise OSError
                 process = subprocess.Popen(
-                    _launcher_argv(self._argv, self._limits, cwd_descriptor),
+                    _launcher_argv(
+                        self._argv,
+                        self._limits,
+                        cwd_descriptor,
+                        self._environment_profile,
+                    ),
                     shell=False,
                     stdin=subprocess.DEVNULL,
                     stdout=subprocess.DEVNULL,
@@ -705,6 +754,7 @@ __all__ = [
     "ProcessController",
     "ProcessControllerError",
     "ProcessControllerErrorCode",
+    "ProcessEnvironmentProfile",
     "ProcessLimit",
     "ProcessOutcome",
     "ProcessResult",

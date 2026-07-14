@@ -32,6 +32,7 @@ class WorkspaceErrorCode(StrEnum):
     INVALID_LAYOUT = "WORKSPACE_INVALID_LAYOUT"
     UNSAFE_ENTRY = "WORKSPACE_UNSAFE_ENTRY"
     WRITE_FAILED = "WORKSPACE_WRITE_FAILED"
+    READ_FAILED = "WORKSPACE_READ_FAILED"
     CLEANUP_FAILED = "WORKSPACE_CLEANUP_FAILED"
 
 
@@ -93,6 +94,9 @@ _DIRECTORY_MODE = 0o700
 _FILE_MODE = 0o600
 _DIRECTORY_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
 _FILE_FLAGS = os.O_WRONLY | os.O_CREAT | os.O_EXCL | getattr(os, "O_NOFOLLOW", 0)
+_FILE_READ_FLAGS = os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0) | getattr(os, "O_NONBLOCK", 0)
+_MAX_FILE_READ_BYTES = 64 * 1024 * 1024
+_READ_CHUNK_BYTES = 1024 * 1024
 
 
 def _reject(code: WorkspaceErrorCode) -> NoReturn:
@@ -266,6 +270,7 @@ class WorkspaceManager:
             path_info = os.stat(name, dir_fd=area_fd, follow_symlinks=False)
             if _identity(path_info) != created_identity or not _private_file(path_info):
                 _reject(WorkspaceErrorCode.WRITE_FAILED)
+            os.fsync(area_fd)
             return layout.area(area) / name
         except WorkspaceError as error:
             if area_fd >= 0 and created_identity is not None:  # pragma: no branch
@@ -281,6 +286,101 @@ class WorkspaceManager:
         finally:
             if area_fd >= 0:
                 os.close(area_fd)
+
+    @_content_free
+    def read_file(
+        self,
+        layout: WorkspaceLayout,
+        area: WorkspaceArea,
+        file_component: str,
+        *,
+        maximum_bytes: int,
+    ) -> bytes | None:
+        """Read one bounded private file, or return None only when it is absent."""
+
+        descriptor = -1
+        area_fd = -1
+        current_area_fd = -1
+        payload: bytes | None = None
+        missing = False
+        close_failed = False
+        try:
+            name = self._component(file_component)
+            if (
+                isinstance(maximum_bytes, bool)
+                or not isinstance(maximum_bytes, int)
+                or maximum_bytes < 0
+                or maximum_bytes > _MAX_FILE_READ_BYTES
+            ):
+                _reject(WorkspaceErrorCode.READ_FAILED)
+            area_fd = self._open_layout_area(layout, area)
+            try:
+                path_before = os.stat(name, dir_fd=area_fd, follow_symlinks=False)
+            except FileNotFoundError:
+                missing = True
+            except OSError:
+                _reject(WorkspaceErrorCode.READ_FAILED)
+            if not missing:
+                path_fingerprint = self._file_fingerprint(path_before)
+                if not _private_file(path_before) or path_before.st_size > maximum_bytes:
+                    _reject(WorkspaceErrorCode.READ_FAILED)
+                try:
+                    descriptor = os.open(name, _FILE_READ_FLAGS, dir_fd=area_fd)
+                except OSError:
+                    _reject(WorkspaceErrorCode.READ_FAILED)
+                before = os.fstat(descriptor)
+                before_fingerprint = self._file_fingerprint(before)
+                if (
+                    not _private_file(before)
+                    or before.st_size > maximum_bytes
+                    or before_fingerprint != path_fingerprint
+                ):
+                    _reject(WorkspaceErrorCode.READ_FAILED)
+                collected = bytearray()
+                remaining = maximum_bytes + 1
+                while remaining > 0:
+                    chunk = os.read(descriptor, min(_READ_CHUNK_BYTES, remaining))
+                    if not chunk:
+                        break
+                    collected.extend(chunk)
+                    remaining -= len(chunk)
+                payload = bytes(collected)
+                after = os.fstat(descriptor)
+                if (
+                    len(payload) > maximum_bytes
+                    or len(payload) != after.st_size
+                    or not _private_file(after)
+                    or self._file_fingerprint(after) != before_fingerprint
+                ):
+                    _reject(WorkspaceErrorCode.READ_FAILED)
+                current_area_fd = self._open_layout_area(layout, area)
+                path_info = os.stat(name, dir_fd=current_area_fd, follow_symlinks=False)
+                if (
+                    not _private_file(path_info)
+                    or self._file_fingerprint(path_info) != before_fingerprint
+                ):
+                    _reject(WorkspaceErrorCode.READ_FAILED)
+        except WorkspaceError as error:
+            _detach(error)
+            raise
+        except OSError:
+            rejection = WorkspaceError(WorkspaceErrorCode.READ_FAILED)
+            _detach(rejection)
+            raise rejection from None
+        finally:
+            for open_descriptor in (descriptor, current_area_fd, area_fd):
+                if open_descriptor >= 0:
+                    try:
+                        os.close(open_descriptor)
+                    except OSError:
+                        close_failed = True
+        if close_failed:
+            _reject(WorkspaceErrorCode.READ_FAILED)
+        if missing:
+            return None
+        if payload is None:  # pragma: no cover - defensive state guard
+            _reject(WorkspaceErrorCode.READ_FAILED)
+        return payload
 
     @_content_free
     def load(self, owner_component: str, job_component: str) -> WorkspaceLayout:
@@ -535,6 +635,10 @@ class WorkspaceManager:
         if _COMPONENT.fullmatch(value) is None:
             _reject(WorkspaceErrorCode.INVALID_COMPONENT)
         return value
+
+    @staticmethod
+    def _file_fingerprint(info: os.stat_result) -> tuple[int, int, int, int, int]:
+        return (info.st_dev, info.st_ino, info.st_size, info.st_mtime_ns, info.st_ctime_ns)
 
     def _open_root(self) -> int:
         descriptor = os.open(self.root, _DIRECTORY_FLAGS)

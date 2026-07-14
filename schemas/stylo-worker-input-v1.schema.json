@@ -1,0 +1,228 @@
+{
+  "$defs": {
+    "AssetRef": {
+      "pattern": "^asset_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "CellId": {
+      "pattern": "^cell_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "CellRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "cell_id": {
+          "$ref": "#/$defs/CellId"
+        },
+        "distance": {
+          "$ref": "#/$defs/DistanceMeasure"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        }
+      },
+      "required": [
+        "cell_id",
+        "fit_id",
+        "distance"
+      ],
+      "title": "CellRequest",
+      "type": "object"
+    },
+    "Count": {
+      "maximum": 3000000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "DistanceMeasure": {
+      "enum": [
+        "classic_delta",
+        "eders_delta",
+        "cosine_delta"
+      ],
+      "title": "DistanceMeasure",
+      "type": "string"
+    },
+    "DocumentCounts": {
+      "additionalProperties": false,
+      "properties": {
+        "asset_ref": {
+          "$ref": "#/$defs/AssetRef"
+        },
+        "counts": {
+          "items": {
+            "$ref": "#/$defs/Count"
+          },
+          "maxItems": 20000,
+          "minItems": 1,
+          "title": "Counts",
+          "type": "array"
+        },
+        "document_id": {
+          "$ref": "#/$defs/DocumentId"
+        },
+        "role": {
+          "$ref": "#/$defs/DocumentRole"
+        },
+        "token_total": {
+          "$ref": "#/$defs/PositiveCount"
+        },
+        "work_ref": {
+          "$ref": "#/$defs/WorkRef"
+        }
+      },
+      "required": [
+        "document_id",
+        "asset_ref",
+        "work_ref",
+        "role",
+        "token_total",
+        "counts"
+      ],
+      "title": "DocumentCounts",
+      "type": "object"
+    },
+    "DocumentId": {
+      "pattern": "^doc_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "DocumentRole": {
+      "enum": [
+        "known",
+        "unknown"
+      ],
+      "title": "DocumentRole",
+      "type": "string"
+    },
+    "Feature": {
+      "maxLength": 64,
+      "minLength": 1,
+      "type": "string"
+    },
+    "FitId": {
+      "pattern": "^fit_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "FitRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "culling_percent": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "fit_id": {
+          "$ref": "#/$defs/FitId"
+        },
+        "mfw": {
+          "$ref": "#/$defs/MfwCount"
+        }
+      },
+      "required": [
+        "fit_id",
+        "mfw",
+        "culling_percent"
+      ],
+      "title": "FitRequest",
+      "type": "object"
+    },
+    "MfwCount": {
+      "maximum": 1000,
+      "minimum": 2,
+      "type": "integer"
+    },
+    "Percentage": {
+      "maximum": 100,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "PositiveCount": {
+      "maximum": 3000000,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "RequestId": {
+      "pattern": "^request_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "WorkRef": {
+      "pattern": "^work_[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/stylo-worker-input-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis_unit": {
+      "const": "whole_text",
+      "title": "Analysis Unit",
+      "type": "string"
+    },
+    "candidate_features": {
+      "items": {
+        "$ref": "#/$defs/Feature"
+      },
+      "maxItems": 20000,
+      "minItems": 1,
+      "title": "Candidate Features",
+      "type": "array"
+    },
+    "cells": {
+      "items": {
+        "$ref": "#/$defs/CellRequest"
+      },
+      "maxItems": 192,
+      "minItems": 1,
+      "title": "Cells",
+      "type": "array"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/DocumentCounts"
+      },
+      "maxItems": 50,
+      "minItems": 2,
+      "title": "Documents",
+      "type": "array"
+    },
+    "fits": {
+      "items": {
+        "$ref": "#/$defs/FitRequest"
+      },
+      "maxItems": 64,
+      "minItems": 1,
+      "title": "Fits",
+      "type": "array"
+    },
+    "limit_profile": {
+      "const": "stylo-worker-contract-limits-v1",
+      "title": "Limit Profile",
+      "type": "string"
+    },
+    "request_id": {
+      "$ref": "#/$defs/RequestId"
+    },
+    "schema_version": {
+      "const": "stylo-worker-input-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "const": 20260713,
+      "title": "Seed",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "request_id",
+    "limit_profile",
+    "analysis_unit",
+    "seed",
+    "candidate_features",
+    "documents",
+    "fits",
+    "cells"
+  ],
+  "title": "WorkerInputV1",
+  "type": "object"
+}

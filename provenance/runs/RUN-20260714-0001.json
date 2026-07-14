@@ -1,0 +1,178 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260714-0001",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P006"
+  ],
+  "started_at_utc": "2026-07-14T00:15:18Z",
+  "ended_at_utc": "2026-07-14T00:20:29Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "7df1fdf754ecfb3a0b84835dc7f368c481f333f1",
+  "environment": {
+    "os": "GitHub-hosted Ubuntu 24.04",
+    "architecture": "x86_64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "jsonlite": "2.0.0",
+    "locale": "C.UTF-8",
+    "timezone": "UTC",
+    "oracle_network": "none",
+    "oracle_run_count": 2,
+    "capture_workflow_run": "29295419981",
+    "capture_job": "86967691791",
+    "normal_ci_run": "29295419945",
+    "normal_ci_verify_job": "86967691842",
+    "normal_ci_container_job": "86967691747",
+    "evidence_commit": "b5a842fdee5456c7f5f9d0397c0f5a2f7d7a336f"
+  },
+  "command": "GitHub Actions workflow .github/workflows/p006-oracle-freeze.yml at 7df1fdf754ecfb3a0b84835dc7f368c481f333f1 (run 29295419981); GitHub Actions workflow .github/workflows/ci.yml at the same commit (run 29295419945)",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/p006-oracle-freeze.yml",
+      "sha256": "82ed399f60ba5ce1d884c086a6eabe90295c1bf1b711f750ff173a3c282d7fd0"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "8935705128aa80032c0cc3b43b0b13c501fd4b9cddcbd28f222530a85805c1b5"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "schemas/direct-stylo-oracle-v1.schema.json",
+      "sha256": "8adca72f556ab3e1c46d800bdab889e9de5f5ba769b23d86dd6caa15729519e2"
+    },
+    {
+      "path": "scripts/generate_p006_fixtures.py",
+      "sha256": "dd4dfe83c2ef23575757baba558cd0fd6825ffdd7e2ed38f087cf6e61ce80a6a"
+    },
+    {
+      "path": "scripts/freeze_p006_oracle.py",
+      "sha256": "a227cf631363439ea3e8add390bafcd57bf65f72329b716dadf9a9563cd2d506"
+    },
+    {
+      "path": "scripts/oracles/p006-direct-stylo-v1.R",
+      "sha256": "325e96dc073fdf8b241df0e759524afe833dc357e6388d18a928660c9fefcd84"
+    },
+    {
+      "path": "scripts/validate_p006_oracle_outputs.py",
+      "sha256": "23edabfed5032486fded33599818d3e2d0d323aee2a54c19a3c39dede9d87a57"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "6ac086fabf5e99e34478ae5035773ae12530afa6dce3da8b5597131e22ccfee0"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_contracts.py",
+      "sha256": "a85d1c76302fa705556ea793ae5e3f23814df6c5abb4964d078e320a55dad383"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub-hosted Ubuntu 24.04 checkout at exact source commit 7df1fdf754ecfb3a0b84835dc7f368c481f333f1",
+    "command": "GitHub Actions workflow .github/workflows/p006-oracle-freeze.yml at 7df1fdf754ecfb3a0b84835dc7f368c481f333f1 (run 29295419981); GitHub Actions workflow .github/workflows/ci.yml at the same commit (run 29295419945)",
+    "limitations": [
+      "The GitHub-hosted runner image is named but not represented by an immutable runner image digest; the base image, R, packages, Python, uv, actions, source commit, and generated evidence are separately bound.",
+      "Dependency restoration and image construction used network access; the two scientific oracle executions themselves used no network and a read-only root filesystem.",
+      "The built OCI image is identified by SHA-256 but is not retained in the repository, so replay requires rebuilding it from the bound sources.",
+      "The temporary write-capable capture workflow was removed after the evidence commit; it remains recoverable from the exact historical source commit.",
+      "This run covers only the named CC0 whole-text fixture suite and independent direct-stylo outputs. It contains no fixed worker comparison, real corpus, preprocessing, benchmark, public workflow, production-isolation, or general reproducibility result."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/p006-oracle-freeze.yml",
+      "sha256": "82ed399f60ba5ce1d884c086a6eabe90295c1bf1b711f750ff173a3c282d7fd0"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "8935705128aa80032c0cc3b43b0b13c501fd4b9cddcbd28f222530a85805c1b5"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "schemas/direct-stylo-oracle-v1.schema.json",
+      "sha256": "8adca72f556ab3e1c46d800bdab889e9de5f5ba769b23d86dd6caa15729519e2"
+    },
+    {
+      "path": "scripts/generate_p006_fixtures.py",
+      "sha256": "dd4dfe83c2ef23575757baba558cd0fd6825ffdd7e2ed38f087cf6e61ce80a6a"
+    },
+    {
+      "path": "scripts/freeze_p006_oracle.py",
+      "sha256": "a227cf631363439ea3e8add390bafcd57bf65f72329b716dadf9a9563cd2d506"
+    },
+    {
+      "path": "scripts/oracles/p006-direct-stylo-v1.R",
+      "sha256": "325e96dc073fdf8b241df0e759524afe833dc357e6388d18a928660c9fefcd84"
+    },
+    {
+      "path": "scripts/validate_p006_oracle_outputs.py",
+      "sha256": "23edabfed5032486fded33599818d3e2d0d323aee2a54c19a3c39dede9d87a57"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "6ac086fabf5e99e34478ae5035773ae12530afa6dce3da8b5597131e22ccfee0"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_contracts.py",
+      "sha256": "a85d1c76302fa705556ea793ae5e3f23814df6c5abb4964d078e320a55dad383"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/complete-base.input.json",
+      "sha256": "2e39f923557adafb1b428c1bcb0ecf602f8194595cec2dd04c1ec09dc19b1b46"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/complete-canary.input.json",
+      "sha256": "4b0eed20e804290752f597b7fd880f2cf881bb61cc8fbc8f50c7effb06922718"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/partial-boundaries.input.json",
+      "sha256": "e27c0b2c9f3ef25004cd9ac99d68a5b149c02678a5be048f925624265bde6980"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/fixture-manifest.json",
+      "sha256": "8e6c83f287a4083e2c1aad934d5bbef93efcfdc6929ccec25810e1ab4e029680"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/LICENSE",
+      "sha256": "5aafbeab6dda6408154b8185e538f98efda0103c4f96725c00eca5705a65570d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P006/oracle-v1/direct-reference/complete-base.direct.json",
+      "sha256": "b70433e3d03e8bdc8e6e17a88ca4417d0f0c70015c4d582704d6297649e722fe"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v1/direct-reference/complete-canary.direct.json",
+      "sha256": "ac061e8d079c85cb7192dad2a5591756d81711be97acf9ff237c423ebccc5c5c"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v1/direct-reference/partial-boundaries.direct.json",
+      "sha256": "6d6e3c3ee499f9d30cd215b32338488ae0e8c25856baa09b69b2fb85d4e83441"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v1/session-info.json",
+      "sha256": "7016cf083b10e3dce8e9e6759ea02247d01e09d6c33b0fce4b501199bf03a1b0"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v1/oracle-freeze.json",
+      "sha256": "039408cacccf9b2c91f15c7eb2e876add277090eaa2bb902b2da6e0d62b15cea"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v1/oracle-freeze.sha256",
+      "sha256": "f1421f5bdd58716fb689969182913f4b00ad6ab56af2a14073599f1120316b17"
+    }
+  ],
+  "notes": "Exact source 7df1fdf passed normal CI and the one-time oracle capture. The canonical Linux amd64 image loaded the locked R 4.5.2, stylo 0.7.71, and jsonlite 2.0.0 environment; the independent oracle ran twice with no network, and all four output files were byte-identical across runs. The validator confirmed exact input binding, known-only fitting invariance, changed unknown distances, declared ties, and four complete plus three not-enough-features boundary cells. Evidence commit b5a842f retains the direct outputs, session record, environment/source binding, and checksum manifest. This is an oracle prerequisite, not worker parity or P006 acceptance."
+}

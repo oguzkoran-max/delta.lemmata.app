@@ -36,10 +36,11 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 ## Güncel Başlangıç
 
-P005 Job Lifecycle, Isolation, and Retention bütün acceptance ölçütlerini geçerek
-`provenance/tickets/P005.json` içinde tamamlanmıştır. Exact Linux capture,
-checksum-bound supply-chain package ve normal closure CI kanıtları korunur. Aktif
-implementation Ticket yoktur. Sıradaki aday P006 R `stylo` Worker and
-Computational Parity'dir; ayrı Ticket, PromptEvent, branch ve başlangıç kanıtı
-açılmadan kod yazma. Production isolation, secure erase, nihai Pinokyo corpus'u ve
-deployment P006 kapsamına eklenmez.
+P001-P006 bütün acceptance ölçütlerini kendi tanımlı sınırlarında geçerek
+tamamlanmıştır. Son kapanış `provenance/tickets/P006.json`,
+`RUN-20260714-0004`, `RUN-20260714-0005` ve
+`memory/checkpoints/2026-07-14-p006-complete.md` içinde kayıtlıdır. Aktif
+implementation Ticket yoktur. Sıradaki planlanan iş P007 Preprocessing and Corpus
+Health'tir. P007 PromptEvent, Ticket, architecture/method audit ve accepted
+preprocessing boundary olmadan kod yazma. Public analysis, benchmark, nihai
+Pinokyo corpus'u, FAIR release ve production deployment sonraki ticket'lardadır.

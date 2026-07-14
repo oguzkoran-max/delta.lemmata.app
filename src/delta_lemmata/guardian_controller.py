@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import hashlib
 import json
 import os
 import queue
@@ -14,18 +15,25 @@ import sys
 import threading
 import time
 from collections.abc import Callable
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import StrEnum
 from functools import wraps
 from pathlib import Path
 
-from delta_lemmata.job_models import TerminalOutcome
+from delta_lemmata.job_models import ScientificResultReceipt, TerminalOutcome
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY, WorkerLimitProfile
 from delta_lemmata.job_store import JobStoreError, SQLiteJobStore
-from delta_lemmata.job_workspace import CleanupReport, WorkspaceError, WorkspaceManager
+from delta_lemmata.job_workspace import (
+    CleanupReport,
+    WorkspaceArea,
+    WorkspaceError,
+    WorkspaceManager,
+)
 from delta_lemmata.process_controller import (
     ProcessController,
     ProcessControllerError,
+    ProcessEnvironmentProfile,
     ProcessLimit,
     ProcessOutcome,
     ProcessResult,
@@ -33,6 +41,7 @@ from delta_lemmata.process_controller import (
 from delta_lemmata.recovery_receipt import (
     RecoveryReceiptError,
     RecoveryReceiptStore,
+    new_acceptance_receipt,
     new_recovery_receipt,
 )
 from delta_lemmata.session_identity import JobId, workspace_component
@@ -51,10 +60,30 @@ _COMPONENT = re.compile(r"^[0-9a-f]{64}$", flags=re.ASCII)
 _OPERATION_REFERENCE = re.compile(r"^op_[0-9a-f]{64}$", flags=re.ASCII)
 _START_TIMEOUT_SECONDS = 5.0
 _ACK_TIMEOUT_SECONDS = 5.0
+_SCIENTIFIC_ACK_TIMEOUT_SECONDS = 60.0
 _POLL_SECONDS = 0.025
 _MAX_PROTOCOL_LINE = 160
 _MAX_SECRET_BYTES = 4096
 _DIRECTORY_FLAGS = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_NOFOLLOW", 0)
+
+
+@dataclass(frozen=True, slots=True)
+class GuardianArtifactBinding:
+    """Fixed retained-artifact location that a scientific ACK must prove."""
+
+    component: str
+    maximum_bytes: int
+
+    def __post_init__(self) -> None:
+        if (
+            not isinstance(self.component, str)
+            or _COMPONENT.fullmatch(self.component) is None
+            or isinstance(self.maximum_bytes, bool)
+            or not isinstance(self.maximum_bytes, int)
+            or self.maximum_bytes <= 0
+            or self.maximum_bytes > 64 * 1024 * 1024
+        ):
+            raise ValueError("invalid guardian artifact binding")
 
 
 class GuardianControllerErrorCode(StrEnum):
@@ -162,6 +191,42 @@ def _terminal_outcome(result: ProcessResult) -> TerminalOutcome:
     return mapping[result.outcome]
 
 
+def _scientific_ack_line(
+    *,
+    expected_version: int,
+    expected_outcome: TerminalOutcome,
+    expected_result: ScientificResultReceipt | None,
+) -> bytes:
+    digest = "none" if expected_result is None else expected_result.sha256
+    byte_size = 0 if expected_result is None else expected_result.byte_size
+    return f"A {expected_version} {expected_outcome.value} {digest} {byte_size}\n".encode("ascii")
+
+
+def _parse_scientific_ack_line(
+    line: bytes,
+) -> tuple[int, TerminalOutcome, str | None, int]:
+    try:
+        marker, raw_version, raw_outcome, raw_digest, raw_size = (
+            line.decode("ascii").strip().split()
+        )
+        version = int(raw_version)
+        outcome = TerminalOutcome(raw_outcome)
+        byte_size = int(raw_size)
+    except (UnicodeError, ValueError):
+        raise ValueError from None
+    digest = None if raw_digest == "none" else raw_digest
+    if (
+        marker != "A"
+        or version < 0
+        or byte_size < 0
+        or (digest is not None and _COMPONENT.fullmatch(digest) is None)
+        or ((digest is None) != (byte_size == 0))
+        or ((outcome is TerminalOutcome.SUCCEEDED) != (digest is not None))
+    ):
+        raise ValueError
+    return version, outcome, digest, byte_size
+
+
 @_content_free
 def _parse_result_line(line: bytes) -> ProcessResult:
     try:
@@ -212,12 +277,15 @@ class GuardianController:
         owner_component: str,
         job_component: str,
         receipt_store: RecoveryReceiptStore,
+        artifact_binding: GuardianArtifactBinding | None = None,
+        environment_profile: ProcessEnvironmentProfile = ProcessEnvironmentProfile.SYNTHETIC,
     ) -> None:
         try:
             cwd_identity = ProcessController._validate_configuration(
                 argv=argv,
                 cwd=cwd,
                 limits=limits,
+                environment_profile=environment_profile,
             )
             WorkspaceManager(workspace_root)
         except (ProcessControllerError, WorkspaceError):
@@ -233,6 +301,10 @@ class GuardianController:
             or _OPERATION_REFERENCE.fullmatch(execution_reference) is None
             or not isinstance(store, SQLiteJobStore)
             or not isinstance(receipt_store, RecoveryReceiptStore)
+            or (
+                artifact_binding is not None
+                and not isinstance(artifact_binding, GuardianArtifactBinding)
+            )
         ):
             raise GuardianControllerError(GuardianControllerErrorCode.INVALID_CONFIGURATION)
         self._argv = argv
@@ -246,6 +318,8 @@ class GuardianController:
         self._owner_component = owner_component
         self._job_component = job_component
         self._receipt_store = receipt_store
+        self._artifact_binding = artifact_binding
+        self._environment_profile = environment_profile
         self._condition = threading.Condition(threading.Lock())
         self._started = False
         self._control_write = -1
@@ -313,6 +387,17 @@ class GuardianController:
                     _encoded_argv(self._argv),
                     self._execution_reference,
                     str(cwd_descriptor),
+                    (
+                        "none"
+                        if self._artifact_binding is None
+                        else self._artifact_binding.component
+                    ),
+                    (
+                        "0"
+                        if self._artifact_binding is None
+                        else str(self._artifact_binding.maximum_bytes)
+                    ),
+                    self._environment_profile.value,
                 )
                 _write_all(secret_write, self._receipt_store.signing_secret_for_guardian())
                 _safe_close(secret_write)
@@ -391,7 +476,13 @@ class GuardianController:
             return self._result
 
     @_content_free
-    def acknowledge_terminal_persisted(self, *, expected_version: int) -> None:
+    def acknowledge_terminal_persisted(
+        self,
+        *,
+        expected_version: int,
+        expected_outcome: TerminalOutcome | None = None,
+        expected_result: ScientificResultReceipt | None = None,
+    ) -> None:
         """Release the guardian only after the terminal job transition is durable."""
 
         with self._condition:
@@ -399,12 +490,35 @@ class GuardianController:
                 raise GuardianControllerError(GuardianControllerErrorCode.INVALID_STATE)
             if self._error is not None:
                 raise GuardianControllerError(self._error.code)
+            process_outcome = _terminal_outcome(self._result)
+            if self._artifact_binding is None:
+                if expected_outcome is not None and expected_outcome is not process_outcome:
+                    raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
+                if expected_result is not None:
+                    raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
+                durable_outcome = process_outcome
+            else:
+                if (
+                    expected_outcome is None
+                    or (expected_outcome is TerminalOutcome.SUCCEEDED)
+                    != (expected_result is not None)
+                    or (
+                        expected_result is not None
+                        and (
+                            expected_result.artifact_component != self._artifact_binding.component
+                            or expected_result.byte_size > self._artifact_binding.maximum_bytes
+                        )
+                    )
+                ):
+                    raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
+                durable_outcome = expected_outcome
             try:
                 persisted = self._store.terminal_transition_matches(
                     job_id=self._job_id,
                     execution_reference=self._execution_reference,
                     expected_version=expected_version,
-                    expected_outcome=_terminal_outcome(self._result),
+                    expected_outcome=durable_outcome,
+                    expected_result=expected_result,
                 )
             except JobStoreError:
                 persisted = False
@@ -414,7 +528,16 @@ class GuardianController:
                 if self._control_write < 0 or self._guardian_finished:
                     raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
                 try:
-                    _write_all(self._control_write, b"A")
+                    acknowledgement = (
+                        b"A"
+                        if self._artifact_binding is None
+                        else _scientific_ack_line(
+                            expected_version=expected_version,
+                            expected_outcome=durable_outcome,
+                            expected_result=expected_result,
+                        )
+                    )
+                    _write_all(self._control_write, acknowledgement)
                 except OSError:
                     self._error = GuardianControllerError(
                         GuardianControllerErrorCode.CONTROL_FAILED
@@ -428,6 +551,23 @@ class GuardianController:
                 raise GuardianControllerError(self._error.code)
             if not self._ack_confirmed:
                 raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
+            if self._artifact_binding is not None:
+                artifact_sha256 = None if expected_result is None else expected_result.sha256
+                artifact_byte_size = None if expected_result is None else expected_result.byte_size
+                try:
+                    accepted = self._receipt_store.proves_acceptance(
+                        self._job_id,
+                        self._execution_reference,
+                        terminal_version=expected_version,
+                        terminal_outcome=durable_outcome,
+                        artifact_sha256=artifact_sha256,
+                        artifact_byte_size=artifact_byte_size,
+                        at_utc=datetime.now(UTC),
+                    )
+                except RecoveryReceiptError:
+                    accepted = False
+                if not accepted:
+                    raise GuardianControllerError(GuardianControllerErrorCode.CONTROL_FAILED)
 
     @_content_free
     def cancel(self) -> ProcessResult:
@@ -610,8 +750,63 @@ def _await_persistence_ack(control_descriptor: int) -> bool:
         return False
 
 
+def _await_scientific_persistence_ack(
+    control_descriptor: int,
+) -> tuple[int, TerminalOutcome, str | None, int] | None:
+    deadline = time.monotonic() + _SCIENTIFIC_ACK_TIMEOUT_SECONDS
+    line = bytearray()
+    while len(line) < _MAX_PROTOCOL_LINE:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return None
+        readable, _writable, _exceptional = select.select((control_descriptor,), (), (), remaining)
+        if not readable:
+            return None
+        chunk = os.read(control_descriptor, 1)
+        if not chunk:
+            return None
+        if chunk == b"C" and not line:
+            continue
+        line.extend(chunk)
+        if chunk == b"\n":
+            try:
+                return _parse_scientific_ack_line(bytes(line))
+            except ValueError:
+                return None
+    return None
+
+
+def _scientific_artifact_matches(
+    *,
+    workspace_root: Path,
+    owner_component: str,
+    job_component: str,
+    binding: GuardianArtifactBinding,
+    expected_digest: str,
+    expected_size: int,
+) -> bool:
+    try:
+        manager = WorkspaceManager(workspace_root)
+        layout = manager.load_optional(owner_component, job_component)
+        if layout is None:
+            return False
+        payload = manager.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            binding.component,
+            maximum_bytes=binding.maximum_bytes,
+        )
+    except WorkspaceError:
+        return False
+    return bool(
+        payload is not None
+        and len(payload) == expected_size
+        and hashlib.sha256(payload).hexdigest() == expected_digest
+    )
+
+
 def _run_guardian(arguments: list[str]) -> int:
-    if len(arguments) != 13 or arguments[0] != _GUARDIAN_MARKER:
+    if len(arguments) not in {13, 15, 16} or arguments[0] != _GUARDIAN_MARKER:
         return 126
     controller: ProcessController | None = None
     recovery_attempted = False
@@ -628,6 +823,20 @@ def _run_guardian(arguments: list[str]) -> int:
         argv = _decoded_argv(arguments[10])
         execution_reference = arguments[11]
         cwd_descriptor = int(arguments[12])
+        binding_component = "none" if len(arguments) == 13 else arguments[13]
+        binding_maximum = 0 if len(arguments) == 13 else int(arguments[14])
+        environment_profile = (
+            ProcessEnvironmentProfile.SYNTHETIC
+            if len(arguments) in {13, 15}
+            else ProcessEnvironmentProfile(arguments[15])
+        )
+        if binding_component == "none" and binding_maximum == 0:
+            artifact_binding = None
+        else:
+            artifact_binding = GuardianArtifactBinding(
+                component=binding_component,
+                maximum_bytes=binding_maximum,
+            )
         if _OPERATION_REFERENCE.fullmatch(execution_reference) is None:
             raise ValueError
         signing_secret = _read_secret(secret_descriptor)
@@ -636,7 +845,12 @@ def _run_guardian(arguments: list[str]) -> int:
         os.close(cwd_descriptor)
         if job_component != workspace_component(job_id):
             raise ValueError
-        controller = ProcessController(argv=argv, cwd=Path.cwd(), limits=limits)
+        controller = ProcessController(
+            argv=argv,
+            cwd=Path.cwd(),
+            limits=limits,
+            environment_profile=environment_profile,
+        )
         controller.start()
         _safe_protocol_write(
             result_descriptor,
@@ -645,7 +859,44 @@ def _run_guardian(arguments: list[str]) -> int:
         result, recovery_required = _guardian_wait(controller, control_descriptor)
         _safe_protocol_write(result_descriptor, _result_line(result))
         if not recovery_required:
-            recovery_required = not _await_persistence_ack(control_descriptor)
+            if artifact_binding is None:
+                recovery_required = not _await_persistence_ack(control_descriptor)
+            else:
+                acknowledgement = _await_scientific_persistence_ack(control_descriptor)
+                if acknowledgement is None:
+                    recovery_required = True
+                else:
+                    terminal_version, outcome, digest, byte_size = acknowledgement
+                    recovery_required = bool(
+                        (outcome is TerminalOutcome.SUCCEEDED)
+                        and (
+                            digest is None
+                            or not _scientific_artifact_matches(
+                                workspace_root=workspace_root,
+                                owner_component=owner_component,
+                                job_component=job_component,
+                                binding=artifact_binding,
+                                expected_digest=digest,
+                                expected_size=byte_size,
+                            )
+                        )
+                    )
+                    if not recovery_required:
+                        acceptance = new_acceptance_receipt(
+                            job_id=job_id,
+                            execution_reference=execution_reference,
+                            occurred_at_utc=datetime.now(UTC),
+                            terminal_version=terminal_version,
+                            terminal_outcome=outcome,
+                            artifact_sha256=digest,
+                            artifact_byte_size=(None if digest is None else byte_size),
+                            signing_secret=signing_secret,
+                            event_ttl_seconds=DEFAULT_JOB_POLICY.event_ttl_seconds,
+                        )
+                        RecoveryReceiptStore(
+                            receipt_root,
+                            signing_secret=signing_secret,
+                        ).write(acceptance)
         if recovery_required:
             recovery_attempted = True
             _guardian_cleanup(
@@ -702,6 +953,7 @@ def _run_guardian(arguments: list[str]) -> int:
 
 __all__ = [
     "GUARDIAN_PROCESS_BOUNDARY",
+    "GuardianArtifactBinding",
     "GuardianController",
     "GuardianControllerError",
     "GuardianControllerErrorCode",

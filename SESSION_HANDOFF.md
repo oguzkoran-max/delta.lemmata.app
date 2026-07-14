@@ -1,26 +1,102 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-13
+**Güncellendi:** 2026-07-14
 
-**Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; aktif
-implementation Ticket yok, P006 henüz açılmadı
+**Aşama:** P001-P006 tamamlandı. Aktif implementation Ticket yoktur; sıradaki
+planlanan iş P007 Preprocessing and Corpus Health açılış paketidir
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
 validated-payload staging, capability-first application service, synthetic POSIX
 process controller, kalıcı content-free deletion ledger, continuous fake-clock
 janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
-recovery receipt var;
-public analysis hâlâ kilitli ve scientific computation yok
+recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict tek-parse
+parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
+finalizer, bounded no-follow workspace read, fixed R worker, shell-free adapter,
+checksum-frozen direct-`stylo` oracle, retained worker package ve crash-safe
+scientific-result handoff var. Public analysis, preprocessing, corpus health,
+benchmark, stability, FAIR run export ve deployment hâlâ yok
 
-**Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
+**Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Sıradaki tek ana iş:** P006 R `stylo` Worker and Computational Parity için ayrı
-Ticket, PromptEvent, branch ve başlangıç denetimi aç. Önce doğrudan `stylo` referans
-fixture'ı, versioned worker input/output şeması, fixed argv, unknown leakage sınırı,
-finite-number kontrolleri ve sayısal tolerans planını dondur. P006 açılmadan gerçek
-worker kodu yazma; P005'e production isolation, deployment veya Pinokyo analizi
-ekleme.
+**Aktif ticket:** Yok
+
+**Sıradaki tek ana iş:** P007 için PromptEvent, Ticket, architecture/method audit,
+accepted preprocessing boundary ve tests-first opening package oluştur. P007
+açılmadan preprocessing kodu yazma. Public workflow P008, benchmark P010/P011,
+FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
+
+**P006 closure checkpoint:** Fixed worker ve scientific handoff `f0800c8` ile
+uygulandı. Capture source `79cb268`, read-only capture `29340236382`, evidence-only
+commit `7359cbe` ve `RUN-20260714-0004` exact worker package'ını bağlar. Geçici
+capture job kaldırıldı. Durable audit commit `d676d90`, normal Linux CI
+`29350106890` içinde verify job `87143854938`, container job `87143854913`, tüm
+1.247 test, worker parity, scientific handoff, yüzde 100 measured coverage ve
+SBOM/dependency/secret kapılarından geçti. Aynı commit GitHub origin'den fresh
+remote no-hardlinks clone'a alındı; bootstrap/full verify geçti ve post-run tree
+temiz kaldı (`RUN-20260714-0005`). P006-AC-01 ile P006-AC-08 fixture-local sınırda
+passed. Preprocessing parity, benchmark accuracy, public workflow, FAIR export,
+Pinokyo ve production iddiaları çıkarılamaz.
+
+**P006 başlangıç bulgusu:** Process exit zero bilimsel başarı değildir. Guardian ACK
+öncesi output schema ve scientific invariant doğrulaması gerekir. stylo 0.7.71
+`perform.delta` Wurzburg yolu combined known/unknown table'ı yeniden scale edebilir;
+P006 Cosine Delta known-derived z-scores üzerinde `dist.cosine` kullanacaktır.
+CC0 fixture, C.UTF-8/UTC, seed 20260713, 1e-6 parity ve 1e-12 structural/tie
+protokolü `HD-20260713-0002` ile kabul edildi. Bu karar parity sonucu veya P006
+kabulü değildir.
+
+**P006 sözleşme checkpoint'i:** Üç bağımsız denetim iki bilimsel ve beş güvenlik/
+mimari blocker buldu. Aggregate count ayrı 150 milyon sınırına alındı; büyük JSON
+integer fail-closed oldu; zero-overlap projection, culling equality, unknown-only
+feature, token-total denominator ve UTF-8 tie testleri eklendi; FIFO pre-open
+reddi, nonblocking read, tek JSON parse ve current-area rebinding uygulandı. Erken
+validated-ACK kodu crash-safe olmadığı için tamamen çıkarıldı ve AC-03 bu ara
+checkpointte pending kaldı. Ara local `./scripts/verify.sh`: 1.073 test, 7.215 statement, 1.898 branch,
+yüzde 100 kapsam kapısında geçti. Son bilimsel yeniden denetim, erişilebilir Classic
+Delta değerlerini kesen keyfi `1e12` sınırını buldu; sınır finite IEEE-754 double
+alanına çıkarıldı ve `>1e12` regresyonu eklendi. Normal dosyadan FIFO'ya pre-open
+yarış testi de eklendikten sonra final local `./scripts/verify.sh`: 1.075 test,
+7.216 statement, 1.898 branch, yüzde 100 coverage; metadata, 80 provenance record,
+repository scan ve R lock geçti. Bilimsel denetçinin son dar yeniden incelemesi PASS
+verdi.
+Exact implementation commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`,
+GitHub Actions run `29291282495` içinde verify job `86955214522`, SBOM/dependency
+audit ve canonical Linux amd64 container job `86955214531` kapılarından geçti.
+Bu ara checkpointte P006-AC-01 ve P006-AC-05 passed; AC-03 ve worker/parity
+ölçütleri sonraki P006 adımlarına pending kaldı.
+
+**P006 oracle checkpoint'i:** Source `7df1fdf` normal CI `29295419945` ve
+one-time capture `29295419981` kapılarından geçti. Locked Linux amd64 oracle iki kez
+ağsız çalıştı; complete base, unknown-canary, partial-boundary ve session dosyaları
+byte-identical çıktı. Bot commit `b5a842f`, `RUN-20260714-0001` ve
+`provenance/evidence/P006/oracle-freeze-validation.md` source/image/package/input/
+output hashlerini tutar. Üç önceki capture; broad error sınıfı, unreadable `renv`
+cache ve public synthetic output izni açıklarını bulup kanıt yazmadan durdu. Geçici
+write workflow kaldırıldı ve frozen-package validator normal verify'a eklendi. Bu
+checkpoint worker parity veya P006 acceptance değildir; passed ölçütler değişmedi.
+Post-freeze method audit, v1'de bütün `token_total` değerlerinin 100 ve tek unknown
+satırının son konumda olduğunu buldu. Bu nedenle v1 doğru çalışmış fakat kabul için
+yetersiz ara referanstır; v2 üretilmeden worker karşılaştırmasına geçilmez.
+
+**P006 v2 freeze durumu:** `p006-whole-text-v2` fixture; unequal totals, iki
+interleaved unknown, known final row, iki-unknown canary ve order permutation içerir.
+Formula-level raw-count counterfactualı her dört fit ve üç distance family için
+normalized sonuçtan aktiftir. `scripts/validate_p006_fixture_v2.py`, suite-aware
+oracle validator/freeze aracı ve CI içinde manual-only read-permission capture job'u
+eklendi. Capture job repo commit/push yapamaz; yayınlama yerel ve ayrı olacaktır.
+Yerel `scripts/verify.sh` 1,094 test, 7,247 statement, 1,902 branch ve yüzde 100
+kapsamla geçti. V2 source `c1ea852` ve normal CI `29298402134`; read-only capture
+registration `94fac26` ve normal CI `29298843070` ile yeşildir. Dispatch
+`29298977429` iki oracle koşusu ile validation/package adımını geçti, fakat GitHub
+artifact-storage kotası upload'u reddetti. `p006_log_transport.py` aynı küçük paketi
+canonical, chunked ve SHA-256-bound olarak job logundan taşımak için eklendi; tam
+transport source `c6a07e1`, normal CI `29299641848` ve successful capture
+`29299793944` ile geçti. Envelope `c94f84b3...4216c`, evidence-only commit `42fe09b`
+ve publication CI `29300077689` ile donduruldu. `RUN-20260714-0002` zinciri bağlar;
+kalıcı v2 validator normal verify'a eklendi ve geçici capture job kaldırıldı. V2
+audit commit `ad8aa77` ve normal CI `29300681277` de yeşildir. V2 fixed worker
+karşılaştırması için hazırdır; passed AC listesi değişmemiştir.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

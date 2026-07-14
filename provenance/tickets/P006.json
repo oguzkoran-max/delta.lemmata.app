@@ -1,0 +1,398 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P006",
+  "title": "R stylo Worker and Computational Parity",
+  "status": "complete",
+  "opened_at_utc": "2026-07-13T18:55:28Z",
+  "closed_at_utc": "2026-07-14T16:57:39Z",
+  "objective": "Run versioned whole-text stylometric calculations through a fixed R stylo worker, validate every scientific output before lifecycle success, and establish fixture-local computational parity and known-only fitting invariance without claiming preprocessing, benchmark, or production validation.",
+  "scope": [
+    "Closed versioned input, output, and error contracts for whole-text feature-count analysis",
+    "Fixed Rscript entrypoint and Python adapter with no shell interpolation or user-controlled argv, environment, or path syntax",
+    "A validated scientific-finalization phase that separates process exit from accepted analysis outcome",
+    "Known-only MFW ranking, culling, scaling, and feature inventory with unknown projection after fitting",
+    "Classic Burrows Delta as the primary distance and Eder's Delta plus Cosine Delta as separate sensitivity distances",
+    "Finite-number, non-negative distance, matrix shape, symmetry, diagonal, label, cardinality, and cell-outcome validation",
+    "Deterministic project-authored CC0 fixture proposals and an independent direct-stylo reference harness",
+    "Canonical Linux environment evidence including R, stylo, package, locale, timezone, RNG, BLAS, LAPACK, and protocol versions",
+    "Parity, leakage-canary, injection, malformed-output, timeout, cancellation, partial-failure, clean-clone, and CI evidence"
+  ],
+  "non_goals": [
+    "Raw-text tokenization, Unicode normalization, punctuation or number removal, segmentation, duplicate detection, or corpus-health validation, which belong to P007",
+    "Public Upload-to-Run activation, parameter wizard completion, or browser end-to-end analysis, which belong to P008",
+    "Interpretation cards, result graphics, stability labels, or open-set behavior, which belong to P009 and P011",
+    "Known-author accuracy, diachronic benchmark performance, threshold calibration, or complete leakage validation, which belong to P010 and P011",
+    "FAIR-oriented run package, clean-room rerun, or general reproducibility claim, which belongs to P012 and P015",
+    "Pinocchio, LiberLiber, or any literary case-study result, which belongs to P013",
+    "Production resource numbers, egress denial, container hardening, host isolation, or deployment, which belongs to P014",
+    "A new Delta formula, replacement of stylo, general stylo parity, CE-04 completion before P007, or CE-07 completion before P010 and P011"
+  ],
+  "dependencies": [
+    "P001",
+    "P004",
+    "P005"
+  ],
+  "claim_ids": [
+    "CE-04",
+    "CE-07"
+  ],
+  "threat_ids": [
+    "SEC-06",
+    "SEC-07",
+    "SEC-08",
+    "RP-05",
+    "EPI-03"
+  ],
+  "decision_ids": [
+    "HD-20260713-0002"
+  ],
+  "prompt_event_ids": [
+    "PE-20260713-0002",
+    "PE-20260713-0003",
+    "PE-20260713-0004"
+  ],
+  "commit_ids": [
+    "82cc6799017be87dde1b07133646b511fac2798d",
+    "c1e308f15a653d66a4c0403fbbe11245ca46a761",
+    "3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f",
+    "026b7706e71d348a1190789c6193793d3cf9a2e5",
+    "425a5b80d4778089585518b9d76ea99fb53a451b",
+    "3034bc474b1bad355a4927212b99156924fd796c",
+    "7df1fdf754ecfb3a0b84835dc7f368c481f333f1",
+    "b5a842fdee5456c7f5f9d0397c0f5a2f7d7a336f",
+    "cfacbbd5f95aaf3734c03075eacb887d5f7eeecd",
+    "c1ea85245501b4f85e3aa17fd87d406f1dd8eada",
+    "94fac26d9666cd58ac5dd945f82557c7cee9d967",
+    "c6a07e1b62440d56feabf76fd7c58e4b58b63477",
+    "42fe09b690d953fbcf45fcf48fa6d8f462fb8251",
+    "ad8aa77d3467d86af9b003927a1c5981f092c0d4",
+    "f0800c82d7033da2790abc69bc8adfe48570fcb1",
+    "d57431bdc8d900feb9f82902b6a74d26c53b4a1b",
+    "bb9f05e62d1ff01beb3e03262baf812a63692812",
+    "79cb268a348a35c9622efe52cd3a09a829a09b1f",
+    "7359cbe305743623db45777c3f4be059c847a74c",
+    "d676d90aa1bebea6197f2f18b5f988c8e6d11794"
+  ],
+  "run_ids": [
+    "RUN-20260714-0001",
+    "RUN-20260714-0002",
+    "RUN-20260714-0003",
+    "RUN-20260714-0004",
+    "RUN-20260714-0005"
+  ],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "OpenAI Codex",
+    "OpenAI Codex independent review agents"
+  ],
+  "supplemental_evidence": [
+    "prompts/P006-start.md",
+    "decisions/ADR-0013-stylo-worker-parity.md",
+    "provenance/evidence/P006/architecture-audit.md",
+    "provenance/evidence/P006/start-validation.md",
+    "memory/checkpoints/2026-07-13-p006-start.md",
+    "provenance/evidence/P006/contracts-finalizer-validation.md",
+    "memory/checkpoints/2026-07-14-p006-contracts-finalizer.md",
+    "docs/development/p006-oracle-freeze.md",
+    "docs/development/p006-oracle-v2.md",
+    "provenance/evidence/P006/oracle-freeze-validation.md",
+    "provenance/evidence/P006/oracle-v2-freeze-validation.md",
+    "memory/checkpoints/2026-07-14-p006-oracle-freeze.md",
+    "memory/checkpoints/2026-07-14-p006-oracle-v2-freeze.md",
+    "provenance/runs/RUN-20260714-0001.json",
+    "provenance/runs/RUN-20260714-0002.json",
+    "provenance/runs/RUN-20260714-0003.json",
+    "provenance/evidence/P006/worker-handoff-ci.md",
+    "provenance/runs/RUN-20260714-0004.json",
+    "provenance/evidence/P006/worker-capture-transport.json",
+    "provenance/evidence/P006/worker-evidence-validation.md",
+    "provenance/evidence/P006/worker-v1/worker-evidence.sha256",
+    "provenance/runs/RUN-20260714-0005.json",
+    "memory/checkpoints/2026-07-14-p006-complete.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/development/local-runtime-limitations.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P006-AC-01",
+      "criterion": "Versioned input, output, and error schemas plus canonical Python models, duplicate-key and non-finite rejection, and semantic validators pass positive and adversarial contract fixtures.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/contracts-finalizer-validation.md"
+      ]
+    },
+    {
+      "id": "P006-AC-02",
+      "criterion": "The adapter uses a fixed Rscript --vanilla entrypoint, shell false, fixed trusted files and cwd, a minimal allowlisted environment, private output creation, and no user value in argv, R code, environment names, or filesystem paths; injection fixtures execute no command or code.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
+    },
+    {
+      "id": "P006-AC-03",
+      "criterion": "Process exit, output capture, schema validation, scientific validation, durable terminal state, and guardian acknowledgement occur in that order; exit zero with missing, malformed, non-finite, asymmetric, mislabeled, duplicate, or cardinality-invalid output never becomes success.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
+    },
+    {
+      "id": "P006-AC-04",
+      "criterion": "MFW ranking, culling, means, standard deviations, and selected features use known documents only; changing an unknown canary leaves all fitting artifacts and known-known distances exactly unchanged.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
+    },
+    {
+      "id": "P006-AC-05",
+      "criterion": "Every requested cell appears exactly once; not-enough-features remains explicit, complete, partial, and failed analysis outcomes are derived deterministically, and omitted or corrupt cells invalidate the envelope rather than being projected as completion.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/contracts-finalizer-validation.md"
+      ]
+    },
+    {
+      "id": "P006-AC-06",
+      "criterion": "For the predeclared whole-text synthetic fixture suite and locked R/stylo environment, ordered feature inventories match the independent direct-stylo oracle exactly, distance matrices differ by at most 1e-6, and nearest-neighbor tie groups match at the predeclared threshold.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
+    },
+    {
+      "id": "P006-AC-07",
+      "criterion": "Canonical Linux runs retain fixture and input hashes, direct-reference and worker outputs, parity and leakage reports, complete session information, package and image identity, locale and timezone, and all expected failed cells without private paths or research payload leakage.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-evidence-validation.md",
+        "provenance/runs/RUN-20260714-0004.json"
+      ]
+    },
+    {
+      "id": "P006-AC-08",
+      "criterion": "Exact-commit clean-clone and Linux CI gates pass with full measured source coverage; a separate HumanDecision accepts the fixture, environment, tolerance, and claim protocol before oracle outputs are frozen, while public analysis and P007-P015 claims remain explicitly locked.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-evidence-validation.md",
+        "provenance/runs/RUN-20260714-0005.json",
+        "decisions/ADR-0013-stylo-worker-parity.md",
+        "provenance/human-decision-ledger.jsonl"
+      ]
+    }
+  ],
+  "changed_files": [
+    "P006 execution brief, native PromptEvent, method/security architecture audit, proposed parity ADR, active Ticket, checkpoint, and synchronized startup pointers",
+    "Deterministic pre-sample process-completion regression coverage added after the repeated opening gate exposed timing-dependent coverage",
+    "Accepted HumanDecision and ADR update for the CC0 fixture, locked environment, tolerance, metric, known-only fitting, and fixture-local claim protocol",
+    "Closed v1 worker input, result, and fatal-error models, generated schemas, strict single-parse JSON boundary, scientific semantic validator, and pure finalizer",
+    "Bounded nonblocking private workspace output read with pre-open type checks, identity fingerprints, mutation detection, and current-path area rebinding",
+    "Adversarial method and security regressions plus synchronized project memory, handoff, start instructions, checkpoint, and retained validation evidence",
+    "Premature lifecycle and guardian ACK integration removed after independent review; P006-AC-03 remains pending",
+    "Exact contracts/finalizer implementation commit passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container gates; only P006-AC-01 and P006-AC-05 pass at this checkpoint",
+    "Project-authored CC0 complete, unknown-canary, and culling-boundary fixtures plus an independent direct-stylo oracle, separate schema, generator, validators, and locked canonical environment",
+    "Two byte-identical no-network Linux oracle runs retained with source, image identity, observed package versions, lockfile, session, input, output, and checksum binding; one-time write workflow removed after freeze",
+    "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison",
+    "Adversarial v2 source adds six unequal document totals, two interleaved unknown rows, a known final row, two-unknown canary, order permutation, and formula-level raw-count separation for every complete fit and distance family",
+    "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, and cannot commit or push",
+    "The first v2 dispatch passed both no-network oracle runs and package validation but GitHub artifact quota rejected transport; a canonical checksum-bound job-log emitter and fail-closed local extractor replace artifact storage without changing publication authority",
+    "Adversarial v2 evidence is frozen in an evidence-only commit whose sole parent is the exact capture source; the temporary capture job is removed after normal publication CI and a durable offline validator binds source, evidence, Run, environment, and numerical invariants",
+    "The durable v2 audit and capture-job removal passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction",
+    "Fixed R/stylo worker, dedicated trusted environment, validated adapter, fixture-local oracle-v2 comparison, changed-unknown leakage canary, order-permutation check, and injection boundary",
+    "One-time scientific execution claim, exact result commitment, signed guardian acceptance and recovery receipts, three-state startup reconciliation, locked pending exports, and atomically confirmed current database rows",
+    "Exact implementation commit f0800c8 passed all 1,236 Linux tests, 100% of 7,768 statements and 2,080 branches, SBOM/dependency/secret gates, and canonical Linux amd64 container construction; retained worker package and clean-clone closure remain pending",
+    "Two failed read-only capture diagnostics were retained without scientific publication: the first exposed a generic execution rejection and the second isolated renv runtime mutation as CPU-limit exhaustion",
+    "Source 79cb268 disabled renv runtime mutation without changing the locked R, stylo, fixtures, methods, tolerances, seed, locale, or worker limits; normal source CI and the read-only capture then passed",
+    "Evidence-only commit 7359cbe retained the exact 18-file worker package plus an external checksum-bound transport receipt and passed normal publication CI",
+    "A versioned offline validator now revalidates the persisted package on every verify; the temporary capture job is removed and regression-tested absent",
+    "Durable audit commit d676d90 passed normal Linux CI with all 1,247 tests, worker parity, scientific handoff, 100% measured coverage, SBOM/dependency/secret gates, and canonical Linux amd64 container construction",
+    "The exact audit commit was fetched from the GitHub origin into a fresh remote no-hardlinks detached clone, restored from committed Python and R lockfiles, passed the full local gate, and left no versionable changes; P006-AC-01 through P006-AC-08 are complete within the declared fixture-local boundary"
+  ],
+  "commands": [
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The P006 opening package passed 970 tests, 100% of 6,551 statements and 1,732 branches, strict typing, metadata, 77 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "A repeated opening gate passed all 970 tests but reached 99.96% measured coverage because the pre-sample completion branch depended on real-process timing; the failure is retained and a deterministic regression test was added without changing production source.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected P006 opening package passed 971 tests, 100% of 6,551 statements and 1,732 branches, strict typing, metadata, 77 provenance records, repository scanning, and the locked R/stylo boundary on macOS.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29283400493",
+      "exit_code": 0,
+      "result": "Exact start commit 82cc679 passed Linux source, schema, record, SBOM, dependency-audit, and canonical Linux amd64 container jobs; it establishes opening-package integrity only, not R worker parity.",
+      "evidence": "provenance/evidence/P006/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 1,
+      "result": "The first post-audit full gate passed all 1,072 behavior tests but reached 99.89% measured coverage across 7,215 statements and 1,898 branches; the failed gate is retained and seven defensive lines received direct adversarial tests.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected contracts/finalizer checkpoint passed 1,073 tests, 100% of 7,215 statements and 1,898 branches, strict typing, metadata, 79 provenance records, repository scanning, and the locked R boundary on macOS.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "After the finite-number and FIFO-race re-audit corrections, the checkpoint passed 1,075 tests, 100% of 7,216 statements and 1,898 branches, strict typing, metadata, 80 provenance records, repository scanning, and the locked R boundary on macOS; the final narrow scientific review returned PASS.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29291282495",
+      "exit_code": 0,
+      "result": "Exact implementation commit 3c6ebe5 passed Linux source, schema, record, measured-coverage, SBOM, dependency-audit, and canonical Linux amd64 container jobs; it establishes the bounded contracts/finalizer checkpoint only, not R worker parity.",
+      "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "GitHub Actions oracle freeze runs 29294170144, 29294530963, and 29294900147",
+      "exit_code": 1,
+      "result": "Three capture attempts stopped before evidence publication and exposed, in order, an over-broad environment error, an unreadable root-owned locked R cache, and public synthetic outputs unreadable by the separate host verifier. Each cause was corrected without accepting or rewriting scientific values.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected oracle source checkpoint passed 1,086 tests, 100% of 7,247 statements and 1,902 branches, strict typing, metadata, 80 provenance records, repository scanning, R parsing, and the locked R environment on macOS.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29295419945",
+      "exit_code": 0,
+      "result": "Exact oracle source commit 7df1fdf passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction before evidence capture.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions P006 direct-stylo oracle freeze run 29295419981",
+      "exit_code": 0,
+      "result": "The locked Linux amd64 oracle ran twice without network access; both four-file output directories were byte-identical, passed input/scientific validation, and were retained in checksum-bound evidence commit b5a842f.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The adversarial v2 source passed deterministic fixture generation, role/order and raw-count counterfactual validation, 1,094 tests, 100% of 7,247 statements and 1,902 branches, typing, provenance, repository, frozen-v1, and locked-environment gates on macOS.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "gh workflow run p006-oracle-v2-capture.yml --ref codex/p006-stylo-worker",
+      "exit_code": 1,
+      "result": "GitHub rejected dispatch with HTTP 404 because a newly named workflow is not registered on the default branch. No run or artifact was created. The read-only capture job was moved behind workflow_dispatch in the already registered CI workflow without adding repository write permission.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "GitHub Actions CI runs 29297220930, 29298402134, and 29298843070",
+      "exit_code": 0,
+      "result": "The retained v1 audit, adversarial v2 source, and registered read-only capture source each passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction on their exact commits.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch run 29298977429",
+      "exit_code": 1,
+      "result": "Both exact-source no-network Linux oracle runs and the validation, byte-identity, and freeze-package step passed. The final upload alone failed because GitHub reported the account artifact-storage quota was full; the ephemeral candidate was not retained and no evidence was published from this run.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "./scripts/verify.sh and GitHub Actions CI run 29299641848",
+      "exit_code": 0,
+      "result": "The quota-independent transport source passed 1,103 local tests with 100% measured coverage, metadata, 81 provenance records, repository scanning, frozen-v1 validation, R parsing and lock checks; exact commit c6a07e1 then passed Linux verify, SBOM/dependency audit, and canonical Linux amd64 container jobs.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch run 29299793944 and local p006_log_transport.py extraction",
+      "exit_code": 0,
+      "result": "The exact-source oracle ran twice without network and produced byte-identical outputs. V2 scientific validation and freeze packaging passed; 137 log chunks reconstructed canonical envelope c94f84b3...4216c, all six files and the internal checksum passed, and an independent local validator confirmed all 14 historical source hashes and v2 output semantics.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29300077689",
+      "exit_code": 0,
+      "result": "Evidence-only commit 42fe09b passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction before the temporary capture job was removed.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh after durable v2 audit integration",
+      "exit_code": 0,
+      "result": "Final local closure passed 1,104 tests, 100% of 7,247 measured statements and 1,902 measured branches, all 82 provenance records, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate after the temporary capture job was removed.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29300681277",
+      "exit_code": 0,
+      "result": "Durable audit commit ad8aa77 passed Linux verify job 86983589180 and canonical Linux amd64 container job 86983589158 with the temporary capture job absent from the workflow.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh at f0800c82d7033da2790abc69bc8adfe48570fcb1",
+      "exit_code": 0,
+      "result": "The fixed-worker and handoff checkpoint passed 1,235 local tests with one canonical-Linux skip, 100% of 7,768 measured statements and 2,080 branches, strict typing, metadata, 82 provenance records, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate.",
+      "evidence": "provenance/evidence/P006/worker-handoff-ci.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29308457480",
+      "exit_code": 0,
+      "result": "Exact implementation commit f0800c8 passed p006-worker-parity-ok, p006-scientific-handoff-ok, all 1,236 Linux tests, 100% measured source and branch coverage, metadata, 82 records, repository scanning, SBOM/dependency/secret gates, and canonical Linux amd64 container job 87006903862.",
+      "evidence": "provenance/evidence/P006/worker-handoff-ci.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch runs 29333474110 and 29335197916",
+      "exit_code": 1,
+      "result": "The two diagnostic captures published no accepted package. The first exposed a generic execution rejection; the second isolated read-only renv lock or synchronization work as limit_exceeded_cpu. Both failures remain part of the development record.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29339965417",
+      "exit_code": 0,
+      "result": "Exact capture source 79cb268 passed Linux verify job 87108811962 and canonical Linux amd64 container job 87108811961 after read-only renv runtime controls were added without changing the scientific protocol.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch run 29340236382 and checksum-bound local extraction",
+      "exit_code": 0,
+      "result": "Read-only capture job 87110647201 produced the 18-file package from image sha256:ecc14f1b...bd75e; local extraction verified the raw log and envelope hashes, all internal checksums, four fixture executions, three not_enough_features cells, twelve deliberate failed cells, parity, leakage, permutation, and injection boundaries.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh against retained worker-v1 evidence",
+      "exit_code": 0,
+      "result": "The persisted publication tree passed 1,244 local tests with one canonical-Linux skip, 100% of 7,768 statements and 2,080 branches, metadata and 83 record checks, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29347937295",
+      "exit_code": 0,
+      "result": "Evidence-only commit 7359cbe passed Linux verify job 87136433154 and canonical Linux amd64 container job 87136433144; the one-time capture job skipped on an ordinary push as designed.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29350106890",
+      "exit_code": 0,
+      "result": "Durable audit commit d676d90 passed Linux verify job 87143854938 with all 1,247 tests, fixed-worker parity, scientific handoff, 100% of 7,768 measured statements and 2,080 branches, SBOM/dependency/secret gates, and canonical Linux amd64 container job 87143854913.",
+      "evidence": "provenance/runs/RUN-20260714-0005.json"
+    },
+    {
+      "command": "Remote no-hardlinks clone; detached checkout d676d90; ./scripts/bootstrap.sh; ./scripts/verify.sh; git status --short --untracked-files=all",
+      "exit_code": 0,
+      "result": "The exact audit commit was restored from committed lockfiles in a fresh GitHub-origin clone, passed 1,246 local tests with one declared Linux-only skip and 100% measured coverage, all metadata, provenance, repository, frozen-evidence, R parse, and R lock gates, and left a clean worktree.",
+      "evidence": "provenance/runs/RUN-20260714-0005.json"
+    }
+  ],
+  "blockers": []
+}

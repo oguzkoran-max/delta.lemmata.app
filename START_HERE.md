@@ -2,18 +2,22 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P005 Job Lifecycle, Isolation, and Retention sekiz acceptance
-ölçütünün tamamını geçerek kapandı. Exact Git-backed Linux capture, checksum paketi
-ve normal closure CI yeşildir. Aktif implementation Ticket yoktur; sıradaki aday
-P006 R `stylo` Worker and Computational Parity'dir. Bilimsel `stylo` hesaplaması
-henüz uygulanmadı.
+**Güncel aşama:** P001-P006 tamamlandı. P006 R `stylo` Worker and Computational
+Parity, sekiz acceptance ölçütünün tamamını fixture-local whole-text sınırında
+geçti. Fixed worker, scientific handoff, retained Linux evidence, normal CI ve
+exact-commit remote clean-clone zinciri `RUN-20260714-0004` ve
+`RUN-20260714-0005` ile kayıtlıdır. Aktif implementation Ticket yoktur. Sıradaki
+planlanan iş P007 Preprocessing and Corpus Health açılış paketidir; P007 Ticket,
+PromptEvent, architecture audit ve kabul edilmiş yöntem sınırı oluşmadan kod
+yazılmaz.
 
 ## 1. Her Oturumda Oku
 
 1. Bu dosya.
 2. `SESSION_HANDOFF.md`.
-3. `docs/development/roadmap-P001-P015.md` içindeki yalnız aktif ticket bölümü.
-4. Aktif ticket'ın `Claim/tehdit bağlantısı` satırında geçen kayıtlar:
+3. `docs/development/roadmap-P001-P015.md` içindeki aktif, yoksa sıradaki planlanan
+   ticket bölümü.
+4. Aktif veya sıradaki ticket'ın `Claim/tehdit bağlantısı` satırında geçen kayıtlar:
    - `docs/research/claim-evidence-matrix.md`
    - `docs/security/threat-model.md`
 5. Ticket'ın etkilediği ADR ve kod/test dosyaları.
@@ -126,10 +130,14 @@ Closure tree `029248b`, normal CI run `29269051028` içinde verify ve canonical
 container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
 `provenance/evidence/P005/final-ci-validation.md` içinde tutulur.
 
-Sıradaki tek iş P006'yı ayrı Ticket, PromptEvent, branch ve başlangıç denetimiyle
-açmaktır. P006 açılmadan gerçek R/stylo worker kodu yazılmaz. Önce
-`SESSION_HANDOFF.md` ve P006 roadmap bölümü okunur.
+P006 kaydı `provenance/tickets/P006.json` içinde `complete` durumundadır. Accepted
+ADR-0013 ve `HD-20260713-0002` yöntemi önceden dondurdu. Fixed worker ve handoff
+commit'i `f0800c8`; retained worker source `79cb268`, capture `29340236382`,
+evidence-only commit `7359cbe` ve `RUN-20260714-0004` zinciriyle doğrulandı.
+Capture job kaldırıldı. Durable audit commit `d676d90`, Linux CI run `29350106890`
+ve exact-commit remote clean-clone `RUN-20260714-0005` ile geçti. P006-AC-01 ile
+P006-AC-08 fixture-local sınırda passed durumundadır.
 
-P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. Public Start
-analysis, gerçek R/stylo, production limitleri, secure erase veya Delta-LDA host
-isolation iddiası P005'e eklenmez.
+P006 preprocessing, public Start analysis, production limitleri, secure erase veya
+Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P011'i
+bekler. Sıradaki tek ana iş P007'nin tests-first açılış paketi ve yöntem denetimidir.

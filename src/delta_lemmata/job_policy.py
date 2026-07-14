@@ -50,6 +50,15 @@ def load_job_policy(raw_json: str | bytes) -> JobPolicy:
 DEFAULT_JOB_POLICY = load_job_policy(
     files("delta_lemmata").joinpath("data/job-policy-v1.json").read_text(encoding="utf-8")
 )
+STYLO_WORKER_LIMITS = WorkerLimitProfile.model_validate_json(
+    files("delta_lemmata").joinpath("data/stylo-worker-limits-v1.json").read_text(encoding="utf-8")
+)
 
 
-__all__ = ["DEFAULT_JOB_POLICY", "JobPolicy", "WorkerLimitProfile", "load_job_policy"]
+__all__ = [
+    "DEFAULT_JOB_POLICY",
+    "STYLO_WORKER_LIMITS",
+    "JobPolicy",
+    "WorkerLimitProfile",
+    "load_job_policy",
+]
