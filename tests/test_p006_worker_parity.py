@@ -240,3 +240,11 @@ def test_injection_request_is_data_and_evidence_package_is_canonical(tmp_path: P
             {},
             {},
         )
+
+
+def test_valid_r_numeric_lexeme_does_not_need_python_byte_canonicalization() -> None:
+    _request, _oracle, result = load_pair("normalization-base")
+    python_payload = canonical_worker_json(result)
+    r_style_payload = python_payload.replace(b'"values":[[0.0,', b'"values":[[0,', 1)
+    assert r_style_payload != python_payload
+    assert parity._validated_raw_payload(r_style_payload, result) == r_style_payload

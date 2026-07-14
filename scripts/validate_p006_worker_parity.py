@@ -29,9 +29,11 @@ from delta_lemmata.stylo_contracts import (
     CellComplete,
     DirectStyloOracleV1,
     FitComplete,
+    StyloContractError,
     WorkerInputV1,
     WorkerResultV1,
     canonical_worker_json,
+    parse_worker_result,
     validate_worker_result,
 )
 from delta_lemmata.stylo_worker import (
@@ -76,6 +78,18 @@ def _sha256_path(path: Path) -> str:
         for chunk in iter(lambda: handle.read(1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _validated_raw_payload(payload: bytes | None, result: WorkerResultV1) -> bytes:
+    if payload is None:
+        _fail("P006_WORKER_PARITY_OUTPUT_MISSING")
+    try:
+        parsed = parse_worker_result(payload)
+    except StyloContractError:
+        _fail("P006_WORKER_PARITY_OUTPUT_INVALID")
+    if parsed != result:
+        _fail("P006_WORKER_PARITY_OUTPUT_RESULT_MISMATCH")
+    return payload
 
 
 def _canonical_json(value: Any) -> bytes:
@@ -357,8 +371,7 @@ def _execute_request(
         RESULT_COMPONENT,
         maximum_bytes=32 * 1024 * 1024,
     )
-    if payload is None or payload != canonical_worker_json(result):
-        _fail("P006_WORKER_PARITY_OUTPUT_NONCANONICAL")
+    payload = _validated_raw_payload(payload, result)
     if {path.name for path in layout.work.iterdir()} != {
         REQUEST_COMPONENT,
         RESULT_COMPONENT,
