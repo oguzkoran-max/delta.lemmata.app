@@ -137,6 +137,8 @@ def test_direct_oracle_is_independent_and_calls_only_locked_stylo_distances() ->
     assert "stylo::dist.delta(z_scores, scale = FALSE)" in source
     assert "stylo::dist.eder(z_scores, scale = FALSE)" in source
     assert "stylo::dist.cosine(z_scores)" in source
+    assert 'Sys.chmod(temporary, mode = "0644")' in source
+    assert 'Sys.chmod(temporary, mode = "0600")' not in source
     for forbidden in (
         "perform.delta",
         "dist.wurzburg",

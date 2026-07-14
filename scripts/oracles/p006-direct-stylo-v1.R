@@ -77,7 +77,10 @@ write_atomic <- function(path, value) {
   writeBin(charToRaw(encode_json(value)), connection)
   close(connection)
   on.exit(NULL, add = FALSE)
-  Sys.chmod(temporary, mode = "0600")
+  # These files contain only CC0 synthetic reference results and are committed
+  # as public evidence.  Keep them readable by the host-side verifier even
+  # when the container and CI runner use different unprivileged user IDs.
+  Sys.chmod(temporary, mode = "0644")
   if (!file.rename(temporary, path)) {
     fail("ORACLE_WRITE_FAILED")
   }
