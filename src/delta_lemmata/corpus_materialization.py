@@ -14,9 +14,20 @@ from functools import wraps
 
 from delta_lemmata.clock import Clock, require_utc
 from delta_lemmata.ingestion import IntakeReceipt, IntakeRole, ValidatedCorpusPayload
-from delta_lemmata.job_service import JobAdmission, JobService
+from delta_lemmata.job_service import (
+    JobAdmission,
+    JobService,
+    JobServiceError,
+    JobServiceErrorCode,
+)
 from delta_lemmata.job_staging import ValidatedPayload
-from delta_lemmata.job_workspace import CleanupReport, WorkspaceArea, WorkspaceManager
+from delta_lemmata.job_ui import JobPresentation
+from delta_lemmata.job_workspace import (
+    CleanupReport,
+    WorkspaceArea,
+    WorkspaceLayout,
+    WorkspaceManager,
+)
 from delta_lemmata.session_identity import JobId, SessionCapability, workspace_component
 
 LeaseIdFactory = Callable[[], str]
@@ -37,6 +48,9 @@ class CorpusMaterializationErrorCode(StrEnum):
     INTEGRITY = "P007_MATERIALIZATION_INTEGRITY"
     PREPARATION_FAILED = "P007_MATERIALIZATION_PREPARATION_FAILED"
     CLEANUP_FAILED = "P007_MATERIALIZATION_CLEANUP_FAILED"
+    READY_CONFLICT = "P007_MATERIALIZATION_READY_CONFLICT"
+    READY_REJECTED = "P007_MATERIALIZATION_READY_REJECTED"
+    READY_REUSED = "P007_MATERIALIZATION_READY_REUSED"
     OPERATION_FAILED = "P007_MATERIALIZATION_OPERATION_FAILED"
 
 
@@ -72,8 +86,11 @@ class _LeaseState:
     owner_reference: str
     capability: SessionCapability
     job_owner_digest: str
+    job_version: int
     receipt: CorpusMaterializationReceipt
     bindings: tuple[_StagedBinding, ...]
+    ready_receipt_hmac: str | None = None
+    consumed: bool = False
     visiting: bool = False
 
 
@@ -156,6 +173,8 @@ class CorpusMaterializationService:
         self._clock = clock
         self._lease_id_factory = lease_id_factory
         self._capability_factory = capability_factory
+        self._capabilities: dict[str, SessionCapability] = {}
+        self._capability_claims: dict[str, int] = {}
         self._leases: dict[str, _LeaseState] = {}
         self._reserved: set[str] = set()
         self._lock = threading.RLock()
@@ -183,6 +202,42 @@ class CorpusMaterializationService:
         with self._lock:
             self._reserved.discard(lease_id)
 
+    def _capability_for(self, owner_reference: str) -> SessionCapability:
+        with self._lock:
+            existing = self._capabilities.get(owner_reference)
+            if existing is not None:
+                self._capability_claims[owner_reference] = (
+                    self._capability_claims.get(owner_reference, 0) + 1
+                )
+                return existing
+            try:
+                capability = self._capability_factory()
+            except Exception:
+                raise _error(CorpusMaterializationErrorCode.ADMISSION_REJECTED) from None
+            if not isinstance(capability, SessionCapability):
+                raise _error(CorpusMaterializationErrorCode.ADMISSION_REJECTED)
+            self._capabilities[owner_reference] = capability
+            self._capability_claims[owner_reference] = 1
+            return capability
+
+    def _release_capability_claim(self, owner_reference: str) -> None:
+        with self._lock:
+            claims = self._capability_claims.get(owner_reference)
+            if claims is None:  # pragma: no cover - internal pairing invariant
+                return
+            if claims > 1:
+                self._capability_claims[owner_reference] = claims - 1
+                return
+            del self._capability_claims[owner_reference]
+            self._evict_unused_capability(owner_reference)
+
+    def _evict_unused_capability(self, owner_reference: str) -> None:
+        if owner_reference in self._capability_claims:
+            return
+        if any(state.owner_reference == owner_reference for state in self._leases.values()):
+            return
+        self._capabilities.pop(owner_reference, None)
+
     @_content_free
     def materialize(
         self,
@@ -201,11 +256,11 @@ class CorpusMaterializationService:
             raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
         lease_id = self._reserve_lease_id()
         admission: JobAdmission | None = None
+        capability_claimed = False
         try:
             try:
-                capability = self._capability_factory()
-                if not isinstance(capability, SessionCapability):
-                    raise TypeError
+                capability = self._capability_for(owner_reference)
+                capability_claimed = True
                 admission = self._jobs.admit(
                     capability=capability,
                     payloads=tuple(
@@ -250,6 +305,7 @@ class CorpusMaterializationService:
                 owner_reference=owner_reference,
                 capability=capability,
                 job_owner_digest=admission.job.owner_digest,
+                job_version=admission.job.version,
                 receipt=receipt,
                 bindings=tuple(bindings),
             )
@@ -267,12 +323,16 @@ class CorpusMaterializationService:
                     raise _error(CorpusMaterializationErrorCode.CLEANUP_FAILED) from None
             raise rejection
         finally:
+            if capability_claimed:
+                self._release_capability_claim(owner_reference)
             self._release_reservation(lease_id)
 
     def _begin_visit(
         self,
         owner_reference: str,
         receipt: CorpusMaterializationReceipt,
+        *,
+        allow_consumed: bool = False,
     ) -> _LeaseState:
         with self._lock:
             state = self._leases.get(receipt.lease_id)
@@ -281,6 +341,7 @@ class CorpusMaterializationService:
                 or state.owner_reference != owner_reference
                 or state.receipt != receipt
                 or state.visiting
+                or (state.consumed and not allow_consumed)
             ):
                 raise _error(CorpusMaterializationErrorCode.NOT_AVAILABLE)
             state.visiting = True
@@ -297,6 +358,7 @@ class CorpusMaterializationService:
             current = self._leases.get(state.receipt.lease_id)
             if current is state:
                 del self._leases[state.receipt.lease_id]
+                self._evict_unused_capability(state.owner_reference)
 
     def _cleanup_state(self, state: _LeaseState) -> CleanupReport:
         try:
@@ -320,10 +382,50 @@ class CorpusMaterializationService:
     ) -> ResultT:
         """Reauthorize, re-read, and revalidate private sources for one preparation call."""
 
-        owner_reference = _owner_reference(owner_key)
-        if not isinstance(receipt, CorpusMaterializationReceipt) or not callable(visitor):
+        if not callable(visitor):
             raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
-        state = self._begin_visit(owner_reference, receipt)
+        return self._visit_workspace(
+            owner_key=owner_key,
+            receipt=receipt,
+            visitor=lambda payloads, _layout: visitor(payloads),
+        )
+
+    @_content_free
+    def _visit_workspace[ResultT](
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+        visitor: Callable[
+            [tuple[ValidatedCorpusPayload, ...], WorkspaceLayout],
+            ResultT,
+        ],
+        ready_receipt_hmac: str | None = None,
+    ) -> ResultT:
+        """Visit verified sources with their private P005 workspace."""
+
+        owner_reference = _owner_reference(owner_key)
+        if (
+            not isinstance(receipt, CorpusMaterializationReceipt)
+            or not callable(visitor)
+            or (
+                ready_receipt_hmac is not None
+                and (
+                    not isinstance(ready_receipt_hmac, str)
+                    or _LEASE_ID.fullmatch(ready_receipt_hmac) is None
+                )
+            )
+        ):
+            raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
+        if state.consumed:
+            self._finish_visit(state)
+            if ready_receipt_hmac == state.ready_receipt_hmac:
+                raise _error(CorpusMaterializationErrorCode.READY_REUSED)
+            raise _error(CorpusMaterializationErrorCode.NOT_AVAILABLE)
+        if ready_receipt_hmac is not None and state.ready_receipt_hmac != ready_receipt_hmac:
+            self._finish_visit(state)
+            raise _error(CorpusMaterializationErrorCode.READY_REJECTED)
         try:
             expired = self._now() >= receipt.expires_at_utc
         except CorpusMaterializationError:
@@ -357,12 +459,149 @@ class CorpusMaterializationService:
             self._cleanup_state(state)
             raise _error(CorpusMaterializationErrorCode.INTEGRITY) from None
         try:
-            result = visitor(tuple(loaded))
+            result = visitor(tuple(loaded), layout)
         except Exception:
             self._cleanup_state(state)
             raise _error(CorpusMaterializationErrorCode.PREPARATION_FAILED) from None
         self._finish_visit(state)
         return result
+
+    @_content_free
+    def bind_ready(
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+        ready_receipt_hmac: str,
+        expires_at_utc: datetime,
+    ) -> None:
+        """Bind one private READY authority to the staged P005 job."""
+
+        owner_reference = _owner_reference(owner_key)
+        if (
+            not isinstance(receipt, CorpusMaterializationReceipt)
+            or not isinstance(ready_receipt_hmac, str)
+            or _LEASE_ID.fullmatch(ready_receipt_hmac) is None
+            or not isinstance(expires_at_utc, datetime)
+        ):
+            raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
+        state = self._begin_visit(owner_reference, receipt)
+        try:
+            now = self._now()
+            expiry = require_utc(expires_at_utc, field_name="READY expiry")
+            if now >= expiry or expiry > receipt.expires_at_utc:
+                self._cleanup_state(state)
+                raise _error(CorpusMaterializationErrorCode.EXPIRED)
+            if (
+                state.ready_receipt_hmac is not None
+                and state.ready_receipt_hmac != ready_receipt_hmac
+            ):
+                raise _error(CorpusMaterializationErrorCode.READY_CONFLICT)
+            self._jobs.bind_analysis_admission(
+                receipt_hmac=ready_receipt_hmac,
+                job_id=receipt.job_id,
+                capability=state.capability,
+                at_utc=now,
+                expires_at_utc=expiry,
+                expected_job_version=state.job_version,
+            )
+            state.ready_receipt_hmac = ready_receipt_hmac
+        except CorpusMaterializationError:
+            raise
+        except JobServiceError:
+            raise _error(CorpusMaterializationErrorCode.READY_REJECTED) from None
+        except Exception:
+            raise _error(CorpusMaterializationErrorCode.READY_REJECTED) from None
+        finally:
+            self._finish_visit(state)
+
+    @_content_free
+    def consume_ready(
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+        ready_receipt_hmac: str,
+        operation_id: str,
+    ) -> JobPresentation:
+        """Consume one bound READY authority and release the local lease state."""
+
+        owner_reference = _owner_reference(owner_key)
+        if (
+            not isinstance(receipt, CorpusMaterializationReceipt)
+            or not isinstance(ready_receipt_hmac, str)
+            or _LEASE_ID.fullmatch(ready_receipt_hmac) is None
+            or not isinstance(operation_id, str)
+        ):
+            raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
+        if state.ready_receipt_hmac != ready_receipt_hmac:
+            self._finish_visit(state)
+            raise _error(CorpusMaterializationErrorCode.READY_REJECTED)
+        if state.consumed:
+            self._finish_visit(state)
+            raise _error(CorpusMaterializationErrorCode.READY_REUSED)
+        try:
+            now = self._now()
+            if now >= receipt.expires_at_utc:
+                self._cleanup_state(state)
+                raise _error(CorpusMaterializationErrorCode.EXPIRED)
+            presentation = self._jobs.consume_analysis_admission(
+                receipt_hmac=ready_receipt_hmac,
+                job_id=receipt.job_id,
+                capability=state.capability,
+                at_utc=now,
+                operation_id=operation_id,
+            )
+        except CorpusMaterializationError:
+            self._finish_visit(state)
+            raise
+        except JobServiceError as error:
+            if error.code is JobServiceErrorCode.ANALYSIS_ADMISSION_REUSED:
+                state.consumed = True
+                self._finish_visit(state)
+                raise _error(CorpusMaterializationErrorCode.READY_REUSED) from None
+            self._finish_visit(state)
+            raise _error(CorpusMaterializationErrorCode.READY_REJECTED) from None
+        except Exception:
+            self._finish_visit(state)
+            raise _error(CorpusMaterializationErrorCode.READY_REJECTED) from None
+        state.consumed = True
+        self._finish_visit(state)
+        return presentation
+
+    @_content_free
+    def status(
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+    ) -> JobPresentation:
+        """Return one owned P005 projection without exposing its capability."""
+
+        owner_reference = _owner_reference(owner_key)
+        if not isinstance(receipt, CorpusMaterializationReceipt):
+            raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
+        if not state.consumed:
+            try:
+                expired = self._now() >= receipt.expires_at_utc
+            except CorpusMaterializationError:
+                self._cleanup_state(state)
+                raise
+            if expired:
+                self._cleanup_state(state)
+                raise _error(CorpusMaterializationErrorCode.EXPIRED)
+        try:
+            presentation = self._jobs.status(
+                job_id=receipt.job_id,
+                capability=state.capability,
+            )
+        except Exception:
+            raise _error(CorpusMaterializationErrorCode.NOT_AVAILABLE) from None
+        finally:
+            self._finish_visit(state)
+        return presentation
 
     @_content_free
     def cleanup(
@@ -376,7 +615,7 @@ class CorpusMaterializationService:
         owner_reference = _owner_reference(owner_key)
         if not isinstance(receipt, CorpusMaterializationReceipt):
             raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
-        state = self._begin_visit(owner_reference, receipt)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
         return self._cleanup_state(state)
 
 

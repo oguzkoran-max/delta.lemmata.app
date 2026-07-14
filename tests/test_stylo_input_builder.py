@@ -81,6 +81,7 @@ def _inputs() -> tuple[
         expires_at_utc=NOW + timedelta(hours=1),
         admission_nonce_sha256="1" * 64,
         inventory_sha256="2" * 64,
+        validation_report_sha256="a" * 64,
         annotations_sha256="3" * 64,
         config_sha256="4" * 64,
         manifest_sha256="5" * 64,

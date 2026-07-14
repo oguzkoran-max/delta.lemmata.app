@@ -71,6 +71,12 @@ MATERIALIZED -> PREPROCESSED -> HEALTH_CHECKED -> READY
 Only `READY` can issue an analysis-admission receipt. `BLOCKED` can issue a
 content-free audit package but cannot enqueue P006.
 
+`READY` means only that the documented corpus passed this computational
+preflight and can enter the supported analysis queue. It does not certify
+authorship, interpretive validity, corpus representativeness, or a research
+conclusion. Presentation projections expose the machine-readable scope
+`computational_preflight_only`.
+
 ## 4. Accepted Canonical Profile
 
 Profile identifier: `delta-surface-words-v1`
@@ -254,7 +260,8 @@ P003 receipt + P004 inventory + P007 overlay
 The READY receipt binds:
 
 - P003 raw digests;
-- P004 inventory digest;
+- P004 inventory and canonical validation-report digests, including the
+  validation-report schema version;
 - P007 overlay, configuration, manifest, and health-report digests;
 - exact asset/work/role ordering;
 - known-derived candidate-inventory digest;

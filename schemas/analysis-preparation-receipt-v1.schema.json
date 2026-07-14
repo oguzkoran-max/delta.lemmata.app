@@ -126,6 +126,9 @@
     },
     "state": {
       "$ref": "#/$defs/PreparationState"
+    },
+    "validation_report_sha256": {
+      "$ref": "#/$defs/Sha256"
     }
   },
   "required": [
@@ -136,6 +139,7 @@
     "expires_at_utc",
     "admission_nonce_sha256",
     "inventory_sha256",
+    "validation_report_sha256",
     "annotations_sha256",
     "config_sha256",
     "manifest_sha256",

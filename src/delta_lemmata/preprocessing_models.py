@@ -233,6 +233,7 @@ class AnalysisPreparationReceiptV1(P007Model):
     expires_at_utc: datetime = Field(strict=False)
     admission_nonce_sha256: Sha256
     inventory_sha256: Sha256
+    validation_report_sha256: Sha256
     annotations_sha256: Sha256
     config_sha256: Sha256
     manifest_sha256: Sha256

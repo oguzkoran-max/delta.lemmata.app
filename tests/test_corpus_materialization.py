@@ -18,7 +18,12 @@ from delta_lemmata.ingestion import (
     IntakeRole,
     ValidatedCorpusPayload,
 )
-from delta_lemmata.job_service import JobAdmission, JobService
+from delta_lemmata.job_service import (
+    JobAdmission,
+    JobService,
+    JobServiceError,
+    JobServiceErrorCode,
+)
 from delta_lemmata.job_staging import MaterializationReceipt
 from delta_lemmata.job_store import SQLiteJobStore
 from delta_lemmata.job_workspace import WorkspaceManager
@@ -294,6 +299,19 @@ def test_capability_and_job_admission_failures_leave_no_workspace(
     )
     assert invalid_workspaces.list_layouts() == ()
 
+    def fail_capability() -> SessionCapability:
+        raise RuntimeError("private admission corpus")
+
+    failed_capability, failed_workspaces, _ = _environment(
+        tmp_path / "failed-capability",
+        capability_factory=fail_capability,
+    )
+    _expect_error(
+        lambda: failed_capability.materialize(owner_key="owner-a", payloads=(source,)),
+        CorpusMaterializationErrorCode.ADMISSION_REJECTED,
+    )
+    assert failed_workspaces.list_layouts() == ()
+
     service, workspaces, _ = _environment(tmp_path / "failed-admission")
 
     def fail_admission(**_kwargs) -> JobAdmission:
@@ -444,4 +462,404 @@ def test_internal_race_guards_are_idempotent_and_cleanup_rejects_wrong_type(
     service._finish_visit(state)
     report = service._jobs.cleanup(job_id=receipt.job_id, capability=state.capability)
     assert report.verified_absent is True
+    assert workspaces.list_layouts() == ()
+
+
+def test_one_capability_is_reused_for_each_server_session(tmp_path: Path) -> None:
+    generated: list[SessionCapability] = []
+
+    def make_capability() -> SessionCapability:
+        capability = SessionCapability.generate(lambda size: bytes([len(generated) + 1]) * size)
+        generated.append(capability)
+        return capability
+
+    service, _workspaces, _clock = _environment(
+        tmp_path,
+        capability_factory=make_capability,
+    )
+    source = _source(1, b"private session corpus")
+
+    first = service.materialize(owner_key="owner-a", payloads=(source,))
+    first_state = service._leases[first.lease_id]
+    owner_reference = first_state.owner_reference
+    first_claim = service._capability_for(owner_reference)
+    second_claim = service._capability_for(owner_reference)
+    assert first_claim is first_state.capability
+    assert second_claim is first_claim
+    service._evict_unused_capability(owner_reference)
+    service._release_capability_claim(owner_reference)
+    service._release_capability_claim(owner_reference)
+    _expect_error(
+        lambda: service.materialize(owner_key="owner-a", payloads=(source,)),
+        CorpusMaterializationErrorCode.ADMISSION_REJECTED,
+    )
+    assert len(generated) == 1
+    service.cleanup(owner_key="owner-a", receipt=first)
+    assert service._capabilities == {}
+    assert service._capability_claims == {}
+    second = service.materialize(owner_key="owner-a", payloads=(source,))
+    service.cleanup(owner_key="owner-a", receipt=second)
+    third = service.materialize(owner_key="owner-b", payloads=(source,))
+    service.cleanup(owner_key="owner-b", receipt=third)
+
+    assert len(generated) == 3
+    assert service._capabilities == {}
+    assert service._capability_claims == {}
+
+
+def test_workspace_visit_and_ready_authority_enqueue_exactly_once(tmp_path: Path) -> None:
+    service, workspaces, clock = _environment(tmp_path)
+    source = _source(1, b"private ready corpus")
+    receipt = service.materialize(owner_key="owner-a", payloads=(source,))
+
+    observed = service._visit_workspace(
+        owner_key="owner-a",
+        receipt=receipt,
+        visitor=lambda payloads, layout: (payloads[0].content, layout.root),
+    )
+    assert observed == (source.content, workspaces.list_layouts()[0].root)
+
+    ready_hmac = "a" * 64
+    service.bind_ready(
+        owner_key="owner-a",
+        receipt=receipt,
+        ready_receipt_hmac=ready_hmac,
+        expires_at_utc=receipt.expires_at_utc,
+    )
+    service.bind_ready(
+        owner_key="owner-a",
+        receipt=receipt,
+        ready_receipt_hmac=ready_hmac,
+        expires_at_utc=receipt.expires_at_utc,
+    )
+    assert service.status(owner_key="owner-a", receipt=receipt).state_id == "staged"
+    visited = False
+
+    def forbidden_visit(_payloads, _layout) -> None:
+        nonlocal visited
+        visited = True
+
+    _expect_error(
+        lambda: service._visit_workspace(
+            owner_key="owner-a",
+            receipt=receipt,
+            visitor=forbidden_visit,
+            ready_receipt_hmac="f" * 64,
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+    assert visited is False
+
+    queued = service.consume_ready(
+        owner_key="owner-a",
+        receipt=receipt,
+        ready_receipt_hmac=ready_hmac,
+        operation_id="op_" + "b" * 64,
+    )
+    assert queued.state_id == "queued"
+    assert service.status(owner_key="owner-a", receipt=receipt).state_id == "queued"
+    clock.advance(timedelta(hours=1))
+    assert service.status(owner_key="owner-a", receipt=receipt).state_id == "queued"
+    _expect_error(
+        lambda: service.visit(
+            owner_key="owner-a",
+            receipt=receipt,
+            visitor=lambda _payloads: None,
+        ),
+        CorpusMaterializationErrorCode.NOT_AVAILABLE,
+    )
+    _expect_error(
+        lambda: service._visit_workspace(
+            owner_key="owner-a",
+            receipt=receipt,
+            visitor=lambda _payloads, _layout: None,
+            ready_receipt_hmac=ready_hmac,
+        ),
+        CorpusMaterializationErrorCode.READY_REUSED,
+    )
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id="op_" + "b" * 64,
+        ),
+        CorpusMaterializationErrorCode.READY_REUSED,
+    )
+
+
+def test_ready_authority_rejects_mismatch_and_cleans_at_exact_expiry(tmp_path: Path) -> None:
+    service, workspaces, clock = _environment(tmp_path)
+    source = _source(1, b"private expiring corpus")
+    receipt = service.materialize(owner_key="owner-a", payloads=(source,))
+    ready_hmac = "c" * 64
+    service.bind_ready(
+        owner_key="owner-a",
+        receipt=receipt,
+        ready_receipt_hmac=ready_hmac,
+        expires_at_utc=receipt.expires_at_utc,
+    )
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac="d" * 64,
+            operation_id="op_" + "e" * 64,
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+    clock.advance(timedelta(hours=1))
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id="op_" + "e" * 64,
+        ),
+        CorpusMaterializationErrorCode.EXPIRED,
+    )
+    assert workspaces.list_layouts() == ()
+
+    status_service, status_workspaces, status_clock = _environment(tmp_path / "status-expiry")
+    status_receipt = status_service.materialize(owner_key="owner-a", payloads=(source,))
+    status_clock.advance(timedelta(hours=1))
+    _expect_error(
+        lambda: status_service.status(owner_key="owner-a", receipt=status_receipt),
+        CorpusMaterializationErrorCode.EXPIRED,
+    )
+    assert status_workspaces.list_layouts() == ()
+
+
+def test_ready_boundary_validates_inputs_bindings_and_store_failures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _source(1, b"private ready boundary corpus")
+    service, workspaces, _clock = _environment(tmp_path / "bindings")
+    receipt = service.materialize(owner_key="owner-a", payloads=(source,))
+    ready_hmac = "a" * 64
+
+    _expect_error(
+        lambda: service._visit_workspace(
+            owner_key="owner-a",
+            receipt=object(),  # type: ignore[arg-type]
+            visitor=lambda _payloads, _layout: None,
+        ),
+        CorpusMaterializationErrorCode.INVALID_REQUEST,
+    )
+    _expect_error(
+        lambda: service._visit_workspace(
+            owner_key="owner-a",
+            receipt=receipt,
+            visitor=lambda _payloads, _layout: None,
+            ready_receipt_hmac="bad",
+        ),
+        CorpusMaterializationErrorCode.INVALID_REQUEST,
+    )
+    _expect_error(
+        lambda: service.bind_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac="bad",
+            expires_at_utc=receipt.expires_at_utc,
+        ),
+        CorpusMaterializationErrorCode.INVALID_REQUEST,
+    )
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id=object(),  # type: ignore[arg-type]
+        ),
+        CorpusMaterializationErrorCode.INVALID_REQUEST,
+    )
+    _expect_error(
+        lambda: service.status(
+            owner_key="owner-a",
+            receipt=object(),  # type: ignore[arg-type]
+        ),
+        CorpusMaterializationErrorCode.INVALID_REQUEST,
+    )
+
+    service.bind_ready(
+        owner_key="owner-a",
+        receipt=receipt,
+        ready_receipt_hmac=ready_hmac,
+        expires_at_utc=receipt.expires_at_utc,
+    )
+    _expect_error(
+        lambda: service.bind_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac="b" * 64,
+            expires_at_utc=receipt.expires_at_utc,
+        ),
+        CorpusMaterializationErrorCode.READY_CONFLICT,
+    )
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id="invalid-operation",
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+    service.cleanup(owner_key="owner-a", receipt=receipt)
+    assert workspaces.list_layouts() == ()
+
+    expired, expired_workspaces, _ = _environment(tmp_path / "expired-bind")
+    expired_receipt = expired.materialize(owner_key="owner-a", payloads=(source,))
+    _expect_error(
+        lambda: expired.bind_ready(
+            owner_key="owner-a",
+            receipt=expired_receipt,
+            ready_receipt_hmac=ready_hmac,
+            expires_at_utc=NOW,
+        ),
+        CorpusMaterializationErrorCode.EXPIRED,
+    )
+    assert expired_workspaces.list_layouts() == ()
+
+    bind_failure, bind_workspaces, _ = _environment(tmp_path / "bind-failure")
+    bind_receipt = bind_failure.materialize(owner_key="owner-a", payloads=(source,))
+
+    def fail_bind(**_kwargs) -> None:
+        raise RuntimeError("private ready boundary corpus")
+
+    monkeypatch.setattr(bind_failure._jobs, "bind_analysis_admission", fail_bind)
+    _expect_error(
+        lambda: bind_failure.bind_ready(
+            owner_key="owner-a",
+            receipt=bind_receipt,
+            ready_receipt_hmac=ready_hmac,
+            expires_at_utc=bind_receipt.expires_at_utc,
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+    bind_failure.cleanup(owner_key="owner-a", receipt=bind_receipt)
+    assert bind_workspaces.list_layouts() == ()
+
+    service_failure, service_workspaces, _ = _environment(tmp_path / "service-bind-failure")
+    service_receipt = service_failure.materialize(owner_key="owner-a", payloads=(source,))
+
+    def reject_bind(**_kwargs) -> None:
+        raise JobServiceError(JobServiceErrorCode.ANALYSIS_ADMISSION_REJECTED)
+
+    monkeypatch.setattr(service_failure._jobs, "bind_analysis_admission", reject_bind)
+    _expect_error(
+        lambda: service_failure.bind_ready(
+            owner_key="owner-a",
+            receipt=service_receipt,
+            ready_receipt_hmac=ready_hmac,
+            expires_at_utc=service_receipt.expires_at_utc,
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+    service_failure.cleanup(owner_key="owner-a", receipt=service_receipt)
+    assert service_workspaces.list_layouts() == ()
+
+
+def test_ready_status_and_consume_translate_downstream_failures(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    source = _source(1, b"private downstream corpus")
+    service, workspaces, _clock = _environment(tmp_path)
+    receipt = service.materialize(owner_key="owner-a", payloads=(source,))
+    ready_hmac = "c" * 64
+    service.bind_ready(
+        owner_key="owner-a",
+        receipt=receipt,
+        ready_receipt_hmac=ready_hmac,
+        expires_at_utc=receipt.expires_at_utc,
+    )
+    original_consume = service._jobs.consume_analysis_admission
+
+    def rejected_consume(**_kwargs):
+        raise JobServiceError(JobServiceErrorCode.ANALYSIS_ADMISSION_REJECTED)
+
+    monkeypatch.setattr(service._jobs, "consume_analysis_admission", rejected_consume)
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id="op_" + "d" * 64,
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+
+    def broken_consume(**_kwargs):
+        raise RuntimeError("private downstream corpus")
+
+    monkeypatch.setattr(service._jobs, "consume_analysis_admission", broken_consume)
+    _expect_error(
+        lambda: service.consume_ready(
+            owner_key="owner-a",
+            receipt=receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id="op_" + "d" * 64,
+        ),
+        CorpusMaterializationErrorCode.READY_REJECTED,
+    )
+    monkeypatch.setattr(service._jobs, "consume_analysis_admission", original_consume)
+    original_status = service._jobs.status
+
+    def broken_status(**_kwargs):
+        raise RuntimeError("private downstream corpus")
+
+    monkeypatch.setattr(service._jobs, "status", broken_status)
+    _expect_error(
+        lambda: service.status(owner_key="owner-a", receipt=receipt),
+        CorpusMaterializationErrorCode.NOT_AVAILABLE,
+    )
+    monkeypatch.setattr(service._jobs, "status", original_status)
+    service.cleanup(owner_key="owner-a", receipt=receipt)
+    assert workspaces.list_layouts() == ()
+
+    reused, reused_workspaces, _ = _environment(tmp_path / "reused")
+    reused_receipt = reused.materialize(owner_key="owner-a", payloads=(source,))
+    reused.bind_ready(
+        owner_key="owner-a",
+        receipt=reused_receipt,
+        ready_receipt_hmac=ready_hmac,
+        expires_at_utc=reused_receipt.expires_at_utc,
+    )
+
+    def reused_consume(**_kwargs):
+        raise JobServiceError(JobServiceErrorCode.ANALYSIS_ADMISSION_REUSED)
+
+    monkeypatch.setattr(reused._jobs, "consume_analysis_admission", reused_consume)
+    _expect_error(
+        lambda: reused.consume_ready(
+            owner_key="owner-a",
+            receipt=reused_receipt,
+            ready_receipt_hmac=ready_hmac,
+            operation_id="op_" + "e" * 64,
+        ),
+        CorpusMaterializationErrorCode.READY_REUSED,
+    )
+    assert reused._leases[reused_receipt.lease_id].consumed is True
+    assert len(reused_workspaces.list_layouts()) == 1
+
+
+def test_status_invalid_clock_cleans_unconsumed_materialization(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    service, workspaces, _clock = _environment(tmp_path)
+    source = _source(1, b"private status clock corpus")
+    receipt = service.materialize(owner_key="owner-a", payloads=(source,))
+
+    class BrokenClock:
+        def now(self) -> datetime:
+            raise RuntimeError("private status clock corpus")
+
+    monkeypatch.setattr(service, "_clock", BrokenClock())
+    _expect_error(
+        lambda: service.status(owner_key="owner-a", receipt=receipt),
+        CorpusMaterializationErrorCode.INVALID_CONFIGURATION,
+    )
     assert workspaces.list_layouts() == ()

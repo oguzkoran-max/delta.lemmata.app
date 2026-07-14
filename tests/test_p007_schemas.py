@@ -63,6 +63,7 @@ def _receipt() -> AnalysisPreparationReceiptV1:
         expires_at_utc=issued + timedelta(minutes=30),
         admission_nonce_sha256="2" * 64,
         inventory_sha256="3" * 64,
+        validation_report_sha256="b" * 64,
         annotations_sha256="4" * 64,
         config_sha256="5" * 64,
         manifest_sha256="6" * 64,
