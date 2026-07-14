@@ -1,0 +1,1 @@
+{"claim_boundary":"worker-level changed-unknown canary only","schema_version":"p006-worker-leakage-report-v1","unknown_canary":{"changed_unknown_documents":2,"fitting_artifacts_exact":true,"known_distance_values_compared":192,"known_known_distances_exact":true,"unknown_distance_families_active":6}}

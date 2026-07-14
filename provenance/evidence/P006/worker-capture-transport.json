@@ -1,0 +1,32 @@
+{
+  "schema_version": "p006-worker-capture-transport-v1",
+  "source_commit": "79cb268a348a35c9622efe52cd3a09a829a09b1f",
+  "github": {
+    "repository": "oguzkoran-max/delta.lemmata.app",
+    "workflow": "CI",
+    "run_id": "29340236382",
+    "run_attempt": 1,
+    "job": "p006-worker-capture",
+    "job_id": "87110647201",
+    "head_sha": "79cb268a348a35c9622efe52cd3a09a829a09b1f",
+    "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29340236382"
+  },
+  "container_image_id": "sha256:ecc14f1b5f89228f5d3e14fc00b011ca6899199a521750b7fe8b29d34efbd75e",
+  "transport": {
+    "kind": "checksum-bound-github-job-log",
+    "raw_job_log_sha256": "1390711bf9db38e38ef888b192c58d7870567d58cb41ed20c3b2edbf6d45fab5",
+    "envelope_sha256": "99a114ca1f02fde0ac2bf4d9dd9dd4d4cc9d1ee6d64a15759fb5c13f23f27af9",
+    "extracted_file_count": 18,
+    "extracted_byte_count": 155921,
+    "persisted_tree_revalidated": true,
+    "attestation_scope": "The checksum-bound GitHub job-log transport binds the retained bytes to the recorded run metadata; it is not a cryptographic GitHub attestation."
+  },
+  "offline_validation": {
+    "validator": "scripts/validate_p006_worker_evidence.py",
+    "status": "passed",
+    "files": 18,
+    "fixtures": 4,
+    "non_complete_cells": 3,
+    "failed_cells": 12
+  }
+}
