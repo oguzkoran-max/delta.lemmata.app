@@ -66,12 +66,17 @@
     "c6a07e1b62440d56feabf76fd7c58e4b58b63477",
     "42fe09b690d953fbcf45fcf48fa6d8f462fb8251",
     "ad8aa77d3467d86af9b003927a1c5981f092c0d4",
-    "f0800c82d7033da2790abc69bc8adfe48570fcb1"
+    "f0800c82d7033da2790abc69bc8adfe48570fcb1",
+    "d57431bdc8d900feb9f82902b6a74d26c53b4a1b",
+    "bb9f05e62d1ff01beb3e03262baf812a63692812",
+    "79cb268a348a35c9622efe52cd3a09a829a09b1f",
+    "7359cbe305743623db45777c3f4be059c847a74c"
   ],
   "run_ids": [
     "RUN-20260714-0001",
     "RUN-20260714-0002",
-    "RUN-20260714-0003"
+    "RUN-20260714-0003",
+    "RUN-20260714-0004"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -97,6 +102,10 @@
     "provenance/runs/RUN-20260714-0002.json",
     "provenance/runs/RUN-20260714-0003.json",
     "provenance/evidence/P006/worker-handoff-ci.md",
+    "provenance/runs/RUN-20260714-0004.json",
+    "provenance/evidence/P006/worker-capture-transport.json",
+    "provenance/evidence/P006/worker-evidence-validation.md",
+    "provenance/evidence/P006/worker-v1/worker-evidence.sha256",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/local-runtime-limitations.md",
     "docs/research/claim-evidence-matrix.md",
@@ -154,8 +163,11 @@
     {
       "id": "P006-AC-07",
       "criterion": "Canonical Linux runs retain fixture and input hashes, direct-reference and worker outputs, parity and leakage reports, complete session information, package and image identity, locale and timezone, and all expected failed cells without private paths or research payload leakage.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-evidence-validation.md",
+        "provenance/runs/RUN-20260714-0004.json"
+      ]
     },
     {
       "id": "P006-AC-08",
@@ -183,7 +195,11 @@
     "The durable v2 audit and capture-job removal passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction",
     "Fixed R/stylo worker, dedicated trusted environment, validated adapter, fixture-local oracle-v2 comparison, changed-unknown leakage canary, order-permutation check, and injection boundary",
     "One-time scientific execution claim, exact result commitment, signed guardian acceptance and recovery receipts, three-state startup reconciliation, locked pending exports, and atomically confirmed current database rows",
-    "Exact implementation commit f0800c8 passed all 1,236 Linux tests, 100% of 7,768 statements and 2,080 branches, SBOM/dependency/secret gates, and canonical Linux amd64 container construction; retained worker package and clean-clone closure remain pending"
+    "Exact implementation commit f0800c8 passed all 1,236 Linux tests, 100% of 7,768 statements and 2,080 branches, SBOM/dependency/secret gates, and canonical Linux amd64 container construction; retained worker package and clean-clone closure remain pending",
+    "Two failed read-only capture diagnostics were retained without scientific publication: the first exposed a generic execution rejection and the second isolated renv runtime mutation as CPU-limit exhaustion",
+    "Source 79cb268 disabled renv runtime mutation without changing the locked R, stylo, fixtures, methods, tolerances, seed, locale, or worker limits; normal source CI and the read-only capture then passed",
+    "Evidence-only commit 7359cbe retained the exact 18-file worker package plus an external checksum-bound transport receipt and passed normal publication CI",
+    "A versioned offline validator now revalidates the persisted package on every verify; the temporary capture job is removed and regression-tested absent while exact-commit clean-clone closure remains pending"
   ],
   "commands": [
     {
@@ -323,6 +339,36 @@
       "exit_code": 0,
       "result": "Exact implementation commit f0800c8 passed p006-worker-parity-ok, p006-scientific-handoff-ok, all 1,236 Linux tests, 100% measured source and branch coverage, metadata, 82 records, repository scanning, SBOM/dependency/secret gates, and canonical Linux amd64 container job 87006903862.",
       "evidence": "provenance/evidence/P006/worker-handoff-ci.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch runs 29333474110 and 29335197916",
+      "exit_code": 1,
+      "result": "The two diagnostic captures published no accepted package. The first exposed a generic execution rejection; the second isolated read-only renv lock or synchronization work as limit_exceeded_cpu. Both failures remain part of the development record.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29339965417",
+      "exit_code": 0,
+      "result": "Exact capture source 79cb268 passed Linux verify job 87108811962 and canonical Linux amd64 container job 87108811961 after read-only renv runtime controls were added without changing the scientific protocol.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch run 29340236382 and checksum-bound local extraction",
+      "exit_code": 0,
+      "result": "Read-only capture job 87110647201 produced the 18-file package from image sha256:ecc14f1b...bd75e; local extraction verified the raw log and envelope hashes, all internal checksums, four fixture executions, three not_enough_features cells, twelve deliberate failed cells, parity, leakage, permutation, and injection boundaries.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh against retained worker-v1 evidence",
+      "exit_code": 0,
+      "result": "The persisted publication tree passed 1,244 local tests with one canonical-Linux skip, 100% of 7,768 statements and 2,080 branches, metadata and 83 record checks, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29347937295",
+      "exit_code": 0,
+      "result": "Evidence-only commit 7359cbe passed Linux verify job 87136433154 and canonical Linux amd64 container job 87136433144; the one-time capture job skipped on an ordinary push as designed.",
+      "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
     }
   ],
   "blockers": []

@@ -39,32 +39,18 @@ def test_temporary_p005_write_workflow_was_removed_after_capture() -> None:
     assert "contents: write" not in normal_ci
 
 
-def test_p006_worker_capture_is_manual_read_only_and_fail_closed() -> None:
+def test_p006_worker_capture_was_removed_after_publication() -> None:
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    capture = workflow.split("  p006-worker-capture:", maxsplit=1)[1]
 
     assert "workflow_dispatch:" in workflow
     assert "contents: read" in workflow
     assert "contents: write" not in workflow
+    assert "p006-worker-capture" not in workflow
     assert "p006-oracle-v2-capture" not in workflow
-    assert "if: github.event_name == 'workflow_dispatch'" in capture
-    assert "persist-credentials: false" in capture
-    assert "fetch-depth: 0" in capture
-    assert 'test "$(git rev-parse HEAD)" = "$SOURCE_SHA"' in capture
-    assert "cmp /opt/delta/scripts/workers/p006-stylo-worker-v1.R" in capture
-    assert "--network none" in capture
-    assert "--read-only" in capture
-    assert "--cap-drop ALL" in capture
-    assert "--security-opt no-new-privileges" in capture
-    assert "--memory 2g" in capture
-    assert "--output-directory /capture/worker-evidence" in capture
-    assert "--include-boundary-fixture" in capture
-    assert "validate_p006_worker_evidence.py" in capture
-    assert "p006_log_transport.py emit" in capture
-    assert "--checksum-manifest worker-evidence.sha256" in capture
-    assert "git commit" not in capture
-    assert "git push" not in capture
+    assert "p006_log_transport.py emit" not in workflow
     assert "actions/upload-artifact" not in workflow
+    assert (ROOT / "provenance" / "evidence" / "P006" / "worker-v1").is_dir()
+    assert (ROOT / "provenance" / "evidence" / "P006" / "worker-capture-transport.json").is_file()
 
 
 def test_container_base_digest_matches_lock() -> None:

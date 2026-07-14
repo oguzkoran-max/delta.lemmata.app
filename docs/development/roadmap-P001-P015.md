@@ -250,13 +250,16 @@ P014/P015'e kadar verified değildir. SEC-07, SEC-09, SEC-11, SEC-12, SEC-13.
 
 ### P006: R `stylo` Worker and Computational Parity
 
-**Durum:** In progress; Ticket `provenance/tickets/P006.json`, accepted protocol
-`decisions/ADR-0013-stylo-worker-parity.md`. The independent CC0 direct-`stylo`
-oracle v1 is checksum-frozen. Adversarial v2 fixtures passed normal Linux CI. The
-first read-only capture passed both oracle runs and all validation but artifact
-quota blocked transport. The replacement capture, checksum-bound extraction,
-evidence-only publication, normal CI, Run binding, and durable validator passed.
-V2 is checksum-frozen; fixed worker implementation and parity remain pending.
+**Durum:** In progress, closure gate only; Ticket `provenance/tickets/P006.json`,
+accepted protocol `decisions/ADR-0013-stylo-worker-parity.md`. The fixed worker,
+independent CC0 direct-`stylo` references, adversarial v2 fixtures, known-only
+fitting canary, permutation check, failure boundaries, and injection boundary
+passed their declared fixture-local tests. The exact 18-file Linux worker package
+is checksum-bound in evidence-only commit `7359cbe`, normal publication CI passed,
+and the temporary capture job has been removed. P006-AC-07 passes. The remaining
+P006-AC-08 gate is an exact-commit clean-clone verification of the durable audit
+tree; preprocessing, benchmark, public-workflow, FAIR-export, case-study, and
+production claims remain locked to P007-P015.
 
 **Amaç:** Kanonik hesaplamayı güvenli, sürümlü ve doğrudan `stylo` referansıyla karşılaştırılabilir R worker içinde çalıştırmak.
 

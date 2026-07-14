@@ -1,0 +1,185 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260714-0004",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P006"
+  ],
+  "started_at_utc": "2026-07-14T14:18:13Z",
+  "ended_at_utc": "2026-07-14T14:24:51Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "79cb268a348a35c9622efe52cd3a09a829a09b1f",
+  "environment": {
+    "os": "GitHub-hosted Ubuntu 24.04",
+    "architecture": "x86_64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "jsonlite": "2.0.0",
+    "locale": "C.UTF-8",
+    "timezone": "UTC",
+    "rng": "Mersenne-Twister / Inversion / Rejection",
+    "seed": 20260713,
+    "source_ci_run": "29339965417",
+    "source_ci_verify_job": "87108811962",
+    "source_ci_container_job": "87108811961",
+    "capture_run": "29340236382",
+    "capture_job": "87110647201",
+    "capture_verify_job": "87109759192",
+    "capture_container_job": "87109759084",
+    "evidence_commit": "7359cbe305743623db45777c3f4be059c847a74c",
+    "publication_ci_run": "29347937295",
+    "publication_ci_verify_job": "87136433154",
+    "publication_ci_container_job": "87136433144",
+    "built_image_id": "sha256:ecc14f1b5f89228f5d3e14fc00b011ca6899199a521750b7fe8b29d34efbd75e",
+    "capture_profile": {
+      "network": "none",
+      "root_filesystem": "read-only",
+      "capabilities": "all-dropped",
+      "no_new_privileges": true,
+      "container_memory": "2g",
+      "worker_cpu_seconds": 30,
+      "worker_wall_seconds": 60,
+      "worker_memory_bytes": 1073741824,
+      "worker_processes": 8
+    },
+    "transport": {
+      "kind": "checksum-bound-github-job-log",
+      "raw_log_sha256": "1390711bf9db38e38ef888b192c58d7870567d58cb41ed20c3b2edbf6d45fab5",
+      "envelope_sha256": "99a114ca1f02fde0ac2bf4d9dd9dd4d4cc9d1ee6d64a15759fb5c13f23f27af9",
+      "file_count": 18,
+      "byte_count": 155921
+    }
+  },
+  "command": "gh run view 29340236382 --job 87110647201 --log > p006-worker-job.log && .venv/bin/python scripts/p006_log_transport.py extract p006-worker-job.log p006-worker-extracted --checksum-manifest worker-evidence.sha256 && .venv/bin/python scripts/validate_p006_worker_evidence.py p006-worker-extracted --source-commit 79cb268a348a35c9622efe52cd3a09a829a09b1f --image-id sha256:ecc14f1b5f89228f5d3e14fc00b011ca6899199a521750b7fe8b29d34efbd75e --github-run-id 29340236382 --github-run-attempt 1",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "8acd44fd9078ae577f733706f78e273e623c62739ac3beac06ba826eff03cbb1"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "scripts/validate_p006_worker_evidence.py",
+      "sha256": "4011f35f8ade64f77a7bec31154f584a0d2716e833384a5e44326a2ff89fb526"
+    },
+    {
+      "path": "scripts/validate_p006_worker_parity.py",
+      "sha256": "53c4f71e8fc0d6fc405f5c54ea49571f43ab38e23d17fbebab3a8adac6a7432d"
+    },
+    {
+      "path": "scripts/workers/p006-stylo-worker-v1.R",
+      "sha256": "4cf9866a8a2c0fdf6011f711654f481e4b74326f518d1676fcf0a5b7eb2d2eb2"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/fixture-manifest.json",
+      "sha256": "8e6c83f287a4083e2c1aad934d5bbef93efcfdc6929ccec25810e1ab4e029680"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/fixture-manifest.json",
+      "sha256": "1b642c51e0573f8d253050e1fbd80cb8e22ce238ee6007a2af2497393f8138a8"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "A clean repository checkout with an empty external capture directory",
+    "command": "gh run view 29340236382 --job 87110647201 --log > p006-worker-job.log && .venv/bin/python scripts/p006_log_transport.py extract p006-worker-job.log p006-worker-extracted --checksum-manifest worker-evidence.sha256 && .venv/bin/python scripts/validate_p006_worker_evidence.py p006-worker-extracted --source-commit 79cb268a348a35c9622efe52cd3a09a829a09b1f --image-id sha256:ecc14f1b5f89228f5d3e14fc00b011ca6899199a521750b7fe8b29d34efbd75e --github-run-id 29340236382 --github-run-attempt 1",
+    "limitations": [
+      "The GitHub-hosted runner image is named but not represented by an immutable runner-image digest; source, actions, base image, Python, uv, R, packages, and the built image identity are separately pinned or recorded.",
+      "The checksum-bound job-log transport binds retained bytes to recorded run metadata but is not a cryptographic GitHub attestation.",
+      "A separate exact-commit clean-clone replay of the durable audit tree remains pending for P006-AC-08.",
+      "This run covers only the named synthetic whole-text fixture suites and fixed worker boundary; it does not cover raw-text preprocessing, literary corpora, benchmark accuracy, public workflows, FAIR run export, or production isolation."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "8acd44fd9078ae577f733706f78e273e623c62739ac3beac06ba826eff03cbb1"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "5ded54f7314e88b2a6d2c5dd8aaa72774b9afe0a3e3f530701e87717367cb66a"
+    },
+    {
+      "path": "scripts/validate_p006_worker_evidence.py",
+      "sha256": "4011f35f8ade64f77a7bec31154f584a0d2716e833384a5e44326a2ff89fb526"
+    },
+    {
+      "path": "scripts/validate_p006_worker_parity.py",
+      "sha256": "53c4f71e8fc0d6fc405f5c54ea49571f43ab38e23d17fbebab3a8adac6a7432d"
+    },
+    {
+      "path": "scripts/workers/p006-stylo-worker-v1.R",
+      "sha256": "4cf9866a8a2c0fdf6011f711654f481e4b74326f518d1676fcf0a5b7eb2d2eb2"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v1/fixture-manifest.json",
+      "sha256": "8e6c83f287a4083e2c1aad934d5bbef93efcfdc6929ccec25810e1ab4e029680"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/fixture-manifest.json",
+      "sha256": "1b642c51e0573f8d253050e1fbd80cb8e22ce238ee6007a2af2497393f8138a8"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P006/worker-capture-transport.json",
+      "sha256": "948f2786d7244c6e96cf9fb29d96c02717522143b11635d2ac63aa6f7dade1ee"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/worker-evidence.sha256",
+      "sha256": "2933eaa90d196c4e4672c9199eb995471e8756829ef02625e6844886b4af5c6b"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/worker-evidence.json",
+      "sha256": "54b65afa270d3cae60674da6c8dc54ae61a2658264d6f74c4fdf6758d7501aa2"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/parity-report.json",
+      "sha256": "7f6f5520f36e6d53fa04fa94697add7a1b694355ee349551b4e4007b5e64165a"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/leakage-report.json",
+      "sha256": "97c2504e7977e6cfc8ce13b18062d9d46ad813bf280607daae66a20ffe8a1d82"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/boundary-report.json",
+      "sha256": "0e77145d052e10fb00bb44200673801348d08e83d3a0b11ab2d30b9215cd0d47"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/failure-report.json",
+      "sha256": "14922ecaf244e3a4b3c367827ee0ede94c372112c75e0e86a3ec9ab3226f86ea"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/security-report.json",
+      "sha256": "afa3bce77932792463095d7849f7743766bf1163dc8fa88ece1075e1da294fad"
+    },
+    {
+      "path": "provenance/evidence/P006/worker-v1/session-info.json",
+      "sha256": "7016cf083b10e3dce8e9e6759ea02247d01e09d6c33b0fce4b501199bf03a1b0"
+    }
+  ],
+  "notes": "Exact source 79cb268 passed normal Linux CI and a separate manual read-only capture. The fixed worker matched the checksum-frozen direct-stylo references for the named v2 fixtures, retained explicit boundary and failed-cell outcomes, passed changed-unknown and order-permutation checks, and exposed no shell or code channel in the fixed-adapter injection probe. The complete 18-file package was transported through a checksum-bound job log, independently extracted, re-read from the persisted tree, and published in evidence-only commit 7359cbe, whose sole parent is the capture source; normal publication CI passed. Earlier dispatches 29333474110 and 29335197916 published no evidence and are retained as diagnostic failures: they exposed an over-broad execution rejection followed by read-only renv lock/synchronization CPU exhaustion. The fix disabled runtime mutation without changing R, stylo, fixtures, tolerances, methods, seed, locale, or worker limits. This run passes P006-AC-07 only within its declared fixture-local boundary; exact-commit clean-clone closure for P006-AC-08 remains pending."
+}

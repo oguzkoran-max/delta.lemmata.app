@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+import shutil
 import sys
 from pathlib import Path
 from typing import Any
@@ -276,6 +277,51 @@ def test_retained_worker_evidence_is_recomputed_from_exact_outputs(
         "literal_failed_cells": 12,
         "source_commit": context.source_commit,
     }
+
+
+def test_published_worker_evidence_is_replayed_from_frozen_source() -> None:
+    summary = evidence.validate_frozen_worker_evidence()
+
+    assert summary == {
+        "boundary_non_complete_cells": 3,
+        "container_image_id": evidence.CAPTURE_IMAGE_ID,
+        "file_count": 18,
+        "fixture_count": 4,
+        "literal_failed_cells": 12,
+        "source_commit": evidence.SOURCE_COMMIT,
+    }
+
+
+def test_frozen_worker_evidence_rejects_altered_bytes_and_wrong_commit(
+    tmp_path: Path,
+) -> None:
+    altered = tmp_path / "worker-v1"
+    shutil.copytree(evidence.DEFAULT_EVIDENCE, altered)
+    report_path = altered / "parity-report.json"
+    report_path.write_bytes(report_path.read_bytes() + b" ")
+    with pytest.raises(
+        ValueError,
+        match="^P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID$",
+    ):
+        evidence.validate_frozen_worker_evidence(altered)
+
+    with pytest.raises(
+        ValueError,
+        match="^P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID$",
+    ):
+        evidence.validate_frozen_worker_evidence(
+            evidence_commit=evidence.SOURCE_COMMIT,
+        )
+
+    altered_run = tmp_path / "RUN-20260714-0004.json"
+    run = json.loads(evidence.RUN_RECORD.read_bytes())
+    run["notes"] = "broader claim"
+    altered_run.write_text(json.dumps(run), encoding="utf-8")
+    with pytest.raises(
+        ValueError,
+        match="^P006_FROZEN_WORKER_RUN_INVALID$",
+    ):
+        evidence.validate_frozen_worker_evidence(run_path=altered_run)
 
 
 def test_worker_evidence_rejects_missing_boundary_and_wrong_capture(

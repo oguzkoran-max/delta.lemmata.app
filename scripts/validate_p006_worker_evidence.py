@@ -4,10 +4,16 @@
 from __future__ import annotations
 
 import argparse
+import io
 import json
+import os
 import re
+import subprocess
+import sys
+import tarfile
+import tempfile
 from collections.abc import Sequence
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, NoReturn
 
 from validate_p006_fixture_v2 import (
@@ -59,6 +65,39 @@ from delta_lemmata.stylo_contracts import (
 
 CHECKSUM_NAME = "worker-evidence.sha256"
 MAX_PACKAGE_BYTES = 2 * 1024 * 1024
+ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_EVIDENCE = ROOT / "provenance" / "evidence" / "P006" / "worker-v1"
+DEFAULT_RECEIPT = ROOT / "provenance" / "evidence" / "P006" / "worker-capture-transport.json"
+RUN_RECORD = ROOT / "provenance" / "runs" / "RUN-20260714-0004.json"
+RUN_RECORD_SHA256 = "7992af631b5234eae6dd0f981abf0b1f8336ab1fe345594213f33025e9f2b774"
+SOURCE_COMMIT = "79cb268a348a35c9622efe52cd3a09a829a09b1f"
+EVIDENCE_COMMIT = "7359cbe305743623db45777c3f4be059c847a74c"
+EVIDENCE_PREFIX = "provenance/evidence/P006/worker-v1"
+RECEIPT_PATH = "provenance/evidence/P006/worker-capture-transport.json"
+RECEIPT_SHA256 = "948f2786d7244c6e96cf9fb29d96c02717522143b11635d2ac63aa6f7dade1ee"
+CAPTURE_IMAGE_ID = "sha256:ecc14f1b5f89228f5d3e14fc00b011ca6899199a521750b7fe8b29d34efbd75e"
+CAPTURE_RUN_ID = "29340236382"
+CAPTURE_RUN_ATTEMPT = 1
+FROZEN_PACKAGE_PATHS = (
+    "boundary-report.json",
+    "direct-reference/normalization-base.direct.json",
+    "direct-reference/normalization-canary.direct.json",
+    "direct-reference/order-permutation.direct.json",
+    "direct-reference/partial-boundaries.direct.json",
+    "failure-report.json",
+    "leakage-report.json",
+    "parity-report.json",
+    "security-report.json",
+    "session-info.json",
+    "worker-evidence.json",
+    "worker-evidence.sha256",
+    "worker-output/failure-boundary.worker.json",
+    "worker-output/injection.worker.json",
+    "worker-output/normalization-base.worker.json",
+    "worker-output/normalization-canary.worker.json",
+    "worker-output/order-permutation.worker.json",
+    "worker-output/partial-boundaries.worker.json",
+)
 PRIVATE_PATH_PATTERNS = (
     re.compile(rb"/Users/[A-Za-z0-9._-]+/"),
     re.compile(rb"/home/[A-Za-z0-9._-]+/"),
@@ -71,6 +110,276 @@ PRIVATE_PATH_PATTERNS = (
 
 def _fail(code: str) -> NoReturn:
     raise ValueError(code) from None
+
+
+def _git_bytes(*arguments: str, allow_empty: bool = False) -> bytes:
+    completed = subprocess.run(
+        ("git", *arguments),
+        cwd=ROOT,
+        check=False,
+        stdin=subprocess.DEVNULL,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        timeout=20,
+    )
+    if completed.returncode != 0 or (not allow_empty and not completed.stdout):
+        _fail("P006_FROZEN_WORKER_GIT_INVALID")
+    return completed.stdout
+
+
+def _git_source(commit: str, path: str) -> bytes:
+    return _git_bytes("show", f"{commit}:{path}")
+
+
+def _read_bytes(path: Path, error_code: str) -> bytes:
+    try:
+        return path.read_bytes()
+    except OSError:
+        _fail(error_code)
+
+
+def _artifact_map(run: dict[str, Any], key: str) -> dict[str, str]:
+    try:
+        records = run[key]
+        artifacts = {record["path"]: record["sha256"] for record in records}
+    except (KeyError, TypeError):
+        _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    if not isinstance(records, list) or len(artifacts) != len(records):
+        _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    return artifacts
+
+
+def _validate_frozen_commit(
+    directory: Path,
+    receipt_path: Path,
+    *,
+    source_commit: str,
+    evidence_commit: str,
+) -> None:
+    parent = _git_bytes("show", "-s", "--format=%P", evidence_commit).decode().strip()
+    if parent != source_commit:
+        _fail("P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID")
+    expected_changes = {
+        f"A\t{RECEIPT_PATH}",
+        *(f"A\t{EVIDENCE_PREFIX}/{path}" for path in FROZEN_PACKAGE_PATHS),
+    }
+    actual_changes = set(
+        _git_bytes(
+            "diff-tree",
+            "--no-commit-id",
+            "--name-status",
+            "-r",
+            evidence_commit,
+        )
+        .decode()
+        .splitlines()
+    )
+    if actual_changes != expected_changes:
+        _fail("P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID")
+    for relative_path in FROZEN_PACKAGE_PATHS:
+        current = _read_bytes(
+            directory / relative_path,
+            "P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID",
+        )
+        committed = _git_source(evidence_commit, f"{EVIDENCE_PREFIX}/{relative_path}")
+        if current != committed:
+            _fail("P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID")
+    receipt = _read_bytes(receipt_path, "P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID")
+    if (
+        receipt != _git_source(evidence_commit, RECEIPT_PATH)
+        or _sha256_bytes(receipt) != RECEIPT_SHA256
+    ):
+        _fail("P006_FROZEN_WORKER_EVIDENCE_COMMIT_INVALID")
+
+
+def _load_frozen_receipt(receipt_path: Path) -> dict[str, Any]:
+    try:
+        receipt = json.loads(receipt_path.read_bytes())
+    except (OSError, UnicodeError, json.JSONDecodeError, TypeError):
+        _fail("P006_FROZEN_WORKER_RECEIPT_INVALID")
+    if (
+        not isinstance(receipt, dict)
+        or receipt.get("schema_version") != "p006-worker-capture-transport-v1"
+        or receipt.get("source_commit") != SOURCE_COMMIT
+        or receipt.get("container_image_id") != CAPTURE_IMAGE_ID
+        or receipt.get("github")
+        != {
+            "repository": "oguzkoran-max/delta.lemmata.app",
+            "workflow": "CI",
+            "run_id": CAPTURE_RUN_ID,
+            "run_attempt": CAPTURE_RUN_ATTEMPT,
+            "job": "p006-worker-capture",
+            "job_id": "87110647201",
+            "head_sha": SOURCE_COMMIT,
+            "run_url": (
+                "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/" + CAPTURE_RUN_ID
+            ),
+        }
+        or receipt.get("transport")
+        != {
+            "kind": "checksum-bound-github-job-log",
+            "raw_job_log_sha256": (
+                "1390711bf9db38e38ef888b192c58d7870567d58cb41ed20c3b2edbf6d45fab5"
+            ),
+            "envelope_sha256": ("99a114ca1f02fde0ac2bf4d9dd9dd4d4cc9d1ee6d64a15759fb5c13f23f27af9"),
+            "extracted_file_count": 18,
+            "extracted_byte_count": 155921,
+            "persisted_tree_revalidated": True,
+            "attestation_scope": (
+                "The checksum-bound GitHub job-log transport binds the retained bytes "
+                "to the recorded run metadata; it is not a cryptographic GitHub "
+                "attestation."
+            ),
+        }
+        or receipt.get("offline_validation")
+        != {
+            "validator": "scripts/validate_p006_worker_evidence.py",
+            "status": "passed",
+            "files": 18,
+            "fixtures": 4,
+            "non_complete_cells": 3,
+            "failed_cells": 12,
+        }
+    ):
+        _fail("P006_FROZEN_WORKER_RECEIPT_INVALID")
+    return receipt
+
+
+def _validate_frozen_run(run_path: Path, receipt: dict[str, Any]) -> None:
+    payload = _read_bytes(run_path, "P006_FROZEN_WORKER_RUN_INVALID")
+    if _sha256_bytes(payload) != RUN_RECORD_SHA256:
+        _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    try:
+        run = json.loads(payload)
+    except (UnicodeError, json.JSONDecodeError, TypeError):
+        _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    if not isinstance(run, dict):
+        _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    configuration = _artifact_map(run, "configuration_artifacts")
+    inputs = _artifact_map(run, "input_artifacts")
+    outputs = _artifact_map(run, "output_artifacts")
+    environment = run.get("environment")
+    if (
+        run.get("schema_version") != "1.1.0"
+        or run.get("run_id") != "RUN-20260714-0004"
+        or run.get("run_type") != "test"
+        or run.get("status") != "passed"
+        or run.get("ticket_ids") != ["P006"]
+        or run.get("git_commit") != SOURCE_COMMIT
+        or run.get("exit_code") != 0
+        or not isinstance(environment, dict)
+        or environment.get("built_image_id") != CAPTURE_IMAGE_ID
+        or environment.get("capture_run") != CAPTURE_RUN_ID
+        or environment.get("capture_job") != receipt["github"]["job_id"]
+        or environment.get("evidence_commit") != EVIDENCE_COMMIT
+        or environment.get("publication_ci_run") != "29347937295"
+        or environment.get("transport", {}).get("file_count") != 18
+        or environment.get("transport", {}).get("byte_count") != 155921
+        or outputs.get(RECEIPT_PATH) != RECEIPT_SHA256
+        or outputs.get(f"{EVIDENCE_PREFIX}/{CHECKSUM_NAME}")
+        != _sha256_bytes(
+            _read_bytes(DEFAULT_EVIDENCE / CHECKSUM_NAME, "P006_FROZEN_WORKER_RUN_INVALID")
+        )
+        or outputs.get(f"{EVIDENCE_PREFIX}/worker-evidence.json")
+        != _sha256_bytes(
+            _read_bytes(DEFAULT_EVIDENCE / "worker-evidence.json", "P006_FROZEN_WORKER_RUN_INVALID")
+        )
+    ):
+        _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    for path, expected in configuration.items():
+        if _sha256_bytes(_git_source(SOURCE_COMMIT, path)) != expected:
+            _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    for path, expected in inputs.items():
+        if _sha256_bytes(_git_source(SOURCE_COMMIT, path)) != expected:
+            _fail("P006_FROZEN_WORKER_RUN_INVALID")
+    for path, expected in outputs.items():
+        if _sha256_bytes(_read_bytes(ROOT / path, "P006_FROZEN_WORKER_RUN_INVALID")) != expected:
+            _fail("P006_FROZEN_WORKER_RUN_INVALID")
+
+
+def _materialize_source_commit(destination: Path, source_commit: str) -> None:
+    archive_payload = _git_bytes("archive", "--format=tar", source_commit)
+    with tarfile.open(fileobj=io.BytesIO(archive_payload), mode="r:") as archive:
+        for member in archive.getmembers():
+            relative = PurePosixPath(member.name)
+            if relative.is_absolute() or ".." in relative.parts:
+                _fail("P006_FROZEN_WORKER_SOURCE_REPLAY_INVALID")
+            target = destination.joinpath(*relative.parts)
+            if member.isdir():
+                target.mkdir(parents=True, exist_ok=True)
+            elif member.isfile():
+                extracted = archive.extractfile(member)
+                if extracted is None:
+                    _fail("P006_FROZEN_WORKER_SOURCE_REPLAY_INVALID")
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(extracted.read())
+            else:
+                _fail("P006_FROZEN_WORKER_SOURCE_REPLAY_INVALID")
+
+
+def _replay_source_validator(directory: Path, source_commit: str) -> None:
+    with tempfile.TemporaryDirectory(prefix="delta-p006-frozen-source-") as temporary:
+        source_root = Path(temporary)
+        _materialize_source_commit(source_root, source_commit)
+        environment = os.environ.copy()
+        environment["PYTHONPATH"] = os.pathsep.join(
+            (str(source_root / "src"), str(source_root / "scripts"))
+        )
+        completed = subprocess.run(
+            (
+                sys.executable,
+                str(source_root / "scripts" / "validate_p006_worker_evidence.py"),
+                str(directory.resolve()),
+                "--source-commit",
+                SOURCE_COMMIT,
+                "--image-id",
+                CAPTURE_IMAGE_ID,
+                "--github-run-id",
+                CAPTURE_RUN_ID,
+                "--github-run-attempt",
+                str(CAPTURE_RUN_ATTEMPT),
+            ),
+            cwd=source_root,
+            env=environment,
+            check=False,
+            stdin=subprocess.DEVNULL,
+            capture_output=True,
+            timeout=60,
+        )
+        expected = (
+            "p006-worker-evidence-ok files=18 fixtures=4 non_complete_cells=3 failed_cells=12"
+        )
+        if completed.returncode != 0 or completed.stdout.decode().strip() != expected:
+            _fail("P006_FROZEN_WORKER_SOURCE_REPLAY_INVALID")
+
+
+def validate_frozen_worker_evidence(
+    directory: Path = DEFAULT_EVIDENCE,
+    receipt_path: Path = DEFAULT_RECEIPT,
+    run_path: Path = RUN_RECORD,
+    *,
+    source_commit: str = SOURCE_COMMIT,
+    evidence_commit: str = EVIDENCE_COMMIT,
+) -> dict[str, Any]:
+    """Validate immutable bytes, provenance links, and exact-source semantics."""
+
+    _validate_frozen_commit(
+        directory,
+        receipt_path,
+        source_commit=source_commit,
+        evidence_commit=evidence_commit,
+    )
+    receipt = _load_frozen_receipt(receipt_path)
+    _validate_frozen_run(run_path, receipt)
+    _replay_source_validator(directory, source_commit)
+    return {
+        "boundary_non_complete_cells": 3,
+        "container_image_id": CAPTURE_IMAGE_ID,
+        "file_count": 18,
+        "fixture_count": 4,
+        "literal_failed_cells": 12,
+        "source_commit": SOURCE_COMMIT,
+    }
 
 
 def _reject_duplicate_pairs(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
@@ -389,19 +698,32 @@ def validate_worker_evidence(
 
 def main(argv: Sequence[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument("directory", type=Path)
+    parser.add_argument("directory", nargs="?", type=Path)
     parser.add_argument("--source-commit")
     parser.add_argument("--image-id")
     parser.add_argument("--github-run-id")
     parser.add_argument("--github-run-attempt", type=int)
     args = parser.parse_args(argv)
-    summary = validate_worker_evidence(
-        args.directory,
-        source_commit=args.source_commit,
-        image_id=args.image_id,
-        github_run_id=args.github_run_id,
-        github_run_attempt=args.github_run_attempt,
-    )
+    if args.directory is None:
+        if any(
+            value is not None
+            for value in (
+                args.source_commit,
+                args.image_id,
+                args.github_run_id,
+                args.github_run_attempt,
+            )
+        ):
+            _fail("P006_WORKER_EVIDENCE_EXPECTATION_INVALID")
+        summary = validate_frozen_worker_evidence()
+    else:
+        summary = validate_worker_evidence(
+            args.directory,
+            source_commit=args.source_commit,
+            image_id=args.image_id,
+            github_run_id=args.github_run_id,
+            github_run_attempt=args.github_run_attempt,
+        )
     print(
         "p006-worker-evidence-ok "
         f"files={summary['file_count']} fixtures={summary['fixture_count']} "
