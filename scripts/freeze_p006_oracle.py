@@ -79,6 +79,7 @@ def _suite_configuration(suite: str) -> SuiteConfiguration:
                 ROOT / "scripts" / "freeze_p006_oracle.py",
                 V2_GENERATOR,
                 ORACLE_SCRIPT,
+                ROOT / "scripts" / "p006_log_transport.py",
                 ROOT / "scripts" / "validate_p006_fixture_v2.py",
                 ROOT / "scripts" / "validate_p006_oracle_outputs.py",
                 ROOT / "scripts" / "verify.sh",

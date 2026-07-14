@@ -8,7 +8,9 @@
 schema-first ve validated-finalizer-first ilerler; bilimsel `stylo` parity henüz
 uygulanmadı veya doğrulanmadı. Bağımsız direct-`stylo` oracle v1 checksum ile
 donduruldu; post-freeze audit'in gerektirdiği adversarial v2 fixture ve read-only
-capture kaynağı hazır, v2 sayısal kanıtı henüz dondurulmadı.
+capture yolu Linux CI'dan geçti. İlk capture hesap ve validation adımlarını geçti
+fakat GitHub artifact kotası transportu reddetti; checksum-bound job-log transport
+hazır, v2 sayısal kanıtı henüz dondurulmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -137,8 +139,10 @@ evidence commit `b5a842f` ve `RUN-20260714-0001` ile iki byte-identical ağsız 
 koşusundan donduruldu; geçici write workflow kaldırıldı. Audit, v1'in eşit belge
 uzunluğu ve tek-son-satır unknown nedeniyle iki uygulama hatasını ayırt edemediğini
 buldu. Sıradaki tek iş unequal totals ve interleaved multiple unknown kullanan v2
-referansı dondurmaktır. Fixture ve CI içindeki manual-only read-permission capture job'u
-hazırdır; exact source CI, iki ağsız capture ve ayrı evidence publication commit'i
+referansı dondurmaktır. Fixture ve CI içindeki manual-only read-permission capture
+job'u hazırdır. İlk exact capture hesap ve validation adımlarını geçti, yalnız
+artifact kotası paketi taşımadı. Checksum-bound job-log source CI, iki ağsız yeni
+capture, bağımsız extraction/validation ve ayrı evidence publication commit'i
 sıradadır. Fixed worker ancak bundan sonra uygulanır.
 Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri
 çıkarılmıştır; AC-03 hâlâ pending'dir.

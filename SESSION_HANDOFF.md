@@ -4,8 +4,9 @@
 
 **Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
 Worker and Computational Parity aktif; sözleşme/finalizer doğrulandı; bağımsız
-direct-`stylo` oracle v1 donduruldu; güçlendirilmiş v2 fixture/capture kaynağı hazır,
-sayısal v2 freeze henüz yapılmadı
+direct-`stylo` oracle v1 donduruldu; adversarial v2 Linux CI'dan geçti, ilk capture
+hesap/validation adımlarını geçti fakat artifact kotası transportu reddetti;
+checksum-bound job-log transport hazır, sayısal v2 freeze henüz yapılmadı
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -22,9 +23,10 @@ entegrasyonu hâlâ yok
 
 **Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** V2 source commit'ini normal Linux CI'da doğrula; ardından
-manual read-only capture ile iki ağsız Linux çıktısını candidate artifact olarak
-üret, yerelde yeniden doğrula ve ayrı evidence commit'iyle dondur. Sonra ayrı
+**Sıradaki tek ana iş:** Job-log transport source commit'ini normal Linux CI'da
+doğrula; ardından manual read-only capture ile iki ağsız Linux çıktısını
+checksum-bound log envelope olarak üret, yerelde yeniden doğrula ve ayrı evidence
+commit'iyle dondur. Sonra ayrı
 `C.UTF-8` trusted execution profile kullanan fixed `Rscript --vanilla` worker ve
 güvenli Python adapter uygula. Guardian
 ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
@@ -78,7 +80,12 @@ normalized sonuçtan aktiftir. `scripts/validate_p006_fixture_v2.py`, suite-awar
 oracle validator/freeze aracı ve CI içinde manual-only read-permission capture job'u
 eklendi. Capture job repo commit/push yapamaz; yayınlama yerel ve ayrı olacaktır.
 Yerel `scripts/verify.sh` 1,094 test, 7,247 statement, 1,902 branch ve yüzde 100
-kapsamla geçti. Source commit/CI ve v2 freeze henüz yoktur; passed AC listesi
+kapsamla geçti. V2 source `c1ea852` ve normal CI `29298402134`; read-only capture
+registration `94fac26` ve normal CI `29298843070` ile yeşildir. Dispatch
+`29298977429` iki oracle koşusu ile validation/package adımını geçti, fakat GitHub
+artifact-storage kotası upload'u reddetti. `p006_log_transport.py` aynı küçük paketi
+canonical, chunked ve SHA-256-bound olarak job logundan taşımak için eklendi; tam
+test/source CI ve yeni capture sıradadır. V2 freeze yoktur; passed AC listesi
 değişmemiştir.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,

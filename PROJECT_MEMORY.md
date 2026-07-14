@@ -3,8 +3,9 @@
 **Son güncelleme:** 2026-07-14
 
 **Durum:** P005 tamamlandı; P006 aktif, kapalı worker-sözleşmesi doğrulandı;
-direct-`stylo` oracle v1 donduruldu, güçlendirilmiş v2 fixture ve read-only capture
-kaynağı uygulandı; v2 sayısal çıktısı henüz dondurulmadı
+direct-`stylo` oracle v1 donduruldu, adversarial v2 normal Linux CI'dan geçti;
+ilk v2 capture hesap ve doğrulamayı geçti fakat GitHub artifact kotası taşımayı
+reddetti, checksum-bound job-log transport uygulandı; v2 henüz dondurulmadı
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -70,10 +71,15 @@ complete MFW/culling fitinin her birinde ham-sayım karşı-olgusu normalized so
 üç mesafe ailesinde `>1e-3` ayrılır; en küçük gözlenen fark Classic `0.522862`, Eder
 `2.359863`, Cosine `0.799980`'dir. Validator rol ve matrisleri document ID ile
 karşılaştırır. CI içindeki manual-only v2 capture job'u `contents: read`, credential
-persistence kapalı ve repo push/commit yetkisizdir; yalnız yedi günlük candidate
-artifact üretir.
-Yerel kapı 1,094 test ve yüzde 100 kapsamla geçti. Exact source CI, iki ağsız Linux
-capture, artifact indirme/doğrulama ve ayrı publication commit'i sıradadır.
+persistence kapalı ve repo push/commit yetkisizdir. Yerel kapı 1,094 test ve yüzde
+100 kapsamla geçti. V2 source `c1ea852`, normal CI `29298402134`; read-only capture
+kaydını taşıyan `94fac26`, normal CI `29298843070` kapılarından geçti. Exact dispatch
+`29298977429` iki ağsız oracle koşusunu ve validation/package adımını geçti; yalnız
+GitHub artifact-storage kotası upload'u reddetti ve ephemeral runner kapanınca paket
+tutulmadı. Bunun yerine canonical JSON, per-file SHA-256, numbered chunk, bundle
+SHA-256, path ve internal-manifest doğrulaması yapan `p006_log_transport.py`
+uygulandı. Yeni source CI/capture ve v2 freeze sıradadır; passed AC listesi
+değişmemiştir.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,

@@ -252,8 +252,11 @@ P014/P015'e kadar verified değildir. SEC-07, SEC-09, SEC-11, SEC-12, SEC-13.
 
 **Durum:** In progress; Ticket `provenance/tickets/P006.json`, accepted protocol
 `decisions/ADR-0013-stylo-worker-parity.md`. The independent CC0 direct-`stylo`
-oracle v1 is checksum-frozen. Adversarial v2 fixtures and a read-only capture path
-are implemented; v2 freeze, fixed worker implementation, and parity remain pending.
+oracle v1 is checksum-frozen. Adversarial v2 fixtures passed normal Linux CI. The
+first read-only capture passed both oracle runs and all validation but artifact
+quota blocked transport; a checksum-bound job-log transport is implemented and
+awaits exact-source CI. V2 freeze, fixed worker implementation, and parity remain
+pending.
 
 **Amaç:** Kanonik hesaplamayı güvenli, sürümlü ve doğrudan `stylo` referansıyla karşılaştırılabilir R worker içinde çalıştırmak.
 

@@ -144,8 +144,10 @@ remains P010-P015.
   the three distance families. This threshold checks fixture activation and does
   not replace the accepted parity tolerances.
 - Capture and publication authority are separated. The manual-only capture job has
-  read-only repository permission and uploads a temporary candidate artifact; a
-  separately validated local publication commit retains the final evidence.
+  read-only repository permission and emits a checksum-bound candidate through its
+  immutable job log; a separately validated local publication commit retains the
+  final evidence. The log transport is used because exact run `29298977429` passed
+  both oracle executions and validation but artifact storage quota rejected upload.
 - Fixed-worker implementation cannot begin until v2 is checksum-frozen and its
   source/capture/publication chain passes normal CI.
 

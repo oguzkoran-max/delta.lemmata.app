@@ -154,12 +154,7 @@ jobs:
           (cd .p006-oracle-v2-evidence && sha256sum --check oracle-freeze.sha256)
           git diff --check
 
-      - name: Upload immutable candidate evidence without repository write access
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
-        with:
-          name: p006-oracle-v2-${{ github.sha }}
-          path: .p006-oracle-v2-evidence
-          if-no-files-found: error
-          retention-days: 7
-          compression-level: 0
-          include-hidden-files: true
+      - name: Emit checksum-bound candidate evidence through the job log
+        run: |
+          set -eu
+          uv run python scripts/p006_log_transport.py emit .p006-oracle-v2-evidence

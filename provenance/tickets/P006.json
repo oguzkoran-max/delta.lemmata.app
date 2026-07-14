@@ -59,7 +59,10 @@
     "425a5b80d4778089585518b9d76ea99fb53a451b",
     "3034bc474b1bad355a4927212b99156924fd796c",
     "7df1fdf754ecfb3a0b84835dc7f368c481f333f1",
-    "b5a842fdee5456c7f5f9d0397c0f5a2f7d7a336f"
+    "b5a842fdee5456c7f5f9d0397c0f5a2f7d7a336f",
+    "cfacbbd5f95aaf3734c03075eacb887d5f7eeecd",
+    "c1ea85245501b4f85e3aa17fd87d406f1dd8eada",
+    "94fac26d9666cd58ac5dd945f82557c7cee9d967"
   ],
   "run_ids": [
     "RUN-20260714-0001"
@@ -155,7 +158,8 @@
     "Two byte-identical no-network Linux oracle runs retained with source, image identity, observed package versions, lockfile, session, input, output, and checksum binding; one-time write workflow removed after freeze",
     "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison",
     "Adversarial v2 source adds six unequal document totals, two interleaved unknown rows, a known final row, two-unknown canary, order permutation, and formula-level raw-count separation for every complete fit and distance family",
-    "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, cannot commit or push, and yields only a short-lived candidate artifact for separate local validation and publication"
+    "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, and cannot commit or push",
+    "The first v2 dispatch passed both no-network oracle runs and package validation but GitHub artifact quota rejected transport; a canonical checksum-bound job-log emitter and fail-closed local extractor replace artifact storage without changing publication authority"
   ],
   "commands": [
     {
@@ -240,6 +244,18 @@
       "command": "gh workflow run p006-oracle-v2-capture.yml --ref codex/p006-stylo-worker",
       "exit_code": 1,
       "result": "GitHub rejected dispatch with HTTP 404 because a newly named workflow is not registered on the default branch. No run or artifact was created. The read-only capture job was moved behind workflow_dispatch in the already registered CI workflow without adding repository write permission.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "GitHub Actions CI runs 29297220930, 29298402134, and 29298843070",
+      "exit_code": 0,
+      "result": "The retained v1 audit, adversarial v2 source, and registered read-only capture source each passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction on their exact commits.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch run 29298977429",
+      "exit_code": 1,
+      "result": "Both exact-source no-network Linux oracle runs and the validation, byte-identity, and freeze-package step passed. The final upload alone failed because GitHub reported the account artifact-storage quota was full; the ephemeral candidate was not retained and no evidence was published from this run.",
       "evidence": "docs/development/p006-oracle-v2.md"
     }
   ],

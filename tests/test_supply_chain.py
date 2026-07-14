@@ -50,8 +50,9 @@ def test_p006_v2_capture_separates_computation_from_publication_authority() -> N
     assert "persist-credentials: false" in capture
     assert "git push" not in capture
     assert "git commit" not in capture
-    assert "include-hidden-files: true" in capture
-    assert "actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02" in capture
+    assert "actions/upload-artifact" not in capture
+    assert "scripts/p006_log_transport.py emit .p006-oracle-v2-evidence" in capture
+    assert "P006_LOG_TRANSPORT" not in capture
 
 
 def test_container_base_digest_matches_lock() -> None:

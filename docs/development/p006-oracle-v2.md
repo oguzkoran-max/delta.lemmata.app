@@ -78,20 +78,36 @@ is necessary because GitHub permits manual dispatch only for workflow files alre
 registered on the default branch. Checkout credentials are not persisted. The job
 restores the locked environment, verifies the source, builds the digest-pinned Linux
 amd64 image, runs the direct-`stylo` oracle twice with no network and a read-only
-root filesystem, validates both directories, and uploads a seven-day candidate
-artifact.
+root filesystem, and validates both directories.
+
+The first exact-source dispatch, run `29298977429`, completed all computation and
+validation steps but GitHub rejected the final artifact upload because the account's
+artifact-storage quota was full. No candidate file was retained from that run. This
+is a transport failure, not an oracle or validation failure, and remains part of the
+audit trail.
+
+The replacement transport does not use artifact storage. It creates a canonical
+JSON envelope containing the small evidence package, binds the envelope and every
+file with SHA-256, splits the base64 representation into numbered bounded chunks,
+and emits those chunks to the immutable CI job log. The local extractor requires one
+begin marker, one end marker, every numbered chunk, the envelope digest, safe unique
+relative paths, per-file sizes and digests, and the internal `oracle-freeze.sha256`
+manifest before writing any destination. Corruption, truncation, duplication, path
+traversal, symlinks, noncanonical JSON, or an existing destination fails closed.
 
 The workflow cannot commit or push. Publication is a separate local step:
 
-1. Download the artifact for the exact source run.
-2. Verify its artifact digest, internal checksum, source hashes, fixture design,
-   output semantics, and two-run identity.
-3. Copy only the validated package to `provenance/evidence/P006/oracle-v2/`.
-4. Commit and push it through the normal branch and CI path.
-5. Bind source commit, capture run, artifact identity, publication commit, input
+1. Download the exact capture job log for the exact source run.
+2. Extract it with `scripts/p006_log_transport.py`, which verifies the transport
+   digest, per-file hashes, safe paths, and internal checksum before publication.
+3. Verify source hashes, fixture design, output semantics, and two-run identity
+   independently of the capture job.
+4. Copy only the validated package to `provenance/evidence/P006/oracle-v2/`.
+5. Commit and push it through the normal branch and CI path.
+6. Bind source commit, capture run/job, log-envelope digest, publication commit, input
    hashes, output hashes, package versions, image identity, and limitations in a
    native Run record.
-6. Remove the temporary manual capture job from normal CI after publication; retain
+7. Remove the temporary manual capture job from normal CI after publication; retain
    it in the exact source commit for replay.
 
 ## Acceptance Boundary
