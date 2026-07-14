@@ -16,6 +16,7 @@ fi
 "$UV_BIN" run ruff format --check .
 "$UV_BIN" run ruff check .
 "$UV_BIN" run mypy
+"$UV_BIN" run python scripts/generate_p007_schemas.py --check
 "$UV_BIN" run python scripts/generate_p006_fixtures.py --check
 "$UV_BIN" run python scripts/generate_p006_fixtures_v2.py --check
 "$UV_BIN" run python scripts/validate_p006_fixture_v2.py

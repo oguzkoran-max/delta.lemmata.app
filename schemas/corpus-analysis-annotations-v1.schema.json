@@ -1,0 +1,148 @@
+{
+  "$defs": {
+    "AnalysisRole": {
+      "enum": [
+        "known",
+        "unknown"
+      ],
+      "title": "AnalysisRole",
+      "type": "string"
+    },
+    "AssetId": {
+      "pattern": "^asset_[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    },
+    "CorpusAnalysisAnnotation": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_role": {
+          "$ref": "#/$defs/AnalysisRole"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "document_id": {
+          "$ref": "#/$defs/DocumentId"
+        },
+        "ocr_status": {
+          "$ref": "#/$defs/OcrStatus"
+        },
+        "paratext_status": {
+          "$ref": "#/$defs/ParatextStatus"
+        },
+        "parent_work_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "preupload_curation_note": {
+          "anyOf": [
+            {
+              "maxLength": 2000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preupload Curation Note"
+        },
+        "text_unit": {
+          "$ref": "#/$defs/TextUnit"
+        },
+        "work_id": {
+          "$ref": "#/$defs/WorkId"
+        }
+      },
+      "required": [
+        "document_id",
+        "asset_id",
+        "work_id",
+        "analysis_role",
+        "text_unit",
+        "parent_work_id",
+        "ocr_status",
+        "paratext_status"
+      ],
+      "title": "CorpusAnalysisAnnotation",
+      "type": "object"
+    },
+    "DocumentId": {
+      "pattern": "^doc_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "OcrStatus": {
+      "enum": [
+        "not_ocr",
+        "reviewed",
+        "unreviewed",
+        "unknown"
+      ],
+      "title": "OcrStatus",
+      "type": "string"
+    },
+    "ParatextStatus": {
+      "enum": [
+        "absent",
+        "retained",
+        "manually_removed_before_upload",
+        "unknown"
+      ],
+      "title": "ParatextStatus",
+      "type": "string"
+    },
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "TextUnit": {
+      "enum": [
+        "independent_work",
+        "segment",
+        "excerpt"
+      ],
+      "title": "TextUnit",
+      "type": "string"
+    },
+    "WorkId": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/corpus-analysis-annotations-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "annotations": {
+      "items": {
+        "$ref": "#/$defs/CorpusAnalysisAnnotation"
+      },
+      "maxItems": 200,
+      "minItems": 1,
+      "title": "Annotations",
+      "type": "array"
+    },
+    "inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "schema_version": {
+      "const": "corpus-analysis-annotations-v1",
+      "title": "Schema Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "inventory_sha256",
+    "annotations"
+  ],
+  "title": "CorpusAnalysisAnnotationsV1",
+  "type": "object"
+}
