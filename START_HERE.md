@@ -6,7 +6,8 @@
 ölçütünün tamamını geçerek kapandı. P006 R `stylo` Worker and Computational Parity
 `codex/p006-stylo-worker` dalında aktif Ticket olarak açıldı. Başlangıç paketi
 schema-first ve validated-finalizer-first ilerler; bilimsel `stylo` parity henüz
-uygulanmadı veya doğrulanmadı.
+uygulanmadı veya doğrulanmadı. Bağımsız direct-`stylo` oracle v1 checksum ile
+donduruldu; post-freeze audit daha güçlü v2 fixture gerektiğini gösterdi.
 
 ## 1. Her Oturumda Oku
 
@@ -130,7 +131,12 @@ P006 Ticket, PromptEvent, branch ve accepted ADR-0013 açıktır. Yöntem protok
 `HD-20260713-0002` ile kabul edildi. Versioned worker şemaları, strict tek-parse
 parser, semantic validator, saf scientific finalizer ve bounded workspace read
 exact implementation commit `3c6ebe5` ve Linux CI run `29291282495` kapılarında
-geçti. Sıradaki tek iş fixed R worker ve bağımsız direct-stylo oracle üretmektir.
+geçti. CC0 direct-`stylo` oracle source `7df1fdf`, capture run `29295419981`,
+evidence commit `b5a842f` ve `RUN-20260714-0001` ile iki byte-identical ağsız Linux
+koşusundan donduruldu; geçici write workflow kaldırıldı. Audit, v1'in eşit belge
+uzunluğu ve tek-son-satır unknown nedeniyle iki uygulama hatasını ayırt edemediğini
+buldu. Sıradaki tek iş unequal totals ve interleaved multiple unknown kullanan v2
+referansı dondurmaktır; fixed worker ancak bundan sonra uygulanır.
 Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri
 çıkarılmıştır; AC-03 hâlâ pending'dir.
 

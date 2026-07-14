@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -172,3 +173,57 @@ def test_oracle_freeze_requires_two_distinct_byte_identical_runs(
     (second / "result.json").write_bytes(b"changed\n")
     with pytest.raises(ValueError, match="P006_ORACLE_RUN_MISMATCH"):
         freeze_module._require_byte_identical(first, second)
+
+
+def test_retained_oracle_evidence_is_self_validating(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    validator = importlib.import_module("validate_p006_frozen_oracle")
+    evidence = ROOT / "provenance" / "evidence" / "P006" / "oracle-v1"
+    validator.validate_frozen_oracle(evidence)
+
+    altered = tmp_path / "altered"
+    shutil.copytree(evidence, altered)
+    target = altered / "direct-reference" / "complete-base.direct.json"
+    target.write_bytes(target.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match="P006_FROZEN_ORACLE_CHECKSUM_INVALID"):
+        validator.validate_frozen_oracle(altered)
+
+    rebound = tmp_path / "rebound"
+    shutil.copytree(evidence, rebound)
+    run_record = validator.RUN_RECORD
+    monkeypatch.setattr(validator, "RUN_RECORD", tmp_path / "missing-run.json")
+    with pytest.raises(ValueError, match="P006_FROZEN_ORACLE_EVIDENCE_COMMIT_INVALID"):
+        validator.validate_frozen_oracle(rebound)
+    monkeypatch.setattr(validator, "RUN_RECORD", run_record)
+
+
+def test_oracle_session_requires_unique_canonical_json(tmp_path: Path) -> None:
+    evidence = ROOT / "provenance" / "evidence" / "P006" / "oracle-v1"
+    direct_reference = evidence / "direct-reference"
+    output_validator = importlib.import_module("validate_p006_oracle_outputs")
+
+    embedded = tmp_path / "embedded"
+    shutil.copytree(direct_reference, embedded)
+    session_bytes = (evidence / "session-info.json").read_bytes()
+    duplicate = session_bytes.replace(
+        b'{"blas":"libblas.so.3",',
+        b'{"blas":"libblas.so.3","blas":"libblas.so.3",',
+        1,
+    )
+    (embedded / "session-info.json").write_bytes(duplicate)
+    with pytest.raises(ValueError, match="P006_ORACLE_SESSION_INVALID"):
+        output_validator.validate_output_directory(embedded)
+
+    external_session = tmp_path / "external-session.json"
+    external_session.write_text(
+        json.dumps(json.loads(session_bytes), ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    with pytest.raises(ValueError, match="P006_ORACLE_SESSION_INVALID"):
+        output_validator.validate_output_directory(
+            direct_reference,
+            session_path=external_session,
+        )

@@ -54,9 +54,16 @@
   "commit_ids": [
     "82cc6799017be87dde1b07133646b511fac2798d",
     "c1e308f15a653d66a4c0403fbbe11245ca46a761",
-    "3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f"
+    "3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f",
+    "026b7706e71d348a1190789c6193793d3cf9a2e5",
+    "425a5b80d4778089585518b9d76ea99fb53a451b",
+    "3034bc474b1bad355a4927212b99156924fd796c",
+    "7df1fdf754ecfb3a0b84835dc7f368c481f333f1",
+    "b5a842fdee5456c7f5f9d0397c0f5a2f7d7a336f"
   ],
-  "run_ids": [],
+  "run_ids": [
+    "RUN-20260714-0001"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": [
@@ -71,6 +78,10 @@
     "memory/checkpoints/2026-07-13-p006-start.md",
     "provenance/evidence/P006/contracts-finalizer-validation.md",
     "memory/checkpoints/2026-07-14-p006-contracts-finalizer.md",
+    "docs/development/p006-oracle-freeze.md",
+    "provenance/evidence/P006/oracle-freeze-validation.md",
+    "memory/checkpoints/2026-07-14-p006-oracle-freeze.md",
+    "provenance/runs/RUN-20260714-0001.json",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/local-runtime-limitations.md",
     "docs/research/claim-evidence-matrix.md",
@@ -138,7 +149,10 @@
     "Bounded nonblocking private workspace output read with pre-open type checks, identity fingerprints, mutation detection, and current-path area rebinding",
     "Adversarial method and security regressions plus synchronized project memory, handoff, start instructions, checkpoint, and retained validation evidence",
     "Premature lifecycle and guardian ACK integration removed after independent review; P006-AC-03 remains pending",
-    "Exact contracts/finalizer implementation commit passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container gates; only P006-AC-01 and P006-AC-05 pass at this checkpoint"
+    "Exact contracts/finalizer implementation commit passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container gates; only P006-AC-01 and P006-AC-05 pass at this checkpoint",
+    "Project-authored CC0 complete, unknown-canary, and culling-boundary fixtures plus an independent direct-stylo oracle, separate schema, generator, validators, and locked canonical environment",
+    "Two byte-identical no-network Linux oracle runs retained with source, image identity, observed package versions, lockfile, session, input, output, and checksum binding; one-time write workflow removed after freeze",
+    "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison"
   ],
   "commands": [
     {
@@ -188,6 +202,30 @@
       "exit_code": 0,
       "result": "Exact implementation commit 3c6ebe5 passed Linux source, schema, record, measured-coverage, SBOM, dependency-audit, and canonical Linux amd64 container jobs; it establishes the bounded contracts/finalizer checkpoint only, not R worker parity.",
       "evidence": "provenance/evidence/P006/contracts-finalizer-validation.md"
+    },
+    {
+      "command": "GitHub Actions oracle freeze runs 29294170144, 29294530963, and 29294900147",
+      "exit_code": 1,
+      "result": "Three capture attempts stopped before evidence publication and exposed, in order, an over-broad environment error, an unreadable root-owned locked R cache, and public synthetic outputs unreadable by the separate host verifier. Each cause was corrected without accepting or rewriting scientific values.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The corrected oracle source checkpoint passed 1,086 tests, 100% of 7,247 statements and 1,902 branches, strict typing, metadata, 80 provenance records, repository scanning, R parsing, and the locked R environment on macOS.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29295419945",
+      "exit_code": 0,
+      "result": "Exact oracle source commit 7df1fdf passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction before evidence capture.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions P006 direct-stylo oracle freeze run 29295419981",
+      "exit_code": 0,
+      "result": "The locked Linux amd64 oracle ran twice without network access; both four-file output directories were byte-identical, passed input/scientific validation, and were retained in checksum-bound evidence commit b5a842f.",
+      "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
     }
   ],
   "blockers": []

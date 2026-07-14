@@ -17,6 +17,7 @@ fi
 "$UV_BIN" run ruff check .
 "$UV_BIN" run mypy
 "$UV_BIN" run python scripts/generate_p006_fixtures.py --check
+"$UV_BIN" run python scripts/validate_p006_frozen_oracle.py
 "$UV_BIN" run pytest --cov=delta_lemmata --cov-report=term-missing
 "$UV_BIN" run python scripts/check_metadata.py
 "$UV_BIN" run python scripts/validate_records.py

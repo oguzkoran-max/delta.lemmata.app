@@ -3,8 +3,8 @@
 **Güncellendi:** 2026-07-14
 
 **Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
-Worker and Computational Parity aktif; sözleşme/finalizer checkpoint'i exact commit
-ve Linux CI ile doğrulandı
+Worker and Computational Parity aktif; sözleşme/finalizer doğrulandı; bağımsız
+direct-`stylo` oracle v1 donduruldu fakat güçlendirilmiş v2 fixture zorunlu
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -13,15 +13,18 @@ process controller, kalıcı content-free deletion ledger, continuous fake-clock
 janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
 recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict tek-parse
 parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
-finalizer ve bounded no-follow workspace read var; public analysis, R worker,
-direct-stylo oracle, parity ve durable scientific-result entegrasyonu hâlâ yok
+finalizer, bounded no-follow workspace read ve checksum-frozen direct-`stylo` oracle
+var; public analysis, fixed R worker, parity ve durable scientific-result
+entegrasyonu hâlâ yok
 
 **Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
 
 **Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Ayrı `C.UTF-8` trusted execution profile kullanan fixed
-`Rscript --vanilla` worker ve bağımsız direct-stylo fixture oracle uygula. Guardian
+**Sıradaki tek ana iş:** Unequal document totals, raw-count counterfactual ayrımı ve
+known satırlar arasına yerleştirilmiş birden çok unknown içeren v2 fixture/oracle'ı
+worker'dan önce dondur. Sonra ayrı `C.UTF-8` trusted execution profile kullanan
+fixed `Rscript --vanilla` worker ve güvenli Python adapter uygula. Guardian
 ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
 P006-AC-03 altında yapılabilir. Preprocessing P007, public workflow P008, benchmark
 P010/P011, FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
@@ -52,6 +55,19 @@ Exact implementation commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`,
 GitHub Actions run `29291282495` içinde verify job `86955214522`, SBOM/dependency
 audit ve canonical Linux amd64 container job `86955214531` kapılarından geçti.
 P006-AC-01 ve P006-AC-05 passed; AC-03 ve worker/parity ölçütleri pending kaldı.
+
+**P006 oracle checkpoint'i:** Source `7df1fdf` normal CI `29295419945` ve
+one-time capture `29295419981` kapılarından geçti. Locked Linux amd64 oracle iki kez
+ağsız çalıştı; complete base, unknown-canary, partial-boundary ve session dosyaları
+byte-identical çıktı. Bot commit `b5a842f`, `RUN-20260714-0001` ve
+`provenance/evidence/P006/oracle-freeze-validation.md` source/image/package/input/
+output hashlerini tutar. Üç önceki capture; broad error sınıfı, unreadable `renv`
+cache ve public synthetic output izni açıklarını bulup kanıt yazmadan durdu. Geçici
+write workflow kaldırıldı ve frozen-package validator normal verify'a eklendi. Bu
+checkpoint worker parity veya P006 acceptance değildir; passed ölçütler değişmedi.
+Post-freeze method audit, v1'de bütün `token_total` değerlerinin 100 ve tek unknown
+satırının son konumda olduğunu buldu. Bu nedenle v1 doğru çalışmış fakat kabul için
+yetersiz ara referanstır; v2 üretilmeden worker karşılaştırmasına geçilmez.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

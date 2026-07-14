@@ -14,7 +14,8 @@ to the declared whole-text synthetic fixture suite. It is not evidence of genera
 - Literary text: none
 - License: CC0-1.0
 - Inputs: complete base, changed-unknown canary, and culling boundaries
-- MFW range: 2 through 1,000 under the closed v1 contract
+- Contract MFW range: 2 through 1,000
+- Frozen v1 fixture MFW values: 3 through 6 only
 
 Regenerate or verify the checked-in bytes with:
 
@@ -52,12 +53,13 @@ stylo::dist.cosine(z_scores)
 6. Commit the direct outputs, session record, environment identity, and checksum
    manifest as a separate descendant commit.
 7. Remove the temporary write-enabled capture workflow after the freeze commit
-   lands.
+   lands. This was completed after evidence commit `b5a842f`.
 8. Only then implement and compare the worker.
 
-The temporary workflow is `.github/workflows/p006-oracle-freeze.yml`. A bot run
-creates `provenance/evidence/P006/oracle-v1/`; bot-authored follow-up pushes are
-excluded from the capture job to prevent a loop.
+The historical temporary workflow is available at source commit `7df1fdf`. It was
+removed from the active branch after GitHub Actions run `29295419981` created
+`provenance/evidence/P006/oracle-v1/`. Restoring a content-write workflow requires
+a new explicit capture decision; normal CI is read-only.
 
 ## Acceptance Checks
 
@@ -80,6 +82,28 @@ cd provenance/evidence/P006/oracle-v1
 sha256sum --check oracle-freeze.sha256
 ```
 
+The durable repository gate additionally verifies the exact file set, canonical
+metadata, historical source hashes, two-run snapshots, session record, input
+binding, and scientific invariants:
+
+```bash
+uv run python scripts/validate_p006_frozen_oracle.py
+```
+
 The local macOS environment can parse and statically inspect the oracle but
 cannot load `stylo` without XQuartz. Canonical numerical evidence therefore comes
 only from the locked Linux capture.
+
+The full passing identity and the three safely stopped capture attempts are retained
+in `provenance/evidence/P006/oracle-freeze-validation.md` and
+`provenance/runs/RUN-20260714-0001.json`.
+
+## Post-freeze Method Audit
+
+The first freeze remains immutable and inspectable, but it is not sufficient for
+future worker acceptance. Every v1 document has `token_total=100`, so a worker that
+incorrectly compares raw counts could escape this fixture. The only unknown document
+is also the final row, which cannot detect an implementation that assumes position
+instead of reading each document role. A strengthened v2 suite must vary document
+lengths, place multiple unknown documents between known rows, and prove that the
+raw-count counterfactual differs before any worker parity claim is evaluated.

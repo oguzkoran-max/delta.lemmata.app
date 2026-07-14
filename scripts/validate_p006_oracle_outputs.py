@@ -43,6 +43,53 @@ EXPECTED_SESSION_FIELDS = {
 }
 
 
+class _DuplicateSessionKey(ValueError):
+    pass
+
+
+def _unique_session_object(pairs: list[tuple[str, Any]]) -> dict[str, Any]:
+    value: dict[str, Any] = {}
+    for key, item in pairs:
+        if key in value:
+            raise _DuplicateSessionKey
+        value[key] = item
+    return value
+
+
+def _reject_session_constant(_value: str) -> None:
+    raise ValueError
+
+
+def _parse_canonical_session(payload: bytes) -> dict[str, Any]:
+    try:
+        session = json.loads(
+            payload.decode("utf-8", errors="strict"),
+            object_pairs_hook=_unique_session_object,
+            parse_constant=_reject_session_constant,
+        )
+        canonical = (
+            json.dumps(
+                session,
+                allow_nan=False,
+                ensure_ascii=False,
+                separators=(",", ":"),
+                sort_keys=True,
+            )
+            + "\n"
+        ).encode()
+    except (
+        _DuplicateSessionKey,
+        UnicodeError,
+        json.JSONDecodeError,
+        TypeError,
+        ValueError,
+    ):
+        raise ValueError("P006_ORACLE_SESSION_INVALID") from None
+    if not isinstance(session, dict) or payload != canonical:
+        raise ValueError("P006_ORACLE_SESSION_INVALID")
+    return session
+
+
 def _load_manifest() -> dict[str, Any]:
     value = json.loads(MANIFEST_PATH.read_text(encoding="utf-8"))
     if not isinstance(value, dict):
@@ -59,12 +106,15 @@ def _direct_name(input_file: str) -> str:
 
 def _load_records(
     output_directory: Path,
+    *,
+    session_path: Path | None = None,
 ) -> tuple[dict[str, WorkerInputV1], dict[str, DirectStyloOracleV1]]:
     manifest = _load_manifest()
     fixtures = manifest.get("fixtures")
     if not isinstance(fixtures, list):
         raise ValueError("P006_ORACLE_MANIFEST_INVALID")
-    expected_names = {"session-info.json"}
+    embedded_session = session_path is None
+    expected_names = {"session-info.json"} if embedded_session else set()
     requests: dict[str, WorkerInputV1] = {}
     records: dict[str, DirectStyloOracleV1] = {}
     for entry in fixtures:
@@ -90,11 +140,20 @@ def _load_records(
     actual_names = {path.name for path in output_entries}
     if actual_names != expected_names:
         raise ValueError("P006_ORACLE_OUTPUT_SET_INVALID")
-    session_bytes = (output_directory / "session-info.json").read_bytes()
+    resolved_session_path = (
+        output_directory / "session-info.json" if embedded_session else session_path
+    )
+    if (
+        resolved_session_path is None
+        or resolved_session_path.is_symlink()
+        or not resolved_session_path.is_file()
+    ):
+        raise ValueError("P006_ORACLE_SESSION_INVALID")
+    session_bytes = resolved_session_path.read_bytes()
     if not session_bytes or len(session_bytes) > 4096:
         raise ValueError("P006_ORACLE_SESSION_INVALID")
-    session = json.loads(session_bytes)
-    if not isinstance(session, dict) or set(session) != EXPECTED_SESSION_FIELDS:
+    session = _parse_canonical_session(session_bytes)
+    if set(session) != EXPECTED_SESSION_FIELDS:
         raise ValueError("P006_ORACLE_SESSION_INVALID")
     if any(record.session.model_dump(mode="json") != session for record in records.values()):
         raise ValueError("P006_ORACLE_SESSION_MISMATCH")
@@ -176,10 +235,12 @@ def _validate_declared_ties(record: DirectStyloOracleV1) -> None:
 
 def validate_output_directory(
     output_directory: Path,
+    *,
+    session_path: Path | None = None,
 ) -> tuple[dict[str, WorkerInputV1], dict[str, DirectStyloOracleV1]]:
     if not output_directory.is_dir():
         raise ValueError("P006_ORACLE_OUTPUT_DIRECTORY_INVALID")
-    requests, records = _load_records(output_directory)
+    requests, records = _load_records(output_directory, session_path=session_path)
     _validate_leakage_pair(
         requests["complete-base.input.json"],
         requests["complete-canary.input.json"],

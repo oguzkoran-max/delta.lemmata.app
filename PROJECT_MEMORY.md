@@ -2,16 +2,18 @@
 
 **Son güncelleme:** 2026-07-14
 
-**Durum:** P005 tamamlandı; P006 aktif, yöntem kararı kabul edildi ve kapalı
-worker-sözleşmesi checkpoint'i exact Linux CI kapısından geçti
+**Durum:** P005 tamamlandı; P006 aktif, kapalı worker-sözleşmesi doğrulandı;
+direct-`stylo` oracle v1 donduruldu fakat yöntem denetimi sonrası güçlendirilmiş v2
+fixture zorunlu
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
 workspace, guardian-managed POSIX process control, durable terminal ACK,
 execution-bound recovery receipt ve conservative lifecycle projection var. P006
 input/result/fatal-error modelleri, strict parser, semantic validator, saf scientific
-finalizer ve güvenli bounded workspace read eklendi; public analiz, R worker, parity
-ve durable scientific-result entegrasyonu henüz yok
+finalizer, güvenli bounded workspace read ve CC0 direct-`stylo` oracle kanıtı var;
+public analiz, fixed R worker, parity ve durable scientific-result entegrasyonu henüz
+yok
 
 **P006 başlangıcı:** `codex/p006-stylo-worker` dalı ve
 `provenance/tickets/P006.json` açıldı. Dört kullanılabilir read-only mercek ile
@@ -43,6 +45,23 @@ commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`, GitHub Actions run
 `29291282495` içinde verify, SBOM/dependency audit ve canonical Linux amd64
 container kapılarından geçti.
 P006-AC-01 ve P006-AC-05 bu dar kanıtla geçti; R worker, parity ve AC-03 açıktır.
+
+**P006 bağımsız oracle checkpoint'i:** CC0 sentetik whole-text suite; complete base,
+unknown-canary ve culling-boundary girdileriyle worker'dan önce donduruldu. Oracle
+yalnız locked `stylo` 0.7.71 `dist.delta`, `dist.eder` ve `dist.cosine` çağrılarını
+kullanır; worker/Python/shared distance helper kullanmaz. İlk üç capture koşusu broad
+environment error, root-owned `renv` cache ve cross-user `0600` output nedeniyle
+kanıt yazmadan durdu. Dördüncü koşu `29295419981`, source `7df1fdf` üzerinde
+iki no-network Linux amd64 çalıştırmasında byte-identical sonuç verdi; normal CI
+`29295419945` de geçti. Bot evidence commit'i `b5a842f` ve
+`RUN-20260714-0001` paket, session, source/input/output hash ve iki-run snapshot'ını
+tutuyor. Geçici write workflow kaldırıldı; normal verify artık
+`scripts/validate_p006_frozen_oracle.py` ile paketi yeniden denetler. Sonraki bağımsız
+yöntem denetimi, bütün belge toplamlarının 100 olması ve tek unknown satırının daima
+sonda bulunması nedeniyle v1'in raw-count ve positional-role hatalarını yakalayamadığını
+gösterdi. V1 immutable ara kanıt olarak kalır; unequal totals, raw-count
+counterfactual ayrımı ve interleaved multiple unknown içeren v2 worker'dan önce
+dondurulacaktır. Bu worker parity veya yeni acceptance ölçütü değildir.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,
