@@ -5,6 +5,7 @@ ARG UV_VERSION=0.11.28
 ARG UV_ARCHIVE_SHA256=e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224
 
 ENV DEBIAN_FRONTEND=noninteractive \
+    RENV_PATHS_CACHE=/opt/renv/cache \
     UV_PYTHON_INSTALL_DIR=/opt/uv/python \
     UV_PROJECT_ENVIRONMENT=/opt/delta/.venv \
     PYTHONDONTWRITEBYTECODE=1 \
@@ -43,11 +44,14 @@ COPY .Rprofile renv.lock ./
 COPY renv ./renv
 COPY scripts ./scripts
 COPY schemas ./schemas
-RUN Rscript --vanilla scripts/bootstrap_renv.R
+RUN Rscript --vanilla scripts/bootstrap_renv.R \
+    && chmod -R a+rX /opt/renv/cache
 
 RUN useradd --create-home --shell /usr/sbin/nologin delta \
     && chown -R delta:delta /opt/delta
 
 USER delta
+
+RUN Rscript --vanilla -e 'setwd("/opt/delta"); source("renv/activate.R"); stopifnot(requireNamespace("jsonlite", quietly = TRUE)); stopifnot(requireNamespace("stylo", quietly = TRUE)); stopifnot(as.character(packageVersion("jsonlite")) == "2.0.0"); stopifnot(as.character(packageVersion("stylo")) == "0.7.71"); cat("r-runtime-namespace-ok\n")'
 
 CMD ["/opt/delta/.venv/bin/python", "-c", "import delta_lemmata; print(delta_lemmata.__version__)"]

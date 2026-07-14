@@ -52,6 +52,18 @@ def test_container_base_digest_matches_lock() -> None:
     assert lock["verified_at_utc"] == "2026-07-13T00:23:44Z"
 
 
+def test_container_locked_r_cache_is_readable_by_the_runtime_user() -> None:
+    dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
+    user_offset = dockerfile.index("USER delta")
+    smoke_offset = dockerfile.index('cat("r-runtime-namespace-ok')
+
+    assert "RENV_PATHS_CACHE=/opt/renv/cache" in dockerfile
+    assert "chmod -R a+rX /opt/renv/cache" in dockerfile
+    assert user_offset < smoke_offset
+    assert 'requireNamespace("jsonlite", quietly = TRUE)' in dockerfile
+    assert 'requireNamespace("stylo", quietly = TRUE)' in dockerfile
+
+
 def test_python_direct_dependencies_are_locked() -> None:
     with (ROOT / "uv.lock").open("rb") as handle:
         lock = tomllib.load(handle)
