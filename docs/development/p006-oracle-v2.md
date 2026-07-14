@@ -72,11 +72,14 @@ parity remains governed by ADR-0013: exact ordered features, matrix tolerance
 
 ## Capture Protocol
 
-`.github/workflows/p006-oracle-v2-capture.yml` is manual-only and has
-`contents: read`. Checkout credentials are not persisted. It restores the locked
-environment, verifies the source, builds the digest-pinned Linux amd64 image, runs
-the direct-`stylo` oracle twice with no network and a read-only root filesystem,
-validates both directories, and uploads a seven-day candidate artifact.
+The temporary `p006-oracle-v2-capture` job in `.github/workflows/ci.yml` runs only
+for `workflow_dispatch`; the workflow has `contents: read`. Reusing the CI workflow
+is necessary because GitHub permits manual dispatch only for workflow files already
+registered on the default branch. Checkout credentials are not persisted. The job
+restores the locked environment, verifies the source, builds the digest-pinned Linux
+amd64 image, runs the direct-`stylo` oracle twice with no network and a read-only
+root filesystem, validates both directories, and uploads a seven-day candidate
+artifact.
 
 The workflow cannot commit or push. Publication is a separate local step:
 
@@ -88,8 +91,8 @@ The workflow cannot commit or push. Publication is a separate local step:
 5. Bind source commit, capture run, artifact identity, publication commit, input
    hashes, output hashes, package versions, image identity, and limitations in a
    native Run record.
-6. Remove the manual capture workflow after publication; retain it in the exact
-   source commit for replay.
+6. Remove the temporary manual capture job from normal CI after publication; retain
+   it in the exact source commit for replay.
 
 ## Acceptance Boundary
 

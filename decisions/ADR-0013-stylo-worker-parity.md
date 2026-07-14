@@ -143,7 +143,7 @@ remains P010-P015.
   the normalized reference by more than `1e-3` for every requested fit and each of
   the three distance families. This threshold checks fixture activation and does
   not replace the accepted parity tolerances.
-- Capture and publication authority are separated. The manual capture workflow has
+- Capture and publication authority are separated. The manual-only capture job has
   read-only repository permission and uploads a temporary candidate artifact; a
   separately validated local publication commit retains the final evidence.
 - Fixed-worker implementation cannot begin until v2 is checksum-frozen and its

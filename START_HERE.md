@@ -137,7 +137,7 @@ evidence commit `b5a842f` ve `RUN-20260714-0001` ile iki byte-identical ağsız 
 koşusundan donduruldu; geçici write workflow kaldırıldı. Audit, v1'in eşit belge
 uzunluğu ve tek-son-satır unknown nedeniyle iki uygulama hatasını ayırt edemediğini
 buldu. Sıradaki tek iş unequal totals ve interleaved multiple unknown kullanan v2
-referansı dondurmaktır. Fixture ve manual-only read-permission capture workflow'u
+referansı dondurmaktır. Fixture ve CI içindeki manual-only read-permission capture job'u
 hazırdır; exact source CI, iki ağsız capture ve ayrı evidence publication commit'i
 sıradadır. Fixed worker ancak bundan sonra uygulanır.
 Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri

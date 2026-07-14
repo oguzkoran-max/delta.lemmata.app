@@ -155,7 +155,7 @@
     "Two byte-identical no-network Linux oracle runs retained with source, image identity, observed package versions, lockfile, session, input, output, and checksum binding; one-time write workflow removed after freeze",
     "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison",
     "Adversarial v2 source adds six unequal document totals, two interleaved unknown rows, a known final row, two-unknown canary, order permutation, and formula-level raw-count separation for every complete fit and distance family",
-    "Manual v2 capture has read-only repository permission, does not persist checkout credentials, cannot commit or push, and yields only a short-lived candidate artifact for separate local validation and publication"
+    "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, cannot commit or push, and yields only a short-lived candidate artifact for separate local validation and publication"
   ],
   "commands": [
     {
@@ -234,6 +234,12 @@
       "command": "./scripts/verify.sh",
       "exit_code": 0,
       "result": "The adversarial v2 source passed deterministic fixture generation, role/order and raw-count counterfactual validation, 1,094 tests, 100% of 7,247 statements and 1,902 branches, typing, provenance, repository, frozen-v1, and locked-environment gates on macOS.",
+      "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "gh workflow run p006-oracle-v2-capture.yml --ref codex/p006-stylo-worker",
+      "exit_code": 1,
+      "result": "GitHub rejected dispatch with HTTP 404 because a newly named workflow is not registered on the default branch. No run or artifact was created. The read-only capture job was moved behind workflow_dispatch in the already registered CI workflow without adding repository write permission.",
       "evidence": "docs/development/p006-oracle-v2.md"
     }
   ],

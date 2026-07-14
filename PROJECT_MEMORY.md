@@ -69,8 +69,9 @@ canary ve aynı belgelerin order permutation girdisi CC0 fixture olarak eklendi.
 complete MFW/culling fitinin her birinde ham-sayım karşı-olgusu normalized sonuçtan
 üç mesafe ailesinde `>1e-3` ayrılır; en küçük gözlenen fark Classic `0.522862`, Eder
 `2.359863`, Cosine `0.799980`'dir. Validator rol ve matrisleri document ID ile
-karşılaştırır. Manual v2 capture workflow'u `contents: read`, credential persistence
-kapalı ve repo push/commit yetkisizdir; yalnız yedi günlük candidate artifact üretir.
+karşılaştırır. CI içindeki manual-only v2 capture job'u `contents: read`, credential
+persistence kapalı ve repo push/commit yetkisizdir; yalnız yedi günlük candidate
+artifact üretir.
 Yerel kapı 1,094 test ve yüzde 100 kapsamla geçti. Exact source CI, iki ağsız Linux
 capture, artifact indirme/doğrulama ve ayrı publication commit'i sıradadır.
 

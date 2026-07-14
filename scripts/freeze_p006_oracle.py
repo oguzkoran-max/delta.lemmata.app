@@ -72,7 +72,7 @@ def _suite_configuration(suite: str) -> SuiteConfiguration:
             generator=V2_GENERATOR,
             freeze_schema_version="p006-oracle-freeze-v2",
             source_paths=(
-                ROOT / ".github" / "workflows" / "p006-oracle-v2-capture.yml",
+                ROOT / ".github" / "workflows" / "ci.yml",
                 DOCKERFILE,
                 RENV_LOCK,
                 ORACLE_SCHEMA,

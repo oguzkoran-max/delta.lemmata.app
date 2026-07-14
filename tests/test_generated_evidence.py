@@ -178,7 +178,8 @@ def test_generation_and_ci_use_path_neutral_validated_evidence() -> None:
     assert "normalize_python_sbom.py" in generator
     assert "pip freeze --exclude-editable" in generator
     assert "validate_generated_evidence.py" in generator
-    assert "upload-artifact" not in workflow
+    routine_ci = workflow.split("  p006-oracle-v2-capture:", maxsplit=1)[0]
+    assert "upload-artifact" not in routine_ci
 
 
 def test_python_sbom_normalizer_removes_only_local_file_references(tmp_path: Path) -> None:

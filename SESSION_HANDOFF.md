@@ -75,8 +75,8 @@ yetersiz ara referanstır; v2 üretilmeden worker karşılaştırmasına geçilm
 interleaved unknown, known final row, iki-unknown canary ve order permutation içerir.
 Formula-level raw-count counterfactualı her dört fit ve üç distance family için
 normalized sonuçtan aktiftir. `scripts/validate_p006_fixture_v2.py`, suite-aware
-oracle validator/freeze aracı ve manual-only read-permission capture workflow'u
-eklendi. Capture workflow repo commit/push yapamaz; yayınlama yerel ve ayrı olacaktır.
+oracle validator/freeze aracı ve CI içinde manual-only read-permission capture job'u
+eklendi. Capture job repo commit/push yapamaz; yayınlama yerel ve ayrı olacaktır.
 Yerel `scripts/verify.sh` 1,094 test, 7,247 statement, 1,902 branch ve yüzde 100
 kapsamla geçti. Source commit/CI ve v2 freeze henüz yoktur; passed AC listesi
 değişmemiştir.
