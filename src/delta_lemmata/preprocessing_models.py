@@ -182,8 +182,8 @@ class WorkPreparationV1(P007Model):
         if self.text_unit is TextUnit.INDEPENDENT_WORK:
             if self.parent_work_id is not None:
                 raise ValueError("independent work preparation cannot declare a parent")
-        elif self.parent_work_id is None:
-            raise ValueError("non-independent preparation requires a parent")
+        elif self.parent_work_id is None or self.parent_work_id == self.work_id:
+            raise ValueError("non-independent preparation requires a distinct parent")
         return self
 
 

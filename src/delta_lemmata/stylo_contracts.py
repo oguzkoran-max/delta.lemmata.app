@@ -211,6 +211,7 @@ class DocumentCounts(WireModel):
         min_length=1,
         max_length=MAX_FEATURES,
         strict=False,
+        repr=False,
     )
 
     @model_validator(mode="after")
@@ -243,6 +244,7 @@ class WorkerInputV1(WireModel):
         min_length=1,
         max_length=MAX_FEATURES,
         strict=False,
+        repr=False,
     )
     documents: tuple[DocumentCounts, ...] = Field(
         min_length=2,
@@ -293,7 +295,7 @@ class WorkerInputV1(WireModel):
 
 
 class RankedFeature(WireModel):
-    feature: Feature
+    feature: Feature = Field(repr=False)
     known_total_count: AggregateCount
     known_document_count: Annotated[StrictInt, Field(ge=1, le=MAX_DOCUMENTS)]
 
@@ -314,6 +316,7 @@ class FittingBasis(WireModel):
     ranked_features: tuple[RankedFeature, ...] = Field(
         max_length=MAX_FEATURES,
         strict=False,
+        repr=False,
     )
 
     @model_validator(mode="after")
@@ -335,6 +338,7 @@ class FitComplete(WireModel):
         min_length=1,
         max_length=MAX_MFW,
         strict=False,
+        repr=False,
     )
     means: tuple[FiniteNumber, ...] = Field(
         min_length=1,

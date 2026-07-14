@@ -325,7 +325,7 @@ class CorpusMaterializationService:
             raise _error(CorpusMaterializationErrorCode.INVALID_REQUEST)
         state = self._begin_visit(owner_reference, receipt)
         try:
-            expired = self._now() > receipt.expires_at_utc
+            expired = self._now() >= receipt.expires_at_utc
         except CorpusMaterializationError:
             self._cleanup_state(state)
             raise

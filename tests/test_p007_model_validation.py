@@ -201,6 +201,13 @@ def test_work_manifest_and_receipt_bindings_fail_closed() -> None:
         _validate(work.__class__, work, parent_work_id="work_parent")
     with pytest.raises(ValueError):
         _validate(work.__class__, work, text_unit=TextUnit.EXCERPT, parent_work_id=None)
+    with pytest.raises(ValueError):
+        _validate(
+            work.__class__,
+            work,
+            text_unit=TextUnit.EXCERPT,
+            parent_work_id=work.work_id,
+        )
 
     manifest = _manifest()
     first, second = manifest.works

@@ -183,7 +183,7 @@ def test_expiry_invalid_receipts_and_duplicate_lease_ids_fail_closed(tmp_path: P
     service, workspaces, clock = _environment(tmp_path)
     source = _source(1, b"private canary corpus")
     receipt = service.materialize(owner_key="owner-a", payloads=(source,))
-    clock.advance(timedelta(hours=1, seconds=1))
+    clock.advance(timedelta(hours=1))
     _expect_error(
         lambda: service.visit(
             owner_key="owner-a",

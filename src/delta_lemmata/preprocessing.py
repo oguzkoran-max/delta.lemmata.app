@@ -7,7 +7,7 @@ import json
 import platform
 import unicodedata
 from collections import Counter
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 
 from delta_lemmata import __version__
@@ -63,7 +63,7 @@ class CandidateInventoryError(ValueError):
 
 @dataclass(frozen=True, slots=True)
 class CustomExclusions:
-    tokens: tuple[str, ...]
+    tokens: tuple[str, ...] = field(repr=False)
     source_sha256: str | None
 
 
@@ -71,9 +71,9 @@ class CustomExclusions:
 class PreparedText:
     raw_sha256: str
     prepared_sha256: str
-    prepared_bytes: bytes
-    tokens: tuple[str, ...]
-    full_counts: tuple[tuple[str, int], ...]
+    prepared_bytes: bytes = field(repr=False)
+    tokens: tuple[str, ...] = field(repr=False)
+    full_counts: tuple[tuple[str, int], ...] = field(repr=False)
     token_count: int
     unique_token_count: int
     raw_byte_count: int
@@ -96,7 +96,7 @@ class PreparedDocument:
 
 @dataclass(frozen=True, slots=True)
 class CandidateInventory:
-    features: tuple[str, ...]
+    features: tuple[str, ...] = field(repr=False)
     sha256: str
     known_independent_work_count: int
     transport_excluded_feature_count: int
