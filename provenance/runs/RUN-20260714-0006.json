@@ -1,0 +1,134 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260714-0006",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P007"
+  ],
+  "started_at_utc": "2026-07-14T20:48:28Z",
+  "ended_at_utc": "2026-07-14T20:52:17Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "83a6eca2036a40e79b7e49d6b2507e914e7adcc6",
+  "environment": {
+    "local": {
+      "os": "macOS",
+      "architecture": "arm64",
+      "python": "3.13.9",
+      "tests_passed": 1294,
+      "tests_skipped": 1,
+      "measured_statements": 8496,
+      "measured_branches": 2286,
+      "coverage_percent": 100
+    },
+    "ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "timezone": "UTC",
+      "run": "29367142454",
+      "verify_job": "87201419824",
+      "container_job": "87201419770",
+      "tests_passed": 1295,
+      "measured_statements": 8496,
+      "measured_branches": 2286,
+      "coverage_percent": 100,
+      "records_validated": 91,
+      "sbom_dependency_secret_gates": "passed",
+      "built_image_id": "sha256:e9e2f6beda8ab2b68086cc40df8bb9d17daca3b29bd424e3122d004313340240"
+    }
+  },
+  "command": "./scripts/verify.sh && ./scripts/generate_evidence.sh && docker build --platform linux/amd64 .",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "18963100d7dc7f3692487c00e5352f4e8b90f1256a2c861272f23c5e6f6f83bf"
+    },
+    {
+      "path": "scripts/generate_p007_schemas.py",
+      "sha256": "329455a1b466f7ceb48769e8778bbc996264bd815e06813fd57323d118c3a564"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub Actions checkout of exact commit 83a6eca2036a40e79b7e49d6b2507e914e7adcc6",
+    "command": "./scripts/verify.sh && ./scripts/generate_evidence.sh && docker build --platform linux/amd64 .",
+    "limitations": [
+      "The GitHub-hosted runner image is named but is not represented by an immutable runner-image digest.",
+      "This run does not include a separate fresh remote clean-clone replay.",
+      "The synthetic fixtures establish closed-contract and pure-core behavior only; private materialization, one-time admission, public workflow, benchmark, FAIR, literary, and production claims remain pending."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "18963100d7dc7f3692487c00e5352f4e8b90f1256a2c861272f23c5e6f6f83bf"
+    },
+    {
+      "path": "scripts/generate_p007_schemas.py",
+      "sha256": "329455a1b466f7ceb48769e8778bbc996264bd815e06813fd57323d118c3a564"
+    },
+    {
+      "path": "src/delta_lemmata/preprocessing.py",
+      "sha256": "c53273f3e64438fcb64861fac04359a2a582a73c9fcf0e131aa53284d22123f0"
+    },
+    {
+      "path": "src/delta_lemmata/preprocessing_models.py",
+      "sha256": "946998c5414c0ec4c3219f8da0858d94bd96c6fff78ed381d9738b3f2e65e915"
+    },
+    {
+      "path": "src/delta_lemmata/corpus_health.py",
+      "sha256": "9fb10e8f75666e37c85b69a293274cb279bd40aee35a004af20181bf093c569c"
+    },
+    {
+      "path": "src/delta_lemmata/corpus_health_models.py",
+      "sha256": "6e4bf3957bdf596fc7b6862437e37f884beabc9eb6f6152909bb40efb7f31d86"
+    },
+    {
+      "path": "tests/test_preprocessing.py",
+      "sha256": "00656cb0275788df5604b86ebaf5837b9e8dc470ae9fb6d0aeb2411ce52d7b58"
+    },
+    {
+      "path": "tests/test_corpus_health.py",
+      "sha256": "5d1e38e500389848f25990bb14a2a18d19819f1f807d562afd84349362a24aed"
+    },
+    {
+      "path": "tests/test_p007_model_validation.py",
+      "sha256": "92193e79d1b7f80e5b5465e1cb17ae02eed3959a700fc05a8c1df0735e7d1aa2"
+    },
+    {
+      "path": "tests/test_p007_schemas.py",
+      "sha256": "9f86c2e7b63a06086427c74295b7284c9f878beac1e353fb08503dd0b218af74"
+    },
+    {
+      "path": "schemas/preprocessing-config-v1.schema.json",
+      "sha256": "efd40146ea9fc47361be084ffc1cef44ef5a35a729b3d59cdbfc81212c87803a"
+    },
+    {
+      "path": "schemas/corpus-analysis-annotations-v1.schema.json",
+      "sha256": "d8ad4e76f19591363d3314e3603cc9b3c455db401cbb4bde18b279c9e071418e"
+    },
+    {
+      "path": "schemas/preprocessing-manifest-v1.schema.json",
+      "sha256": "016fff6fa4e8f2feda8ceccd37875e4f7255959f392b2992404451ccb0b86353"
+    },
+    {
+      "path": "schemas/corpus-health-report-v1.schema.json",
+      "sha256": "ee81f5f6898e43ebf6dd21a84b894d062081158abf28358310f9194b7359245a"
+    },
+    {
+      "path": "schemas/analysis-preparation-receipt-v1.schema.json",
+      "sha256": "2280ee6f4ba200bcad13785a96067591e943fe688d0c9cd3b0491300d83eb3f7"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P007/core-validation.md",
+      "sha256": "f814373de8953e9f27c0430ca10760f09076c9eb2d409c29e1a7ebcdf725ac6a"
+    }
+  ],
+  "notes": "The exact P007 pure-core commit passed local macOS validation with one declared Linux-only R integration skip and passed all 1,295 tests on Linux with complete measured statement and branch coverage. P007-AC-02 passes. Cross-layer obligations for AC-03 through AC-10 remain pending."
+}

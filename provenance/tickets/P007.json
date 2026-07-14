@@ -57,9 +57,13 @@
     "PE-20260714-0003"
   ],
   "commit_ids": [
-    "196c5dff82be80b843ee54a796615ff798d94f38"
+    "196c5dff82be80b843ee54a796615ff798d94f38",
+    "5ad6850976310934002a223c43d10abd5e3e56cc",
+    "83a6eca2036a40e79b7e49d6b2507e914e7adcc6"
   ],
-  "run_ids": [],
+  "run_ids": [
+    "RUN-20260714-0006"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": [
@@ -73,6 +77,7 @@
     "docs/development/p007-preprocessing-corpus-health-contract.md",
     "provenance/evidence/P007/architecture-method-audit.md",
     "provenance/evidence/P007/start-validation.md",
+    "provenance/evidence/P007/core-validation.md",
     "memory/checkpoints/2026-07-14-p007-start.md",
     "memory/checkpoints/2026-07-14-p007-method-alpha-acceptance.md",
     "docs/development/roadmap-P001-P015.md",
@@ -94,8 +99,11 @@
     {
       "id": "P007-AC-02",
       "criterion": "Closed configuration, annotation-overlay, preparation-manifest, corpus-health, and admission-receipt schemas plus canonical models reject malformed, duplicate-key, non-finite, inconsistent, unknown-field, and oversized inputs through separate structural and semantic validators.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/core-validation.md",
+        "provenance/runs/RUN-20260714-0006.json"
+      ]
     },
     {
       "id": "P007-AC-03",
@@ -149,7 +157,8 @@
   "changed_files": [
     "P007 execution brief, native PromptEvent, four-lens architecture/method audit, detailed proposed preprocessing and corpus-health contract, proposed ADR, active Ticket, checkpoint, and synchronized startup/claim/threat pointers",
     "Exact opening commit 196c5df passed Linux source, schema, provenance, SBOM/dependency/secret, and canonical-container gates; the result is retained without widening P007 claims",
-    "HD-20260714-0001 accepted the bounded P007 method package; HD-20260714-0002 accepted the 2026-07-17 Public-alpha target and August evidence-dependent manuscript-draft target; ADR-0014 and ADR-0015 preserve the separate claim boundaries"
+    "HD-20260714-0001 accepted the bounded P007 method package; HD-20260714-0002 accepted the 2026-07-17 Public-alpha target and August evidence-dependent manuscript-draft target; ADR-0014 and ADR-0015 preserve the separate claim boundaries",
+    "Commit 83a6eca added five closed P007 schemas, strict structural and semantic parsers, deterministic delta-surface-words-v1 preparation, known-only candidate ranking, content-free corpus-health assessment, and 100% measured source and branch coverage"
   ],
   "commands": [
     {
@@ -169,6 +178,18 @@
       "exit_code": 0,
       "result": "Exact P007 opening commit 196c5df passed pinned Linux source verification, full measured coverage, metadata, schemas, 87 provenance records, frozen P006 validators, SBOM/dependency/secret gates, and canonical Linux amd64 container construction.",
       "evidence": "provenance/evidence/P007/start-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run pytest --cov=delta_lemmata --cov-report=term-missing",
+      "exit_code": 0,
+      "result": "The P007 pure-core source passed 1,294 tests with one documented macOS Linux-only skip and measured 8,496 statements and 2,286 branches at 100% coverage; format, lint, strict typing, and generated-schema drift checks also passed.",
+      "evidence": "provenance/evidence/P007/core-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29367142454",
+      "exit_code": 0,
+      "result": "Exact commit 83a6eca passed all 1,295 tests on Linux at 100% measured statement and branch coverage, validated 91 provenance records, passed repository/R/SBOM/dependency/secret gates, and built the canonical Linux amd64 image.",
+      "evidence": "provenance/evidence/P007/core-validation.md"
     }
   ],
   "blockers": []
