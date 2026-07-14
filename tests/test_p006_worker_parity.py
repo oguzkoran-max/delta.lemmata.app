@@ -396,6 +396,7 @@ def test_capture_metadata_is_path_free_and_binds_critical_inputs() -> None:
     assert metadata["capture_profile"]["container_platform"] == "linux/amd64"
     assert metadata["capture_profile"]["container_memory_limit"] == "2g"
     assert metadata["capture_profile"]["network"] == "none"
+    assert metadata["capture_profile"]["renv_runtime"] == "read-only-prebuilt-library"
     assert metadata["capture_profile"]["worker_limit_profile"] == {
         "cpu_time_seconds": 30,
         "max_processes": 8,

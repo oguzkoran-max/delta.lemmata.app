@@ -161,6 +161,7 @@ def capture_metadata(context: CaptureContext) -> dict[str, Any]:
             "network": "none",
             "no_new_privileges": True,
             "process_limit": 64,
+            "renv_runtime": "read-only-prebuilt-library",
             "root_filesystem": "read-only",
             "runtime_user": "delta",
             "worker_limit_profile": STYLO_WORKER_LIMITS.model_dump(mode="json"),
