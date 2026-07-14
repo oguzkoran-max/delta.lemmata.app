@@ -270,6 +270,7 @@ class WorkspaceManager:
             path_info = os.stat(name, dir_fd=area_fd, follow_symlinks=False)
             if _identity(path_info) != created_identity or not _private_file(path_info):
                 _reject(WorkspaceErrorCode.WRITE_FAILED)
+            os.fsync(area_fd)
             return layout.area(area) / name
         except WorkspaceError as error:
             if area_fd >= 0 and created_identity is not None:  # pragma: no branch

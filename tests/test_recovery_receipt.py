@@ -11,11 +11,25 @@ from pydantic import ValidationError
 
 import delta_lemmata.recovery_receipt as recovery
 from delta_lemmata.job_events import MAX_EVENT_TTL_SECONDS
+from delta_lemmata.job_models import (
+    AppliedOperation,
+    ExecutionState,
+    JobRecord,
+    ScientificResultReceipt,
+    TerminalOutcome,
+    new_staged_job,
+    transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
+)
+from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
 from delta_lemmata.recovery_receipt import (
     RecoveryReceipt,
     RecoveryReceiptError,
     RecoveryReceiptErrorCode,
     RecoveryReceiptStore,
+    ScientificRecoveryDisposition,
+    new_acceptance_receipt,
     new_recovery_receipt,
 )
 from delta_lemmata.session_identity import JobId, SessionCapability
@@ -23,6 +37,7 @@ from delta_lemmata.session_identity import JobId, SessionCapability
 NOW = datetime(2026, 7, 13, 18, tzinfo=UTC)
 SECRET = b"guardian-receipt-secret-v1-32bytes"
 EXECUTION_REF = "op_" + "1" * 64
+QUEUE_REF = "op_" + "0" * 64
 
 
 def job_id(number: int = 1) -> JobId:
@@ -52,6 +67,84 @@ def receipt(
         byte_count=byte_count if verified else 0,
         signing_secret=SECRET,
         event_ttl_seconds=MAX_EVENT_TTL_SECONDS,
+    )
+
+
+def acceptance_receipt(
+    *,
+    identifier: JobId | None = None,
+    execution_reference: str = EXECUTION_REF,
+    terminal_version: int = 3,
+    terminal_outcome: TerminalOutcome = TerminalOutcome.SUCCEEDED,
+    artifact_sha256: str | None = "a" * 64,
+    artifact_byte_size: int | None = 4096,
+) -> RecoveryReceipt:
+    return new_acceptance_receipt(
+        job_id=identifier or job_id(),
+        execution_reference=execution_reference,
+        occurred_at_utc=NOW,
+        terminal_version=terminal_version,
+        terminal_outcome=terminal_outcome,
+        artifact_sha256=artifact_sha256,
+        artifact_byte_size=artifact_byte_size,
+        signing_secret=SECRET,
+        event_ttl_seconds=MAX_EVENT_TTL_SECONDS,
+    )
+
+
+def running_job(identifier: JobId | None = None) -> JobRecord:
+    selected = identifier or job_id()
+    staged_at = NOW - timedelta(seconds=3)
+    staged = new_staged_job(
+        job_id=selected.to_urlsafe(),
+        owner_digest="b" * 64,
+        policy_version=DEFAULT_JOB_POLICY.profile_version,
+        at_utc=staged_at,
+        staged_ttl_seconds=DEFAULT_JOB_POLICY.staged_ttl_seconds,
+        event_ttl_seconds=DEFAULT_JOB_POLICY.event_ttl_seconds,
+    )
+    queued = transition_execution(
+        staged,
+        target=ExecutionState.QUEUED,
+        at_utc=NOW - timedelta(seconds=2),
+        deadline_at_utc=NOW + timedelta(minutes=14),
+        expected_version=staged.version,
+        operation_id=QUEUE_REF,
+    )
+    return transition_execution(
+        queued,
+        target=ExecutionState.RUNNING,
+        at_utc=NOW - timedelta(seconds=1),
+        expected_version=queued.version,
+        operation_id=EXECUTION_REF,
+    )
+
+
+def pending_scientific_job(identifier: JobId | None = None) -> JobRecord:
+    running = running_job(identifier)
+    claimed = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id="op_" + "2" * 64,
+    )
+    result = ScientificResultReceipt(
+        schema_version="scientific-result-receipt-v1",
+        request_id="request_" + "3" * 64,
+        request_sha256="4" * 64,
+        worker_version="stylo-worker-v1",
+        result_schema_version="stylo-worker-result-v1",
+        analysis_outcome="complete",
+        artifact_component=("053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"),
+        byte_size=4096,
+        sha256="a" * 64,
+    )
+    return transition_scientific_success(
+        claimed,
+        receipt=result,
+        at_utc=NOW,
+        tombstone_expires_at_utc=NOW + timedelta(days=7),
+        expected_version=claimed.version,
+        operation_id="op_" + "3" * 64,
     )
 
 
@@ -117,6 +210,37 @@ def test_receipt_model_rejects_unbounded_or_payload_bearing_records(
         RecoveryReceipt.model_validate(data)
 
 
+def test_recovery_and_accepted_dispositions_are_structurally_mutually_exclusive() -> None:
+    recovery_payload = receipt().model_dump(mode="python")
+    accepted_payload = acceptance_receipt().model_dump(mode="python")
+    invalid_payloads = (
+        {**recovery_payload, "schema_version": "guardian-disposition-receipt-v2"},
+        {**recovery_payload, "outcome": "accepted"},
+        {**recovery_payload, "terminal_version": 3},
+        {**recovery_payload, "terminal_outcome": TerminalOutcome.FAILED},
+        {
+            **recovery_payload,
+            "artifact_sha256": "a" * 64,
+            "artifact_byte_size": 4096,
+        },
+        {**accepted_payload, "schema_version": "guardian-recovery-receipt-v1"},
+        {**accepted_payload, "outcome": "recovery_required"},
+        {**accepted_payload, "workspace_verified_absent": True},
+        {**accepted_payload, "terminal_version": None},
+        {**accepted_payload, "terminal_outcome": None},
+        {
+            **accepted_payload,
+            "artifact_sha256": None,
+            "artifact_byte_size": None,
+        },
+        {**accepted_payload, "artifact_sha256": None},
+        {**accepted_payload, "terminal_outcome": TerminalOutcome.FAILED},
+    )
+    for payload in invalid_payloads:
+        with pytest.raises(ValidationError):
+            RecoveryReceipt.model_validate(payload)
+
+
 @pytest.mark.parametrize(
     "kwargs",
     [
@@ -151,6 +275,84 @@ def test_factory_rejects_invalid_inputs(kwargs: dict[str, object]) -> None:
         new_recovery_receipt(**arguments)  # type: ignore[arg-type]
 
 
+@pytest.mark.parametrize(
+    "kwargs",
+    [
+        {"job_id": cast(Any, SessionCapability.generate())},
+        {"execution_reference": "bad"},
+        {"terminal_version": True},
+        {"terminal_version": -1},
+        {"terminal_version": "3"},
+        {"terminal_outcome": "succeeded"},
+        {"signing_secret": b"short"},
+        {"event_ttl_seconds": 0},
+        {"event_ttl_seconds": MAX_EVENT_TTL_SECONDS + 1},
+    ],
+)
+def test_acceptance_factory_rejects_invalid_identity_version_and_types(
+    kwargs: dict[str, object],
+) -> None:
+    arguments: dict[str, object] = {
+        "job_id": job_id(),
+        "execution_reference": EXECUTION_REF,
+        "occurred_at_utc": NOW,
+        "terminal_version": 3,
+        "terminal_outcome": TerminalOutcome.SUCCEEDED,
+        "artifact_sha256": "a" * 64,
+        "artifact_byte_size": 4096,
+        "signing_secret": SECRET,
+        "event_ttl_seconds": MAX_EVENT_TTL_SECONDS,
+    }
+    arguments.update(kwargs)
+    with pytest.raises(ValueError, match="invalid acceptance receipt inputs"):
+        new_acceptance_receipt(**arguments)  # type: ignore[arg-type]
+
+    arguments.update(kwargs)
+    arguments["job_id"] = job_id()
+    arguments["execution_reference"] = EXECUTION_REF
+    arguments["terminal_version"] = 3
+    arguments["terminal_outcome"] = TerminalOutcome.SUCCEEDED
+    arguments["signing_secret"] = SECRET
+    arguments["event_ttl_seconds"] = MAX_EVENT_TTL_SECONDS
+    arguments["occurred_at_utc"] = NOW.astimezone(timezone(timedelta(hours=3)))
+    with pytest.raises(ValueError, match="occurred_at_utc"):
+        new_acceptance_receipt(**arguments)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    ("terminal_outcome", "artifact_sha256", "artifact_byte_size"),
+    [
+        (TerminalOutcome.SUCCEEDED, None, None),
+        (TerminalOutcome.SUCCEEDED, "bad", 4096),
+        (TerminalOutcome.SUCCEEDED, "A" * 64, 4096),
+        (TerminalOutcome.SUCCEEDED, "a" * 64, None),
+        (TerminalOutcome.SUCCEEDED, None, 4096),
+        (TerminalOutcome.SUCCEEDED, "a" * 64, 0),
+        (TerminalOutcome.SUCCEEDED, "a" * 64, 32 * 1024 * 1024 + 1),
+        (TerminalOutcome.SUCCEEDED, "a" * 64, "4096"),
+        (TerminalOutcome.SUCCEEDED, "a" * 64, True),
+        (TerminalOutcome.FAILED, "a" * 64, 4096),
+    ],
+)
+def test_acceptance_factory_rejects_invalid_digest_and_size_commitments(
+    terminal_outcome: TerminalOutcome,
+    artifact_sha256: object,
+    artifact_byte_size: object,
+) -> None:
+    with pytest.raises((ValidationError, ValueError)):
+        new_acceptance_receipt(
+            job_id=job_id(),
+            execution_reference=EXECUTION_REF,
+            occurred_at_utc=NOW,
+            terminal_version=3,
+            terminal_outcome=terminal_outcome,
+            artifact_sha256=artifact_sha256,  # type: ignore[arg-type]
+            artifact_byte_size=artifact_byte_size,  # type: ignore[arg-type]
+            signing_secret=SECRET,
+            event_ttl_seconds=MAX_EVENT_TTL_SECONDS,
+        )
+
+
 def test_store_round_trip_proof_idempotency_and_expiry_purge(tmp_path: Path) -> None:
     receipt_root = root(tmp_path)
     store = RecoveryReceiptStore(receipt_root, signing_secret=SECRET)
@@ -171,11 +373,243 @@ def test_store_round_trip_proof_idempotency_and_expiry_purge(tmp_path: Path) -> 
     assert store.read(job_id(), EXECUTION_REF) is None
 
 
+def test_accepted_disposition_factory_store_and_exact_acceptance_proof(
+    tmp_path: Path,
+) -> None:
+    accepted_store = RecoveryReceiptStore(root(tmp_path / "accepted"), signing_secret=SECRET)
+    item = acceptance_receipt()
+    assert item.schema_version == "guardian-disposition-receipt-v2"
+    assert item.outcome == "accepted"
+    assert item.terminal_version == 3
+    assert item.terminal_outcome is TerminalOutcome.SUCCEEDED
+    assert item.artifact_sha256 == "a" * 64
+    assert item.artifact_byte_size == 4096
+    assert item.workspace_verified_absent is False
+    assert item.file_count == item.byte_count == 0
+    assert accepted_store.write(item) is True
+    assert accepted_store.write(item) is False
+    assert accepted_store.read(job_id(), EXECUTION_REF) == item
+    assert accepted_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.SUCCEEDED,
+        artifact_sha256="a" * 64,
+        artifact_byte_size=4096,
+        at_utc=item.expires_at_utc - timedelta(microseconds=1),
+    )
+    assert not accepted_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=4,
+        terminal_outcome=TerminalOutcome.SUCCEEDED,
+        artifact_sha256="a" * 64,
+        artifact_byte_size=4096,
+        at_utc=NOW,
+    )
+    assert not accepted_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.FAILED,
+        artifact_sha256="a" * 64,
+        artifact_byte_size=4096,
+        at_utc=NOW,
+    )
+    assert not accepted_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.SUCCEEDED,
+        artifact_sha256="b" * 64,
+        artifact_byte_size=4096,
+        at_utc=NOW,
+    )
+    assert not accepted_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.SUCCEEDED,
+        artifact_sha256="a" * 64,
+        artifact_byte_size=4097,
+        at_utc=NOW,
+    )
+    assert not accepted_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.SUCCEEDED,
+        artifact_sha256="a" * 64,
+        artifact_byte_size=4096,
+        at_utc=item.expires_at_utc,
+    )
+    assert not accepted_store.proves_recovery(job_id(), EXECUTION_REF, at_utc=NOW)
+    expect_error(
+        RecoveryReceiptErrorCode.INVALID_RECORD,
+        lambda: accepted_store.write(acceptance_receipt(terminal_version=4)),
+    )
+
+    failed_store = RecoveryReceiptStore(root(tmp_path / "failed"), signing_secret=SECRET)
+    failed = acceptance_receipt(
+        terminal_outcome=TerminalOutcome.FAILED,
+        artifact_sha256=None,
+        artifact_byte_size=None,
+    )
+    assert failed_store.write(failed)
+    assert failed_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.FAILED,
+        artifact_sha256=None,
+        artifact_byte_size=None,
+        at_utc=NOW,
+    )
+
+    recovery_store = RecoveryReceiptStore(root(tmp_path / "recovery"), signing_secret=SECRET)
+    assert recovery_store.write(receipt())
+    assert recovery_store.proves_recovery(job_id(), EXECUTION_REF, at_utc=NOW)
+    assert not recovery_store.proves_acceptance(
+        job_id(),
+        EXECUTION_REF,
+        terminal_version=3,
+        terminal_outcome=TerminalOutcome.SUCCEEDED,
+        artifact_sha256="a" * 64,
+        artifact_byte_size=4096,
+        at_utc=NOW,
+    )
+
+
+def test_scientific_disposition_requires_exact_signed_terminal_commitment(
+    tmp_path: Path,
+) -> None:
+    pending = pending_scientific_job()
+    accepted_store = RecoveryReceiptStore(root(tmp_path / "accepted"), signing_secret=SECRET)
+    accepted = acceptance_receipt(terminal_version=pending.version)
+    assert accepted_store.write(accepted)
+    assert (
+        accepted_store.scientific_disposition(pending, at_utc=NOW)
+        is ScientificRecoveryDisposition.ACCEPTED
+    )
+
+    mismatch_store = RecoveryReceiptStore(root(tmp_path / "mismatch"), signing_secret=SECRET)
+    assert mismatch_store.write(
+        acceptance_receipt(
+            terminal_version=pending.version,
+            artifact_sha256="b" * 64,
+        )
+    )
+    assert (
+        mismatch_store.scientific_disposition(pending, at_utc=NOW)
+        is ScientificRecoveryDisposition.UNRESOLVED
+    )
+
+    missing_store = RecoveryReceiptStore(root(tmp_path / "missing"), signing_secret=SECRET)
+    assert (
+        missing_store.scientific_disposition(pending, at_utc=NOW)
+        is ScientificRecoveryDisposition.UNRESOLVED
+    )
+    assert (
+        accepted_store.scientific_disposition(
+            pending,
+            at_utc=accepted.expires_at_utc,
+        )
+        is ScientificRecoveryDisposition.UNRESOLVED
+    )
+
+
+def test_scientific_disposition_distinguishes_verified_recovery(
+    tmp_path: Path,
+) -> None:
+    pending = pending_scientific_job()
+    store = RecoveryReceiptStore(root(tmp_path), signing_secret=SECRET)
+    assert store.write(receipt())
+
+    assert (
+        store.scientific_disposition(pending, at_utc=NOW)
+        is ScientificRecoveryDisposition.RECOVERY_REQUIRED
+    )
+    invalid_reference = pending.model_copy(
+        update={
+            "operations": tuple(
+                operation
+                for operation in pending.operations
+                if operation.action != "execution:running:none"
+            )
+        }
+    )
+    expect_error(
+        RecoveryReceiptErrorCode.INVALID_RECORD,
+        lambda: store.scientific_disposition(invalid_reference, at_utc=NOW),
+    )
+    expect_error(
+        RecoveryReceiptErrorCode.INVALID_RECORD,
+        lambda: store.scientific_disposition(running_job(), at_utc=NOW),
+    )
+
+    unverified_store = RecoveryReceiptStore(
+        root(tmp_path / "unverified"),
+        signing_secret=SECRET,
+    )
+    assert unverified_store.write(receipt(verified=False))
+    assert (
+        unverified_store.scientific_disposition(pending, at_utc=NOW)
+        is ScientificRecoveryDisposition.UNRESOLVED
+    )
+
+
 def test_unverified_workspace_never_proves_recovery(tmp_path: Path) -> None:
     store = RecoveryReceiptStore(root(tmp_path), signing_secret=SECRET)
     item = receipt(verified=False)
     assert store.write(item)
     assert not store.proves_recovery(job_id(), EXECUTION_REF, at_utc=NOW)
+
+
+def test_proves_job_recovery_binds_the_single_running_operation(tmp_path: Path) -> None:
+    identifier = job_id(4)
+    running = running_job(identifier)
+    recovery_store = RecoveryReceiptStore(root(tmp_path / "recovery"), signing_secret=SECRET)
+    item = receipt(identifier=identifier)
+    assert recovery_store.write(item)
+    assert recovery_store.proves_job_recovery(running, at_utc=NOW)
+    assert not recovery_store.proves_job_recovery(running, at_utc=item.expires_at_utc)
+
+    missing_reference = running.model_copy(
+        update={
+            "operations": tuple(
+                operation
+                for operation in running.operations
+                if operation.action != "execution:running:none"
+            )
+        }
+    )
+    expect_error(
+        RecoveryReceiptErrorCode.INVALID_RECORD,
+        lambda: recovery_store.proves_job_recovery(missing_reference, at_utc=NOW),
+    )
+    duplicate_reference = running.model_copy(
+        update={
+            "operations": (
+                *running.operations,
+                AppliedOperation(
+                    operation_id="op_" + "2" * 64,
+                    action="execution:running:none",
+                ),
+            )
+        }
+    )
+    expect_error(
+        RecoveryReceiptErrorCode.INVALID_RECORD,
+        lambda: recovery_store.proves_job_recovery(duplicate_reference, at_utc=NOW),
+    )
+    expect_error(
+        RecoveryReceiptErrorCode.INVALID_RECORD,
+        lambda: recovery_store.proves_job_recovery(cast(Any, object()), at_utc=NOW),
+    )
+
+    accepted_store = RecoveryReceiptStore(root(tmp_path / "accepted"), signing_secret=SECRET)
+    assert accepted_store.write(acceptance_receipt(identifier=identifier))
+    assert not accepted_store.proves_job_recovery(running, at_utc=NOW)
 
 
 def test_receipt_is_bound_to_one_execution_reference(tmp_path: Path) -> None:

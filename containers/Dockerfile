@@ -57,6 +57,7 @@ RUN Rscript --vanilla -e 'setwd("/opt/delta"); source("renv/activate.R"); stopif
 
 RUN --mount=type=bind,source=tests/fixtures/stylo/p006-whole-text-v2,target=/opt/delta/tests/fixtures/stylo/p006-whole-text-v2,readonly \
     --mount=type=bind,source=provenance/evidence/P006/oracle-v2,target=/opt/delta/provenance/evidence/P006/oracle-v2,readonly \
-    /opt/delta/.venv/bin/python scripts/validate_p006_worker_parity.py --require-reference-session
+    /bin/sh -c '/opt/delta/.venv/bin/python scripts/validate_p006_worker_parity.py --require-reference-session \
+      && /opt/delta/.venv/bin/python scripts/validate_p006_scientific_handoff.py'
 
 CMD ["/opt/delta/.venv/bin/python", "-c", "import delta_lemmata; print(delta_lemmata.__version__)"]

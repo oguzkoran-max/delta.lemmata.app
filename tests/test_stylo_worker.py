@@ -11,6 +11,7 @@ from unittest.mock import Mock
 import pytest
 
 import delta_lemmata.stylo_worker as worker_module
+from delta_lemmata.job_models import ScientificResultReceipt, TerminalOutcome
 from delta_lemmata.job_policy import STYLO_WORKER_LIMITS
 from delta_lemmata.job_workspace import (
     WorkspaceArea,
@@ -26,8 +27,12 @@ from delta_lemmata.process_controller import (
     ProcessOutcome,
     ProcessResult,
 )
-from delta_lemmata.scientific_finalizer import ScientificFinalizationCode
+from delta_lemmata.scientific_finalizer import (
+    ScientificFinalization,
+    ScientificFinalizationCode,
+)
 from delta_lemmata.stylo_contracts import (
+    AnalysisOutcome,
     DirectStyloOracleV1,
     FatalErrorCode,
     FatalStage,
@@ -49,6 +54,7 @@ from delta_lemmata.stylo_worker import (
     StyloWorkerAdapter,
     StyloWorkerAdapterError,
     StyloWorkerAdapterErrorCode,
+    StyloWorkerExecution,
     WorkerArtifactKind,
 )
 
@@ -143,11 +149,22 @@ def test_fixed_adapter_writes_private_request_and_accepts_validated_result(
         )
 
     configurations = fake_controller(monkeypatch, publish)
-    execution = StyloWorkerAdapter(manager, layout).execute(worker_request)
+    adapter = StyloWorkerAdapter(manager, layout)
+    execution = adapter.execute(worker_request)
 
     assert execution.accepted_result
     assert execution.finalization.code is ScientificFinalizationCode.RESULT_COMPLETE
     assert execution.finalization.result == worker_result(worker_request)
+    receipt = adapter.publish_validated_result(worker_request, execution)
+    assert isinstance(receipt, ScientificResultReceipt)
+    assert receipt.request_id == worker_request.request_id
+    assert (
+        receipt.request_sha256 == hashlib.sha256(canonical_worker_json(worker_request)).hexdigest()
+    )
+    assert receipt.analysis_outcome == "complete"
+    assert receipt.artifact_component == RESULT_COMPONENT
+    assert receipt.byte_size == len(result_payload)
+    assert receipt.sha256 == hashlib.sha256(result_payload).hexdigest()
     assert execution.artifacts == (
         worker_module.WorkerArtifactReceipt(
             kind=WorkerArtifactKind.RESULT,
@@ -168,6 +185,209 @@ def test_fixed_adapter_writes_private_request_and_accepts_validated_result(
     assert request_path.read_bytes() == canonical_worker_json(worker_request)
     assert stat.S_IMODE(request_path.stat().st_mode) == 0o600
     assert stat.S_IMODE((layout.work / RESULT_COMPONENT).stat().st_mode) == 0o600
+    assert (
+        manager.read_file(
+            layout,
+            WorkspaceArea.RESULT,
+            RESULT_COMPONENT,
+            maximum_bytes=len(result_payload),
+        )
+        == result_payload
+    )
+    assert adapter.publish_validated_result(worker_request, execution) == receipt
+
+
+def test_validated_result_publication_rejects_substitution_conflict_and_wrong_request(
+    workspace: tuple[WorkspaceManager, WorkspaceLayout],
+    worker_request: WorkerInputV1,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    manager, layout = workspace
+    result_payload = canonical_worker_json(worker_result(worker_request))
+
+    def publish() -> None:
+        manager.create_file(layout, WorkspaceArea.WORK, RESULT_COMPONENT, result_payload)
+
+    fake_controller(monkeypatch, publish)
+    adapter = StyloWorkerAdapter(manager, layout)
+    execution = adapter.execute(worker_request)
+    alternate_payload = worker_request.model_dump(mode="python")
+    alternate_payload["request_id"] = "request_" + "f" * 64
+    alternate = WorkerInputV1.model_validate(alternate_payload)
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: adapter.publish_validated_result(alternate, execution),
+    )
+
+    (layout.work / RESULT_COMPONENT).unlink()
+    manager.create_file(layout, WorkspaceArea.WORK, RESULT_COMPONENT, b"{}")
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: adapter.publish_validated_result(worker_request, execution),
+    )
+
+    conflict_root = layout.root.parent / "conflict-root"
+    conflict_root.mkdir(mode=0o700)
+    conflict_manager = WorkspaceManager(conflict_root)
+    conflict_layout = conflict_manager.create(OWNER, JOB)
+    conflict_manager.create_file(
+        conflict_layout,
+        WorkspaceArea.WORK,
+        RESULT_COMPONENT,
+        result_payload,
+    )
+    conflict_manager.create_file(
+        conflict_layout,
+        WorkspaceArea.RESULT,
+        RESULT_COMPONENT,
+        b"different",
+    )
+    conflict_adapter = StyloWorkerAdapter(conflict_manager, conflict_layout)
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: conflict_adapter.publish_validated_result(worker_request, execution),
+    )
+
+
+def test_result_publication_requires_an_accepted_execution(
+    workspace: tuple[WorkspaceManager, WorkspaceLayout],
+    worker_request: WorkerInputV1,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    manager, layout = workspace
+    fake_controller(
+        monkeypatch,
+        lambda: None,
+        result=ProcessResult(ProcessOutcome.FAILED),
+    )
+    adapter = StyloWorkerAdapter(manager, layout)
+    execution = adapter.execute(worker_request)
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: adapter.publish_validated_result(worker_request, execution),
+    )
+
+
+def test_capture_rejects_type_confusion(
+    workspace: tuple[WorkspaceManager, WorkspaceLayout],
+    worker_request: WorkerInputV1,
+) -> None:
+    manager, layout = workspace
+    adapter = StyloWorkerAdapter(manager, layout)
+    expect_error(
+        StyloWorkerAdapterErrorCode.INVALID_REQUEST,
+        lambda: adapter.capture(
+            cast(Any, object()),
+            ProcessResult(ProcessOutcome.SUCCEEDED),
+        ),
+    )
+    expect_error(
+        StyloWorkerAdapterErrorCode.INVALID_REQUEST,
+        lambda: adapter.capture(worker_request, cast(Any, object())),
+    )
+
+
+def test_result_publication_requires_one_receipt_and_maps_partial_outcome(
+    workspace: tuple[WorkspaceManager, WorkspaceLayout],
+    worker_request: WorkerInputV1,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    manager, layout = workspace
+    result_payload = canonical_worker_json(worker_result(worker_request))
+
+    def publish() -> None:
+        manager.create_file(layout, WorkspaceArea.WORK, RESULT_COMPONENT, result_payload)
+
+    fake_controller(monkeypatch, publish)
+    adapter = StyloWorkerAdapter(manager, layout)
+    captured = adapter.execute(worker_request)
+    without_receipt = StyloWorkerExecution(
+        finalization=captured.finalization,
+        artifacts=(),
+    )
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: adapter.publish_validated_result(worker_request, without_receipt),
+    )
+
+    assert captured.finalization.result is not None
+    partial_result = captured.finalization.result.model_copy(
+        update={"outcome": AnalysisOutcome.PARTIAL}
+    )
+    partial = StyloWorkerExecution(
+        finalization=ScientificFinalization(
+            process=captured.finalization.process,
+            terminal_outcome=TerminalOutcome.SUCCEEDED,
+            code=ScientificFinalizationCode.RESULT_PARTIAL,
+            analysis_outcome=AnalysisOutcome.PARTIAL,
+            result=partial_result,
+        ),
+        artifacts=captured.artifacts,
+    )
+    receipt = adapter.publish_validated_result(worker_request, partial)
+    assert receipt.analysis_outcome == "partial"
+
+
+@pytest.mark.parametrize(
+    "responses",
+    [
+        (None, None),
+        (b"valid", None, None),
+        (b"valid", None, b"different"),
+    ],
+)
+def test_result_publication_rejects_missing_source_and_bad_readback(
+    workspace: tuple[WorkspaceManager, WorkspaceLayout],
+    worker_request: WorkerInputV1,
+    monkeypatch: pytest.MonkeyPatch,
+    responses: tuple[bytes | None, ...],
+) -> None:
+    manager, layout = workspace
+    result_payload = canonical_worker_json(worker_result(worker_request))
+
+    def publish() -> None:
+        manager.create_file(layout, WorkspaceArea.WORK, RESULT_COMPONENT, result_payload)
+
+    fake_controller(monkeypatch, publish)
+    adapter = StyloWorkerAdapter(manager, layout)
+    captured = adapter.execute(worker_request)
+    scripted = iter(
+        tuple(result_payload if response == b"valid" else response for response in responses)
+    )
+
+    def read_file(*_args: object, **_kwargs: object) -> bytes | None:
+        return next(scripted)
+
+    monkeypatch.setattr(WorkspaceManager, "read_file", read_file)
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: adapter.publish_validated_result(worker_request, captured),
+    )
+
+
+def test_result_publication_maps_workspace_failure_to_content_free_error(
+    workspace: tuple[WorkspaceManager, WorkspaceLayout],
+    worker_request: WorkerInputV1,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    manager, layout = workspace
+    result_payload = canonical_worker_json(worker_result(worker_request))
+
+    def publish() -> None:
+        manager.create_file(layout, WorkspaceArea.WORK, RESULT_COMPONENT, result_payload)
+
+    fake_controller(monkeypatch, publish)
+    adapter = StyloWorkerAdapter(manager, layout)
+    captured = adapter.execute(worker_request)
+
+    def reject_read(*_args: object, **_kwargs: object) -> bytes | None:
+        raise WorkspaceError(WorkspaceErrorCode.READ_FAILED)
+
+    monkeypatch.setattr(WorkspaceManager, "read_file", reject_read)
+    expect_error(
+        StyloWorkerAdapterErrorCode.CAPTURE_FAILED,
+        lambda: adapter.publish_validated_result(worker_request, captured),
+    )
 
 
 def test_fixed_worker_source_has_no_user_controlled_execution_channel() -> None:

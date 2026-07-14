@@ -24,8 +24,9 @@ fi
 Rscript --vanilla -e 'invisible(parse(file="scripts/workers/p006-stylo-worker-v1.R")); cat("p006-worker-parse-ok\n")'
 if [ "$(uname -s)" = "Linux" ]; then
   "$UV_BIN" run python scripts/validate_p006_worker_parity.py
+  "$UV_BIN" run python scripts/validate_p006_scientific_handoff.py
 else
-  printf '%s\n' "p006-worker-parity-skipped: canonical Linux execution required"
+  printf '%s\n' "p006-worker-and-handoff-skipped: canonical Linux execution required"
 fi
 "$UV_BIN" run pytest --cov=delta_lemmata --cov-report=term-missing
 "$UV_BIN" run python scripts/check_metadata.py

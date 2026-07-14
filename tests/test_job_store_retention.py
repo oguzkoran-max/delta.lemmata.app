@@ -14,11 +14,15 @@ from delta_lemmata.job_models import (
     CleanupState,
     ExecutionState,
     JobRecord,
+    ScientificResultReceipt,
     TerminalOutcome,
+    confirm_scientific_result,
     publish_export,
     retire_export,
     transition_artifact,
     transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
 from delta_lemmata.job_store import (
@@ -36,6 +40,20 @@ SECRET = b"retention-owner-secret-v1-32-bytes"
 
 def operation(number: int) -> str:
     return "op_" + f"{number:064x}"
+
+
+def scientific_receipt() -> ScientificResultReceipt:
+    return ScientificResultReceipt(
+        schema_version="scientific-result-receipt-v1",
+        request_id="request_" + "1" * 64,
+        request_sha256="2" * 64,
+        worker_version="stylo-worker-v1",
+        result_schema_version="stylo-worker-result-v1",
+        analysis_outcome="complete",
+        artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
+        byte_size=4096,
+        sha256="3" * 64,
+    )
 
 
 def capability(number: int) -> SessionCapability:
@@ -233,6 +251,97 @@ def test_maintenance_transition_and_deletion_event_are_atomic_and_content_free(
         )
         == stored
     )
+
+
+def test_scientific_result_cleanup_retains_terminal_outcome_and_receipt(
+    tmp_path: Path,
+) -> None:
+    store = make_store(tmp_path / "scientific-retention.sqlite3")
+    owner = capability(1)
+    staged = store.stage_job(capability=owner, at_utc=NOW)
+    store.enqueue_job(
+        job_id=staged.job_id,
+        capability=owner,
+        at_utc=NOW + timedelta(seconds=1),
+        expected_version=staged.version,
+        operation_id=operation(40),
+    )
+    running = store.claim_next(
+        at_utc=NOW + timedelta(seconds=2),
+        operation_id=operation(41),
+    )
+    assert running is not None
+    claim = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=operation(42),
+    )
+    claimed = persist_owned(
+        store,
+        owner,
+        running,
+        claim,
+        NOW + timedelta(seconds=2, microseconds=1),
+    )
+    item = scientific_receipt()
+    terminal_at = NOW + timedelta(seconds=3)
+    scientific = transition_scientific_success(
+        claimed,
+        receipt=item,
+        at_utc=terminal_at,
+        tombstone_expires_at_utc=terminal_at + timedelta(days=7),
+        expected_version=claimed.version,
+        operation_id=operation(43),
+    )
+    scientific = persist_owned(store, owner, claimed, scientific, terminal_at)
+    confirmation = confirm_scientific_result(
+        scientific,
+        expected_version=scientific.version,
+        operation_id=operation(44),
+    )
+    scientific = persist_owned(
+        store,
+        owner,
+        scientific,
+        confirmation,
+        terminal_at + timedelta(microseconds=1),
+    )
+    result_deadline = cast(datetime, scientific.artifacts.result.delete_by_utc)
+    cleaned = transition_artifact(
+        scientific,
+        kind=ArtifactKind.RESULT,
+        target=CleanupState.VERIFIED_ABSENT,
+        at_utc=result_deadline,
+        expected_version=scientific.version,
+        operation_id=operation(45),
+    )
+    event = deletion_for(
+        scientific,
+        at_utc=result_deadline,
+        reason=DeletionReason.RESULT_EXPIRED,
+        byte_count=item.byte_size,
+    )
+
+    stored = store.maintenance_compare_and_swap(
+        job_id=scientific.job_id,
+        expected_version=scientific.version,
+        updated=cleaned,
+        at_utc=result_deadline,
+        deletion_event=event,
+    )
+    assert stored.artifacts.result.state is CleanupState.VERIFIED_ABSENT
+    assert stored.outcome == scientific.outcome
+    assert stored.scientific_result == item
+    assert stored.scientific_result_confirmed is True
+    assert (
+        sum(
+            operation.action.startswith("scientific:terminal:succeeded:")
+            for operation in stored.operations
+        )
+        == 1
+    )
+    assert store.list_jobs_for_maintenance() == (stored,)
+    assert store.list_deletion_events() == (event,)
 
 
 def test_maintenance_api_rejects_unknown_stale_and_untyped_updates(tmp_path: Path) -> None:

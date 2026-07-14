@@ -8,8 +8,9 @@ import stat
 from dataclasses import dataclass
 from enum import StrEnum
 from pathlib import Path
-from typing import NoReturn
+from typing import Literal, NoReturn
 
+from delta_lemmata.job_models import ScientificResultReceipt
 from delta_lemmata.job_policy import STYLO_WORKER_LIMITS
 from delta_lemmata.job_workspace import (
     WorkspaceArea,
@@ -21,6 +22,7 @@ from delta_lemmata.process_controller import (
     ProcessController,
     ProcessControllerError,
     ProcessEnvironmentProfile,
+    ProcessResult,
 )
 from delta_lemmata.scientific_finalizer import (
     ScientificFinalization,
@@ -29,13 +31,16 @@ from delta_lemmata.scientific_finalizer import (
 from delta_lemmata.stylo_contracts import (
     FATAL_ERROR_MAX_BYTES,
     RESULT_MAX_BYTES,
+    AnalysisOutcome,
     StyloContractError,
     WorkerInputV1,
     canonical_worker_json,
 )
 
 REQUEST_COMPONENT = "28e9d3d83efa686b8b51b80eccd9b4f3439aeb56141e459abd97729c9c5b9184"
-RESULT_COMPONENT = "053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"
+RESULT_COMPONENT: Literal["053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"] = (
+    "053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"
+)
 FATAL_ERROR_COMPONENT = "24ae13b5ee15a59e2f7924a480c4160907d13e900a8d879f1d81b0faab8f6548"
 
 _PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -138,7 +143,9 @@ class StyloWorkerAdapter:
         self._manager = manager
         self._layout = layout
 
-    def execute(self, request: WorkerInputV1) -> StyloWorkerExecution:
+    def prepare(self, request: WorkerInputV1) -> None:
+        """Write one canonical request before a guardian starts the fixed worker."""
+
         if not isinstance(request, WorkerInputV1):
             _reject(StyloWorkerAdapterErrorCode.INVALID_REQUEST)
         prepare_failed = False
@@ -169,18 +176,15 @@ class StyloWorkerAdapter:
         if prepare_failed:
             _reject(StyloWorkerAdapterErrorCode.PREPARE_FAILED)
 
-        execution_failed = False
-        try:
-            process = ProcessController(
-                argv=STYLO_WORKER_ARGV,
-                cwd=self._layout.work,
-                limits=STYLO_WORKER_LIMITS,
-                environment_profile=ProcessEnvironmentProfile.R_STYLO,
-            ).run()
-        except ProcessControllerError:
-            execution_failed = True
-        if execution_failed:
-            _reject(StyloWorkerAdapterErrorCode.EXECUTION_FAILED)
+    def capture(
+        self,
+        request: WorkerInputV1,
+        process: ProcessResult,
+    ) -> StyloWorkerExecution:
+        """Capture and scientifically classify bounded worker artifacts."""
+
+        if not isinstance(request, WorkerInputV1) or not isinstance(process, ProcessResult):
+            _reject(StyloWorkerAdapterErrorCode.INVALID_REQUEST)
 
         capture_failed = False
         try:
@@ -224,6 +228,117 @@ class StyloWorkerAdapter:
             fatal_error_payload=fatal_error_payload,
         )
         return StyloWorkerExecution(finalization=finalization, artifacts=artifacts)
+
+    def publish_validated_result(
+        self,
+        request: WorkerInputV1,
+        execution: StyloWorkerExecution,
+    ) -> ScientificResultReceipt:
+        """Copy one accepted raw result into its retained area and bind it by digest."""
+
+        if (
+            not isinstance(request, WorkerInputV1)
+            or not isinstance(execution, StyloWorkerExecution)
+            or not execution.accepted_result
+            or execution.finalization.result is None
+            or execution.finalization.analysis_outcome is None
+            or execution.finalization.result.request_id != request.request_id
+        ):
+            _reject(StyloWorkerAdapterErrorCode.CAPTURE_FAILED)
+        result_receipts = tuple(
+            item for item in execution.artifacts if item.kind is WorkerArtifactKind.RESULT
+        )
+        if len(result_receipts) != 1:
+            _reject(StyloWorkerAdapterErrorCode.CAPTURE_FAILED)
+        source_receipt = result_receipts[0]
+        publish_failed = False
+        request_payload = b""
+        try:
+            source = self._manager.read_file(
+                self._layout,
+                WorkspaceArea.WORK,
+                RESULT_COMPONENT,
+                maximum_bytes=RESULT_MAX_BYTES,
+            )
+            existing = self._manager.read_file(
+                self._layout,
+                WorkspaceArea.RESULT,
+                RESULT_COMPONENT,
+                maximum_bytes=RESULT_MAX_BYTES,
+            )
+            if source is None or (
+                _receipt(WorkerArtifactKind.RESULT, RESULT_COMPONENT, source) != source_receipt
+            ):
+                publish_failed = True
+            elif existing is not None:
+                if (
+                    _receipt(WorkerArtifactKind.RESULT, RESULT_COMPONENT, existing)
+                    != source_receipt
+                ):
+                    publish_failed = True
+            else:
+                self._manager.create_file(
+                    self._layout,
+                    WorkspaceArea.RESULT,
+                    RESULT_COMPONENT,
+                    source,
+                )
+                retained = self._manager.read_file(
+                    self._layout,
+                    WorkspaceArea.RESULT,
+                    RESULT_COMPONENT,
+                    maximum_bytes=RESULT_MAX_BYTES,
+                )
+                if (
+                    retained is None
+                    or _receipt(WorkerArtifactKind.RESULT, RESULT_COMPONENT, retained)
+                    != source_receipt
+                ):
+                    publish_failed = True
+            request_payload = canonical_worker_json(request)
+        except (StyloContractError, WorkspaceError, OSError):
+            publish_failed = True
+        if publish_failed:
+            _reject(StyloWorkerAdapterErrorCode.CAPTURE_FAILED)
+        result = execution.finalization.result
+        analysis_outcome = execution.finalization.analysis_outcome
+        if result is None or analysis_outcome is None:  # pragma: no cover - guarded above
+            _reject(StyloWorkerAdapterErrorCode.CAPTURE_FAILED)
+        receipt_outcome: Literal["complete", "partial"]
+        if analysis_outcome is AnalysisOutcome.COMPLETE:
+            receipt_outcome = "complete"
+        elif analysis_outcome is AnalysisOutcome.PARTIAL:
+            receipt_outcome = "partial"
+        else:  # pragma: no cover - accepted-result invariant
+            _reject(StyloWorkerAdapterErrorCode.CAPTURE_FAILED)
+        return ScientificResultReceipt(
+            schema_version="scientific-result-receipt-v1",
+            request_id=result.request_id,
+            request_sha256=hashlib.sha256(request_payload).hexdigest(),
+            worker_version=result.worker_version,
+            result_schema_version=result.schema_version,
+            analysis_outcome=receipt_outcome,
+            artifact_component=RESULT_COMPONENT,
+            byte_size=source_receipt.byte_size,
+            sha256=source_receipt.sha256,
+        )
+
+    def execute(self, request: WorkerInputV1) -> StyloWorkerExecution:
+        self.prepare(request)
+
+        execution_failed = False
+        try:
+            process = ProcessController(
+                argv=STYLO_WORKER_ARGV,
+                cwd=self._layout.work,
+                limits=STYLO_WORKER_LIMITS,
+                environment_profile=ProcessEnvironmentProfile.R_STYLO,
+            ).run()
+        except ProcessControllerError:
+            execution_failed = True
+        if execution_failed:
+            _reject(StyloWorkerAdapterErrorCode.EXECUTION_FAILED)
+        return self.capture(request, process)
 
 
 __all__ = [

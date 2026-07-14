@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 import sqlite3
 import stat
@@ -20,12 +21,15 @@ from delta_lemmata.job_models import (
     CleanupState,
     ExecutionState,
     JobRecord,
+    ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
     publish_export,
     request_cancellation,
     transition_artifact,
     transition_execution,
+    transition_scientific_execution_claim,
+    transition_scientific_success,
 )
 from delta_lemmata.job_policy import DEFAULT_JOB_POLICY
 from delta_lemmata.job_store import (
@@ -57,6 +61,20 @@ def capability(number: int) -> SessionCapability:
 
 def job_id(number: int) -> JobId:
     return JobId.generate(lambda size: bytes([number]) * size)
+
+
+def scientific_receipt() -> ScientificResultReceipt:
+    return ScientificResultReceipt(
+        schema_version="scientific-result-receipt-v1",
+        request_id="request_" + "1" * 64,
+        request_sha256="2" * 64,
+        worker_version="stylo-worker-v1",
+        result_schema_version="stylo-worker-result-v1",
+        analysis_outcome="complete",
+        artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
+        byte_size=4096,
+        sha256="3" * 64,
+    )
 
 
 class CountingJobIds:
@@ -200,6 +218,29 @@ def test_private_wal_schema_json_round_trip_and_canary_scan(tmp_path: Path) -> N
         assert JobRecord.model_validate_json(model_json) == staged
         assert connection.execute("SELECT event_code FROM events").fetchall() == [("JOB_STAGED",)]
     assert factory.calls == 1
+
+
+def test_schema_v2_legacy_model_json_without_scientific_receipt_remains_readable(
+    tmp_path: Path,
+) -> None:
+    database_file = tmp_path / "legacy-v2.sqlite3"
+    store = make_store(database_file)
+    owner = capability(1)
+    staged = store.stage_job(capability=owner, at_utc=NOW)
+    legacy_payload = json.loads(staged.model_dump_json())
+    assert legacy_payload.pop("scientific_result") is None
+
+    with closing(sqlite3.connect(database_file)) as connection:
+        assert connection.execute("PRAGMA user_version").fetchone() == (2,)
+        connection.execute(
+            "UPDATE jobs SET model_json = ? WHERE job_id = ?",
+            (json.dumps(legacy_payload, separators=(",", ":")), staged.job_id),
+        )
+        connection.commit()
+
+    loaded = store.get_job(job_id=staged.job_id, capability=owner)
+    assert loaded == staged
+    assert loaded.scientific_result is None
 
 
 def test_atomic_staged_limits_use_no_identifier_or_event_on_rejection(
@@ -1085,6 +1126,222 @@ def test_identity_verifier_failure_is_a_content_free_corruption(
     )
 
 
+def test_scientific_success_cas_round_trip_and_terminal_proof_require_exact_receipt(
+    tmp_path: Path,
+) -> None:
+    database_file = tmp_path / "scientific.sqlite3"
+    store = make_store(database_file, factory=lambda: job_id(1))
+    owner = capability(1)
+    staged = store.stage_job(capability=owner, at_utc=NOW)
+    store.enqueue_job(
+        job_id=staged.job_id,
+        capability=owner,
+        at_utc=NOW + timedelta(seconds=1),
+        expected_version=staged.version,
+        operation_id=operation(1),
+    )
+    running = store.claim_next(
+        at_utc=NOW + timedelta(seconds=2),
+        operation_id=operation(2),
+    )
+    assert running is not None
+    claim = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=operation(3),
+    )
+    claimed = store.compare_and_swap(
+        job_id=running.job_id,
+        capability=owner,
+        expected_version=running.version,
+        updated=claim,
+        at_utc=NOW + timedelta(seconds=2, microseconds=1),
+    )
+    assert claimed == claim
+    assert (
+        store.compare_and_swap(
+            job_id=running.job_id,
+            capability=owner,
+            expected_version=running.version,
+            updated=claim,
+            at_utc=NOW + timedelta(seconds=2, microseconds=1),
+        )
+        == claimed
+    )
+    competing_claim = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=operation(99),
+    )
+    with pytest.raises(VersionConflictError, match="JOB_VERSION_CONFLICT"):
+        store.compare_and_swap(
+            job_id=running.job_id,
+            capability=owner,
+            expected_version=running.version,
+            updated=competing_claim,
+            at_utc=NOW + timedelta(seconds=2, microseconds=1),
+        )
+    item = scientific_receipt()
+    terminal_at = NOW + timedelta(seconds=3)
+    terminal = transition_scientific_success(
+        claimed,
+        receipt=item,
+        at_utc=terminal_at,
+        tombstone_expires_at_utc=terminal_at + timedelta(days=7),
+        expected_version=claimed.version,
+        operation_id=operation(4),
+    )
+    forged = terminal.model_copy(update={"scientific_result": None})
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.compare_and_swap(
+            job_id=claimed.job_id,
+            capability=owner,
+            expected_version=claimed.version,
+            updated=forged,
+            at_utc=terminal_at,
+        ),
+    )
+    saved = store.compare_and_swap(
+        job_id=claimed.job_id,
+        capability=owner,
+        expected_version=claimed.version,
+        updated=terminal,
+        at_utc=terminal_at,
+    )
+
+    assert saved == terminal
+    assert store.get_job(job_id=saved.job_id, capability=owner) == terminal
+    with closing(sqlite3.connect(database_file)) as connection:
+        model_json = cast(
+            tuple[str],
+            connection.execute("SELECT model_json FROM jobs").fetchone(),
+        )[0]
+    assert JobRecord.model_validate_json(model_json).scientific_result == item
+    assert store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=item,
+    )
+    assert not store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+    )
+
+    replacements: dict[str, object] = {
+        "schema_version": "scientific-result-receipt-v2",
+        "request_id": "request_" + "9" * 64,
+        "request_sha256": "4" * 64,
+        "worker_version": "stylo-worker-v2",
+        "result_schema_version": "stylo-worker-result-v2",
+        "analysis_outcome": "partial",
+        "artifact_component": "5" * 64,
+        "byte_size": 4097,
+        "sha256": "6" * 64,
+    }
+    for field_name, replacement in replacements.items():
+        assert not store.terminal_transition_matches(
+            job_id=saved.job_id,
+            execution_reference=operation(2),
+            expected_version=saved.version,
+            expected_outcome=TerminalOutcome.SUCCEEDED,
+            expected_result=item.model_copy(update={field_name: replacement}),
+        )
+
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.terminal_transition_matches(
+            job_id=saved.job_id,
+            execution_reference=operation(2),
+            expected_version=saved.version,
+            expected_outcome=TerminalOutcome.SUCCEEDED,
+            expected_result=cast(Any, object()),
+        ),
+    )
+    cleaned_input = transition_artifact(
+        saved,
+        kind=ArtifactKind.INPUT,
+        target=CleanupState.VERIFIED_ABSENT,
+        at_utc=terminal_at + timedelta(microseconds=1),
+        expected_version=saved.version,
+        operation_id=operation(5),
+    )
+    maintained = store.maintenance_compare_and_swap(
+        job_id=saved.job_id,
+        expected_version=saved.version,
+        updated=cleaned_input,
+        at_utc=terminal_at + timedelta(microseconds=1),
+    )
+    assert maintained.version == saved.version + 1
+    assert store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=item,
+    )
+    assert not store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(2),
+        expected_version=maintained.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=item,
+    )
+    confirmed = store.confirm_scientific_result_after_guardian(
+        job_id=saved.job_id,
+        expected_terminal_version=saved.version,
+        expected_result=item,
+        operation_id=operation(6),
+        at_utc=terminal_at + timedelta(microseconds=2),
+    )
+    assert confirmed.scientific_result_confirmed is True
+    assert store.get_job(job_id=confirmed.job_id, capability=owner) == confirmed
+    assert (
+        store.confirm_scientific_result_after_guardian(
+            job_id=saved.job_id,
+            expected_terminal_version=saved.version,
+            expected_result=item,
+            operation_id=operation(7),
+            at_utc=terminal_at + timedelta(microseconds=3),
+        )
+        == confirmed
+    )
+
+    invalid_arguments: tuple[dict[str, Any], ...] = (
+        {"expected_terminal_version": cast(Any, "4")},
+        {"expected_terminal_version": True},
+        {"expected_terminal_version": -1},
+        {"expected_result": cast(Any, object())},
+        {"operation_id": "bad"},
+    )
+    base_arguments: dict[str, Any] = {
+        "job_id": saved.job_id,
+        "expected_terminal_version": saved.version,
+        "expected_result": item,
+        "operation_id": operation(8),
+        "at_utc": terminal_at + timedelta(microseconds=4),
+    }
+    for replacement in invalid_arguments:
+        arguments = {**base_arguments, **replacement}
+        expect_store_error(
+            JobStoreErrorCode.INVALID_UPDATE,
+            lambda arguments=arguments: store.confirm_scientific_result_after_guardian(**arguments),
+        )
+    for replacement in (
+        {"expected_terminal_version": saved.version + 1},
+        {"expected_result": item.model_copy(update={"sha256": "9" * 64})},
+    ):
+        arguments = {**base_arguments, **replacement}
+        expect_store_error(
+            JobStoreErrorCode.INVALID_UPDATE,
+            lambda arguments=arguments: store.confirm_scientific_result_after_guardian(**arguments),
+        )
+
+
 def test_terminal_transition_proof_binds_version_outcome_and_running_operation(
     tmp_path: Path,
 ) -> None:
@@ -1157,5 +1414,83 @@ def test_terminal_transition_proof_binds_version_outcome_and_running_operation(
         lambda: store.purge_expired(
             at_utc=NOW,
             workspace_absent_job_ids=cast(Any, set()),
+        ),
+    )
+
+
+def test_guardian_confirmation_rejects_an_absent_scientific_result(
+    tmp_path: Path,
+) -> None:
+    store = make_store(tmp_path / "absent-result.sqlite3", factory=lambda: job_id(2))
+    owner = capability(2)
+    staged = store.stage_job(capability=owner, at_utc=NOW)
+    store.enqueue_job(
+        job_id=staged.job_id,
+        capability=owner,
+        at_utc=NOW + timedelta(seconds=1),
+        expected_version=staged.version,
+        operation_id=operation(20),
+    )
+    running = store.claim_next(
+        at_utc=NOW + timedelta(seconds=2),
+        operation_id=operation(21),
+    )
+    assert running is not None
+    claim = transition_scientific_execution_claim(
+        running,
+        expected_version=running.version,
+        operation_id=operation(22),
+    )
+    claimed = store.maintenance_compare_and_swap(
+        job_id=running.job_id,
+        expected_version=running.version,
+        updated=claim,
+        at_utc=NOW + timedelta(seconds=2, microseconds=1),
+    )
+    item = scientific_receipt()
+    terminal = transition_scientific_success(
+        claimed,
+        receipt=item,
+        at_utc=NOW + timedelta(seconds=3),
+        tombstone_expires_at_utc=NOW + timedelta(days=7),
+        expected_version=claimed.version,
+        operation_id=operation(23),
+    )
+    saved = store.maintenance_compare_and_swap(
+        job_id=claimed.job_id,
+        expected_version=claimed.version,
+        updated=terminal,
+        at_utc=NOW + timedelta(seconds=3),
+    )
+    absent = transition_artifact(
+        saved,
+        kind=ArtifactKind.RESULT,
+        target=CleanupState.VERIFIED_ABSENT,
+        at_utc=NOW + timedelta(seconds=4),
+        expected_version=saved.version,
+        operation_id=operation(24),
+    )
+    store.maintenance_compare_and_swap(
+        job_id=saved.job_id,
+        expected_version=saved.version,
+        updated=absent,
+        at_utc=NOW + timedelta(seconds=4),
+    )
+
+    assert not store.terminal_transition_matches(
+        job_id=saved.job_id,
+        execution_reference=operation(21),
+        expected_version=saved.version,
+        expected_outcome=TerminalOutcome.SUCCEEDED,
+        expected_result=item,
+    )
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.confirm_scientific_result_after_guardian(
+            job_id=saved.job_id,
+            expected_terminal_version=saved.version,
+            expected_result=item,
+            operation_id=operation(25),
+            at_utc=NOW + timedelta(seconds=5),
         ),
     )
