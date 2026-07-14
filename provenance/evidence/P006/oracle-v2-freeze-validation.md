@@ -19,6 +19,9 @@ raw-text preprocessing parity, benchmark validity, or production validation.
 - Evidence-only commit: `42fe09b690d953fbcf45fcf48fa6d8f462fb8251`
 - Publication CI: run `29300077689`; verify job `86981809318`; container job
   `86981809317`
+- Durable audit commit: `ad8aa77d3467d86af9b003927a1c5981f092c0d4`
+- Durable audit CI: run `29300681277`; verify job `86983589180`; container job
+  `86983589158`
 - Native Run: `RUN-20260714-0002`
 
 The evidence commit has the source commit as its only parent and adds exactly six
@@ -85,6 +88,7 @@ python scripts/p006_log_transport.py extract <job-log> <new-destination>
 shasum -a 256 -c oracle-freeze.sha256
 python scripts/validate_p006_frozen_oracle_v2.py
 gh run watch 29300077689 --exit-status
+gh run watch 29300681277 --exit-status
 ```
 
 The source checkpoint passed 1,103 tests, 7,247 measured statements, 1,902 measured

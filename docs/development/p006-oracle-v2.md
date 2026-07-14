@@ -115,7 +115,8 @@ All seven steps are complete. Capture run `29299793944` produced transport envel
 `c94f84b3...4216c`; evidence-only commit `42fe09b` has `c6a07e1` as its sole parent
 and passed publication CI run `29300077689`. `RUN-20260714-0002` binds the complete
 chain. Current CI no longer contains the temporary capture job and runs the frozen
-v2 validator on every commit.
+v2 validator on every commit. Durable audit commit `ad8aa77` passed normal CI run
+`29300681277` after that removal.
 
 ## Acceptance Boundary
 

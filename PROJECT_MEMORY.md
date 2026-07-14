@@ -83,8 +83,9 @@ uygulandı. Transport source `c6a07e1`, normal CI `29299641848` ve capture
 `42fe09b` kaynak commit'ini tek parent olarak taşır ve publication CI `29300077689`
 ile geçti. `RUN-20260714-0002` ve `validate_p006_frozen_oracle_v2.py` source,
 environment, input/output, transport ve evidence zincirini bağlar. Geçici capture
-job güncel CI'dan kaldırıldı. V2 artık worker karşılaştırması için sabit referanstır;
-bu tek başına parity veya yeni bir passed AC değildir.
+job güncel CI'dan kaldırıldı. Durable audit commit `ad8aa77`, normal CI
+`29300681277` ile geçti. V2 artık worker karşılaştırması için sabit referanstır; bu
+tek başına parity veya yeni bir passed AC değildir.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,

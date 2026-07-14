@@ -85,7 +85,8 @@ transport source `c6a07e1`, normal CI `29299641848` ve successful capture
 `29299793944` ile geçti. Envelope `c94f84b3...4216c`, evidence-only commit `42fe09b`
 ve publication CI `29300077689` ile donduruldu. `RUN-20260714-0002` zinciri bağlar;
 kalıcı v2 validator normal verify'a eklendi ve geçici capture job kaldırıldı. V2
-fixed worker karşılaştırması için hazırdır; passed AC listesi değişmemiştir.
+audit commit `ad8aa77` ve normal CI `29300681277` de yeşildir. V2 fixed worker
+karşılaştırması için hazırdır; passed AC listesi değişmemiştir.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

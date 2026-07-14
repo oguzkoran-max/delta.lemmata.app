@@ -14,6 +14,8 @@
   capture job is removed from current CI.
 - Final local closure passed 1,104 tests, 100% of 7,247 measured statements and
   1,902 measured branches, and all 82 provenance records.
+- Durable audit commit `ad8aa77` passed normal CI `29300681277`; verify job
+  `86983589180` and container job `86983589158` were both green.
 
 ## Scientific Meaning
 

@@ -64,7 +64,8 @@
     "c1ea85245501b4f85e3aa17fd87d406f1dd8eada",
     "94fac26d9666cd58ac5dd945f82557c7cee9d967",
     "c6a07e1b62440d56feabf76fd7c58e4b58b63477",
-    "42fe09b690d953fbcf45fcf48fa6d8f462fb8251"
+    "42fe09b690d953fbcf45fcf48fa6d8f462fb8251",
+    "ad8aa77d3467d86af9b003927a1c5981f092c0d4"
   ],
   "run_ids": [
     "RUN-20260714-0001",
@@ -166,7 +167,8 @@
     "Adversarial v2 source adds six unequal document totals, two interleaved unknown rows, a known final row, two-unknown canary, order permutation, and formula-level raw-count separation for every complete fit and distance family",
     "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, and cannot commit or push",
     "The first v2 dispatch passed both no-network oracle runs and package validation but GitHub artifact quota rejected transport; a canonical checksum-bound job-log emitter and fail-closed local extractor replace artifact storage without changing publication authority",
-    "Adversarial v2 evidence is frozen in an evidence-only commit whose sole parent is the exact capture source; the temporary capture job is removed after normal publication CI and a durable offline validator binds source, evidence, Run, environment, and numerical invariants"
+    "Adversarial v2 evidence is frozen in an evidence-only commit whose sole parent is the exact capture source; the temporary capture job is removed after normal publication CI and a durable offline validator binds source, evidence, Run, environment, and numerical invariants",
+    "The durable v2 audit and capture-job removal passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction"
   ],
   "commands": [
     {
@@ -287,6 +289,12 @@
       "command": "./scripts/verify.sh after durable v2 audit integration",
       "exit_code": 0,
       "result": "Final local closure passed 1,104 tests, 100% of 7,247 measured statements and 1,902 measured branches, all 82 provenance records, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate after the temporary capture job was removed.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29300681277",
+      "exit_code": 0,
+      "result": "Durable audit commit ad8aa77 passed Linux verify job 86983589180 and canonical Linux amd64 container job 86983589158 with the temporary capture job absent from the workflow.",
       "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
     }
   ],
