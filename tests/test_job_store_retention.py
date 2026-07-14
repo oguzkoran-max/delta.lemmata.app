@@ -148,12 +148,12 @@ def test_schema_v1_is_upgraded_to_payload_free_deletion_ledger(tmp_path: Path) -
     store = make_store(database_file)
     assert store.list_jobs_for_maintenance() == ()
     with closing(sqlite3.connect(database_file)) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone() == (2,)
+        assert connection.execute("PRAGMA user_version").fetchone() == (3,)
         tables = {
             cast(str, row[0])
             for row in connection.execute("SELECT name FROM sqlite_schema WHERE type = 'table'")
         }
-    assert tables == {"jobs", "events", "deletion_events"}
+    assert tables == {"analysis_admissions", "jobs", "events", "deletion_events"}
 
 
 def test_maintenance_transition_and_deletion_event_are_atomic_and_content_free(
