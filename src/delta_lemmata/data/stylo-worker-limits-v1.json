@@ -1,0 +1,8 @@
+{
+  "profile_version": "stylo-worker-limits-v1",
+  "wall_time_seconds": 60,
+  "cpu_time_seconds": 30,
+  "memory_bytes": 1073741824,
+  "max_processes": 8,
+  "terminate_grace_seconds": 2
+}

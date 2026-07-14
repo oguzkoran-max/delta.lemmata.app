@@ -18,6 +18,7 @@ RUN apt-get update \
       git \
       libx11-6 \
       libxt6 \
+      procps \
       tcl8.6 \
       tk8.6 \
       xvfb \
@@ -53,5 +54,9 @@ RUN useradd --create-home --shell /usr/sbin/nologin delta \
 USER delta
 
 RUN Rscript --vanilla -e 'setwd("/opt/delta"); source("renv/activate.R"); stopifnot(requireNamespace("jsonlite", quietly = TRUE)); stopifnot(requireNamespace("stylo", quietly = TRUE)); stopifnot(as.character(packageVersion("jsonlite")) == "2.0.0"); stopifnot(as.character(packageVersion("stylo")) == "0.7.71"); cat("r-runtime-namespace-ok\n")'
+
+RUN --mount=type=bind,source=tests/fixtures/stylo/p006-whole-text-v2,target=/opt/delta/tests/fixtures/stylo/p006-whole-text-v2,readonly \
+    --mount=type=bind,source=provenance/evidence/P006/oracle-v2,target=/opt/delta/provenance/evidence/P006/oracle-v2,readonly \
+    /opt/delta/.venv/bin/python scripts/validate_p006_worker_parity.py --require-reference-session
 
 CMD ["/opt/delta/.venv/bin/python", "-c", "import delta_lemmata; print(delta_lemmata.__version__)"]

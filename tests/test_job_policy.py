@@ -8,6 +8,7 @@ from pydantic import ValidationError
 
 from delta_lemmata.job_policy import (
     DEFAULT_JOB_POLICY,
+    STYLO_WORKER_LIMITS,
     JobPolicy,
     WorkerLimitProfile,
     load_job_policy,
@@ -33,6 +34,17 @@ def test_default_job_policy_matches_p005_capacity_and_retention_contract() -> No
     assert policy.event_ttl_seconds == 604800
     assert policy.tombstone_ttl_seconds == 604800
     assert policy.worker_limits.profile_version == "synthetic-worker-limits-v1"
+
+
+def test_stylo_worker_limits_are_separate_finite_development_limits() -> None:
+    assert STYLO_WORKER_LIMITS == WorkerLimitProfile(
+        profile_version="stylo-worker-limits-v1",
+        wall_time_seconds=60,
+        cpu_time_seconds=30,
+        memory_bytes=1073741824,
+        max_processes=8,
+        terminate_grace_seconds=2,
+    )
 
 
 def test_policy_loader_validates_json_data_instead_of_a_path() -> None:

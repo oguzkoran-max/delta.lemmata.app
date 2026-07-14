@@ -21,6 +21,12 @@ fi
 "$UV_BIN" run python scripts/validate_p006_fixture_v2.py
 "$UV_BIN" run python scripts/validate_p006_frozen_oracle.py
 "$UV_BIN" run python scripts/validate_p006_frozen_oracle_v2.py
+Rscript --vanilla -e 'invisible(parse(file="scripts/workers/p006-stylo-worker-v1.R")); cat("p006-worker-parse-ok\n")'
+if [ "$(uname -s)" = "Linux" ]; then
+  "$UV_BIN" run python scripts/validate_p006_worker_parity.py
+else
+  printf '%s\n' "p006-worker-parity-skipped: canonical Linux execution required"
+fi
 "$UV_BIN" run pytest --cov=delta_lemmata --cov-report=term-missing
 "$UV_BIN" run python scripts/check_metadata.py
 "$UV_BIN" run python scripts/validate_records.py
