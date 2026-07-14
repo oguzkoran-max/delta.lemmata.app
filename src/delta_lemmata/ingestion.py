@@ -163,6 +163,14 @@ class IncomingUpload:
 
 
 @dataclass(frozen=True, slots=True)
+class ValidatedCorpusPayload:
+    """P003-validated text exposed only to a trusted server-side visitor."""
+
+    receipt: IntakeReceipt
+    content: bytes = field(repr=False)
+
+
+@dataclass(frozen=True, slots=True)
 class _TextStats:
     line_count: int
     token_count: int
@@ -985,6 +993,94 @@ def validate_batch(
     except IntakeError as error:
         _detach_error_context(error)
         raise
+
+
+def _corpus_payloads_from_validated_batch(
+    requests: Sequence[IncomingUpload],
+    receipts: tuple[IntakeReceipt, ...],
+    *,
+    limits: IngestionLimits,
+    id_factory: AssetIdFactory | None,
+) -> tuple[ValidatedCorpusPayload, ...]:
+    payloads: list[ValidatedCorpusPayload] = []
+    identifiers = {receipt.asset_id for receipt in receipts}
+    for request, receipt in zip(requests, receipts, strict=True):
+        if receipt.role is IntakeRole.CORPUS_TEXT:
+            payloads.append(ValidatedCorpusPayload(receipt=receipt, content=request.data))
+            continue
+        if receipt.role is not IntakeRole.CORPUS_ARCHIVE:
+            continue
+        inspection = _inspect_archive(request.data, limits)
+        try:
+            with zipfile.ZipFile(io.BytesIO(request.data), mode="r") as archive:
+                infos = archive.infolist()
+                for member in inspection.members:
+                    content = _read_member(archive, infos[member.index], limits)
+                    digest = hashlib.sha256(content).hexdigest()
+                    if digest != member.sha256:
+                        _reject(IntakeErrorCode.EXTRACTION_FAILED)
+                    asset_id = _asset_id(id_factory)
+                    if asset_id in identifiers:
+                        _reject(IntakeErrorCode.INTERNAL_ID)
+                    identifiers.add(asset_id)
+                    payloads.append(
+                        ValidatedCorpusPayload(
+                            receipt=IntakeReceipt(
+                                asset_id=asset_id,
+                                role=IntakeRole.CORPUS_TEXT,
+                                display_label=member.display_label,
+                                storage_name=f"{asset_id}.txt",
+                                byte_size=len(content),
+                                expanded_bytes=len(content),
+                                sha256=digest,
+                                line_count=member.line_count,
+                                token_count=member.token_count,
+                                limit_profile=limits.profile_version,
+                            ),
+                            content=content,
+                        )
+                    )
+        except IntakeError:
+            raise
+        except (zipfile.BadZipFile, RuntimeError, NotImplementedError, OSError, EOFError):
+            _reject(IntakeErrorCode.EXTRACTION_FAILED)
+    if not payloads:
+        _reject(IntakeErrorCode.ROLE_MISMATCH)
+    return tuple(
+        sorted(
+            payloads,
+            key=lambda item: (
+                item.receipt.display_label.casefold(),
+                item.receipt.display_label,
+                item.receipt.sha256,
+            ),
+        )
+    )
+
+
+def visit_validated_corpus_payloads[ResultT](
+    requests: Sequence[IncomingUpload],
+    visitor: Callable[[tuple[ValidatedCorpusPayload, ...]], ResultT],
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+    id_factory: AssetIdFactory | None = None,
+) -> ResultT:
+    """Validate a batch and expose corpus bytes only to one trusted callback."""
+
+    try:
+        if not callable(visitor):
+            _reject(IntakeErrorCode.INTERNAL_ID)
+        receipts = _validated_batch(requests, limits=limits, id_factory=id_factory)
+        payloads = _corpus_payloads_from_validated_batch(
+            requests,
+            receipts,
+            limits=limits,
+            id_factory=id_factory,
+        )
+    except IntakeError as error:
+        _detach_error_context(error)
+        raise
+    return visitor(payloads)
 
 
 def _cleanup_workspace(workspace: Path) -> None:
