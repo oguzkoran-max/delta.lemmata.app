@@ -394,7 +394,16 @@ def test_capture_metadata_is_path_free_and_binds_critical_inputs() -> None:
     assert metadata["source_commit"] == context.source_commit
     assert metadata["container_image_id"] == context.image_id
     assert metadata["capture_profile"]["container_platform"] == "linux/amd64"
+    assert metadata["capture_profile"]["container_memory_limit"] == "2g"
     assert metadata["capture_profile"]["network"] == "none"
+    assert metadata["capture_profile"]["worker_limit_profile"] == {
+        "cpu_time_seconds": 30,
+        "max_processes": 8,
+        "memory_bytes": 1073741824,
+        "profile_version": "stylo-worker-limits-v1",
+        "terminate_grace_seconds": 2,
+        "wall_time_seconds": 60,
+    }
     assert metadata["github"]["job"] == "p006-worker-capture"
     assert metadata["bindings"]["worker_script_sha256"] == parity._sha256_path(
         ROOT / "scripts" / "workers" / "p006-stylo-worker-v1.R"

@@ -27,6 +27,7 @@ from validate_p006_oracle_outputs import (
     validate_output_directory_v2,
 )
 
+from delta_lemmata.job_policy import STYLO_WORKER_LIMITS
 from delta_lemmata.job_workspace import WorkspaceArea, WorkspaceManager
 from delta_lemmata.stylo_contracts import (
     STRUCTURAL_TOLERANCE,
@@ -144,6 +145,9 @@ def capture_metadata(context: CaptureContext) -> dict[str, Any]:
             "fixture_manifest_sha256": _sha256_path(MANIFEST_PATH),
             "reference_session_sha256": _sha256_path(REFERENCE_SESSION_PATH),
             "renv_lock_sha256": _sha256_path(ROOT / "renv.lock"),
+            "worker_limit_profile_sha256": _sha256_path(
+                ROOT / "src" / "delta_lemmata" / "data" / "stylo-worker-limits-v1.json"
+            ),
             "uv_lock_sha256": _sha256_path(ROOT / "uv.lock"),
             "worker_script_sha256": _sha256_path(
                 ROOT / "scripts" / "workers" / "p006-stylo-worker-v1.R"
@@ -153,12 +157,13 @@ def capture_metadata(context: CaptureContext) -> dict[str, Any]:
             "capabilities": "all-dropped",
             "container_platform": "linux/amd64",
             "cpu_limit": "2",
-            "memory_limit": "1g",
+            "container_memory_limit": "2g",
             "network": "none",
             "no_new_privileges": True,
             "process_limit": 64,
             "root_filesystem": "read-only",
             "runtime_user": "delta",
+            "worker_limit_profile": STYLO_WORKER_LIMITS.model_dump(mode="json"),
         },
         "container_image_id": context.image_id,
         "fixture_suites": [
@@ -469,8 +474,13 @@ def _execute_request(
     layout = manager.create(_OWNER_ID, job_id)
     execution = StyloWorkerAdapter(manager, layout).execute(request)
     result = execution.finalization.result
-    if not execution.accepted_result or result is None:
-        _fail("P006_WORKER_PARITY_EXECUTION_REJECTED")
+    if result is None:
+        process = execution.finalization.process
+        limit = process.limit.value if process.limit is not None else "none"
+        _fail(
+            "P006_WORKER_PARITY_EXECUTION_REJECTED_"
+            f"{execution.finalization.code.value}_{process.outcome.value}_{limit}"
+        )
     payload = manager.read_file(
         layout,
         WorkspaceArea.WORK,

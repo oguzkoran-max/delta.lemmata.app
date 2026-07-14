@@ -56,6 +56,7 @@ def test_p006_worker_capture_is_manual_read_only_and_fail_closed() -> None:
     assert "--read-only" in capture
     assert "--cap-drop ALL" in capture
     assert "--security-opt no-new-privileges" in capture
+    assert "--memory 2g" in capture
     assert "--output-directory /capture/worker-evidence" in capture
     assert "--include-boundary-fixture" in capture
     assert "validate_p006_worker_evidence.py" in capture
