@@ -1,0 +1,149 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260714-0003",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P006"
+  ],
+  "started_at_utc": "2026-07-14T05:24:37Z",
+  "ended_at_utc": "2026-07-14T05:28:27Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "f0800c82d7033da2790abc69bc8adfe48570fcb1",
+  "environment": {
+    "os": "GitHub-hosted Ubuntu 24.04",
+    "architecture": "x86_64",
+    "python": "3.13.9",
+    "uv": "0.11.28",
+    "r": "4.5.2",
+    "stylo": "0.7.71",
+    "jsonlite": "2.0.0",
+    "locale": "C.UTF-8",
+    "timezone": "UTC",
+    "ci_run": "29308457480",
+    "ci_verify_job": "87006903860",
+    "ci_container_job": "87006903862",
+    "built_image_id": "sha256:b54eec2cd101ab8fbe834f99599a40e85e0b5c51365b3e73bbf0e4487b7e4eea",
+    "tests_passed": 1236,
+    "measured_statements": 7768,
+    "measured_branches": 2080,
+    "coverage_percent": 100
+  },
+  "command": "GitHub Actions workflow .github/workflows/ci.yml at f0800c82d7033da2790abc69bc8adfe48570fcb1 (run 29308457480); ./scripts/verify.sh including Linux worker parity and scientific handoff validators",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "42d9369d7630793b213a1664ddb4deccac1cdd05269e8b5e9db996d005467992"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "55caa89a3a98cf17e86a3c6bc0cefaaacc94499e79cc569f7dba5327cdd17297"
+    },
+    {
+      "path": "scripts/validate_p006_worker_parity.py",
+      "sha256": "03a5b17f6b7c3a7a2a187c0dfbd0e3e03817a6d652cc445a9fd7db35cc646d6b"
+    },
+    {
+      "path": "scripts/validate_p006_scientific_handoff.py",
+      "sha256": "15b614932624781d3cd56a78a2470fe1809b12d78c40e1ffaa3f0c6c462a0eb5"
+    },
+    {
+      "path": "scripts/workers/p006-stylo-worker-v1.R",
+      "sha256": "4cf9866a8a2c0fdf6011f711654f481e4b74326f518d1676fcf0a5b7eb2d2eb2"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_worker.py",
+      "sha256": "1e2e30390393e7cbe3277ea142fa3f37a6a64cb45c7f9afb6aa3aabb754b7995"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_job_runner.py",
+      "sha256": "e47d2f8fcfde88ac7d5fbbdb8b0a8d9855a1c6556e12cce7cad5fe9d29f0d059"
+    },
+    {
+      "path": "src/delta_lemmata/guardian_controller.py",
+      "sha256": "988f339a918c9f7f642d2131b068574db44d6dffb94e328907a78a40a66d7274"
+    },
+    {
+      "path": "src/delta_lemmata/recovery_receipt.py",
+      "sha256": "0834fe218e360fa7c41ef87a23bb963f579b1f897efaaa77d88a0d2ef6f199e0"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub-hosted Ubuntu 24.04 checkout at exact implementation commit f0800c82d7033da2790abc69bc8adfe48570fcb1",
+    "command": "GitHub Actions workflow .github/workflows/ci.yml at f0800c82d7033da2790abc69bc8adfe48570fcb1 (run 29308457480); ./scripts/verify.sh including Linux worker parity and scientific handoff validators",
+    "limitations": [
+      "The GitHub-hosted runner image is named but not represented by an immutable runner-image digest; source, actions, base image, Python, uv, R, and packages are separately pinned or recorded.",
+      "Dependency restoration and canonical image construction used network access. P006 does not claim production egress denial at this checkpoint.",
+      "The Linux parity gate generated worker outputs and parity, leakage, security, and session reports in a temporary directory and did not retain that package. P006-AC-07 therefore remains pending.",
+      "A separate exact-commit clean-clone replay was not performed for this implementation checkpoint. P006-AC-08 therefore remains pending.",
+      "The run covers only the named CC0 adversarial whole-text oracle-v2 fixtures and one real lifecycle handoff. It does not cover raw-text preprocessing, literary corpora, benchmark accuracy, public workflow, or production isolation."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "42d9369d7630793b213a1664ddb4deccac1cdd05269e8b5e9db996d005467992"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "renv.lock",
+      "sha256": "bb792d224470650053412194edc35f3fd866673bd78d30ca756fcec3ad86ea1d"
+    },
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "55caa89a3a98cf17e86a3c6bc0cefaaacc94499e79cc569f7dba5327cdd17297"
+    },
+    {
+      "path": "scripts/validate_p006_worker_parity.py",
+      "sha256": "03a5b17f6b7c3a7a2a187c0dfbd0e3e03817a6d652cc445a9fd7db35cc646d6b"
+    },
+    {
+      "path": "scripts/validate_p006_scientific_handoff.py",
+      "sha256": "15b614932624781d3cd56a78a2470fe1809b12d78c40e1ffaa3f0c6c462a0eb5"
+    },
+    {
+      "path": "scripts/workers/p006-stylo-worker-v1.R",
+      "sha256": "4cf9866a8a2c0fdf6011f711654f481e4b74326f518d1676fcf0a5b7eb2d2eb2"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_worker.py",
+      "sha256": "1e2e30390393e7cbe3277ea142fa3f37a6a64cb45c7f9afb6aa3aabb754b7995"
+    },
+    {
+      "path": "src/delta_lemmata/stylo_job_runner.py",
+      "sha256": "e47d2f8fcfde88ac7d5fbbdb8b0a8d9855a1c6556e12cce7cad5fe9d29f0d059"
+    },
+    {
+      "path": "src/delta_lemmata/guardian_controller.py",
+      "sha256": "988f339a918c9f7f642d2131b068574db44d6dffb94e328907a78a40a66d7274"
+    },
+    {
+      "path": "src/delta_lemmata/recovery_receipt.py",
+      "sha256": "0834fe218e360fa7c41ef87a23bb963f579b1f897efaaa77d88a0d2ef6f199e0"
+    },
+    {
+      "path": "tests/fixtures/stylo/p006-whole-text-v2/fixture-manifest.json",
+      "sha256": "1b642c51e0573f8d253050e1fbd80cb8e22ce238ee6007a2af2497393f8138a8"
+    },
+    {
+      "path": "provenance/evidence/P006/oracle-v2/oracle-freeze.sha256",
+      "sha256": "cf085c9db2d92c6d29922fe827c3d450f55279f0237a6e772e77bf5c4602ab74"
+    }
+  ],
+  "output_artifacts": [],
+  "notes": "Exact implementation commit f0800c8 passed the fixed Linux worker parity gate and the real R-to-SQLite-to-guardian handoff gate. The worker matched the checksum-frozen oracle-v2 fixtures at the accepted structural, matrix, and tie tolerances; the changed-unknown and document-order canaries passed; injection created no observed code channel. The lifecycle retained exact result bytes, committed their digest and size, received a signed guardian acceptance receipt, and atomically confirmed the current database row. All 1,236 Linux tests and full measured branch coverage passed, as did SBOM, dependency, secret, record, repository, and canonical container gates. Complete worker outputs and reports were intentionally not claimed as retained evidence, so P006-AC-07 and P006-AC-08 remain pending."
+}

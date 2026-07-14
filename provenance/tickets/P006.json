@@ -65,11 +65,13 @@
     "94fac26d9666cd58ac5dd945f82557c7cee9d967",
     "c6a07e1b62440d56feabf76fd7c58e4b58b63477",
     "42fe09b690d953fbcf45fcf48fa6d8f462fb8251",
-    "ad8aa77d3467d86af9b003927a1c5981f092c0d4"
+    "ad8aa77d3467d86af9b003927a1c5981f092c0d4",
+    "f0800c82d7033da2790abc69bc8adfe48570fcb1"
   ],
   "run_ids": [
     "RUN-20260714-0001",
-    "RUN-20260714-0002"
+    "RUN-20260714-0002",
+    "RUN-20260714-0003"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -93,6 +95,8 @@
     "memory/checkpoints/2026-07-14-p006-oracle-v2-freeze.md",
     "provenance/runs/RUN-20260714-0001.json",
     "provenance/runs/RUN-20260714-0002.json",
+    "provenance/runs/RUN-20260714-0003.json",
+    "provenance/evidence/P006/worker-handoff-ci.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/local-runtime-limitations.md",
     "docs/research/claim-evidence-matrix.md",
@@ -110,20 +114,26 @@
     {
       "id": "P006-AC-02",
       "criterion": "The adapter uses a fixed Rscript --vanilla entrypoint, shell false, fixed trusted files and cwd, a minimal allowlisted environment, private output creation, and no user value in argv, R code, environment names, or filesystem paths; injection fixtures execute no command or code.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
     },
     {
       "id": "P006-AC-03",
       "criterion": "Process exit, output capture, schema validation, scientific validation, durable terminal state, and guardian acknowledgement occur in that order; exit zero with missing, malformed, non-finite, asymmetric, mislabeled, duplicate, or cardinality-invalid output never becomes success.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
     },
     {
       "id": "P006-AC-04",
       "criterion": "MFW ranking, culling, means, standard deviations, and selected features use known documents only; changing an unknown canary leaves all fitting artifacts and known-known distances exactly unchanged.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
     },
     {
       "id": "P006-AC-05",
@@ -136,8 +146,10 @@
     {
       "id": "P006-AC-06",
       "criterion": "For the predeclared whole-text synthetic fixture suite and locked R/stylo environment, ordered feature inventories match the independent direct-stylo oracle exactly, distance matrices differ by at most 1e-6, and nearest-neighbor tie groups match at the predeclared threshold.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-handoff-ci.md"
+      ]
     },
     {
       "id": "P006-AC-07",
@@ -168,7 +180,10 @@
     "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, and cannot commit or push",
     "The first v2 dispatch passed both no-network oracle runs and package validation but GitHub artifact quota rejected transport; a canonical checksum-bound job-log emitter and fail-closed local extractor replace artifact storage without changing publication authority",
     "Adversarial v2 evidence is frozen in an evidence-only commit whose sole parent is the exact capture source; the temporary capture job is removed after normal publication CI and a durable offline validator binds source, evidence, Run, environment, and numerical invariants",
-    "The durable v2 audit and capture-job removal passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction"
+    "The durable v2 audit and capture-job removal passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction",
+    "Fixed R/stylo worker, dedicated trusted environment, validated adapter, fixture-local oracle-v2 comparison, changed-unknown leakage canary, order-permutation check, and injection boundary",
+    "One-time scientific execution claim, exact result commitment, signed guardian acceptance and recovery receipts, three-state startup reconciliation, locked pending exports, and atomically confirmed current database rows",
+    "Exact implementation commit f0800c8 passed all 1,236 Linux tests, 100% of 7,768 statements and 2,080 branches, SBOM/dependency/secret gates, and canonical Linux amd64 container construction; retained worker package and clean-clone closure remain pending"
   ],
   "commands": [
     {
@@ -296,6 +311,18 @@
       "exit_code": 0,
       "result": "Durable audit commit ad8aa77 passed Linux verify job 86983589180 and canonical Linux amd64 container job 86983589158 with the temporary capture job absent from the workflow.",
       "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh at f0800c82d7033da2790abc69bc8adfe48570fcb1",
+      "exit_code": 0,
+      "result": "The fixed-worker and handoff checkpoint passed 1,235 local tests with one canonical-Linux skip, 100% of 7,768 measured statements and 2,080 branches, strict typing, metadata, 82 provenance records, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate.",
+      "evidence": "provenance/evidence/P006/worker-handoff-ci.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29308457480",
+      "exit_code": 0,
+      "result": "Exact implementation commit f0800c8 passed p006-worker-parity-ok, p006-scientific-handoff-ok, all 1,236 Linux tests, 100% measured source and branch coverage, metadata, 82 records, repository scanning, SBOM/dependency/secret gates, and canonical Linux amd64 container job 87006903862.",
+      "evidence": "provenance/evidence/P006/worker-handoff-ci.md"
     }
   ],
   "blockers": []

@@ -1,6 +1,7 @@
 # ADR-0013: Versioned stylo Worker and Parity Protocol
 
-**Status:** Accepted by `HD-20260713-0002`; implementation and evidence remain pending
+**Status:** Accepted by `HD-20260713-0002`; fixed worker, fixture-local parity,
+and scientific handoff validated; retained closure package remains pending
 
 **Date:** 2026-07-13
 
@@ -151,11 +152,42 @@ remains P010-P015.
 - Fixed-worker implementation cannot begin until v2 is checksum-frozen and its
   source/capture/publication chain passes normal CI.
 
+## Fixed Worker and Scientific Handoff Checkpoint, 2026-07-14
+
+- The fixed adapter invokes only trusted `Rscript --vanilla` and worker paths under
+  the dedicated `R_STYLO` environment profile. User-controlled values remain in
+  the validated JSON contract and never enter argv, environment names, R code, or
+  filesystem paths.
+- Exact implementation commit
+  `f0800c82d7033da2790abc69bc8adfe48570fcb1` passed the canonical Linux worker
+  comparison against oracle-v2. Ordered features were exact, fitting values met
+  the `1e-12` structural tolerance, matrices met the `1e-6` tolerance, and nearest
+  tie groups were exact at `1e-12`.
+- The two-unknown canary left fitting artifacts and known-known distances exactly
+  unchanged while activating all three unknown distance families. Document-order
+  permutation remained equivariant by opaque identity, and the injection fixture
+  opened no observed shell or R-code channel.
+- Scientific execution now has a durable one-time claim. Validated result bytes are
+  published with an exact digest and size, committed as terminal, acknowledged by
+  a signed guardian receipt, and then confirmed on the current SQLite row.
+- Startup reconciliation is three-state: accepted evidence confirms the result,
+  recovery-required evidence removes it, and unresolved evidence keeps export
+  locked while normal input/work cleanup and the result deadline continue.
+- Terminal proof is bound to the immutable terminal operation version rather than
+  the mutable current row version. Janitor maintenance can therefore advance the
+  row without invalidating a correct guardian acknowledgement.
+- A RUNNING record without signed process or guardian proof remains the documented
+  P005 unresolved-recovery boundary. P006 does not infer death from elapsed time.
+- P006-AC-02, AC-03, AC-04, and AC-06 pass at this checkpoint. AC-07 and AC-08
+  remain pending until worker outputs and reports are retained in a checksum-bound
+  package and a separate exact-commit clean-clone replay is recorded.
+
 ## Evidence Links
 
 - `provenance/evidence/P006/architecture-audit.md`
 - `provenance/evidence/P006/start-validation.md`
 - `provenance/evidence/P006/contracts-finalizer-validation.md`
+- `provenance/evidence/P006/worker-handoff-ci.md`
 - `docs/development/p006-oracle-v2.md`
 - `prompts/P006-start.md`
 - `provenance/tickets/P006.json`
