@@ -291,6 +291,10 @@ P004 inventory identities and P005 process/workspace lifecycle.
 
 ### P007: Preprocessing and Corpus Health
 
+**Durum:** 2026-07-14 tarihinde `codex/p007-preprocessing` dalında açıldı.
+`provenance/tickets/P007.json` aktiftir. ADR-0014 ve nicel yöntem sınırları
+ayrı HumanDecision beklediği için implementation henüz başlamamıştır.
+
 **Amaç:** Analizden önce corpus'un neye dönüştürüldüğünü, hangi riskleri taşıdığını ve analizin durması gerekip gerekmediğini görünür kılmak.
 
 **Bağımlılık:** P004, P006.
@@ -313,7 +317,7 @@ P004 inventory identities and P005 process/workspace lifecycle.
 - Blocker bulunan corpus analiz başlatamaz; kullanıcı risk kaydını export edebilir.
 
 **Kanıt:** Preprocessing golden fixtures, corpus-health matrix ve determinism raporu.  
-**Claim/tehdit bağlantısı:** CE-02, CE-09; EPI-01, EPI-02, EPI-04, EPI-06, EPI-07, EPI-11.  
+**Claim/tehdit bağlantısı:** CE-02, CE-04, CE-09; EPI-01, EPI-02, EPI-04, EPI-06, EPI-07, EPI-11.
 **Non-goal:** OCR düzeltme, lemmatization veya otomatik paratext silme.  
 **Sahip/denetçi:** Geliştirme ajanı uygular; Oğuz corpus uyarı dilini onaylar.
 

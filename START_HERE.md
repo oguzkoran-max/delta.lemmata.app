@@ -2,14 +2,14 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P001-P006 tamamlandı. P006 R `stylo` Worker and Computational
-Parity, sekiz acceptance ölçütünün tamamını fixture-local whole-text sınırında
-geçti. Fixed worker, scientific handoff, retained Linux evidence, normal CI ve
-exact-commit remote clean-clone zinciri `RUN-20260714-0004` ve
-`RUN-20260714-0005` ile kayıtlıdır. Aktif implementation Ticket yoktur. Sıradaki
-planlanan iş P007 Preprocessing and Corpus Health açılış paketidir; P007 Ticket,
-PromptEvent, architecture audit ve kabul edilmiş yöntem sınırı oluşmadan kod
-yazılmaz.
+**Güncel aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and
+Corpus Health `codex/p007-preprocessing` dalında açıktır. Aktif kayıt
+`provenance/tickets/P007.json`; ayrıntılı öneri
+`docs/development/p007-preprocessing-corpus-health-contract.md`; karar
+`decisions/ADR-0014-preprocessing-corpus-health.md` içindedir. ADR-0014 Proposed
+durumundadır. Oğuz preprocessing profili, sağlık eşikleri, geçici materialization
+ve zorunlu READY admission sınırını ayrı HumanDecision ile kabul etmeden P007
+implementation kodu yazılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -140,4 +140,5 @@ P006-AC-08 fixture-local sınırda passed durumundadır.
 
 P006 preprocessing, public Start analysis, production limitleri, secure erase veya
 Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P011'i
-bekler. Sıradaki tek ana iş P007'nin tests-first açılış paketi ve yöntem denetimidir.
+bekler. P007 açılış paketi ve dört mercekli denetim hazırdır; sıradaki tek ana iş
+önerilen on maddelik yöntem paketinin Oğuz tarafından kabul veya revize edilmesidir.

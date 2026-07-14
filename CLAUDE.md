@@ -37,10 +37,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 ## Güncel Başlangıç
 
 P001-P006 bütün acceptance ölçütlerini kendi tanımlı sınırlarında geçerek
-tamamlanmıştır. Son kapanış `provenance/tickets/P006.json`,
-`RUN-20260714-0004`, `RUN-20260714-0005` ve
-`memory/checkpoints/2026-07-14-p006-complete.md` içinde kayıtlıdır. Aktif
-implementation Ticket yoktur. Sıradaki planlanan iş P007 Preprocessing and Corpus
-Health'tir. P007 PromptEvent, Ticket, architecture/method audit ve accepted
-preprocessing boundary olmadan kod yazma. Public analysis, benchmark, nihai
+tamamlanmıştır. P007 aktif Ticket'tır:
+`provenance/tickets/P007.json`. Dört mercekli audit, ayrıntılı contract ve
+Proposed ADR-0014 hazırdır. Oğuz ayrı HumanDecision ile preprocessing profili,
+health eşikleri, private materialization ve READY admission sınırını kabul veya
+revize etmeden implementation kodu yazma. Public analysis, benchmark, nihai
 Pinokyo corpus'u, FAIR release ve production deployment sonraki ticket'lardadır.

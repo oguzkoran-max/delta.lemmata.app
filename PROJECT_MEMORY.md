@@ -2,8 +2,8 @@
 
 **Son güncelleme:** 2026-07-14
 
-**Durum:** P001-P006 tamamlandı; aktif implementation Ticket yoktur. Sıradaki
-planlanan ticket P007 Preprocessing and Corpus Health'tir
+**Durum:** P001-P006 tamamlandı; P007 Deterministic Preprocessing and Corpus Health
+aktif, fakat Proposed ADR-0014 ayrı insan yöntem kararını bekliyor
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -13,6 +13,25 @@ fixed R worker, shell-free Python adapter, strict contracts, scientific finalize
 known-only fitting, checksum-frozen direct-`stylo` referansları, retained Linux
 worker evidence ve crash-safe scientific-result handoff ekledi. Public analiz,
 preprocessing, corpus-health, benchmark ve stability katmanları henüz yoktur
+
+**P007 açılış checkpoint'i:** P006 main merge `5fab67c` ve main CI
+`29354208853` sonrası `codex/p007-preprocessing` dalı açıldı. Pre-edit full gate
+1.246 passed, bir canonical-worker macOS skip, 7.768 statement, 2.080 branch,
+yüzde 100 measured coverage ve 85 provenance record ile geçti. Dört bağımsız
+read-only mercek toplam 120k token tavanıyla stylometric method,
+architecture/security, FAIR/provenance ve beginner UX'i inceledi. P007'nin
+payload-free P004 state'ten metin alamayacağı, P003-validated bytes için doğrudan
+P005 private prepare-only handoff gerektiği, corpus health'in lower-level enqueue
+yollarından bypass edilebildiği ve P006 input'un receipt-bound kurulması gerektiği
+ortak P0 bulgulardır. Proposed `delta-surface-words-v1` Unicode lowercase + NFC,
+letter/mark surface tokens, retained diacritics/stopwords, punctuation/number
+separation, no lemmatization/stemming/OCR correction/auto-paratext deletion
+kullanır. Custom exclusions yalnız candidate inventory'yi etkiler. Proposed
+near-duplicate 5-shingle Jaccard `>=0.90`, shared passage `>=200 token veya kısa
+eserin >=%20'si`, minimum-data 6 work/3 chronology point, length 4:1 ve group 3:1
+eşikleri henüz kabul edilmiş karar değildir. Ayrıntılı on maddelik paket
+`docs/development/p007-preprocessing-corpus-health-contract.md`; ADR-0014 Proposed;
+explicit HumanDecision öncesi implementation yasaktır.
 
 **P006 completion checkpoint:** Capture source `79cb268`, read-only run
 `29340236382`, evidence-only commit `7359cbe` ve `RUN-20260714-0004` exact 18-file

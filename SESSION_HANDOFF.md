@@ -2,8 +2,8 @@
 
 **Güncellendi:** 2026-07-14
 
-**Aşama:** P001-P006 tamamlandı. Aktif implementation Ticket yoktur; sıradaki
-planlanan iş P007 Preprocessing and Corpus Health açılış paketidir
+**Aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and Corpus
+Health aktif; implementation, önerilen yöntem paketinin ayrı insan kararını bekliyor
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -19,12 +19,26 @@ benchmark, stability, FAIR run export ve deployment hâlâ yok
 
 **Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif ticket:** Yok
+**Aktif ticket:** `provenance/tickets/P007.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** P007 için PromptEvent, Ticket, architecture/method audit,
-accepted preprocessing boundary ve tests-first opening package oluştur. P007
-açılmadan preprocessing kodu yazma. Public workflow P008, benchmark P010/P011,
-FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
+**Sıradaki tek ana iş:**
+`docs/development/p007-preprocessing-corpus-health-contract.md` içindeki on maddelik
+öneriyi Oğuz'a sade Türkçeyle sun. Kabul veya revizyonu ayrı HumanDecision olarak
+kaydet; sonra schema-first ve tests-first uygulamaya geç. ADR-0014 Proposed iken
+implementation, fixture freeze veya threshold claim'i üretme. Public workflow P008,
+benchmark P010/P011, FAIR package P012, Pinokyo P013 ve production isolation P014'te
+kalır.
+
+**P007 açılış checkpoint'i:** P006 main merge commit'i `5fab67c`; main CI
+`29354208853` yeşil. `codex/p007-preprocessing` dalında pre-edit gate 1.246 passed,
+bir documented macOS skip, 7.768 statement, 2.080 branch ve yüzde 100 coverage ile
+geçti. Dört adet 30k-token read-only mercek yöntem, architecture/security,
+FAIR/provenance ve beginner UX'i denetledi. Ana bulgular: payload-free P004 state
+P007'ye ham metin veremez; P003 bytes P005 private prepare-only workspace'e doğrudan
+bağlanmalıdır; lower-level P005/P006 yolları corpus health'i bypass etmemelidir;
+P006 input yalnız blocker-free, hash-bound, one-time READY receipt ile kurulmalıdır.
+Proposed profil `delta-surface-words-v1`; exact/near/shared-passage, 6-work,
+3-chronology-point, 4:1 length ve 3:1 group eşikleri henüz insan kabulü değildir.
 
 **P006 closure checkpoint:** Fixed worker ve scientific handoff `f0800c8` ile
 uygulandı. Capture source `79cb268`, read-only capture `29340236382`, evidence-only
@@ -299,7 +313,10 @@ GitHub CI run `29201459098` içinde verify, SBOM/dependency audit ve Linux amd64
 container işlerinde geçti. Bu checkpointte insan kabulü açıktı; P004 daha sonra
 `HD-20260712-0002` sınırlarıyla teknik olarak kapatıldı.
 
-## Önce Oku
+## Tarihsel P004 Okuma Listesi
+
+Aşağıdaki liste P004 aktifken kullanılan tarihsel devirdir; güncel P007 başlangıç
+talimatı değildir. Güncel sıra bu dosyanın üst bölümü ve START_HERE.md içindedir.
 
 1. `START_HERE.md`
 2. Bu dosya

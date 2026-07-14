@@ -13,10 +13,9 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P001-P006 kapanmıştır. Aktif implementation Ticket yoktur. Sıradaki planlanan
-  iş P007 Preprocessing and Corpus Health açılış paketidir. PromptEvent, Ticket,
-  architecture/method audit ve accepted preprocessing boundary olmadan P007 kodu
-  yazma.
+- P001-P006 kapanmıştır. P007 aktif Ticket'tır. Açılış paketi ve Proposed
+  ADR-0014 hazırdır; ayrı HumanDecision accepted preprocessing/health/admission
+  boundary oluşturmadan P007 implementation kodu yazma.
 - P006 fixture-local worker parity, retained Linux package, scientific handoff,
   exact-commit Linux CI ve remote clean-clone kapılarını geçti. Bu kanıtı
   preprocessing, benchmark, public workflow, FAIR export, Pinokyo veya production

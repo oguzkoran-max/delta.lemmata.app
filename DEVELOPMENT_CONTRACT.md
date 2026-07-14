@@ -1,8 +1,8 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P001-P006 tamamlandı, sıradaki planlanan ticket P007
+**Durum:** Kanonik; P001-P006 tamamlandı, P007 açık ve yöntem kabulü bekliyor
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P006 fixed worker, fixture-local parity, retained Linux evidence, exact-commit CI ve clean-clone kapılarıyla tamamlandı; P007 henüz açılmadı
+**Aşama:** P006 tamamlandı; P007 Ticket ve önerilen ADR-0014 açıldı, implementation ayrı HumanDecision sonrası başlar
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.
