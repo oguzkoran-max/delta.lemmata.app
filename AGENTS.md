@@ -17,6 +17,9 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
   ve `HD-20260713-0002` geçmiştir; sözleşme checkpoint'i exact Linux CI ile
   dondurulmuş, bağımsız direct-`stylo` oracle checksum ile tutulmuştur. Fixed worker
   çıktısını bu oracle ile bağımsız karşılaştırma geçmeden parity kanıtı sayma.
+- V1 oracle eşit token toplamları ve tek-son-satır unknown nedeniyle final parity
+  için yetersiz ara kanıttır. Fixed worker'dan önce unequal totals, iki interleaved
+  unknown ve order permutation içeren v2'yi read-only capture ile dondur.
 - P003/P004 kanıtını production retention, gerçek `stylo` veya host isolation kanıtı gibi genişletme.
 - P005'te application-managed deletion ile secure erase, snapshot, swap, backup veya production isolation iddiasını karıştırma.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.

@@ -4,7 +4,8 @@
 
 **Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
 Worker and Computational Parity aktif; sözleşme/finalizer doğrulandı; bağımsız
-direct-`stylo` oracle v1 donduruldu fakat güçlendirilmiş v2 fixture zorunlu
+direct-`stylo` oracle v1 donduruldu; güçlendirilmiş v2 fixture/capture kaynağı hazır,
+sayısal v2 freeze henüz yapılmadı
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -21,10 +22,11 @@ entegrasyonu hâlâ yok
 
 **Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Unequal document totals, raw-count counterfactual ayrımı ve
-known satırlar arasına yerleştirilmiş birden çok unknown içeren v2 fixture/oracle'ı
-worker'dan önce dondur. Sonra ayrı `C.UTF-8` trusted execution profile kullanan
-fixed `Rscript --vanilla` worker ve güvenli Python adapter uygula. Guardian
+**Sıradaki tek ana iş:** V2 source commit'ini normal Linux CI'da doğrula; ardından
+manual read-only capture ile iki ağsız Linux çıktısını candidate artifact olarak
+üret, yerelde yeniden doğrula ve ayrı evidence commit'iyle dondur. Sonra ayrı
+`C.UTF-8` trusted execution profile kullanan fixed `Rscript --vanilla` worker ve
+güvenli Python adapter uygula. Guardian
 ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
 P006-AC-03 altında yapılabilir. Preprocessing P007, public workflow P008, benchmark
 P010/P011, FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
@@ -68,6 +70,16 @@ checkpoint worker parity veya P006 acceptance değildir; passed ölçütler değ
 Post-freeze method audit, v1'de bütün `token_total` değerlerinin 100 ve tek unknown
 satırının son konumda olduğunu buldu. Bu nedenle v1 doğru çalışmış fakat kabul için
 yetersiz ara referanstır; v2 üretilmeden worker karşılaştırmasına geçilmez.
+
+**P006 v2 source durumu:** `p006-whole-text-v2` fixture; unequal totals, iki
+interleaved unknown, known final row, iki-unknown canary ve order permutation içerir.
+Formula-level raw-count counterfactualı her dört fit ve üç distance family için
+normalized sonuçtan aktiftir. `scripts/validate_p006_fixture_v2.py`, suite-aware
+oracle validator/freeze aracı ve manual-only read-permission capture workflow'u
+eklendi. Capture workflow repo commit/push yapamaz; yayınlama yerel ve ayrı olacaktır.
+Yerel `scripts/verify.sh` 1,094 test, 7,247 statement, 1,902 branch ve yüzde 100
+kapsamla geçti. Source commit/CI ve v2 freeze henüz yoktur; passed AC listesi
+değişmemiştir.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

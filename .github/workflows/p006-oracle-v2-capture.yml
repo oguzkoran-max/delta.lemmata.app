@@ -1,0 +1,125 @@
+name: P006 direct-stylo oracle v2 capture
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p006-direct-stylo-oracle-v2-capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out exact source without persisted credentials
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned uv and Python
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.28"
+          python-version: "3.13.9"
+          enable-cache: false
+
+      - name: Install pinned R
+        uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2.12.1
+        with:
+          r-version: "4.5.2"
+          use-public-rspm: true
+
+      - name: Restore locked environments and verify exact source
+        run: |
+          set -eu
+          ./scripts/bootstrap.sh
+          ./scripts/verify.sh
+
+      - name: Build canonical Linux amd64 image
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          docker build --platform linux/amd64 \
+            --file containers/Dockerfile \
+            --tag "delta-p006-oracle-v2:$SOURCE_SHA" .
+
+      - name: Run the v2 oracle twice without network access
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          image="delta-p006-oracle-v2:$SOURCE_SHA"
+          r_library=$(docker run --rm --platform linux/amd64 \
+            --entrypoint /usr/local/bin/Rscript "$image" \
+            --vanilla -e 'setwd("/opt/delta"); source("renv/activate.R"); cat(.libPaths()[1])')
+          test -n "$r_library"
+          install -d -m 0777 .p006-oracle-v2-run-1 .p006-oracle-v2-run-2
+          for run in 1 2; do
+            docker run --rm --platform linux/amd64 \
+              --network none \
+              --read-only \
+              --cap-drop ALL \
+              --security-opt no-new-privileges \
+              --pids-limit 64 \
+              --memory 1g \
+              --cpus 2 \
+              --tmpfs /tmp:rw,noexec,nosuid,nodev,size=64m \
+              --env HOME=/tmp/oracle-home \
+              --env LANG=C.UTF-8 \
+              --env LC_COLLATE=C.UTF-8 \
+              --env LC_CTYPE=C.UTF-8 \
+              --env LC_NUMERIC=C \
+              --env TZ=UTC \
+              --env OMP_NUM_THREADS=1 \
+              --env OPENBLAS_NUM_THREADS=1 \
+              --env MKL_NUM_THREADS=1 \
+              --env VECLIB_MAXIMUM_THREADS=1 \
+              --env R_ENVIRON_USER=/dev/null \
+              --env R_PROFILE_USER=/dev/null \
+              --env R_LIBS="$r_library" \
+              --env TMPDIR=/tmp \
+              --volume "$PWD:/repo:ro" \
+              --volume "$PWD/.p006-oracle-v2-run-$run:/out:rw" \
+              --entrypoint /usr/local/bin/Rscript \
+              "$image" --vanilla \
+              /repo/scripts/oracles/p006-direct-stylo-v1.R \
+              /repo/tests/fixtures/stylo/p006-whole-text-v2/fixture-manifest.json \
+              /out
+          done
+
+      - name: Validate, compare, and package read-only publication evidence
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          uv run python scripts/validate_p006_oracle_outputs.py \
+            --suite v2 .p006-oracle-v2-run-1
+          uv run python scripts/validate_p006_oracle_outputs.py \
+            --suite v2 .p006-oracle-v2-run-2
+          image_id=$(docker image inspect \
+            --format '{{.Id}}' "delta-p006-oracle-v2:$SOURCE_SHA")
+          uv run python scripts/freeze_p006_oracle.py \
+            .p006-oracle-v2-run-1 \
+            .p006-oracle-v2-run-2 \
+            .p006-oracle-v2-evidence \
+            --source-commit "$SOURCE_SHA" \
+            --image-id "$image_id" \
+            --suite v2
+          (cd .p006-oracle-v2-evidence && sha256sum --check oracle-freeze.sha256)
+          git diff --check
+
+      - name: Upload immutable candidate evidence without repository write access
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: p006-oracle-v2-${{ github.sha }}
+          path: .p006-oracle-v2-evidence
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0
+          include-hidden-files: true

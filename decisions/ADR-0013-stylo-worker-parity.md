@@ -128,10 +128,32 @@ remains P010-P015.
   not bind an artifact digest/size and was not crash-recoverable between database
   commit and guardian acknowledgement. P006-AC-03 therefore remains open.
 
+## Oracle v2 Strengthening, 2026-07-14
+
+- The checksum-frozen v1 suite remains immutable evidence of its declared direct
+  calculation, but it is not sufficient for final worker acceptance. Every v1
+  document has `token_total=100`, and its only unknown row is last.
+- The required v2 suite uses six distinct document totals, two unknown documents
+  interleaved among known documents, a known final row, a changed-unknown canary,
+  and an order-permutation request.
+- V2 validation identifies roles and compares matrix values by opaque document ID.
+  It may inspect fixture positions only to prove that the adversarial topology is
+  present; it must never use position as the scientific role source.
+- A separately implemented formula-level raw-count counterfactual must differ from
+  the normalized reference by more than `1e-3` for every requested fit and each of
+  the three distance families. This threshold checks fixture activation and does
+  not replace the accepted parity tolerances.
+- Capture and publication authority are separated. The manual capture workflow has
+  read-only repository permission and uploads a temporary candidate artifact; a
+  separately validated local publication commit retains the final evidence.
+- Fixed-worker implementation cannot begin until v2 is checksum-frozen and its
+  source/capture/publication chain passes normal CI.
+
 ## Evidence Links
 
 - `provenance/evidence/P006/architecture-audit.md`
 - `provenance/evidence/P006/start-validation.md`
 - `provenance/evidence/P006/contracts-finalizer-validation.md`
+- `docs/development/p006-oracle-v2.md`
 - `prompts/P006-start.md`
 - `provenance/tickets/P006.json`

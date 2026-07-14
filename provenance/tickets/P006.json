@@ -79,6 +79,7 @@
     "provenance/evidence/P006/contracts-finalizer-validation.md",
     "memory/checkpoints/2026-07-14-p006-contracts-finalizer.md",
     "docs/development/p006-oracle-freeze.md",
+    "docs/development/p006-oracle-v2.md",
     "provenance/evidence/P006/oracle-freeze-validation.md",
     "memory/checkpoints/2026-07-14-p006-oracle-freeze.md",
     "provenance/runs/RUN-20260714-0001.json",
@@ -152,7 +153,9 @@
     "Exact contracts/finalizer implementation commit passed Linux verification, SBOM/dependency audit, and canonical Linux amd64 container gates; only P006-AC-01 and P006-AC-05 pass at this checkpoint",
     "Project-authored CC0 complete, unknown-canary, and culling-boundary fixtures plus an independent direct-stylo oracle, separate schema, generator, validators, and locked canonical environment",
     "Two byte-identical no-network Linux oracle runs retained with source, image identity, observed package versions, lockfile, session, input, output, and checksum binding; one-time write workflow removed after freeze",
-    "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison"
+    "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison",
+    "Adversarial v2 source adds six unequal document totals, two interleaved unknown rows, a known final row, two-unknown canary, order permutation, and formula-level raw-count separation for every complete fit and distance family",
+    "Manual v2 capture has read-only repository permission, does not persist checkout credentials, cannot commit or push, and yields only a short-lived candidate artifact for separate local validation and publication"
   ],
   "commands": [
     {
@@ -226,6 +229,12 @@
       "exit_code": 0,
       "result": "The locked Linux amd64 oracle ran twice without network access; both four-file output directories were byte-identical, passed input/scientific validation, and were retained in checksum-bound evidence commit b5a842f.",
       "evidence": "provenance/evidence/P006/oracle-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The adversarial v2 source passed deterministic fixture generation, role/order and raw-count counterfactual validation, 1,094 tests, 100% of 7,247 statements and 1,902 branches, typing, provenance, repository, frozen-v1, and locked-environment gates on macOS.",
+      "evidence": "docs/development/p006-oracle-v2.md"
     }
   ],
   "blockers": []

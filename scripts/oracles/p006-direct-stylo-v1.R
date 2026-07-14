@@ -443,8 +443,9 @@ main <- function() {
       "schema_version", "suite_id"
     )
   )
+  suite_id <- scalar_character(manifest$suite_id)
   if (scalar_character(manifest$schema_version) != "p006-fixture-manifest-v1" ||
-      scalar_character(manifest$suite_id) != "p006-whole-text-v1" ||
+      !suite_id %in% c("p006-whole-text-v1", "p006-whole-text-v2") ||
       scalar_character(manifest$license) != "CC0-1.0" ||
       scalar_character(manifest$license_file) != "LICENSE" ||
       !is.list(manifest$fixtures) || length(manifest$fixtures) != 3L) {

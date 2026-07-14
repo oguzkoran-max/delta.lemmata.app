@@ -3,8 +3,8 @@
 **Son güncelleme:** 2026-07-14
 
 **Durum:** P005 tamamlandı; P006 aktif, kapalı worker-sözleşmesi doğrulandı;
-direct-`stylo` oracle v1 donduruldu fakat yöntem denetimi sonrası güçlendirilmiş v2
-fixture zorunlu
+direct-`stylo` oracle v1 donduruldu, güçlendirilmiş v2 fixture ve read-only capture
+kaynağı uygulandı; v2 sayısal çıktısı henüz dondurulmadı
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -62,6 +62,17 @@ sonda bulunması nedeniyle v1'in raw-count ve positional-role hatalarını yakal
 gösterdi. V1 immutable ara kanıt olarak kalır; unequal totals, raw-count
 counterfactual ayrımı ve interleaved multiple unknown içeren v2 worker'dan önce
 dondurulacaktır. Bu worker parity veya yeni acceptance ölçütü değildir.
+
+**P006 adversarial oracle v2 source checkpoint'i:** Altı farklı belge toplamı
+`80/120/150/200/240/320`, iki interleaved unknown, bilinen son satır, iki-unknown
+canary ve aynı belgelerin order permutation girdisi CC0 fixture olarak eklendi. Dört
+complete MFW/culling fitinin her birinde ham-sayım karşı-olgusu normalized sonuçtan
+üç mesafe ailesinde `>1e-3` ayrılır; en küçük gözlenen fark Classic `0.522862`, Eder
+`2.359863`, Cosine `0.799980`'dir. Validator rol ve matrisleri document ID ile
+karşılaştırır. Manual v2 capture workflow'u `contents: read`, credential persistence
+kapalı ve repo push/commit yetkisizdir; yalnız yedi günlük candidate artifact üretir.
+Yerel kapı 1,094 test ve yüzde 100 kapsamla geçti. Exact source CI, iki ağsız Linux
+capture, artifact indirme/doğrulama ve ayrı publication commit'i sıradadır.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,

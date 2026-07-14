@@ -7,7 +7,8 @@
 `codex/p006-stylo-worker` dalında aktif Ticket olarak açıldı. Başlangıç paketi
 schema-first ve validated-finalizer-first ilerler; bilimsel `stylo` parity henüz
 uygulanmadı veya doğrulanmadı. Bağımsız direct-`stylo` oracle v1 checksum ile
-donduruldu; post-freeze audit daha güçlü v2 fixture gerektiğini gösterdi.
+donduruldu; post-freeze audit'in gerektirdiği adversarial v2 fixture ve read-only
+capture kaynağı hazır, v2 sayısal kanıtı henüz dondurulmadı.
 
 ## 1. Her Oturumda Oku
 
@@ -136,7 +137,9 @@ evidence commit `b5a842f` ve `RUN-20260714-0001` ile iki byte-identical ağsız 
 koşusundan donduruldu; geçici write workflow kaldırıldı. Audit, v1'in eşit belge
 uzunluğu ve tek-son-satır unknown nedeniyle iki uygulama hatasını ayırt edemediğini
 buldu. Sıradaki tek iş unequal totals ve interleaved multiple unknown kullanan v2
-referansı dondurmaktır; fixed worker ancak bundan sonra uygulanır.
+referansı dondurmaktır. Fixture ve manual-only read-permission capture workflow'u
+hazırdır; exact source CI, iki ağsız capture ve ayrı evidence publication commit'i
+sıradadır. Fixed worker ancak bundan sonra uygulanır.
 Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri
 çıkarılmıştır; AC-03 hâlâ pending'dir.
 

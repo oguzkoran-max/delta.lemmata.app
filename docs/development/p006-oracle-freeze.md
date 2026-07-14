@@ -107,3 +107,5 @@ is also the final row, which cannot detect an implementation that assumes positi
 instead of reading each document role. A strengthened v2 suite must vary document
 lengths, place multiple unknown documents between known rows, and prove that the
 raw-count counterfactual differs before any worker parity claim is evaluated.
+The concrete strengthened design and read-only capture protocol are specified in
+`docs/development/p006-oracle-v2.md`.

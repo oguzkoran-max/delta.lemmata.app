@@ -2,7 +2,7 @@
 
 **Durum:** Kanonik; P005 tamamlandı, P006 R stylo Worker and Computational Parity aktif
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P006 sözleşmeleri ve bağımsız direct-`stylo` oracle donduruldu; fixed worker ve parity henüz doğrulanmadı
+**Aşama:** P006 sözleşmeleri ve oracle v1 donduruldu; ayırt edici v2 fixture/capture kaynağı hazır, fixed worker ve parity henüz doğrulanmadı
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.
