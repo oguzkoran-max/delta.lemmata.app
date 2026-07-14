@@ -1,6 +1,6 @@
 # ADR-0014: Deterministic Preprocessing and Corpus-Health Admission
 
-**Status:** Proposed; explicit HumanDecision required before implementation
+**Status:** Accepted by `HD-20260714-0001`
 
 **Date:** 2026-07-14
 
@@ -26,7 +26,7 @@ Without one P007 boundary, three failures are possible:
 P007 must close those gaps without weakening the accepted P003-P006 contracts or
 claiming that automated checks establish corpus quality.
 
-## Proposed Decision
+## Decision
 
 - Add a versioned profile named `delta-surface-words-v1` with UTF-8/BOM behavior
   inherited from P003, newline normalization, Unicode `str.lower`, NFC restoration,
@@ -52,7 +52,7 @@ claiming that automated checks establish corpus quality.
 - Use the closed severity vocabulary `blocker`, `strong_warning`, and `note`.
   Blockers stop analysis but not content-free audit export. Warnings remain visible
   through later results and exports. Notes are descriptive, not approval.
-- Proposed quantitative rules are: prepared-hash equality for exact duplicates;
+- Quantitative rules are: prepared-hash equality for exact duplicates;
   token 5-shingle SHA-256 Jaccard `>=0.90` for near duplicates; exact contiguous
   overlap `>=200` tokens or `>=20%` of the shorter work for shared passage; work
   length ratio `>4.0`; group count ratio `>3.0`; fewer than six independent works
@@ -70,11 +70,11 @@ claiming that automated checks establish corpus quality.
 - Export content-free configuration, preparation, findings, confound, and admission
   records. P012 remains owner of the complete FAIR-oriented run package.
 
-The complete proposed profile, thresholds, fields, UI wording, and output boundary
+The complete accepted profile, thresholds, fields, UI wording, and output boundary
 are specified in
 `docs/development/p007-preprocessing-corpus-health-contract.md`.
 
-## Alternatives Rejected by the Proposal
+## Alternatives Rejected
 
 ### Reuse P003 Whitespace Token Counts
 
@@ -114,7 +114,7 @@ users to treat an automated score as scientific adequacy.
 Rejected. It changes the declared analysis. Unavailable cells remain
 `not_enough_features`.
 
-## Consequences if Accepted
+## Consequences
 
 - P003 intake must gain a private, direct materialization handoff while retaining
   its existing public payload-free receipt.
@@ -129,10 +129,15 @@ Rejected. It changes the declared analysis. Unavailable cells remain
 
 ## Acceptance Boundary
 
-This ADR is not accepted by the user's generic continuation request. No P007 source
-implementation, fixture freeze, threshold claim, public analysis, or human-owned
-method decision exists until a separate `HD-20260714-*` record explicitly accepts
-or revises the ten-item package in the P007 contract.
+`HD-20260714-0001` accepts the complete ten-item package after the owner was given
+one explicit choice to accept it or identify revisions and replied `devam edelim.`
+The contextual nature of that assent is recorded in the HumanDecision and
+`PE-20260714-0003`; it authorizes schema-first and tests-first P007 implementation.
+
+Acceptance is not preprocessing fixture evidence, corpus adequacy, public
+activation, benchmark validation, FAIR certification, Pinocchio analysis,
+production isolation, manuscript support, or final release acceptance. Those
+claims remain evidence-gated in P007-P015 and ADR-0015.
 
 ## Evidence Links
 
@@ -141,3 +146,5 @@ or revises the ten-item package in the P007 contract.
 - `provenance/evidence/P007/start-validation.md`
 - `prompts/P007-start.md`
 - `provenance/tickets/P007.json`
+- `HD-20260714-0001`
+- `decisions/ADR-0015-accelerated-public-alpha.md`

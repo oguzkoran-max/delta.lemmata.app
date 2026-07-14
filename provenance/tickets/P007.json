@@ -47,9 +47,14 @@
     "EPI-07",
     "EPI-11"
   ],
-  "decision_ids": [],
+  "decision_ids": [
+    "HD-20260714-0001",
+    "HD-20260714-0002"
+  ],
   "prompt_event_ids": [
-    "PE-20260714-0001"
+    "PE-20260714-0001",
+    "PE-20260714-0002",
+    "PE-20260714-0003"
   ],
   "commit_ids": [
     "196c5dff82be80b843ee54a796615ff798d94f38"
@@ -64,10 +69,12 @@
   "supplemental_evidence": [
     "prompts/P007-start.md",
     "decisions/ADR-0014-preprocessing-corpus-health.md",
+    "decisions/ADR-0015-accelerated-public-alpha.md",
     "docs/development/p007-preprocessing-corpus-health-contract.md",
     "provenance/evidence/P007/architecture-method-audit.md",
     "provenance/evidence/P007/start-validation.md",
     "memory/checkpoints/2026-07-14-p007-start.md",
+    "memory/checkpoints/2026-07-14-p007-method-alpha-acceptance.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
@@ -76,8 +83,13 @@
     {
       "id": "P007-AC-01",
       "criterion": "A separate HumanDecision accepts or revises the versioned preprocessing, severity, threshold, minimum-data, materialization, admission, output, and public-wording protocol before implementation fixtures or source code are frozen.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/human-decision-ledger.jsonl",
+        "decisions/ADR-0014-preprocessing-corpus-health.md",
+        "docs/development/p007-preprocessing-corpus-health-contract.md",
+        "memory/checkpoints/2026-07-14-p007-method-alpha-acceptance.md"
+      ]
     },
     {
       "id": "P007-AC-02",
@@ -136,7 +148,8 @@
   ],
   "changed_files": [
     "P007 execution brief, native PromptEvent, four-lens architecture/method audit, detailed proposed preprocessing and corpus-health contract, proposed ADR, active Ticket, checkpoint, and synchronized startup/claim/threat pointers",
-    "Exact opening commit 196c5df passed Linux source, schema, provenance, SBOM/dependency/secret, and canonical-container gates; the result is retained without widening P007 claims"
+    "Exact opening commit 196c5df passed Linux source, schema, provenance, SBOM/dependency/secret, and canonical-container gates; the result is retained without widening P007 claims",
+    "HD-20260714-0001 accepted the bounded P007 method package; HD-20260714-0002 accepted the 2026-07-17 Public-alpha target and August evidence-dependent manuscript-draft target; ADR-0014 and ADR-0015 preserve the separate claim boundaries"
   ],
   "commands": [
     {
@@ -158,7 +171,5 @@
       "evidence": "provenance/evidence/P007/start-validation.md"
     }
   ],
-  "blockers": [
-    "ADR-0014 and the ten-item P007 method package remain Proposed; explicit Oğuz Koran HumanDecision acceptance or revision is required before implementation, fixture freeze, or threshold claims."
-  ]
+  "blockers": []
 }

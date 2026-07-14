@@ -3,7 +3,8 @@
 **Güncellendi:** 2026-07-14
 
 **Aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and Corpus
-Health aktif; implementation, önerilen yöntem paketinin ayrı insan kararını bekliyor
+Health aktif; yöntem paketi kabul edildi ve schema-first/tests-first implementation
+başlıyor
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -22,12 +23,17 @@ benchmark, stability, FAIR run export ve deployment hâlâ yok
 **Aktif ticket:** `provenance/tickets/P007.json` (`in-progress`)
 
 **Sıradaki tek ana iş:**
-`docs/development/p007-preprocessing-corpus-health-contract.md` içindeki on maddelik
-öneriyi Oğuz'a sade Türkçeyle sun. Kabul veya revizyonu ayrı HumanDecision olarak
-kaydet; sonra schema-first ve tests-first uygulamaya geç. ADR-0014 Proposed iken
-implementation, fixture freeze veya threshold claim'i üretme. Public workflow P008,
-benchmark P010/P011, FAIR package P012, Pinokyo P013 ve production isolation P014'te
-kalır.
+Kapalı P007 config, annotation-overlay, preparation-manifest, corpus-health ve
+admission-receipt şemalarını; kanonik modelleri; ayrı structural/semantic
+validator'ları; deterministic preparation ve health golden testlerini uygula.
+Sonra P005 private materialization ve one-time READY admission'a bağla.
+
+**Yeni insan kararları:** `HD-20260714-0001` P007 yöntem paketini kabul etti ve
+ADR-0014 Accepted oldu. `HD-20260714-0002` ile ADR-0015, bütün minimum kapılar
+geçerse 2026-07-17 için açıkça etiketli Public-alpha hedefini ve tamamlanan kanıta
+dayalı Ağustos 2026 tam makale taslağını kabul etti. Hız hedefi başarısız bir
+privacy, admission, calculation, explanation, resource, isolation, rollback veya
+Lemmata smoke kapısını geçersiz kılmaz.
 
 **P007 açılış checkpoint'i:** P006 main merge commit'i `5fab67c`; main CI
 `29354208853` yeşil. `codex/p007-preprocessing` dalında pre-edit gate 1.246 passed,
@@ -37,8 +43,9 @@ FAIR/provenance ve beginner UX'i denetledi. Ana bulgular: payload-free P004 stat
 P007'ye ham metin veremez; P003 bytes P005 private prepare-only workspace'e doğrudan
 bağlanmalıdır; lower-level P005/P006 yolları corpus health'i bypass etmemelidir;
 P006 input yalnız blocker-free, hash-bound, one-time READY receipt ile kurulmalıdır.
-Proposed profil `delta-surface-words-v1`; exact/near/shared-passage, 6-work,
-3-chronology-point, 4:1 length ve 3:1 group eşikleri henüz insan kabulü değildir.
+Accepted profil `delta-surface-words-v1`; exact/near/shared-passage, 6-work,
+3-chronology-point, 4:1 length ve 3:1 group eşikleri Delta v0.1 policy'dir, evrensel
+stilometri yasası değildir.
 
 **P006 closure checkpoint:** Fixed worker ve scientific handoff `f0800c8` ile
 uygulandı. Capture source `79cb268`, read-only capture `29340236382`, evidence-only

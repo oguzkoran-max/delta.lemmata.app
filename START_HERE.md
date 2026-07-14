@@ -3,13 +3,12 @@
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **Güncel aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and
-Corpus Health `codex/p007-preprocessing` dalında açıktır. Aktif kayıt
-`provenance/tickets/P007.json`; ayrıntılı öneri
-`docs/development/p007-preprocessing-corpus-health-contract.md`; karar
-`decisions/ADR-0014-preprocessing-corpus-health.md` içindedir. ADR-0014 Proposed
-durumundadır. Oğuz preprocessing profili, sağlık eşikleri, geçici materialization
-ve zorunlu READY admission sınırını ayrı HumanDecision ile kabul etmeden P007
-implementation kodu yazılmaz.
+Corpus Health `codex/p007-preprocessing` dalında açıktır. `HD-20260714-0001`
+yöntem paketini kabul etti; ADR-0014 Accepted durumundadır ve P007 schema-first,
+tests-first implementation başlamıştır. `HD-20260714-0002` ve ADR-0015, gerekli
+P007, minimum P008/P009 ve minimum P014 kapıları geçerse 2026-07-17 için açıkça
+etiketli Public-alpha hedefini kabul eder; tarih hiçbir başarısız kapıyı geçersiz
+kılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -140,5 +139,6 @@ P006-AC-08 fixture-local sınırda passed durumundadır.
 
 P006 preprocessing, public Start analysis, production limitleri, secure erase veya
 Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P011'i
-bekler. P007 açılış paketi ve dört mercekli denetim hazırdır; sıradaki tek ana iş
-önerilen on maddelik yöntem paketinin Oğuz tarafından kabul veya revize edilmesidir.
+bekler. P007 yöntem paketi kabul edilmiştir; sıradaki tek ana iş kapalı P007
+şemalarını, modellerini, structural/semantic validator'larını ve golden testlerini
+uygulamaktır.

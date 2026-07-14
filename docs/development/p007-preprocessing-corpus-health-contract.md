@@ -1,7 +1,7 @@
 # P007 Preprocessing and Corpus Health Contract
 
-**Status:** Proposed. No implementation authority until a separate HumanDecision
-accepts or revises the human-owned method choices in this document.
+**Status:** Accepted by `HD-20260714-0001`. Implementation is authorized within
+the evidence and claim boundaries in this document.
 
 **Ticket:** P007
 
@@ -41,7 +41,7 @@ explicit.
 
 ## 3. Private Materialization Boundary
 
-### Proposed Architecture
+### Accepted Architecture
 
 - After P003 accepts an upload, validated TXT bytes or validated ZIP member bytes
   are copied directly into a P005-owned `prepare-only` workspace.
@@ -71,7 +71,7 @@ MATERIALIZED -> PREPROCESSED -> HEALTH_CHECKED -> READY
 Only `READY` can issue an analysis-admission receipt. `BLOCKED` can issue a
 content-free audit package but cannot enqueue P006.
 
-## 4. Proposed Canonical Profile
+## 4. Accepted Canonical Profile
 
 Profile identifier: `delta-surface-words-v1`
 
@@ -142,7 +142,7 @@ repair them.
 
 ## 5. Versioned Annotation Overlay
 
-The proposed `corpus-analysis-annotations-v1` overlay binds to the immutable P004
+The accepted `corpus-analysis-annotations-v1` overlay binds to the immutable P004
 inventory digest and adds only fields P007 needs:
 
 | Field | Values | Purpose |
@@ -173,7 +173,7 @@ Severity is a closed, versioned enum:
 The UI must not calculate a quality score or use `clean corpus`, `representative`,
 `unbiased`, `reliable`, or `publication-ready` as an automated verdict.
 
-### 6.1 Proposed Blockers
+### 6.1 Blockers
 
 - Raw digest, inventory digest, identity chain, rights, or preparation binding
   mismatch.
@@ -188,7 +188,7 @@ The UI must not calculate a quality score or use `clean corpus`, `representative
 - Unknown-isolation canary failure.
 - No requested analysis cell has the minimum two eligible known-derived features.
 
-### 6.2 Proposed Strong Warnings
+### 6.2 Strong Warnings
 
 - Fewer than six independent works for general work-level exploration.
 - Fewer than three distinct chronology points for Style Over Time.
@@ -206,7 +206,7 @@ The UI must not calculate a quality score or use `clean corpus`, `representative
 The six-work and three-chronology-point rules are project gates, not universal laws
 of stylometry. They must be described as conservative Delta v0.1 policy.
 
-### 6.3 Proposed Notes
+### 6.3 Notes
 
 - Raw/prepared byte counts, token counts, unique-token counts, and transformation
   totals.
@@ -215,11 +215,12 @@ of stylometry. They must be described as conservative Delta v0.1 policy.
 - Descriptive group sizes and work-length distribution when no warning threshold is
   crossed.
 
-## 7. Proposed Similarity Rules
+## 7. Accepted Similarity Rules
 
-These values require explicit human acceptance before implementation:
+These values were accepted by `HD-20260714-0001` as declared Delta v0.1 policy,
+not as universal laws of stylometry:
 
-| Check | Proposed deterministic rule | Output boundary |
+| Check | Deterministic rule | Output boundary |
 |---|---|---|
 | Exact duplicate | Equal prepared SHA-256 | Pair IDs and equality flag only |
 | Near duplicate | Jaccard similarity of unique SHA-256 token 5-shingles `>= 0.90` | Pair IDs and rounded score; no shingles or text |
@@ -306,7 +307,7 @@ result.
 
 ## 10. FAIR-Oriented, Content-Free Outputs
 
-Proposed downloadable records:
+Downloadable records:
 
 - `delta-preprocessing-config-v1.json`
 - `delta-preparation-manifest-v1.json`
@@ -322,7 +323,7 @@ snippets, token lists, readable server paths, workspace names, session capabilit
 or secret. P012 owns the complete FAIR-oriented run package and clean rerun claim;
 P007 outputs are auditable ingredients, not a FAIR certificate.
 
-## 11. Proposed Schemas and Modules
+## 11. Schemas and Modules
 
 Schemas:
 
@@ -348,7 +349,7 @@ P004, P005, and P006 public contracts must not be silently rewritten.
 
 ## 12. Human Decision Package
 
-Implementation requires one explicit owner decision accepting or revising:
+`HD-20260714-0001` accepts:
 
 1. `delta-surface-words-v1` transformation rules.
 2. Exact-token custom-exclusion behavior.
@@ -361,8 +362,9 @@ Implementation requires one explicit owner decision accepting or revising:
 9. Mandatory READY receipt as the sole P006 admission path.
 10. Beginner-first English wording and content-free output boundary.
 
-Until that decision exists, this contract is a reviewable proposal and P007 source
-implementation is blocked.
+The decision now exists. Implementation may proceed, but each accepted rule still
+requires its own deterministic fixture and cannot be described as validated merely
+because the owner accepted the protocol.
 
 ## 13. Primary Method References
 
@@ -374,5 +376,5 @@ implementation is blocked.
   https://www.cs.princeton.edu/courses/archive/spr05/cos598E/bib/p76-schleimer.pdf
 
 These sources orient the implementation. They do not independently validate the
-project-specific thresholds above; those remain declared Delta policy requiring
-fixture evidence and human ownership.
+project-specific thresholds above; those remain declared, human-owned Delta policy
+requiring fixture evidence before any result claim.

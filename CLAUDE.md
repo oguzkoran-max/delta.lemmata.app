@@ -38,8 +38,9 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 
 P001-P006 bütün acceptance ölçütlerini kendi tanımlı sınırlarında geçerek
 tamamlanmıştır. P007 aktif Ticket'tır:
-`provenance/tickets/P007.json`. Dört mercekli audit, ayrıntılı contract ve
-Proposed ADR-0014 hazırdır. Oğuz ayrı HumanDecision ile preprocessing profili,
-health eşikleri, private materialization ve READY admission sınırını kabul veya
-revize etmeden implementation kodu yazma. Public analysis, benchmark, nihai
-Pinokyo corpus'u, FAIR release ve production deployment sonraki ticket'lardadır.
+`provenance/tickets/P007.json`. `HD-20260714-0001` ayrıntılı contract'ı kabul
+etmiş, ADR-0014 Accepted olmuştur; schema-first/tests-first implementation'a devam
+et. `HD-20260714-0002` ve ADR-0015, minimum P007-P009 ve P014 güvenlik dilimi
+geçerse 2026-07-17 Public-alpha hedefini kabul eder. Public alpha benchmark, nihai
+Pinokyo corpus'u, tam FAIR release, production doğrulaması veya final acceptance
+değildir.

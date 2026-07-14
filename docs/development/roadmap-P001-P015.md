@@ -78,6 +78,12 @@ flowchart TD
 **Operasyon kritik yolu:** P001, P003, P005, P008, P014, P015.  
 **Paralel çalışma:** P002 ve P006, P001 sonrasında ayrı dallarda ilerleyebilir. P013 hak denetimi, corpus metni analize alınmadan önce P004 şemasıyla erkenden başlatılabilir.
 
+**Public-alpha sıralaması:** `ADR-0015` ve `HD-20260714-0002`, tam bilimsel
+release sırasını değiştirmeden sınırlı bir aktivasyon yolu ekler: P007, minimum P008
+gerçek run yolu, minimum P009 sonuç/guardrail yüzeyi ve minimum P014 güvenlik dilimi.
+Hedef 2026-07-17'dir. Bu yol P010-P013, tam P012/P014 veya P015 kanıtını geçmiş
+saymaz; yalnız arayüzde açıkça `Public alpha` ve `experimental` diye etiketlenir.
+
 ## 4. Ticket Sözleşmeleri
 
 ### P001: Repository, Locks, Metadata, and Provenance Scaffold
@@ -292,8 +298,9 @@ P004 inventory identities and P005 process/workspace lifecycle.
 ### P007: Preprocessing and Corpus Health
 
 **Durum:** 2026-07-14 tarihinde `codex/p007-preprocessing` dalında açıldı.
-`provenance/tickets/P007.json` aktiftir. ADR-0014 ve nicel yöntem sınırları
-ayrı HumanDecision beklediği için implementation henüz başlamamıştır.
+`provenance/tickets/P007.json` aktiftir. `HD-20260714-0001` on maddelik yöntem
+paketini kabul etti; ADR-0014 Accepted durumundadır ve schema-first/tests-first
+implementation başlamıştır.
 
 **Amaç:** Analizden önce corpus'un neye dönüştürüldüğünü, hangi riskleri taşıdığını ve analizin durması gerekip gerekmediğini görünür kılmak.
 
@@ -498,6 +505,12 @@ ayrı HumanDecision beklediği için implementation henüz başlamamıştır.
 
 **Bağımlılık:** P005, P008, P009, P012.
 
+`ADR-0015` uyarınca Public alpha öncesinde dar bir P014 güvenlik dilimi P008/P009
+sonrasında öne çekilir. Bu dilim ayrı service/container identity, port, environment,
+volume ve secret sınırı; TLS/strict Host; request/rate/resource/concurrency limitleri;
+worker egress policy; health check; rollback ve Lemmata smoke testini zorunlu kılar.
+Tam P014 ve CE-14/CE-15 iddiaları P012 dahil normal bağımlılıklarını korur.
+
 **Deliverable'lar:**
 
 - Ayrı Delta container, Unix/service identity, network, volume, environment, port ve secret seti.
@@ -557,14 +570,18 @@ ayrı HumanDecision beklediği için implementation henüz başlamamıştır.
 | Dönem | Hedef | Ticket kümesi | Çıkış ölçütü |
 |---|---|---|---|
 | Temmuz 2026 | Temel ve motor | P001-P006 | Güvenli ingestion, kilitli ortam ve `stylo` parity |
-| Ağustos 2026 | Workbench akışları | P007-P009 | Üç workflow uçtan uca, guardrail'li sonuçlar |
-| Eylül-Ekim 2026 | Bilimsel validasyon | P010-P013 | Benchmark, calibration, FAIR export, Pinokyo frozen run |
+| 14-17 Temmuz 2026 | Public alpha adayı | P007, minimum P008-P009, minimum P014 | Gerçek upload-to-result yolu, guardrail, bounded deployment, rollback ve Lemmata smoke testi |
+| Ağustos 2026 | Bilimsel kanıt ve tam makale taslağı | P008-P013 | Üç workflow, benchmark, calibration, FAIR export, Pinokyo frozen run ve yalnız tamamlanan kanıta dayalı tam taslak |
+| Eylül-Ekim 2026 | Yeniden test ve makale revizyonu | P010-P014 | Kilitli testlerin tekrarı, tam deployment kanıtı ve claim audit düzeltmeleri |
 | Kasım 2026 | Uzman ve deployment doğrulaması | P014-P015 walkthrough kısmı | Public-beta gate ve Barış retest tamam |
 | Aralık 2026 | FAIR release | P015 release kısmı | Clean-room, metadata ve arşiv paketi tamam |
-| Ocak 2027 | Makale yazımı ve iç denetim | P015 publication kısmı | 20 soruluk hazırlık turu, taslak, claim audit |
+| Ocak 2027 | Son makale iç denetimi | P015 publication kısmı | Güncel evidence map, disclosure, CRediT ve final claim audit |
 | Şubat 2027 | Gönderim | P015 final | Umanistica Digitale submission package |
 
-Takvim release kapılarını gevşetmez. Bir milestone gecikirse iddia kapsamı küçültülür veya release ertelenir; başarısız kanıt başarı diliyle paketlenmez.
+Takvim release kapılarını gevşetmez. Public alpha işleyen dar bir ürün yüzeyidir;
+scientific release, FAIR release, public beta ve publication readiness değildir. Bir
+milestone gecikirse özellik ve iddia kapsamı küçültülür veya activation/release
+ertelenir; başarısız kanıt başarı diliyle paketlenmez.
 
 ## 6. Değişiklik Kontrolü
 
