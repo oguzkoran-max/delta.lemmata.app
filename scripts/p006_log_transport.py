@@ -27,6 +27,13 @@ MAX_RAW_BYTES = 2 * 1024 * 1024
 MAX_ENVELOPE_BYTES = 4 * 1024 * 1024
 MAX_LOG_BYTES = 8 * 1024 * 1024
 HEX_64 = re.compile(r"^[0-9a-f]{64}$")
+DEFAULT_CHECKSUM_MANIFEST = "oracle-freeze.sha256"
+ALLOWED_CHECKSUM_MANIFESTS = frozenset(
+    {
+        DEFAULT_CHECKSUM_MANIFEST,
+        "worker-evidence.sha256",
+    }
+)
 
 
 def _fail(code: str) -> NoReturn:
@@ -83,9 +90,14 @@ def _safe_relative_path(raw: Any) -> str:
     return raw
 
 
-def _validate_checksum_manifest(files: dict[str, bytes]) -> None:
-    checksum_name = "oracle-freeze.sha256"
-    if checksum_name not in files:
+def _validate_checksum_manifest(
+    files: dict[str, bytes],
+    checksum_name: str,
+) -> None:
+    if checksum_name not in ALLOWED_CHECKSUM_MANIFESTS:
+        _fail("P006_LOG_TRANSPORT_CHECKSUM_INVALID")
+    present = ALLOWED_CHECKSUM_MANIFESTS.intersection(files)
+    if present != {checksum_name}:
         _fail("P006_LOG_TRANSPORT_CHECKSUM_INVALID")
     expected = "".join(
         f"{_sha256_bytes(files[path])}  {path}\n" for path in sorted(files) if path != checksum_name
@@ -94,7 +106,11 @@ def _validate_checksum_manifest(files: dict[str, bytes]) -> None:
         _fail("P006_LOG_TRANSPORT_CHECKSUM_INVALID")
 
 
-def _read_directory(directory: Path) -> dict[str, bytes]:
+def _read_directory(
+    directory: Path,
+    *,
+    checksum_manifest: str = DEFAULT_CHECKSUM_MANIFEST,
+) -> dict[str, bytes]:
     if directory.is_symlink() or not directory.is_dir():
         _fail("P006_LOG_TRANSPORT_DIRECTORY_INVALID")
     files: dict[str, bytes] = {}
@@ -114,7 +130,7 @@ def _read_directory(directory: Path) -> dict[str, bytes]:
         files[relative] = payload
     if not files:
         _fail("P006_LOG_TRANSPORT_FILE_INVALID")
-    _validate_checksum_manifest(files)
+    _validate_checksum_manifest(files, checksum_manifest)
     return files
 
 
@@ -137,8 +153,13 @@ def _bundle(files: dict[str, bytes]) -> bytes:
     return payload
 
 
-def emit(directory: Path, stream: TextIO) -> tuple[str, int, int]:
-    payload = _bundle(_read_directory(directory))
+def emit(
+    directory: Path,
+    stream: TextIO,
+    *,
+    checksum_manifest: str = DEFAULT_CHECKSUM_MANIFEST,
+) -> tuple[str, int, int]:
+    payload = _bundle(_read_directory(directory, checksum_manifest=checksum_manifest))
     digest = _sha256_bytes(payload)
     encoded = base64.b64encode(payload).decode("ascii")
     chunks = [
@@ -226,7 +247,11 @@ def _transport_payload(log_payload: bytes) -> tuple[bytes, str]:
     return payload, digest
 
 
-def _files_from_bundle(payload: bytes) -> dict[str, bytes]:
+def _files_from_bundle(
+    payload: bytes,
+    *,
+    checksum_manifest: str = DEFAULT_CHECKSUM_MANIFEST,
+) -> dict[str, bytes]:
     envelope = _load_json(payload)
     if (
         not isinstance(envelope, dict)
@@ -267,11 +292,16 @@ def _files_from_bundle(payload: bytes) -> dict[str, bytes]:
         if len(decoded) != byte_count or _sha256_bytes(decoded) != digest or total > MAX_RAW_BYTES:
             _fail("P006_LOG_TRANSPORT_BUNDLE_INVALID")
         files[path] = decoded
-    _validate_checksum_manifest(files)
+    _validate_checksum_manifest(files, checksum_manifest)
     return files
 
 
-def extract(log_path: Path, destination: Path) -> tuple[str, int, int]:
+def extract(
+    log_path: Path,
+    destination: Path,
+    *,
+    checksum_manifest: str = DEFAULT_CHECKSUM_MANIFEST,
+) -> tuple[str, int, int]:
     if log_path.is_symlink() or not log_path.is_file():
         _fail("P006_LOG_TRANSPORT_LOG_INVALID")
     if destination.exists() or destination.is_symlink():
@@ -280,8 +310,9 @@ def extract(log_path: Path, destination: Path) -> tuple[str, int, int]:
     if parent.is_symlink() or not parent.is_dir():
         _fail("P006_LOG_TRANSPORT_DESTINATION_INVALID")
     payload, digest = _transport_payload(log_path.read_bytes())
-    files = _files_from_bundle(payload)
+    files = _files_from_bundle(payload, checksum_manifest=checksum_manifest)
     staging = Path(tempfile.mkdtemp(prefix=f".{destination.name}-", dir=parent))
+    published = False
     try:
         for relative, content in sorted(files.items()):
             target = staging.joinpath(*PurePosixPath(relative).parts)
@@ -289,8 +320,17 @@ def extract(log_path: Path, destination: Path) -> tuple[str, int, int]:
             target.write_bytes(content)
             target.chmod(0o644)
         os.replace(staging, destination)
+        published = True
+        if (
+            _read_directory(
+                destination,
+                checksum_manifest=checksum_manifest,
+            )
+            != files
+        ):
+            _fail("P006_LOG_TRANSPORT_PERSISTENCE_INVALID")
     except BaseException:
-        shutil.rmtree(staging, ignore_errors=True)
+        shutil.rmtree(destination if published else staging, ignore_errors=True)
         raise
     return digest, len(files), sum(len(content) for content in files.values())
 
@@ -300,18 +340,36 @@ def main(argv: Sequence[str] | None = None) -> int:
     subparsers = parser.add_subparsers(dest="command", required=True)
     emit_parser = subparsers.add_parser("emit")
     emit_parser.add_argument("directory", type=Path)
+    emit_parser.add_argument(
+        "--checksum-manifest",
+        choices=sorted(ALLOWED_CHECKSUM_MANIFESTS),
+        default=DEFAULT_CHECKSUM_MANIFEST,
+    )
     extract_parser = subparsers.add_parser("extract")
     extract_parser.add_argument("log_path", type=Path)
     extract_parser.add_argument("destination", type=Path)
+    extract_parser.add_argument(
+        "--checksum-manifest",
+        choices=sorted(ALLOWED_CHECKSUM_MANIFESTS),
+        default=DEFAULT_CHECKSUM_MANIFEST,
+    )
     args = parser.parse_args(argv)
     if args.command == "emit":
-        digest, chunks, byte_count = emit(args.directory, stream=sys.stdout)
+        digest, chunks, byte_count = emit(
+            args.directory,
+            stream=sys.stdout,
+            checksum_manifest=args.checksum_manifest,
+        )
         print(
             f"p006-log-transport-emit-ok sha256={digest} chunks={chunks} bytes={byte_count}",
             file=sys.stderr,
         )
     else:
-        digest, files, byte_count = extract(args.log_path, args.destination)
+        digest, files, byte_count = extract(
+            args.log_path,
+            args.destination,
+            checksum_manifest=args.checksum_manifest,
+        )
         print(f"p006-log-transport-extract-ok sha256={digest} files={files} bytes={byte_count}")
     return 0
 

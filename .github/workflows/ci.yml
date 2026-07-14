@@ -49,3 +49,84 @@ jobs:
 
       - name: Build canonical Linux amd64 image
         run: docker build --platform linux/amd64 --file containers/Dockerfile .
+
+  p006-worker-capture:
+    if: github.event_name == 'workflow_dispatch'
+    needs:
+      - verify
+      - container
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out exact source without persisted credentials
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Build and identify the exact capture image
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          test "$(git rev-parse HEAD)" = "$SOURCE_SHA"
+          test -z "$(git status --porcelain)"
+          docker build --platform linux/amd64 \
+            --file containers/Dockerfile \
+            --iidfile .p006-worker-image-id \
+            --tag "delta-p006-worker:$SOURCE_SHA" .
+          image_id=$(cat .p006-worker-image-id)
+          inspected_id=$(docker image inspect \
+            --format '{{.Id}}' "delta-p006-worker:$SOURCE_SHA")
+          test "$image_id" = "$inspected_id"
+
+      - name: Execute, validate, and emit checksum-bound worker evidence
+        env:
+          SOURCE_SHA: ${{ github.sha }}
+        run: |
+          set -eu
+          image="delta-p006-worker:$SOURCE_SHA"
+          image_id=$(cat .p006-worker-image-id)
+          docker run --rm --platform linux/amd64 \
+            --network none \
+            --read-only \
+            --cap-drop ALL \
+            --security-opt no-new-privileges \
+            --pids-limit 64 \
+            --memory 1g \
+            --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,nodev,size=128m,mode=1777 \
+            --tmpfs /capture:rw,noexec,nosuid,nodev,size=16m,mode=0700,uid=1000,gid=1000 \
+            --env P006_SOURCE_COMMIT="$SOURCE_SHA" \
+            --env P006_IMAGE_ID="$image_id" \
+            --env P006_GITHUB_RUN_ID="$GITHUB_RUN_ID" \
+            --env P006_GITHUB_RUN_ATTEMPT="$GITHUB_RUN_ATTEMPT" \
+            --env HOME=/tmp/capture-home \
+            --env TMPDIR=/tmp \
+            --volume "$PWD:/repo:ro" \
+            --entrypoint /bin/sh \
+            "$image" -c '
+              set -eu
+              python=/opt/delta/.venv/bin/python
+              cmp /opt/delta/scripts/workers/p006-stylo-worker-v1.R \
+                /repo/scripts/workers/p006-stylo-worker-v1.R
+              "$python" /repo/scripts/validate_p006_worker_parity.py \
+                --output-directory /capture/worker-evidence \
+                --require-reference-session \
+                --include-boundary-fixture \
+                --source-commit "$P006_SOURCE_COMMIT" \
+                --image-id "$P006_IMAGE_ID" \
+                --github-run-id "$P006_GITHUB_RUN_ID" \
+                --github-run-attempt "$P006_GITHUB_RUN_ATTEMPT"
+              "$python" /repo/scripts/validate_p006_worker_evidence.py \
+                /capture/worker-evidence \
+                --source-commit "$P006_SOURCE_COMMIT" \
+                --image-id "$P006_IMAGE_ID" \
+                --github-run-id "$P006_GITHUB_RUN_ID" \
+                --github-run-attempt "$P006_GITHUB_RUN_ATTEMPT"
+              "$python" /repo/scripts/p006_log_transport.py emit \
+                /capture/worker-evidence \
+                --checksum-manifest worker-evidence.sha256
+            '

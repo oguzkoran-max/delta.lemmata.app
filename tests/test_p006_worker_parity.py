@@ -25,6 +25,10 @@ parity = importlib.import_module("validate_p006_worker_parity")
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "stylo" / "p006-whole-text-v2"
 REFERENCE_DIR = ROOT / "provenance" / "evidence" / "P006" / "oracle-v2" / "direct-reference"
+BOUNDARY_FIXTURE_DIR = ROOT / "tests" / "fixtures" / "stylo" / "p006-whole-text-v1"
+BOUNDARY_REFERENCE_DIR = (
+    ROOT / "provenance" / "evidence" / "P006" / "oracle-v1" / "direct-reference"
+)
 
 
 def load_pair(name: str) -> tuple[WorkerInputV1, DirectStyloOracleV1, WorkerResultV1]:
@@ -207,17 +211,34 @@ def test_injection_request_is_data_and_evidence_package_is_canonical(tmp_path: P
     parity._write_evidence(
         destination,
         {execution.input_file: execution},
+        {execution.input_file: REFERENCE_DIR / "normalization-base.direct.json"},
+        execution,
+        execution,
         {"schema_version": "parity-test"},
         {"schema_version": "leakage-test"},
         {"schema_version": "security-test"},
+        {"schema_version": "boundary-test"},
+        {"schema_version": "failure-test"},
+        parity.CaptureContext(
+            source_commit="a" * 40,
+            image_id="sha256:" + "b" * 64,
+            github_run_id="1",
+            github_run_attempt=1,
+        ),
     )
 
     expected_files = {
+        "boundary-report.json",
+        "direct-reference/normalization-base.direct.json",
+        "failure-report.json",
         "leakage-report.json",
         "parity-report.json",
         "security-report.json",
         "session-info.json",
         "worker-evidence.sha256",
+        "worker-evidence.json",
+        "worker-output/failure-boundary.worker.json",
+        "worker-output/injection.worker.json",
         "worker-output/normalization-base.worker.json",
     }
     actual_files = {
@@ -236,9 +257,20 @@ def test_injection_request_is_data_and_evidence_package_is_canonical(tmp_path: P
         parity._write_evidence(
             destination,
             {execution.input_file: execution},
+            {execution.input_file: REFERENCE_DIR / "normalization-base.direct.json"},
+            execution,
+            execution,
             {},
             {},
             {},
+            {},
+            {},
+            parity.CaptureContext(
+                source_commit="a" * 40,
+                image_id="sha256:" + "b" * 64,
+                github_run_id="1",
+                github_run_attempt=1,
+            ),
         )
 
 
@@ -248,3 +280,138 @@ def test_valid_r_numeric_lexeme_does_not_need_python_byte_canonicalization() -> 
     r_style_payload = python_payload.replace(b'"values":[[0.0,', b'"values":[[0,', 1)
     assert r_style_payload != python_payload
     assert parity._validated_raw_payload(r_style_payload, result) == r_style_payload
+
+
+def test_boundary_report_retains_every_expected_non_complete_fit_and_cell() -> None:
+    request = parse_worker_input(
+        (BOUNDARY_FIXTURE_DIR / "partial-boundaries.input.json").read_bytes()
+    )
+    oracle = parse_direct_stylo_oracle(
+        (BOUNDARY_REFERENCE_DIR / "partial-boundaries.direct.json").read_bytes()
+    )
+    result = parity._oracle_as_worker(oracle)
+    payload = canonical_worker_json(result)
+    execution = parity.FixtureExecution(
+        input_file="partial-boundaries.input.json",
+        request=request,
+        result=result,
+        payload=payload,
+        payload_sha256=parity._sha256_bytes(payload),
+        payload_bytes=len(payload),
+    )
+
+    report = parity._boundary_report(
+        parity._boundary_manifest_entry(),
+        execution,
+        oracle,
+    )
+
+    assert report["claim_boundary"] == "oracle-v1 partial-boundaries retention only"
+    assert report["outcome"] == "partial"
+    assert len(report["expected_non_complete_fits"]) == 3
+    assert len(report["expected_non_complete_cells"]) == 3
+    assert {record["status"] for record in report["expected_non_complete_cells"]} == {
+        "not_enough_features"
+    }
+
+
+def test_derived_failure_probe_predeclares_literal_failed_cells() -> None:
+    source = parse_worker_input((BOUNDARY_FIXTURE_DIR / "complete-base.input.json").read_bytes())
+    request = parity._failure_request(source)
+    oracle = parse_direct_stylo_oracle(
+        (BOUNDARY_REFERENCE_DIR / "complete-base.direct.json").read_bytes()
+    )
+    ranked = parity._expected_ranked_features(request)
+    result = WorkerResultV1.model_validate(
+        {
+            "analysis_unit": request.analysis_unit,
+            "cells": [
+                {
+                    "cell_id": cell.cell_id,
+                    "distance": cell.distance,
+                    "error_code": "fit_unavailable",
+                    "fit_id": cell.fit_id,
+                    "status": "failed",
+                }
+                for cell in request.cells
+            ],
+            "fits": [
+                {
+                    "culling_percent": fit.culling_percent,
+                    "eligible_feature_count": len(ranked),
+                    "error_code": "non_positive_standard_deviation",
+                    "fit_id": fit.fit_id,
+                    "mfw": fit.mfw,
+                    "status": "failed",
+                }
+                for fit in request.fits
+            ],
+            "fitting_basis": {
+                "known_document_ids": [
+                    document.document_id
+                    for document in request.documents
+                    if document.role.value == "known"
+                ],
+                "ranked_features": ranked,
+            },
+            "limit_profile": request.limit_profile,
+            "outcome": "failed",
+            "request_id": request.request_id,
+            "schema_version": "stylo-worker-result-v1",
+            "seed": request.seed,
+            "session": oracle.session,
+            "worker_version": "stylo-worker-v1",
+        }
+    )
+    payload = canonical_worker_json(result)
+    report = parity._failure_report(
+        request,
+        parity.FixtureExecution(
+            input_file=parity.FAILURE_INPUT_FILE,
+            request=request,
+            result=result,
+            payload=payload,
+            payload_sha256=parity._sha256_bytes(payload),
+            payload_bytes=len(payload),
+        ),
+    )
+
+    assert report["outcome"] == "failed"
+    assert len(report["expected_failed_fits"]) == 4
+    assert len(report["expected_failed_cells"]) == 12
+    assert {record["status"] for record in report["expected_failed_cells"]} == {"failed"}
+
+
+def test_capture_metadata_is_path_free_and_binds_critical_inputs() -> None:
+    context = parity.CaptureContext(
+        source_commit="a" * 40,
+        image_id="sha256:" + "b" * 64,
+        github_run_id="29310000000",
+        github_run_attempt=1,
+    )
+    metadata = parity.capture_metadata(context)
+
+    assert metadata["source_commit"] == context.source_commit
+    assert metadata["container_image_id"] == context.image_id
+    assert metadata["capture_profile"]["container_platform"] == "linux/amd64"
+    assert metadata["capture_profile"]["network"] == "none"
+    assert metadata["github"]["job"] == "p006-worker-capture"
+    assert metadata["bindings"]["worker_script_sha256"] == parity._sha256_path(
+        ROOT / "scripts" / "workers" / "p006-stylo-worker-v1.R"
+    )
+    serialized = parity._canonical_json(metadata)
+    assert b"/Users/" not in serialized
+    assert ("/" + "home/runner/").encode() not in serialized
+
+    with pytest.raises(
+        ValueError,
+        match="^P006_WORKER_EVIDENCE_CAPTURE_CONTEXT_INVALID$",
+    ):
+        parity.capture_metadata(
+            parity.CaptureContext(
+                source_commit="invalid",
+                image_id=context.image_id,
+                github_run_id=context.github_run_id,
+                github_run_attempt=context.github_run_attempt,
+            )
+        )

@@ -20,7 +20,11 @@ def transport() -> Any:
     return importlib.import_module("p006_log_transport")
 
 
-def _package(root: Path) -> Path:
+def _package(
+    root: Path,
+    *,
+    checksum_manifest: str = "oracle-freeze.sha256",
+) -> Path:
     package = root / "package"
     direct = package / "direct-reference"
     direct.mkdir(parents=True)
@@ -28,7 +32,7 @@ def _package(root: Path) -> Path:
     (package / "oracle-freeze.json").write_bytes(b'{"schema_version":"test"}\n')
     (package / "session-info.json").write_bytes(b'{"platform":"linux/amd64"}\n')
     retained = sorted(path for path in package.rglob("*") if path.is_file())
-    (package / "oracle-freeze.sha256").write_text(
+    (package / checksum_manifest).write_text(
         "".join(
             f"{hashlib.sha256(path.read_bytes()).hexdigest()}  "
             f"{path.relative_to(package).as_posix()}\n"
@@ -39,9 +43,15 @@ def _package(root: Path) -> Path:
     return package
 
 
-def _log(transport: Any, package: Path, *, prefixed: bool = False) -> str:
+def _log(
+    transport: Any,
+    package: Path,
+    *,
+    prefixed: bool = False,
+    checksum_manifest: str = "oracle-freeze.sha256",
+) -> str:
     stream = io.StringIO()
-    transport.emit(package, stream)
+    transport.emit(package, stream, checksum_manifest=checksum_manifest)
     payload = stream.getvalue()
     if prefixed:
         return "".join(
@@ -85,6 +95,39 @@ def test_emit_rejects_symlinks_and_invalid_internal_checksum(
     (package / "session-info.json").write_bytes(b"changed\n")
     with pytest.raises(ValueError, match="P006_LOG_TRANSPORT_CHECKSUM_INVALID"):
         transport.emit(package, io.StringIO())
+
+
+def test_worker_manifest_round_trip_and_manifest_selection_are_fail_closed(
+    tmp_path: Path, transport: Any
+) -> None:
+    manifest = "worker-evidence.sha256"
+    package = _package(tmp_path, checksum_manifest=manifest)
+    log_path = tmp_path / "worker.log"
+    log_path.write_text(
+        _log(transport, package, checksum_manifest=manifest),
+        encoding="utf-8",
+    )
+
+    destination = tmp_path / "worker-extracted"
+    transport.extract(
+        log_path,
+        destination,
+        checksum_manifest=manifest,
+    )
+    assert (destination / manifest).read_bytes() == (package / manifest).read_bytes()
+
+    with pytest.raises(ValueError, match="P006_LOG_TRANSPORT_CHECKSUM_INVALID"):
+        transport.emit(package, io.StringIO())
+    with pytest.raises(ValueError, match="P006_LOG_TRANSPORT_CHECKSUM_INVALID"):
+        transport.extract(log_path, tmp_path / "wrong-manifest")
+
+    (package / "oracle-freeze.sha256").write_bytes((package / manifest).read_bytes())
+    with pytest.raises(ValueError, match="P006_LOG_TRANSPORT_CHECKSUM_INVALID"):
+        transport.emit(
+            package,
+            io.StringIO(),
+            checksum_manifest=manifest,
+        )
 
 
 @pytest.mark.parametrize("mutation", ["missing", "duplicate", "corrupt", "wrong-end"])
@@ -165,6 +208,30 @@ def test_extract_refuses_existing_destination(tmp_path: Path, transport: Any) ->
 
     with pytest.raises(ValueError, match="P006_LOG_TRANSPORT_DESTINATION_INVALID"):
         transport.extract(log_path, destination)
+
+
+def test_extract_rechecks_persisted_tree_and_removes_drift(
+    tmp_path: Path,
+    transport: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    package = _package(tmp_path)
+    log_path = tmp_path / "job.log"
+    log_path.write_text(_log(transport, package), encoding="utf-8")
+    destination = tmp_path / "persisted"
+    original = transport._read_directory
+
+    def drifted_read(directory: Path, *, checksum_manifest: str) -> dict[str, bytes]:
+        files = original(directory, checksum_manifest=checksum_manifest)
+        if directory == destination:
+            files = dict(files)
+            files["session-info.json"] = b"post-write drift\n"
+        return files
+
+    monkeypatch.setattr(transport, "_read_directory", drifted_read)
+    with pytest.raises(ValueError, match="P006_LOG_TRANSPORT_PERSISTENCE_INVALID"):
+        transport.extract(log_path, destination)
+    assert not destination.exists()
 
 
 def test_transport_envelope_is_canonical_and_schema_bound(tmp_path: Path, transport: Any) -> None:
