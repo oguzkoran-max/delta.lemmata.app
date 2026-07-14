@@ -20,6 +20,7 @@ fi
 "$UV_BIN" run python scripts/generate_p006_fixtures_v2.py --check
 "$UV_BIN" run python scripts/validate_p006_fixture_v2.py
 "$UV_BIN" run python scripts/validate_p006_frozen_oracle.py
+"$UV_BIN" run python scripts/validate_p006_frozen_oracle_v2.py
 "$UV_BIN" run pytest --cov=delta_lemmata --cov-report=term-missing
 "$UV_BIN" run python scripts/check_metadata.py
 "$UV_BIN" run python scripts/validate_records.py

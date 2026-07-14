@@ -72,13 +72,14 @@ parity remains governed by ADR-0013: exact ordered features, matrix tolerance
 
 ## Capture Protocol
 
-The temporary `p006-oracle-v2-capture` job in `.github/workflows/ci.yml` runs only
-for `workflow_dispatch`; the workflow has `contents: read`. Reusing the CI workflow
-is necessary because GitHub permits manual dispatch only for workflow files already
-registered on the default branch. Checkout credentials are not persisted. The job
-restores the locked environment, verifies the source, builds the digest-pinned Linux
-amd64 image, runs the direct-`stylo` oracle twice with no network and a read-only
-root filesystem, and validates both directories.
+At exact source commit `c6a07e1`, the temporary `p006-oracle-v2-capture` job in
+`.github/workflows/ci.yml` ran only for `workflow_dispatch`; the workflow had
+`contents: read`. Reusing the CI workflow was necessary because GitHub permits
+manual dispatch only for workflow files already registered on the default branch.
+Checkout credentials were not persisted. The job restored the locked environment,
+verified the source, built the digest-pinned Linux amd64 image, ran the
+direct-`stylo` oracle twice with no network and a read-only root filesystem, and
+validated both directories.
 
 The first exact-source dispatch, run `29298977429`, completed all computation and
 validation steps but GitHub rejected the final artifact upload because the account's
@@ -110,9 +111,15 @@ The workflow cannot commit or push. Publication is a separate local step:
 7. Remove the temporary manual capture job from normal CI after publication; retain
    it in the exact source commit for replay.
 
+All seven steps are complete. Capture run `29299793944` produced transport envelope
+`c94f84b3...4216c`; evidence-only commit `42fe09b` has `c6a07e1` as its sole parent
+and passed publication CI run `29300077689`. `RUN-20260714-0002` binds the complete
+chain. Current CI no longer contains the temporary capture job and runs the frozen
+v2 validator on every commit.
+
 ## Acceptance Boundary
 
-V2 can establish that the named reference is sensitive to normalization, explicit
+V2 establishes that the named frozen reference is sensitive to normalization, explicit
 roles, unknown leakage, and row permutation. It still does not establish fixed
 worker parity, raw-text preprocessing parity, authorship accuracy, benchmark
 validity, public workflow readiness, production isolation, or general

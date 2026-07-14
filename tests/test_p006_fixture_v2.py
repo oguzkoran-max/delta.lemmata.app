@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import importlib
 import json
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -48,6 +49,29 @@ def test_v2_manifest_binds_exact_cc0_adversarial_inputs(validator: Any) -> None:
         payload = (FIXTURE_DIR / entry["input_file"]).read_bytes()
         assert hashlib.sha256(payload).hexdigest() == entry["input_sha256"]
         assert entry["expected_outcome"] == "complete"
+
+
+def test_retained_v2_oracle_is_commit_and_run_bound(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.syspath_prepend(str(ROOT / "scripts"))
+    frozen = importlib.import_module("validate_p006_frozen_oracle_v2")
+    evidence = ROOT / "provenance" / "evidence" / "P006" / "oracle-v2"
+    frozen.validate_frozen_oracle_v2(evidence)
+
+    altered = tmp_path / "altered-v2"
+    shutil.copytree(evidence, altered)
+    target = altered / "direct-reference" / "normalization-base.direct.json"
+    target.write_bytes(target.read_bytes() + b"\n")
+    with pytest.raises(ValueError, match="P006_FROZEN_ORACLE_V2_CHECKSUM_INVALID"):
+        frozen.validate_frozen_oracle_v2(altered)
+
+    run_record = frozen.RUN_RECORD
+    monkeypatch.setattr(frozen, "RUN_RECORD", tmp_path / "missing-run.json")
+    with pytest.raises(ValueError, match="P006_FROZEN_ORACLE_V2_RUN_INVALID"):
+        frozen.validate_frozen_oracle_v2(evidence)
+    monkeypatch.setattr(frozen, "RUN_RECORD", run_record)
 
 
 def test_v2_topology_uses_explicit_roles_and_unequal_totals(validator: Any) -> None:

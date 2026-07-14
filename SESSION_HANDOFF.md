@@ -4,9 +4,8 @@
 
 **Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
 Worker and Computational Parity aktif; sözleşme/finalizer doğrulandı; bağımsız
-direct-`stylo` oracle v1 donduruldu; adversarial v2 Linux CI'dan geçti, ilk capture
-hesap/validation adımlarını geçti fakat artifact kotası transportu reddetti;
-checksum-bound job-log transport hazır, sayısal v2 freeze henüz yapılmadı
+direct-`stylo` oracle v1 ara kanıt olarak ve adversarial v2 kabul referansı olarak
+checksum ile donduruldu; fixed worker ve parity henüz yapılmadı
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -23,11 +22,8 @@ entegrasyonu hâlâ yok
 
 **Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
 
-**Sıradaki tek ana iş:** Job-log transport source commit'ini normal Linux CI'da
-doğrula; ardından manual read-only capture ile iki ağsız Linux çıktısını
-checksum-bound log envelope olarak üret, yerelde yeniden doğrula ve ayrı evidence
-commit'iyle dondur. Sonra ayrı
-`C.UTF-8` trusted execution profile kullanan fixed `Rscript --vanilla` worker ve
+**Sıradaki tek ana iş:** Ayrı `C.UTF-8` trusted execution profile kullanan fixed
+`Rscript --vanilla` worker ve
 güvenli Python adapter uygula. Guardian
 ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
 P006-AC-03 altında yapılabilir. Preprocessing P007, public workflow P008, benchmark
@@ -73,7 +69,7 @@ Post-freeze method audit, v1'de bütün `token_total` değerlerinin 100 ve tek u
 satırının son konumda olduğunu buldu. Bu nedenle v1 doğru çalışmış fakat kabul için
 yetersiz ara referanstır; v2 üretilmeden worker karşılaştırmasına geçilmez.
 
-**P006 v2 source durumu:** `p006-whole-text-v2` fixture; unequal totals, iki
+**P006 v2 freeze durumu:** `p006-whole-text-v2` fixture; unequal totals, iki
 interleaved unknown, known final row, iki-unknown canary ve order permutation içerir.
 Formula-level raw-count counterfactualı her dört fit ve üç distance family için
 normalized sonuçtan aktiftir. `scripts/validate_p006_fixture_v2.py`, suite-aware
@@ -85,8 +81,11 @@ registration `94fac26` ve normal CI `29298843070` ile yeşildir. Dispatch
 `29298977429` iki oracle koşusu ile validation/package adımını geçti, fakat GitHub
 artifact-storage kotası upload'u reddetti. `p006_log_transport.py` aynı küçük paketi
 canonical, chunked ve SHA-256-bound olarak job logundan taşımak için eklendi; tam
-test/source CI ve yeni capture sıradadır. V2 freeze yoktur; passed AC listesi
-değişmemiştir.
+transport source `c6a07e1`, normal CI `29299641848` ve successful capture
+`29299793944` ile geçti. Envelope `c94f84b3...4216c`, evidence-only commit `42fe09b`
+ve publication CI `29300077689` ile donduruldu. `RUN-20260714-0002` zinciri bağlar;
+kalıcı v2 validator normal verify'a eklendi ve geçici capture job kaldırıldı. V2
+fixed worker karşılaştırması için hazırdır; passed AC listesi değişmemiştir.
 
 **P005 closure checkpoint:** `HD-20260713-0001` ile kabul edilen Git-backed kanal,
 exact Ubuntu capture run `29268150070`, normal source CI `29268150409`, evidence

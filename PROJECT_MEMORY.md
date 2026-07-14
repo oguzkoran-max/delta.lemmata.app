@@ -3,9 +3,8 @@
 **Son güncelleme:** 2026-07-14
 
 **Durum:** P005 tamamlandı; P006 aktif, kapalı worker-sözleşmesi doğrulandı;
-direct-`stylo` oracle v1 donduruldu, adversarial v2 normal Linux CI'dan geçti;
-ilk v2 capture hesap ve doğrulamayı geçti fakat GitHub artifact kotası taşımayı
-reddetti, checksum-bound job-log transport uygulandı; v2 henüz dondurulmadı
+direct-`stylo` oracle v1 ara kanıt olarak, adversarial v2 ise kabul referansı olarak
+checksum ile donduruldu; fixed R worker, Python adapter ve parity sıradadır
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -62,9 +61,10 @@ yöntem denetimi, bütün belge toplamlarının 100 olması ve tek unknown satı
 sonda bulunması nedeniyle v1'in raw-count ve positional-role hatalarını yakalayamadığını
 gösterdi. V1 immutable ara kanıt olarak kalır; unequal totals, raw-count
 counterfactual ayrımı ve interleaved multiple unknown içeren v2 worker'dan önce
-dondurulacaktır. Bu worker parity veya yeni acceptance ölçütü değildir.
+dondurulması gerekiyordu. Bu gereksinim aşağıdaki v2 freeze ile karşılandı; yine de
+bu worker parity veya yeni acceptance ölçütü değildir.
 
-**P006 adversarial oracle v2 source checkpoint'i:** Altı farklı belge toplamı
+**P006 adversarial oracle v2 freeze checkpoint'i:** Altı farklı belge toplamı
 `80/120/150/200/240/320`, iki interleaved unknown, bilinen son satır, iki-unknown
 canary ve aynı belgelerin order permutation girdisi CC0 fixture olarak eklendi. Dört
 complete MFW/culling fitinin her birinde ham-sayım karşı-olgusu normalized sonuçtan
@@ -78,8 +78,13 @@ kaydını taşıyan `94fac26`, normal CI `29298843070` kapılarından geçti. Ex
 GitHub artifact-storage kotası upload'u reddetti ve ephemeral runner kapanınca paket
 tutulmadı. Bunun yerine canonical JSON, per-file SHA-256, numbered chunk, bundle
 SHA-256, path ve internal-manifest doğrulaması yapan `p006_log_transport.py`
-uygulandı. Yeni source CI/capture ve v2 freeze sıradadır; passed AC listesi
-değişmemiştir.
+uygulandı. Transport source `c6a07e1`, normal CI `29299641848` ve capture
+`29299793944` ile geçti. Envelope SHA-256 `c94f84b3...4216c`; evidence-only commit
+`42fe09b` kaynak commit'ini tek parent olarak taşır ve publication CI `29300077689`
+ile geçti. `RUN-20260714-0002` ve `validate_p006_frozen_oracle_v2.py` source,
+environment, input/output, transport ve evidence zincirini bağlar. Geçici capture
+job güncel CI'dan kaldırıldı. V2 artık worker karşılaştırması için sabit referanstır;
+bu tek başına parity veya yeni bir passed AC değildir.
 
 **P005 ara durum:** Foundation ve retention zincirinden sonra guardian implementation
 commit'i `3c746d1` üretildi. Separate guardian, leader ownership, SQLite-bound ACK,

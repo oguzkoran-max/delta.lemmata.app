@@ -39,20 +39,15 @@ def test_temporary_p005_write_workflow_was_removed_after_capture() -> None:
     assert "contents: write" not in normal_ci
 
 
-def test_p006_v2_capture_separates_computation_from_publication_authority() -> None:
+def test_temporary_p006_v2_capture_was_removed_after_publication() -> None:
     workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
-    capture = workflow.split("  p006-oracle-v2-capture:", maxsplit=1)[1]
 
     assert "workflow_dispatch:" in workflow
     assert "contents: read" in workflow
     assert "contents: write" not in workflow
-    assert "if: github.event_name == 'workflow_dispatch'" in capture
-    assert "persist-credentials: false" in capture
-    assert "git push" not in capture
-    assert "git commit" not in capture
-    assert "actions/upload-artifact" not in capture
-    assert "scripts/p006_log_transport.py emit .p006-oracle-v2-evidence" in capture
-    assert "P006_LOG_TRANSPORT" not in capture
+    assert "p006-oracle-v2-capture" not in workflow
+    assert "p006_log_transport.py emit" not in workflow
+    assert "actions/upload-artifact" not in workflow
 
 
 def test_container_base_digest_matches_lock() -> None:

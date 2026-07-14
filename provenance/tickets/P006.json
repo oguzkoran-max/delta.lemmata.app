@@ -62,10 +62,13 @@
     "b5a842fdee5456c7f5f9d0397c0f5a2f7d7a336f",
     "cfacbbd5f95aaf3734c03075eacb887d5f7eeecd",
     "c1ea85245501b4f85e3aa17fd87d406f1dd8eada",
-    "94fac26d9666cd58ac5dd945f82557c7cee9d967"
+    "94fac26d9666cd58ac5dd945f82557c7cee9d967",
+    "c6a07e1b62440d56feabf76fd7c58e4b58b63477",
+    "42fe09b690d953fbcf45fcf48fa6d8f462fb8251"
   ],
   "run_ids": [
-    "RUN-20260714-0001"
+    "RUN-20260714-0001",
+    "RUN-20260714-0002"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -84,8 +87,11 @@
     "docs/development/p006-oracle-freeze.md",
     "docs/development/p006-oracle-v2.md",
     "provenance/evidence/P006/oracle-freeze-validation.md",
+    "provenance/evidence/P006/oracle-v2-freeze-validation.md",
     "memory/checkpoints/2026-07-14-p006-oracle-freeze.md",
+    "memory/checkpoints/2026-07-14-p006-oracle-v2-freeze.md",
     "provenance/runs/RUN-20260714-0001.json",
+    "provenance/runs/RUN-20260714-0002.json",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/local-runtime-limitations.md",
     "docs/research/claim-evidence-matrix.md",
@@ -159,7 +165,8 @@
     "Post-freeze method audit retained v1 as an insufficient intermediate oracle because equal token totals and one final-position unknown cannot detect raw-count or positional-role worker errors; strengthened v2 required before comparison",
     "Adversarial v2 source adds six unequal document totals, two interleaved unknown rows, a known final row, two-unknown canary, order permutation, and formula-level raw-count separation for every complete fit and distance family",
     "The CI-gated manual v2 capture job has read-only repository permission, does not persist checkout credentials, and cannot commit or push",
-    "The first v2 dispatch passed both no-network oracle runs and package validation but GitHub artifact quota rejected transport; a canonical checksum-bound job-log emitter and fail-closed local extractor replace artifact storage without changing publication authority"
+    "The first v2 dispatch passed both no-network oracle runs and package validation but GitHub artifact quota rejected transport; a canonical checksum-bound job-log emitter and fail-closed local extractor replace artifact storage without changing publication authority",
+    "Adversarial v2 evidence is frozen in an evidence-only commit whose sole parent is the exact capture source; the temporary capture job is removed after normal publication CI and a durable offline validator binds source, evidence, Run, environment, and numerical invariants"
   ],
   "commands": [
     {
@@ -257,6 +264,30 @@
       "exit_code": 1,
       "result": "Both exact-source no-network Linux oracle runs and the validation, byte-identity, and freeze-package step passed. The final upload alone failed because GitHub reported the account artifact-storage quota was full; the ephemeral candidate was not retained and no evidence was published from this run.",
       "evidence": "docs/development/p006-oracle-v2.md"
+    },
+    {
+      "command": "./scripts/verify.sh and GitHub Actions CI run 29299641848",
+      "exit_code": 0,
+      "result": "The quota-independent transport source passed 1,103 local tests with 100% measured coverage, metadata, 81 provenance records, repository scanning, frozen-v1 validation, R parsing and lock checks; exact commit c6a07e1 then passed Linux verify, SBOM/dependency audit, and canonical Linux amd64 container jobs.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI workflow_dispatch run 29299793944 and local p006_log_transport.py extraction",
+      "exit_code": 0,
+      "result": "The exact-source oracle ran twice without network and produced byte-identical outputs. V2 scientific validation and freeze packaging passed; 137 log chunks reconstructed canonical envelope c94f84b3...4216c, all six files and the internal checksum passed, and an independent local validator confirmed all 14 historical source hashes and v2 output semantics.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29300077689",
+      "exit_code": 0,
+      "result": "Evidence-only commit 42fe09b passed normal Linux verification, SBOM/dependency audit, and canonical Linux amd64 container construction before the temporary capture job was removed.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh after durable v2 audit integration",
+      "exit_code": 0,
+      "result": "Final local closure passed 1,104 tests, 100% of 7,247 measured statements and 1,902 measured branches, all 82 provenance records, repository scanning, both frozen-oracle validators, R parsing, and the locked R environment gate after the temporary capture job was removed.",
+      "evidence": "provenance/evidence/P006/oracle-v2-freeze-validation.md"
     }
   ],
   "blockers": []
