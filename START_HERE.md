@@ -2,21 +2,22 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P005 Job Lifecycle, Isolation, and Retention sekiz acceptance
-ölçütünün tamamını geçerek kapandı. P006 R `stylo` Worker and Computational Parity
-`codex/p006-stylo-worker` dalında aktif Ticket olarak açıldı. Başlangıç paketi
-schema-first ve validated-finalizer-first ilerler; bilimsel `stylo` parity henüz
-uygulanmadı veya doğrulanmadı. Bağımsız direct-`stylo` oracle v1 checksum ile
-donduruldu; post-freeze audit'in gerektirdiği adversarial v2 fixture ve read-only
-capture zinciri tamamlandı. V2 `RUN-20260714-0002` ve evidence commit `42fe09b` ile
-checksum-frozen referanstır; fixed worker ve parity henüz yoktur.
+**Güncel aşama:** P001-P006 tamamlandı. P006 R `stylo` Worker and Computational
+Parity, sekiz acceptance ölçütünün tamamını fixture-local whole-text sınırında
+geçti. Fixed worker, scientific handoff, retained Linux evidence, normal CI ve
+exact-commit remote clean-clone zinciri `RUN-20260714-0004` ve
+`RUN-20260714-0005` ile kayıtlıdır. Aktif implementation Ticket yoktur. Sıradaki
+planlanan iş P007 Preprocessing and Corpus Health açılış paketidir; P007 Ticket,
+PromptEvent, architecture audit ve kabul edilmiş yöntem sınırı oluşmadan kod
+yazılmaz.
 
 ## 1. Her Oturumda Oku
 
 1. Bu dosya.
 2. `SESSION_HANDOFF.md`.
-3. `docs/development/roadmap-P001-P015.md` içindeki yalnız aktif ticket bölümü.
-4. Aktif ticket'ın `Claim/tehdit bağlantısı` satırında geçen kayıtlar:
+3. `docs/development/roadmap-P001-P015.md` içindeki aktif, yoksa sıradaki planlanan
+   ticket bölümü.
+4. Aktif veya sıradaki ticket'ın `Claim/tehdit bağlantısı` satırında geçen kayıtlar:
    - `docs/research/claim-evidence-matrix.md`
    - `docs/security/threat-model.md`
 5. Ticket'ın etkilediği ADR ve kod/test dosyaları.
@@ -129,22 +130,14 @@ Closure tree `029248b`, normal CI run `29269051028` içinde verify ve canonical
 container işlerinde yeşildir. Tarihsel quota failures değiştirilmeden
 `provenance/evidence/P005/final-ci-validation.md` içinde tutulur.
 
-P006 Ticket, PromptEvent, branch ve accepted ADR-0013 açıktır. Yöntem protokolü
-`HD-20260713-0002` ile kabul edildi. Versioned worker şemaları, strict tek-parse
-parser, semantic validator, saf scientific finalizer ve bounded workspace read
-exact implementation commit `3c6ebe5` ve Linux CI run `29291282495` kapılarında
-geçti. CC0 direct-`stylo` oracle source `7df1fdf`, capture run `29295419981`,
-evidence commit `b5a842f` ve `RUN-20260714-0001` ile iki byte-identical ağsız Linux
-koşusundan donduruldu; geçici write workflow kaldırıldı. Audit, v1'in eşit belge
-uzunluğu ve tek-son-satır unknown nedeniyle iki uygulama hatasını ayırt edemediğini
-buldu. Sıradaki tek iş unequal totals ve interleaved multiple unknown kullanan v2
-referansı dondurmaktı; bu işlem source `c6a07e1`, capture `29299793944`, evidence
-commit `42fe09b`, publication CI `29300077689` ve `RUN-20260714-0002` ile tamamlandı.
-Sıradaki tek iş fixed `Rscript --vanilla` worker ve güvenli Python adapterdır.
-Erken validated-ACK denemesi crash-safe artifact binding taşımadığı için geri
-çıkarılmıştır; AC-03 hâlâ pending'dir.
+P006 kaydı `provenance/tickets/P006.json` içinde `complete` durumundadır. Accepted
+ADR-0013 ve `HD-20260713-0002` yöntemi önceden dondurdu. Fixed worker ve handoff
+commit'i `f0800c8`; retained worker source `79cb268`, capture `29340236382`,
+evidence-only commit `7359cbe` ve `RUN-20260714-0004` zinciriyle doğrulandı.
+Capture job kaldırıldı. Durable audit commit `d676d90`, Linux CI run `29350106890`
+ve exact-commit remote clean-clone `RUN-20260714-0005` ile geçti. P006-AC-01 ile
+P006-AC-08 fixture-local sınırda passed durumundadır.
 
-P005 yalnız sentetik fixture worker ile lifecycle mekanizmasını sınar. P006 da
-preprocessing, public Start analysis, production limitleri, secure erase veya
-Delta-LDA host isolation iddiası kurmaz. Full CE-04 P007'yi, full CE-07 P010/P011'i
-bekler.
+P006 preprocessing, public Start analysis, production limitleri, secure erase veya
+Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P011'i
+bekler. Sıradaki tek ana iş P007'nin tests-first açılış paketi ve yöntem denetimidir.

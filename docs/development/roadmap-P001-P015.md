@@ -250,16 +250,17 @@ P014/P015'e kadar verified değildir. SEC-07, SEC-09, SEC-11, SEC-12, SEC-13.
 
 ### P006: R `stylo` Worker and Computational Parity
 
-**Durum:** In progress, closure gate only; Ticket `provenance/tickets/P006.json`,
-accepted protocol `decisions/ADR-0013-stylo-worker-parity.md`. The fixed worker,
+**Durum:** Complete; Ticket `provenance/tickets/P006.json`, accepted protocol
+`decisions/ADR-0013-stylo-worker-parity.md`. The fixed worker,
 independent CC0 direct-`stylo` references, adversarial v2 fixtures, known-only
 fitting canary, permutation check, failure boundaries, and injection boundary
 passed their declared fixture-local tests. The exact 18-file Linux worker package
 is checksum-bound in evidence-only commit `7359cbe`, normal publication CI passed,
-and the temporary capture job has been removed. P006-AC-07 passes. The remaining
-P006-AC-08 gate is an exact-commit clean-clone verification of the durable audit
-tree; preprocessing, benchmark, public-workflow, FAIR-export, case-study, and
-production claims remain locked to P007-P015.
+and the temporary capture job has been removed. Durable audit commit `d676d90`
+passed normal Linux CI and an exact-commit remote clean-clone replay. P006-AC-01
+through P006-AC-08 pass within the declared fixture-local boundary. Preprocessing,
+benchmark, public-workflow, FAIR-export, case-study, and production claims remain
+locked to P007-P015.
 
 **Amaç:** Kanonik hesaplamayı güvenli, sürümlü ve doğrudan `stylo` referansıyla karşılaştırılabilir R worker içinde çalıştırmak.
 

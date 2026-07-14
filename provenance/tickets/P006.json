@@ -2,9 +2,9 @@
   "schema_version": "1.1.0",
   "ticket_id": "P006",
   "title": "R stylo Worker and Computational Parity",
-  "status": "in-progress",
+  "status": "complete",
   "opened_at_utc": "2026-07-13T18:55:28Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-14T16:57:39Z",
   "objective": "Run versioned whole-text stylometric calculations through a fixed R stylo worker, validate every scientific output before lifecycle success, and establish fixture-local computational parity and known-only fitting invariance without claiming preprocessing, benchmark, or production validation.",
   "scope": [
     "Closed versioned input, output, and error contracts for whole-text feature-count analysis",
@@ -70,13 +70,15 @@
     "d57431bdc8d900feb9f82902b6a74d26c53b4a1b",
     "bb9f05e62d1ff01beb3e03262baf812a63692812",
     "79cb268a348a35c9622efe52cd3a09a829a09b1f",
-    "7359cbe305743623db45777c3f4be059c847a74c"
+    "7359cbe305743623db45777c3f4be059c847a74c",
+    "d676d90aa1bebea6197f2f18b5f988c8e6d11794"
   ],
   "run_ids": [
     "RUN-20260714-0001",
     "RUN-20260714-0002",
     "RUN-20260714-0003",
-    "RUN-20260714-0004"
+    "RUN-20260714-0004",
+    "RUN-20260714-0005"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -106,6 +108,8 @@
     "provenance/evidence/P006/worker-capture-transport.json",
     "provenance/evidence/P006/worker-evidence-validation.md",
     "provenance/evidence/P006/worker-v1/worker-evidence.sha256",
+    "provenance/runs/RUN-20260714-0005.json",
+    "memory/checkpoints/2026-07-14-p006-complete.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/development/local-runtime-limitations.md",
     "docs/research/claim-evidence-matrix.md",
@@ -172,8 +176,13 @@
     {
       "id": "P006-AC-08",
       "criterion": "Exact-commit clean-clone and Linux CI gates pass with full measured source coverage; a separate HumanDecision accepts the fixture, environment, tolerance, and claim protocol before oracle outputs are frozen, while public analysis and P007-P015 claims remain explicitly locked.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P006/worker-evidence-validation.md",
+        "provenance/runs/RUN-20260714-0005.json",
+        "decisions/ADR-0013-stylo-worker-parity.md",
+        "provenance/human-decision-ledger.jsonl"
+      ]
     }
   ],
   "changed_files": [
@@ -199,7 +208,9 @@
     "Two failed read-only capture diagnostics were retained without scientific publication: the first exposed a generic execution rejection and the second isolated renv runtime mutation as CPU-limit exhaustion",
     "Source 79cb268 disabled renv runtime mutation without changing the locked R, stylo, fixtures, methods, tolerances, seed, locale, or worker limits; normal source CI and the read-only capture then passed",
     "Evidence-only commit 7359cbe retained the exact 18-file worker package plus an external checksum-bound transport receipt and passed normal publication CI",
-    "A versioned offline validator now revalidates the persisted package on every verify; the temporary capture job is removed and regression-tested absent while exact-commit clean-clone closure remains pending"
+    "A versioned offline validator now revalidates the persisted package on every verify; the temporary capture job is removed and regression-tested absent",
+    "Durable audit commit d676d90 passed normal Linux CI with all 1,247 tests, worker parity, scientific handoff, 100% measured coverage, SBOM/dependency/secret gates, and canonical Linux amd64 container construction",
+    "The exact audit commit was fetched from the GitHub origin into a fresh remote no-hardlinks detached clone, restored from committed Python and R lockfiles, passed the full local gate, and left no versionable changes; P006-AC-01 through P006-AC-08 are complete within the declared fixture-local boundary"
   ],
   "commands": [
     {
@@ -369,6 +380,18 @@
       "exit_code": 0,
       "result": "Evidence-only commit 7359cbe passed Linux verify job 87136433154 and canonical Linux amd64 container job 87136433144; the one-time capture job skipped on an ordinary push as designed.",
       "evidence": "provenance/evidence/P006/worker-evidence-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29350106890",
+      "exit_code": 0,
+      "result": "Durable audit commit d676d90 passed Linux verify job 87143854938 with all 1,247 tests, fixed-worker parity, scientific handoff, 100% of 7,768 measured statements and 2,080 branches, SBOM/dependency/secret gates, and canonical Linux amd64 container job 87143854913.",
+      "evidence": "provenance/runs/RUN-20260714-0005.json"
+    },
+    {
+      "command": "Remote no-hardlinks clone; detached checkout d676d90; ./scripts/bootstrap.sh; ./scripts/verify.sh; git status --short --untracked-files=all",
+      "exit_code": 0,
+      "result": "The exact audit commit was restored from committed lockfiles in a fresh GitHub-origin clone, passed 1,246 local tests with one declared Linux-only skip and 100% measured coverage, all metadata, provenance, repository, frozen-evidence, R parse, and R lock gates, and left a clean worktree.",
+      "evidence": "provenance/runs/RUN-20260714-0005.json"
     }
   ],
   "blockers": []

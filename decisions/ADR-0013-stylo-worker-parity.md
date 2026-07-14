@@ -1,7 +1,7 @@
 # ADR-0013: Versioned stylo Worker and Parity Protocol
 
-**Status:** Accepted by `HD-20260713-0002`; fixed worker, fixture-local parity,
-and scientific handoff validated; retained closure package remains pending
+**Status:** Accepted by `HD-20260713-0002`; P006 closure complete within the
+fixture-local whole-text worker boundary
 
 **Date:** 2026-07-13
 
@@ -182,12 +182,40 @@ remains P010-P015.
   remain pending until worker outputs and reports are retained in a checksum-bound
   package and a separate exact-commit clean-clone replay is recorded.
 
+## Retained Evidence and Closure, 2026-07-14
+
+- Exact capture source `79cb268a348a35c9622efe52cd3a09a829a09b1f` passed
+  normal Linux CI and read-only capture run `29340236382`.
+- Evidence-only commit `7359cbe305743623db45777c3f4be059c847a74c`
+  retains the exact 18-file worker package and external transport receipt without
+  source-code or workflow changes. `RUN-20260714-0004` binds the source, image,
+  transport, package, environment, reports, and declared claim boundary.
+- The permanent offline validator verifies the evidence commit's exact parent and
+  added-file set, freezes the complete native Run bytes, and replays source commit
+  `79cb268` using that source's own validator and fixtures.
+- Durable audit commit `d676d90aa1bebea6197f2f18b5f988c8e6d11794`
+  removed the temporary capture job and passed GitHub Linux CI run `29350106890`:
+  all 1,247 tests, worker parity, scientific handoff, 100% measured statement and
+  branch coverage, SBOM/dependency/secret gates, and canonical Linux amd64 image
+  construction passed.
+- `RUN-20260714-0005` records a fail-closed exact-commit remote no-hardlinks clone,
+  locked bootstrap, full local verify, explicit clean-worktree assertion, and the
+  successful exact-commit Linux CI result.
+- P006-AC-01 through P006-AC-08 pass only for the named synthetic whole-text
+  fixtures, R 4.5.2, `stylo` 0.7.71, and the fixed worker contract. Full CE-04
+  still requires P007; full CE-07 remains with P010/P011. P007-P015 product and
+  publication claims remain locked.
+
 ## Evidence Links
 
 - `provenance/evidence/P006/architecture-audit.md`
 - `provenance/evidence/P006/start-validation.md`
 - `provenance/evidence/P006/contracts-finalizer-validation.md`
 - `provenance/evidence/P006/worker-handoff-ci.md`
+- `provenance/evidence/P006/worker-evidence-validation.md`
+- `provenance/runs/RUN-20260714-0004.json`
+- `provenance/runs/RUN-20260714-0005.json`
+- `memory/checkpoints/2026-07-14-p006-complete.md`
 - `docs/development/p006-oracle-v2.md`
 - `prompts/P006-start.md`
 - `provenance/tickets/P006.json`

@@ -3,12 +3,12 @@
 ## Result
 
 The fixed R `stylo` worker evidence package is retained, checksum-bound, and
-offline revalidated from its exact outputs and exact source commit. P006-AC-07 is satisfied for the
-named synthetic whole-text fixtures and the recorded Linux environment. This does
-not establish raw-text preprocessing parity, benchmark accuracy, literary-corpus
+offline revalidated from its exact outputs and exact source commit. P006-AC-07 and
+P006-AC-08 are satisfied for the named synthetic whole-text fixtures and the
+recorded environments. P006 is complete within that boundary. This does not
+establish raw-text preprocessing parity, benchmark accuracy, literary-corpus
 validity, public workflow behavior, production isolation, or a general `stylo`
-parity claim. P006-AC-08 remains pending until the durable audit commit passes
-normal CI and an exact-commit clean-clone replay.
+parity claim.
 
 ## Immutable Chain
 
@@ -27,6 +27,10 @@ normal CI and an exact-commit clean-clone replay.
 - Publication CI: run `29347937295`; verify job `87136433154`; container job
   `87136433144`
 - Native Run: `RUN-20260714-0004`
+- Durable audit commit: `d676d90aa1bebea6197f2f18b5f988c8e6d11794`
+- Audit CI: run `29350106890`; verify job `87143854938`; container job
+  `87143854913`
+- Exact-commit clean-clone Run: `RUN-20260714-0005`
 
 The evidence commit has the exact capture source as its sole parent. It adds the
 18-file package under `provenance/evidence/P006/worker-v1/` and one external
@@ -103,20 +107,33 @@ python scripts/p006_log_transport.py extract p006-worker-job.log p006-worker-ext
 python scripts/validate_p006_worker_evidence.py p006-worker-extracted --source-commit 79cb268a348a35c9622efe52cd3a09a829a09b1f --image-id sha256:ecc14f1b5f89228f5d3e14fc00b011ca6899199a521750b7fe8b29d34efbd75e --github-run-id 29340236382 --github-run-attempt 1
 gh run watch 29347937295 --exit-status
 python scripts/validate_p006_worker_evidence.py
+set -eu
+clean_root=$(mktemp -d "${TMPDIR:-/tmp}/delta-p006-clean.XXXXXX")
+git clone --no-hardlinks --no-checkout https://github.com/oguzkoran-max/delta.lemmata.app.git "$clean_root/repository"
+cd "$clean_root/repository"
+git checkout --detach d676d90aa1bebea6197f2f18b5f988c8e6d11794
+./scripts/bootstrap.sh
+./scripts/verify.sh
+test -z "$(git status --porcelain --untracked-files=all)"
+gh run watch 29350106890 --exit-status
 ```
 
-The publication tree passed 1,244 local tests with one canonical-Linux-only skip,
-100% of 7,768 measured statements and 2,080 measured branches, metadata and 83
-record checks, repository scanning, both frozen-oracle validators, R parsing, and
-the locked R environment gate. The same evidence commit then passed normal Linux
-verification, SBOM/dependency/secret checks, and canonical Linux amd64 image
-construction.
+The final audit tree passed 1,246 local tests with one canonical-Linux-only skip,
+100% of 7,768 measured statements and 2,080 measured branches, metadata and 84
+record checks, repository scanning, all frozen-evidence validators, R parsing, and
+the locked R environment gate. The same exact commit passed all 1,247 tests,
+worker parity, scientific handoff, 100% measured coverage, SBOM/dependency/secret
+checks, and canonical Linux amd64 image construction in GitHub-hosted Ubuntu CI.
+It was then fetched from the GitHub origin into a fresh remote no-hardlinks clone,
+restored from committed Python and R lockfiles, reverified, and left a clean
+post-run worktree.
 
-## Remaining Boundary
+## Closure Boundary
 
 The one-time `p006-worker-capture` job is removed after evidence publication and a
 regression test requires it to remain absent. The retained package remains
-replayable from source commit `79cb268`. Exact-commit clean-clone verification is
-the remaining P006 acceptance step. Public upload-to-analysis, preprocessing,
+replayable from source commit `79cb268`. Public upload-to-analysis, preprocessing,
 benchmark calibration, stability labels, FAIR run export, Pinocchio, and production
-deployment remain locked to P007-P015.
+deployment remain locked to P007-P015. CE-04 remains fixture-local until P007, and
+CE-07 remains limited to worker-level changed-unknown fitting invariance until
+P010 and P011.

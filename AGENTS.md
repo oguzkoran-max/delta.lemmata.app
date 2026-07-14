@@ -4,8 +4,8 @@ Bu dizinde çalışan tüm Codex ve diğer ajanlar önce şu minimum paketi okur
 
 1. START_HERE.md
 2. SESSION_HANDOFF.md
-3. docs/development/roadmap-P001-P015.md içindeki aktif ticket bölümü
-4. Aktif ticket'ta işaretlenen claim, threat ve ADR kayıtları
+3. docs/development/roadmap-P001-P015.md içindeki aktif, yoksa sıradaki planlanan ticket bölümü
+4. Aktif veya sıradaki ticket'ta işaretlenen claim, threat ve ADR kayıtları
 
 DEVELOPMENT_CONTRACT.md ve PROJECT_MEMORY.md; mimari/yöntem kararı, belge çelişkisi, P000/P015 kapanışı, release veya START_HERE.md içinde sayılan özel durumlarda tamamen okunur. Bu yönlendirme bağlam tasarrufu içindir; kanonik sözleşmenin otoritesini değiştirmez.
 
@@ -13,13 +13,14 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P000-P005 kapanmıştır. Tek aktif implementation Ticket P006'dır. Başlangıç paketi
-  ve `HD-20260713-0002` geçmiştir; sözleşme checkpoint'i exact Linux CI ile
-  dondurulmuş, bağımsız direct-`stylo` oracle checksum ile tutulmuştur. Fixed worker
-  çıktısını bu oracle ile bağımsız karşılaştırma geçmeden parity kanıtı sayma.
-- V1 oracle eşit token toplamları ve tek-son-satır unknown nedeniyle final parity
-  için yetersiz ara kanıttır. Fixed worker'dan önce unequal totals, iki interleaved
-  unknown ve order permutation içeren v2'yi read-only capture ile dondur.
+- P001-P006 kapanmıştır. Aktif implementation Ticket yoktur. Sıradaki planlanan
+  iş P007 Preprocessing and Corpus Health açılış paketidir. PromptEvent, Ticket,
+  architecture/method audit ve accepted preprocessing boundary olmadan P007 kodu
+  yazma.
+- P006 fixture-local worker parity, retained Linux package, scientific handoff,
+  exact-commit Linux CI ve remote clean-clone kapılarını geçti. Bu kanıtı
+  preprocessing, benchmark, public workflow, FAIR export, Pinokyo veya production
+  iddiasına genişletme.
 - P003/P004 kanıtını production retention, gerçek `stylo` veya host isolation kanıtı gibi genişletme.
 - P005'te application-managed deletion ile secure erase, snapshot, swap, backup veya production isolation iddiasını karıştırma.
 - Aynı anda yalnız bir aktif P-ticket ve tek güncel handoff tut.

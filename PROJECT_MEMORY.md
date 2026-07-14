@@ -2,18 +2,29 @@
 
 **Son güncelleme:** 2026-07-14
 
-**Durum:** P005 tamamlandı; P006 aktif, kapalı worker-sözleşmesi doğrulandı;
-direct-`stylo` oracle v1 ara kanıt olarak, adversarial v2 ise kabul referansı olarak
-checksum ile donduruldu; fixed R worker, Python adapter ve parity sıradadır
+**Durum:** P001-P006 tamamlandı; aktif implementation Ticket yoktur. Sıradaki
+planlanan ticket P007 Preprocessing and Corpus Health'tir
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
 workspace, guardian-managed POSIX process control, durable terminal ACK,
 execution-bound recovery receipt ve conservative lifecycle projection var. P006
-input/result/fatal-error modelleri, strict parser, semantic validator, saf scientific
-finalizer, güvenli bounded workspace read ve CC0 direct-`stylo` oracle kanıtı var;
-public analiz, fixed R worker, parity ve durable scientific-result entegrasyonu henüz
-yok
+fixed R worker, shell-free Python adapter, strict contracts, scientific finalizer,
+known-only fitting, checksum-frozen direct-`stylo` referansları, retained Linux
+worker evidence ve crash-safe scientific-result handoff ekledi. Public analiz,
+preprocessing, corpus-health, benchmark ve stability katmanları henüz yoktur
+
+**P006 completion checkpoint:** Capture source `79cb268`, read-only run
+`29340236382`, evidence-only commit `7359cbe` ve `RUN-20260714-0004` exact 18-file
+worker paketini bağlar. Permanent validator evidence commit parent/file setini,
+tam Run baytlarını ve source commit'in kendi validator replay'ini denetler. Durable
+audit commit `d676d90`, Linux CI `29350106890` içinde 1.247 test, worker parity,
+scientific handoff, 7.768 statement, 2.080 branch, yüzde 100 coverage,
+SBOM/dependency/secret ve canonical container kapılarını geçti. Aynı commit GitHub
+origin'den fresh remote no-hardlinks detached clone'a alındı; bootstrap ve full
+verify geçti, post-run tree temiz kaldı (`RUN-20260714-0005`). P006-AC-01 ile
+P006-AC-08 passed; claim yalnız named synthetic whole-text fixture, R 4.5.2 ve
+`stylo` 0.7.71 sınırındadır. P007-P015 iddiaları kilitlidir.
 
 **P006 başlangıcı:** `codex/p006-stylo-worker` dalı ve
 `provenance/tickets/P006.json` açıldı. Dört kullanılabilir read-only mercek ile
@@ -36,7 +47,7 @@ candidate-overlap geçerlidir fakat fitting'i etkileyemez. Üç bağımsız dene
 aggregate-count, dev JSON integer, FIFO, çift JSON parse, culling sınırı, unknown
 canary, denominator ve UTF-8 tie açıklarını buldu; tamamı kapatıldı. Aynı denetim,
 erken guardian entegrasyonunun artifact kimliği ve crash recovery taşımadığını
-gösterdiği için bu kod geri çıkarıldı. P006-AC-03 açık kalır; generic P005 ACK
+gösterdiği için bu kod geri çıkarıldı. Bu checkpointte P006-AC-03 açık kaldı; generic P005 ACK
 bilimsel başarı kanıtı değildir. Son yerel kapı 1.073 test, 7.215 statement ve
 1.898 branch ile ilk düzeltmeleri geçti; son bilimsel yeniden denetimde erişilebilir
 Delta uzaklıklarını kesen keyfi `1e12` sınırı da kaldırıldı. Güncel doğrulama 1.075
@@ -44,7 +55,8 @@ test, 7.216 statement ve 1.898 branch ile yüzde 100 geçti. Exact implementatio
 commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`, GitHub Actions run
 `29291282495` içinde verify, SBOM/dependency audit ve canonical Linux amd64
 container kapılarından geçti.
-P006-AC-01 ve P006-AC-05 bu dar kanıtla geçti; R worker, parity ve AC-03 açıktır.
+Bu checkpointte P006-AC-01 ve P006-AC-05 dar kanıtla geçti; R worker, parity ve
+AC-03 sonraki P006 adımlarına açık kaldı.
 
 **P006 bağımsız oracle checkpoint'i:** CC0 sentetik whole-text suite; complete base,
 unknown-canary ve culling-boundary girdileriyle worker'dan önce donduruldu. Oracle

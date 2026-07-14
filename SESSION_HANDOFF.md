@@ -2,10 +2,8 @@
 
 **Güncellendi:** 2026-07-14
 
-**Aşama:** P005 Job Lifecycle, Isolation, and Retention tamamlandı; P006 R `stylo`
-Worker and Computational Parity aktif; sözleşme/finalizer doğrulandı; bağımsız
-direct-`stylo` oracle v1 ara kanıt olarak ve adversarial v2 kabul referansı olarak
-checksum ile donduruldu; fixed worker ve parity henüz yapılmadı
+**Aşama:** P001-P006 tamamlandı. Aktif implementation Ticket yoktur; sıradaki
+planlanan iş P007 Preprocessing and Corpus Health açılış paketidir
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -14,20 +12,31 @@ process controller, kalıcı content-free deletion ledger, continuous fake-clock
 janitor, ayrı app-loss guardian, durable SQLite terminal ACK ve execution-bound
 recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict tek-parse
 parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
-finalizer, bounded no-follow workspace read ve checksum-frozen direct-`stylo` oracle
-var; public analysis, fixed R worker, parity ve durable scientific-result
-entegrasyonu hâlâ yok
+finalizer, bounded no-follow workspace read, fixed R worker, shell-free adapter,
+checksum-frozen direct-`stylo` oracle, retained worker package ve crash-safe
+scientific-result handoff var. Public analysis, preprocessing, corpus health,
+benchmark, stability, FAIR run export ve deployment hâlâ yok
 
-**Son tamamlanan ticket:** `provenance/tickets/P005.json` (`complete`)
+**Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif ticket:** `provenance/tickets/P006.json` (`in-progress`)
+**Aktif ticket:** Yok
 
-**Sıradaki tek ana iş:** Ayrı `C.UTF-8` trusted execution profile kullanan fixed
-`Rscript --vanilla` worker ve
-güvenli Python adapter uygula. Guardian
-ACK entegrasyonu ancak artifact digest/size binding ve crash recovery protokolüyle
-P006-AC-03 altında yapılabilir. Preprocessing P007, public workflow P008, benchmark
-P010/P011, FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
+**Sıradaki tek ana iş:** P007 için PromptEvent, Ticket, architecture/method audit,
+accepted preprocessing boundary ve tests-first opening package oluştur. P007
+açılmadan preprocessing kodu yazma. Public workflow P008, benchmark P010/P011,
+FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
+
+**P006 closure checkpoint:** Fixed worker ve scientific handoff `f0800c8` ile
+uygulandı. Capture source `79cb268`, read-only capture `29340236382`, evidence-only
+commit `7359cbe` ve `RUN-20260714-0004` exact worker package'ını bağlar. Geçici
+capture job kaldırıldı. Durable audit commit `d676d90`, normal Linux CI
+`29350106890` içinde verify job `87143854938`, container job `87143854913`, tüm
+1.247 test, worker parity, scientific handoff, yüzde 100 measured coverage ve
+SBOM/dependency/secret kapılarından geçti. Aynı commit GitHub origin'den fresh
+remote no-hardlinks clone'a alındı; bootstrap/full verify geçti ve post-run tree
+temiz kaldı (`RUN-20260714-0005`). P006-AC-01 ile P006-AC-08 fixture-local sınırda
+passed. Preprocessing parity, benchmark accuracy, public workflow, FAIR export,
+Pinokyo ve production iddiaları çıkarılamaz.
 
 **P006 başlangıç bulgusu:** Process exit zero bilimsel başarı değildir. Guardian ACK
 öncesi output schema ve scientific invariant doğrulaması gerekir. stylo 0.7.71
@@ -42,8 +51,8 @@ mimari blocker buldu. Aggregate count ayrı 150 milyon sınırına alındı; bü
 integer fail-closed oldu; zero-overlap projection, culling equality, unknown-only
 feature, token-total denominator ve UTF-8 tie testleri eklendi; FIFO pre-open
 reddi, nonblocking read, tek JSON parse ve current-area rebinding uygulandı. Erken
-validated-ACK kodu crash-safe olmadığı için tamamen çıkarıldı ve AC-03 pending
-kaldı. Ara local `./scripts/verify.sh`: 1.073 test, 7.215 statement, 1.898 branch,
+validated-ACK kodu crash-safe olmadığı için tamamen çıkarıldı ve AC-03 bu ara
+checkpointte pending kaldı. Ara local `./scripts/verify.sh`: 1.073 test, 7.215 statement, 1.898 branch,
 yüzde 100 kapsam kapısında geçti. Son bilimsel yeniden denetim, erişilebilir Classic
 Delta değerlerini kesen keyfi `1e12` sınırını buldu; sınır finite IEEE-754 double
 alanına çıkarıldı ve `>1e12` regresyonu eklendi. Normal dosyadan FIFO'ya pre-open
@@ -54,7 +63,8 @@ verdi.
 Exact implementation commit `3c6ebe539b6c0a7f28c295cdcd74bc7e58135f6f`,
 GitHub Actions run `29291282495` içinde verify job `86955214522`, SBOM/dependency
 audit ve canonical Linux amd64 container job `86955214531` kapılarından geçti.
-P006-AC-01 ve P006-AC-05 passed; AC-03 ve worker/parity ölçütleri pending kaldı.
+Bu ara checkpointte P006-AC-01 ve P006-AC-05 passed; AC-03 ve worker/parity
+ölçütleri sonraki P006 adımlarına pending kaldı.
 
 **P006 oracle checkpoint'i:** Source `7df1fdf` normal CI `29295419945` ve
 one-time capture `29295419981` kapılarından geçti. Locked Linux amd64 oracle iki kez
