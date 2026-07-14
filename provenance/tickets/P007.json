@@ -51,7 +51,9 @@
   "prompt_event_ids": [
     "PE-20260714-0001"
   ],
-  "commit_ids": [],
+  "commit_ids": [
+    "196c5dff82be80b843ee54a796615ff798d94f38"
+  ],
   "run_ids": [],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -133,7 +135,8 @@
     }
   ],
   "changed_files": [
-    "P007 execution brief, native PromptEvent, four-lens architecture/method audit, detailed proposed preprocessing and corpus-health contract, proposed ADR, active Ticket, checkpoint, and synchronized startup/claim/threat pointers"
+    "P007 execution brief, native PromptEvent, four-lens architecture/method audit, detailed proposed preprocessing and corpus-health contract, proposed ADR, active Ticket, checkpoint, and synchronized startup/claim/threat pointers",
+    "Exact opening commit 196c5df passed Linux source, schema, provenance, SBOM/dependency/secret, and canonical-container gates; the result is retained without widening P007 claims"
   ],
   "commands": [
     {
@@ -146,6 +149,12 @@
       "command": "./scripts/verify.sh",
       "exit_code": 0,
       "result": "The complete P007 proposed opening package passed 1,246 tests with one documented macOS canonical-worker skip, 100% of 7,768 statements and 2,080 branches, strict typing, metadata, 87 provenance records, repository scanning, frozen P006 evidence validators, and the locked R boundary; no production source or scientific fixture changed.",
+      "evidence": "provenance/evidence/P007/start-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29360053798",
+      "exit_code": 0,
+      "result": "Exact P007 opening commit 196c5df passed pinned Linux source verification, full measured coverage, metadata, schemas, 87 provenance records, frozen P006 validators, SBOM/dependency/secret gates, and canonical Linux amd64 container construction.",
       "evidence": "provenance/evidence/P007/start-validation.md"
     }
   ],

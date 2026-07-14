@@ -65,3 +65,19 @@ HumanDecision accepting or revising the preprocessing profile, health severities
 quantitative thresholds, minimum-data gates, temporary materialization boundary,
 mandatory admission receipt, and public wording. The opening package itself cannot
 be cited as preprocessing parity, corpus adequacy, FAIR compliance, or acceptance.
+
+## Exact Opening-Commit CI
+
+GitHub Actions run `29360053798` passed for exact opening commit
+`196c5dff82be80b843ee54a796615ff798d94f38`:
+
+- verify job `87177532222` passed in 3 minutes 5 seconds, including pinned Python
+  and R restoration, source tests, full measured coverage, metadata, schemas,
+  87 provenance records, frozen P006 validators, SBOM generation, dependency audit,
+  and secret/repository scanning;
+- container job `87177532249` built the canonical Linux amd64 image in 2 minutes
+  55 seconds.
+
+This run verifies the P007 opening records on Linux. It does not execute P007
+preprocessing, accept ADR-0014, validate a corpus, activate analysis, or establish a
+P007 claim.
