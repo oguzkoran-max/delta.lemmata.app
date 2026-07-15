@@ -75,7 +75,7 @@ _WORKFLOW_COMPONENT_DOMAIN = b"resolved-workflow-component-v1"
 _OPERATION_DOMAIN = b"analysis-admission-operation-v1"
 _INDEX_DOMAIN = b"delta-lemmata\x00prepared-request-index\x00v2"
 PREPARED_REQUEST_INDEX_COMPONENT = hashlib.sha256(_INDEX_DOMAIN).hexdigest()
-_INDEX_MAX_BYTES = 2048
+PREPARED_REQUEST_INDEX_MAX_BYTES = 2048
 
 
 class PreparedCorpusErrorCode(StrEnum):
@@ -124,7 +124,7 @@ class _PreparationBundle:
     candidates: CandidateInventory = field(repr=False)
 
 
-class _PreparedRequestIndex(BaseModel):
+class PreparedRequestIndexV2(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
     schema_version: Literal["prepared-stylo-request-index-v2"]
@@ -192,7 +192,7 @@ def _binding(document: PreparedDocument) -> ReceiptDocumentBinding:
     )
 
 
-def _index_payload(index: _PreparedRequestIndex) -> bytes:
+def canonical_prepared_request_index(index: PreparedRequestIndexV2) -> bytes:
     return json.dumps(
         index.model_dump(mode="json"),
         ensure_ascii=True,
@@ -721,7 +721,7 @@ class PreparedCorpusService:
     ) -> None:
         request_payload = canonical_worker_json(request)
         workflow_config_payload = canonical_p008_json(resolved_workflow_config)
-        index = _PreparedRequestIndex(
+        index = PreparedRequestIndexV2(
             schema_version="prepared-stylo-request-index-v2",
             request_component=request_component,
             request_byte_count=len(request_payload),
@@ -730,16 +730,16 @@ class PreparedCorpusService:
             workflow_config_byte_count=len(workflow_config_payload),
             workflow_config_sha256=hashlib.sha256(workflow_config_payload).hexdigest(),
         )
-        expected_index = _index_payload(index)
+        expected_index = canonical_prepared_request_index(index)
         existing_index = self._workspaces.read_file(
             layout,
             WorkspaceArea.WORK,
             PREPARED_REQUEST_INDEX_COMPONENT,
-            maximum_bytes=_INDEX_MAX_BYTES,
+            maximum_bytes=PREPARED_REQUEST_INDEX_MAX_BYTES,
         )
         if existing_index is not None:
             try:
-                parsed = _PreparedRequestIndex.model_validate_json(existing_index)
+                parsed = PreparedRequestIndexV2.model_validate_json(existing_index)
             except ValidationError:
                 raise _error(PreparedCorpusErrorCode.INTEGRITY) from None
             existing_request = self._workspaces.read_file(
@@ -778,7 +778,7 @@ class PreparedCorpusService:
             layout=layout,
             component=PREPARED_REQUEST_INDEX_COMPONENT,
             payload=expected_index,
-            maximum_bytes=_INDEX_MAX_BYTES,
+            maximum_bytes=PREPARED_REQUEST_INDEX_MAX_BYTES,
         )
 
     @_content_free
@@ -901,8 +901,11 @@ class PreparedCorpusService:
 
 __all__ = [
     "PREPARED_REQUEST_INDEX_COMPONENT",
+    "PREPARED_REQUEST_INDEX_MAX_BYTES",
     "PreparationOutcome",
     "PreparedCorpusError",
     "PreparedCorpusErrorCode",
     "PreparedCorpusService",
+    "PreparedRequestIndexV2",
+    "canonical_prepared_request_index",
 ]

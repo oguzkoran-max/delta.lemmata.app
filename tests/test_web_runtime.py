@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from delta_lemmata import web_runtime as runtime_module
+from delta_lemmata.analysis_orchestrator import AnalysisOrchestrator
 from delta_lemmata.corpus_materialization import CorpusMaterializationService
 from delta_lemmata.job_janitor import JobJanitor
 from delta_lemmata.prepared_corpus_service import PreparedCorpusService
@@ -17,6 +18,7 @@ from delta_lemmata.web_runtime import (
 
 STORE_SECRET = "11" * 32
 AUTHORITY_SECRET = "22" * 32
+RECOVERY_SECRET = "33" * 32
 
 
 def _private(path: Path) -> Path:
@@ -31,6 +33,7 @@ def _production(root: Path) -> dict[str, str]:
         "DELTA_RUNTIME_ROOT": str(root),
         "DELTA_JOB_OWNER_SECRET_HEX": STORE_SECRET,
         "DELTA_PREPARATION_AUTHORITY_SECRET_HEX": AUTHORITY_SECRET,
+        "DELTA_RECOVERY_RECEIPT_SECRET_HEX": RECOVERY_SECRET,
     }
 
 
@@ -50,6 +53,7 @@ def test_development_runtime_uses_a_private_temporary_root_and_closes_it(
         "DELTA_RUNTIME_ROOT",
         "DELTA_JOB_OWNER_SECRET_HEX",
         "DELTA_PREPARATION_AUTHORITY_SECRET_HEX",
+        "DELTA_RECOVERY_RECEIPT_SECRET_HEX",
     ):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("DELTA_ENV", "test")
@@ -60,6 +64,7 @@ def test_development_runtime_uses_a_private_temporary_root_and_closes_it(
     root = Path(temporary.name).resolve(strict=True)
     assert isinstance(runtime.materializations, CorpusMaterializationService)
     assert isinstance(runtime.prepared_corpora, PreparedCorpusService)
+    assert isinstance(runtime.analyses, AnalysisOrchestrator)
     assert isinstance(runtime.janitor, JobJanitor)
     runtime.maintain()
     assert stat_mode(root) == 0o700
@@ -107,7 +112,7 @@ def test_profile_and_required_production_root_fail_closed(
     _expect(environment, code)
 
 
-def test_production_requires_two_distinct_valid_secrets(tmp_path: Path) -> None:
+def test_production_requires_three_distinct_valid_secrets(tmp_path: Path) -> None:
     root = _private(tmp_path / "runtime")
     base = _production(root)
 
@@ -127,6 +132,10 @@ def test_production_requires_two_distinct_valid_secrets(tmp_path: Path) -> None:
     reused = dict(base)
     reused["DELTA_PREPARATION_AUTHORITY_SECRET_HEX"] = STORE_SECRET.upper()
     _expect(reused, WebRuntimeErrorCode.SECRET_REUSE)
+
+    reused_recovery = dict(base)
+    reused_recovery["DELTA_RECOVERY_RECEIPT_SECRET_HEX"] = AUTHORITY_SECRET
+    _expect(reused_recovery, WebRuntimeErrorCode.SECRET_REUSE)
 
     _expect(
         {"DELTA_ENV": "test", "DELTA_JOB_OWNER_SECRET_HEX": "a"},

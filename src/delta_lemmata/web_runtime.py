@@ -12,6 +12,7 @@ from enum import StrEnum
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
+from delta_lemmata.analysis_orchestrator import AnalysisOrchestrator
 from delta_lemmata.clock import SystemClock
 from delta_lemmata.corpus_materialization import CorpusMaterializationService
 from delta_lemmata.job_janitor import JobJanitor
@@ -19,7 +20,9 @@ from delta_lemmata.job_service import JobService
 from delta_lemmata.job_store import SQLiteJobStore
 from delta_lemmata.job_workspace import WorkspaceManager
 from delta_lemmata.prepared_corpus_service import PreparedCorpusService
+from delta_lemmata.recovery_receipt import RecoveryReceiptStore
 from delta_lemmata.session_identity import MINIMUM_OWNER_SECRET_BYTES
+from delta_lemmata.stylo_job_runner import StyloJobRunner
 
 _SECRET_HEX = re.compile(r"[0-9a-fA-F]+\Z")
 _RUNTIME_PROFILES = frozenset({"development", "test", "production"})
@@ -51,6 +54,7 @@ class WebRuntime:
 
     materializations: CorpusMaterializationService
     prepared_corpora: PreparedCorpusService
+    analyses: AnalysisOrchestrator
     janitor: JobJanitor
     _temporary_directory: TemporaryDirectory[str] | None = field(default=None, repr=False)
 
@@ -162,6 +166,10 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
         root = _private_directory(root, create=profile != "production")
         database_root = _private_directory(root / "database", create=True)
         workspace_root = _private_directory(root / "workspaces", create=True)
+        recovery_receipt_root = _private_directory(
+            root / "recovery-receipts",
+            create=True,
+        )
         store_secret = _secret(
             values,
             "DELTA_JOB_OWNER_SECRET_HEX",
@@ -172,7 +180,17 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
             "DELTA_PREPARATION_AUTHORITY_SECRET_HEX",
             required=profile == "production",
         )
-        if secrets.compare_digest(store_secret, authority_secret):
+        recovery_receipt_secret = _secret(
+            values,
+            "DELTA_RECOVERY_RECEIPT_SECRET_HEX",
+            required=profile == "production",
+        )
+        secrets_are_distinct = (
+            not secrets.compare_digest(store_secret, authority_secret)
+            and not secrets.compare_digest(store_secret, recovery_receipt_secret)
+            and not secrets.compare_digest(authority_secret, recovery_receipt_secret)
+        )
+        if not secrets_are_distinct:
             raise _error(WebRuntimeErrorCode.SECRET_REUSE)
 
         clock = SystemClock()
@@ -181,8 +199,17 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
             owner_secret=store_secret,
         )
         workspaces = WorkspaceManager(workspace_root)
+        recovery_receipts = RecoveryReceiptStore(
+            recovery_receipt_root,
+            signing_secret=recovery_receipt_secret,
+        )
         jobs = JobService(store=store, workspaces=workspaces, clock=clock)
-        janitor = JobJanitor(store=store, workspaces=workspaces, clock=clock)
+        janitor = JobJanitor(
+            store=store,
+            workspaces=workspaces,
+            clock=clock,
+            recovery_receipts=recovery_receipts,
+        )
         janitor.recover_startup()
         materializations = CorpusMaterializationService(
             jobs=jobs,
@@ -195,6 +222,18 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
             workspaces=workspaces,
             clock=clock,
             authority_secret=authority_secret,
+        )
+        runner = StyloJobRunner(
+            store=store,
+            workspaces=workspaces,
+            receipts=recovery_receipts,
+            clock=clock,
+        )
+        analyses = AnalysisOrchestrator(
+            store=store,
+            workspaces=workspaces,
+            runner=runner,
+            clock=clock,
         )
     except WebRuntimeError as error:
         rejection = error
@@ -210,6 +249,7 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
     return WebRuntime(
         materializations=materializations,
         prepared_corpora=prepared_corpora,
+        analyses=analyses,
         janitor=janitor,
         _temporary_directory=temporary,
     )
