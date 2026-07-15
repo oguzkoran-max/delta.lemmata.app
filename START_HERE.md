@@ -21,7 +21,11 @@ preflight'i `RUN-20260715-0005` olarak saklandı: Lemmata sağlıklı, `8502` bo
 fakat hostta desteklenen container runtime yoktur; yaklaşık 4 GiB RAM, sıfır swap
 ve sınırsız mevcut Lemmata profili nedeniyle kurulumdan önce capacity kararı da
 gereklidir. Kapı exit `21` ile canlı değişiklik yapmadan durdu. Registry image
-publication, VPS kurulumu, Caddy/DNS değişikliği veya public activation henüz
+publication artık tamamlandı: PR #4 normal merge ile `8579e4e` olarak `main`e
+alındı, main CI `29426588836` geçti ve `RUN-20260715-0006` exact source image'ını
+private GHCR'da immutable manifest
+`sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`
+olarak bağladı. VPS kurulumu, Caddy/DNS değişikliği veya public activation henüz
 yapılmadı. `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir
 başarısız kapıyı geçersiz kılmaz.
 
@@ -174,9 +178,14 @@ P014 minimum package exact implementation commit'i
 geçti. İlk target-host preflight'i `RUN-20260715-0005` ve
 `provenance/evidence/P014/target-host-read-only-preflight.md` ile kayıtlıdır:
 Lemmata 20/20 HTTP 200 ve 267,73 ms p95 ile sağlıklı, `8502` boş, fakat container
-runtime yoktur. Host değiştirilmedi; AC-08 pending kaldı. Sıradaki iş bu kanıtı
-normal PR ile `main`e almak, exact green main commit'ini private GHCR'a immutable
-digest ile yayımlamak ve canlı host için container-runtime/capacity kararını
-kaydetmektir. Ancak tekrarlanan preflight geçerse Delta-only kurulum, public TLS,
-Lemmata coexistence/load, restart-cleanup, rollback ve owner walkthrough sırasıyla
-uygulanır. Bu kapılar geçmeden DNS, Caddy veya public activation yapılmaz.
+runtime yoktur. Host değiştirilmedi; AC-08 pending kaldı. PR #4 normal merge ile
+`8579e4e335cfa3ccbd1368588bf11d60dca08764` olarak `main`e alındı ve main CI
+`29426588836` geçti. `RUN-20260715-0006` ve
+`provenance/evidence/P014/immutable-image-publication.md`, exact green image'ı
+private GHCR'da immutable digest
+`sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`
+ile bağlar; `latest` yayımlanmadı. Sıradaki iş canlı host için
+container-runtime/capacity kararını kaydetmektir. Ancak tekrarlanan preflight
+geçerse Delta-only kurulum, public TLS, Lemmata coexistence/load,
+restart-cleanup, rollback ve owner walkthrough sırasıyla uygulanır. Bu kapılar
+geçmeden DNS, Caddy veya public activation yapılmaz.

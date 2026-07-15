@@ -11,7 +11,9 @@ P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Minimum 
 deployment paketi canonical Linux CI'da geçti; gerçek host inventory,
 coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
 İlk read-only host preflight'i Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat
-hostta container runtime olmadığı için kurulumdan önce fail-closed durdu.
+hostta container runtime olmadığı için kurulumdan önce fail-closed durdu. Exact
+green main image'ı private GHCR'da immutable digest ile yayımlandı; canlı VPS
+henüz değiştirilmedi.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -40,15 +42,11 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Read-only preflight kanıtını doğrula ve PR #4 üzerinden normal merge commit ile
-`main`e al; provenance zincirini squash etme. `main` CI yeşil olduktan sonra exact
-green main commit'ini private GHCR'a immutable digest ile yayımla. İlk workflow
-dispatch'i, workflow henüz default branch'te kayıtlı olmadığı için GitHub 404 ile
-durdu; doğru sıra merge, main CI, sonra dispatch'tir. Canlı hostta hiçbir işlem
-yapmadan önce container-runtime ve capacity seçimini kaydet. Tekrarlanan inventory
-geçerse sıra Delta-only install, public TLS gate, coexistence/load,
-restart-cleanup, rollback ve Oğuz owner walkthrough'udur. DNS, Caddy veya public
-activation bu kapılardan önce yapılmaz.
+Canlı hostta hiçbir işlem yapmadan önce container-runtime ve capacity seçimini
+kaydet. Exact green main image'ı private GHCR'da immutable digest ile hazırdır.
+Tekrarlanan inventory geçerse sıra Delta-only install, public TLS gate,
+coexistence/load, restart-cleanup, rollback ve Oğuz owner walkthrough'udur. DNS,
+Caddy veya public activation bu kapılardan önce yapılmaz.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
@@ -63,8 +61,9 @@ pinned gateway manifest digest
 `sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81`.
 On iki başarısız veya superseded CI outcome nedenleriyle korunur. Kanıt:
 `provenance/evidence/P014/canonical-alpha-stack-validation.md`. Registry manifest
-digest, accepted post-preparation host inventory, live TLS, Lemmata load,
-restart/rollback ve owner kabulü henüz yoktur; public activation yasaktır.
+digest artık kayıtlıdır; accepted post-preparation host inventory, live TLS,
+Lemmata load, restart/rollback ve owner kabulü henüz yoktur; public activation
+yasaktır.
 
 **P014 target-host preflight checkpoint'i:** Kanıt-link commit'i
 `dea9e67154d75852c5d69db9871fd4a1868bc236`, PR CI `29424064991` içinde verify ve
@@ -78,6 +77,19 @@ p95 267,73 ms verdi. Hiçbir paket, swap, service, Caddy, DNS veya dosya değiş
 yapılmadı. Kanıt: `provenance/evidence/P014/target-host-read-only-preflight.md`.
 Bu failed preflight AC-08'i kapatmaz; accepted post-preparation inventory,
 container-runtime/capacity kararı ve bütün host-bound kapılar pending'dir.
+
+**P014 immutable image checkpoint'i:** PR #4 normal merge commit
+`8579e4e335cfa3ccbd1368588bf11d60dca08764` ile commit geçmişini koruyarak
+`main`e alındı. Main CI `29426588836` içinde verify `87390451573` ve container
+`87390451645` geçti. Publication run `29426974523`, job `87391795653`, exact
+source'u yeniden build edip hardened stack, TLS browser, denied-egress ve cleanup
+kapılarını tekrar geçirdi. Local image ID
+`sha256:d03752691358a8aeb9387f90f97523c5779ecded0e63f8dc1d463b9fa5cddacf`;
+private deployment reference
+`ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`.
+`latest` etiketi yayımlanmadı. Kayıt: `RUN-20260715-0006` ve
+`provenance/evidence/P014/immutable-image-publication.md`. Bu image publication
+canlı host readiness veya activation kanıtı değildir.
 
 **P009 minimum-alpha checkpoint'i:** Exact implementation commit'i
 `c5e39b07bb65a11613684a10269b186c987ef980`; run kaydı

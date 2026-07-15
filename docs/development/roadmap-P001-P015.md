@@ -537,10 +537,14 @@ Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` de yeşildir. P014-AC-01 i
 P014-AC-07 CI sınırında passed'dir. `RUN-20260715-0005` read-only target-host
 inventory'si Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat container runtime
 olmadığı için host değişikliği yapmadan exit `21` ile durdu; sıfır swap ve
-sınırsız Lemmata kaynak profili capacity kararını açık bırakır. Image publication,
-accepted post-preparation inventory, canlı TLS, Delta-Lemmata coexistence/load,
-restart cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
-P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.
+sınırsız Lemmata kaynak profili capacity kararını açık bırakır. PR #4 merge commit
+`8579e4e`, main CI `29426588836` ve `RUN-20260715-0006` ile exact image private
+GHCR'a immutable digest
+`sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`
+olarak yayımlandı; `latest` oluşturulmadı. Accepted post-preparation inventory,
+canlı TLS, Delta-Lemmata coexistence/load, restart cleanup, rollback ve owner
+acceptance henüz uygulanmadı; P014-AC-08 ile P014-AC-10 pending, ticket
+`in-progress` ve public activation kapalıdır.
 
 **Deliverable'lar:**
 
