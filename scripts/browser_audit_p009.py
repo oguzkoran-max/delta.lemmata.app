@@ -7,8 +7,10 @@ import argparse
 import hashlib
 import json
 import os
+import sqlite3
 import subprocess
 import sys
+from contextlib import closing
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -45,6 +47,71 @@ FORBIDDEN_EXPORT_KEYS = (
     "capability",
     "workspace",
 )
+
+
+def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
+    """Project content-free lifecycle fields from the private audit database."""
+
+    database = output / "runtime" / "database" / "control.sqlite3"
+    if not database.is_file():
+        return {"available": False, "reason": "control_database_absent"}
+    try:
+        with closing(
+            sqlite3.connect(f"file:{database}?mode=ro", uri=True, timeout=1.0)
+        ) as connection:
+            rows = connection.execute(
+                "SELECT model_json FROM jobs ORDER BY queue_sequence ASC"
+            ).fetchall()
+        records = []
+        for (raw_model,) in rows:
+            model = json.loads(raw_model)
+            artifacts = model.get("artifacts", {})
+            records.append(
+                {
+                    "execution_state": model.get("execution", {}).get("state"),
+                    "terminal_outcome": (model.get("outcome") or {}).get("kind"),
+                    "scientific_result_present": model.get("scientific_result") is not None,
+                    "scientific_result_confirmed": model.get(
+                        "scientific_result_confirmed",
+                        False,
+                    ),
+                    "result_view_present": model.get("result_view") is not None,
+                    "export_available": model.get("export_available", False),
+                    "artifact_states": {
+                        area: artifacts.get(area, {}).get("state")
+                        for area in ("input", "work", "result", "export")
+                    },
+                    "operation_count": len(model.get("operations", [])),
+                }
+            )
+        return {"available": True, "job_count": len(records), "records": records}
+    except (json.JSONDecodeError, OSError, sqlite3.Error, TypeError):
+        return {"available": False, "reason": "control_database_unreadable"}
+
+
+def _write_failure_record(
+    *,
+    output: Path,
+    commit: str,
+    dirty: bool,
+    canonical_platform: bool,
+    error: Exception,
+) -> None:
+    record = {
+        "schema_version": "1.0.0",
+        "git_commit": commit,
+        "git_dirty": dirty,
+        "canonical_worker_platform": canonical_platform,
+        "synthetic_inputs_only": True,
+        "failure_type": type(error).__name__,
+        "failure_message": str(error),
+        "lifecycle_diagnostics": _lifecycle_diagnostics(output),
+        "result": "failed",
+    }
+    (output / "browser-audit.json").write_text(
+        json.dumps(record, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
 
 def _pixel_evidence(locator: Locator, screenshot: Path) -> dict[str, Any]:
@@ -364,6 +431,15 @@ def main() -> int:
             )
             print(json.dumps({"result": result["result"], "output": _display_path(output)}))
             return 0 if passed else 1
+        except Exception as error:
+            _write_failure_record(
+                output=output,
+                commit=commit,
+                dirty=dirty,
+                canonical_platform=canonical_platform,
+                error=error,
+            )
+            raise
         finally:
             process.terminate()
             try:
