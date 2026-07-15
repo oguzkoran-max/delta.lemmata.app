@@ -381,7 +381,7 @@ def _run_analysis(page: Page, output: Path, canary: str) -> dict[str, Any]:
     page.keyboard.press("Enter")
     terminal = page.get_by_text(
         re.compile(
-            r"Analysis complete|Analysis failed|Delta could not complete this bounded analysis"
+            r"Finalizing analysis|Analysis failed|Delta could not complete this bounded analysis"
         )
     )
     try:
@@ -394,19 +394,24 @@ def _run_analysis(page: Page, output: Path, canary: str) -> dict[str, Any]:
         raise RuntimeError(
             f"Real worker produced no terminal UI: alerts={messages!r}; headings={headings!r}"
         ) from None
-    if page.get_by_text("Analysis complete", exact=True).count() != 1:
+    # P008 ends at a validated scientific result. P009 owns the export-backed
+    # result surface that changes this lifecycle state to "Analysis complete".
+    if page.get_by_text("Finalizing analysis", exact=True).count() != 1:
         failure_screenshot = output / "screenshots" / "analysis-failure.png"
         page.screenshot(path=str(failure_screenshot), full_page=True)
         messages = page.locator('[data-testid="stAlert"]').all_inner_texts()
         raise RuntimeError(f"Real worker did not succeed: {messages!r}")
-    screenshot = output / "screenshots" / "analysis-complete.png"
+    screenshot = output / "screenshots" / "validated-p006-result.png"
     page.screenshot(path=str(screenshot), full_page=True)
     body = page.locator("body").inner_text()
     return {
         "run_enabled_after_confirmation_pass": enabled_after_confirmation,
-        "real_worker_success_pass": page.get_by_text("Analysis complete", exact=True).count() == 1,
-        "cleanup_confirmed_pass": page.get_by_text(
-            "temporary inputs were removed", exact=False
+        "real_worker_success_pass": page.get_by_text("Finalizing analysis", exact=True).count()
+        == 1,
+        "p008_boundary_pass": page.get_by_text("Analysis complete", exact=True).count() == 0
+        and page.get_by_text(
+            "The run finished. Temporary inputs are being removed before results become available.",
+            exact=True,
         ).count()
         == 1,
         "p009_boundary_pass": page.get_by_text(

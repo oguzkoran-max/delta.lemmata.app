@@ -51,7 +51,13 @@ jobs:
           --output /tmp/delta-p008-browser-audit
 
       - name: Print browser-gate evidence
-        run: python -m json.tool /tmp/delta-p008-browser-audit/browser-audit.json
+        if: always()
+        run: |
+          if [[ -f /tmp/delta-p008-browser-audit/browser-audit.json ]]; then
+            python -m json.tool /tmp/delta-p008-browser-audit/browser-audit.json
+          else
+            echo "browser-audit.json was not produced; inspect the preceding traceback."
+          fi
 
       - name: Generate and validate SBOM and audit evidence
         run: ./scripts/generate_evidence.sh
