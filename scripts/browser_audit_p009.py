@@ -34,7 +34,6 @@ from browser_audit_p008 import (
 )
 from PIL import Image
 from playwright.sync_api import Browser, Locator, Page, sync_playwright
-from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 ROOT = Path(__file__).resolve().parents[1]
 FORBIDDEN_EXPORT_KEYS = (
@@ -144,9 +143,22 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         level=2,
         exact=True,
     )
-    try:
-        result_heading.wait_for(timeout=120_000)
-    except PlaywrightTimeoutError:
+    error_reference = page.get_by_text("Rejection reference:", exact=False)
+    for _ in range(600):
+        if result_heading.is_visible():
+            break
+        if error_reference.count() > 0:
+            screenshot = output / "screenshots" / "result-failure.png"
+            page.screenshot(path=str(screenshot), full_page=True)
+            alerts = page.locator('[data-testid="stAlert"]').all_inner_texts()
+            references = error_reference.all_inner_texts()
+            headings = page.locator("h1, h2, h3").all_inner_texts()
+            raise RuntimeError(
+                "Real worker or result publication failed safely: "
+                f"references={references!r}; alerts={alerts!r}; headings={headings!r}"
+            )
+        page.wait_for_timeout(200)
+    else:
         screenshot = output / "screenshots" / "result-timeout.png"
         page.screenshot(path=str(screenshot), full_page=True)
         alerts = page.locator('[data-testid="stAlert"]').all_inner_texts()
