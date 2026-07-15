@@ -53,6 +53,14 @@ from delta_lemmata.preprocessing_models import (
 from delta_lemmata.session_identity import MINIMUM_OWNER_SECRET_BYTES
 from delta_lemmata.stylo_contracts import INPUT_MAX_BYTES, WorkerInputV1, canonical_worker_json
 from delta_lemmata.stylo_input_builder import _build_guided_worker_input
+from delta_lemmata.workflow_models import (
+    MAX_WORKFLOW_CONFIG_BYTES,
+    P008ContractError,
+    ResolvedWorkflowConfigV1,
+    canonical_p008_json,
+    parse_resolved_workflow_config,
+    workflow_config_sha256,
+)
 
 ReceiptIdFactory = Callable[[], str]
 EntropyFactory = Callable[[int], bytes]
@@ -63,10 +71,11 @@ _RECEIPT_DOMAIN = b"ready-receipt-hmac-v1"
 _REQUEST_DOMAIN = b"worker-request-id-v1"
 _REFERENCE_DOMAIN = b"worker-reference-key-v1"
 _REQUEST_COMPONENT_DOMAIN = b"worker-request-component-v1"
+_WORKFLOW_COMPONENT_DOMAIN = b"resolved-workflow-component-v1"
 _OPERATION_DOMAIN = b"analysis-admission-operation-v1"
-_INDEX_DOMAIN = b"delta-lemmata\x00prepared-request-index\x00v1"
+_INDEX_DOMAIN = b"delta-lemmata\x00prepared-request-index\x00v2"
 PREPARED_REQUEST_INDEX_COMPONENT = hashlib.sha256(_INDEX_DOMAIN).hexdigest()
-_INDEX_MAX_BYTES = 1024
+_INDEX_MAX_BYTES = 2048
 
 
 class PreparedCorpusErrorCode(StrEnum):
@@ -118,10 +127,13 @@ class _PreparationBundle:
 class _PreparedRequestIndex(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True, strict=True)
 
-    schema_version: Literal["prepared-stylo-request-index-v1"]
+    schema_version: Literal["prepared-stylo-request-index-v2"]
     request_component: str = Field(pattern=r"^[0-9a-f]{64}$")
     request_byte_count: int = Field(ge=1, le=INPUT_MAX_BYTES)
     request_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    workflow_config_component: str = Field(pattern=r"^[0-9a-f]{64}$")
+    workflow_config_byte_count: int = Field(ge=1, le=MAX_WORKFLOW_CONFIG_BYTES)
+    workflow_config_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
 
 
 def _detach(error: PreparedCorpusError) -> None:
@@ -605,25 +617,43 @@ class PreparedCorpusService:
     def _request_identity(
         self,
         receipt_hmac: str,
-    ) -> tuple[str, bytes, str, str]:
+        resolved_config_sha256: str,
+    ) -> tuple[str, bytes, str, str, str]:
+        if (
+            not isinstance(receipt_hmac, str)
+            or _HEX_64.fullmatch(receipt_hmac) is None
+            or not isinstance(resolved_config_sha256, str)
+            or _HEX_64.fullmatch(resolved_config_sha256) is None
+        ):
+            raise _error(PreparedCorpusErrorCode.INVALID_REQUEST)
         encoded = receipt_hmac.encode("ascii")
+        config_digest = resolved_config_sha256.encode("ascii")
         request_id = (
             "request_"
             + _authority(
                 self._authority_secret,
                 _REQUEST_DOMAIN,
                 encoded,
+                config_digest,
             ).hex()
         )
         reference_key = _authority(
             self._authority_secret,
             _REFERENCE_DOMAIN,
             encoded,
+            config_digest,
         )
         request_component = _authority(
             self._authority_secret,
             _REQUEST_COMPONENT_DOMAIN,
             encoded,
+            config_digest,
+        ).hex()
+        workflow_config_component = _authority(
+            self._authority_secret,
+            _WORKFLOW_COMPONENT_DOMAIN,
+            encoded,
+            config_digest,
         ).hex()
         operation_id = (
             "op_"
@@ -631,9 +661,54 @@ class PreparedCorpusService:
                 self._authority_secret,
                 _OPERATION_DOMAIN,
                 encoded,
+                config_digest,
             ).hex()
         )
-        return request_id, reference_key, request_component, operation_id
+        return (
+            request_id,
+            reference_key,
+            request_component,
+            workflow_config_component,
+            operation_id,
+        )
+
+    def _create_or_verify(
+        self,
+        *,
+        layout: WorkspaceLayout,
+        component: str,
+        payload: bytes,
+        maximum_bytes: int,
+    ) -> None:
+        existing = self._workspaces.read_file(
+            layout,
+            WorkspaceArea.WORK,
+            component,
+            maximum_bytes=maximum_bytes,
+        )
+        if existing is not None:
+            if existing != payload:
+                raise _error(PreparedCorpusErrorCode.INTEGRITY)
+            return
+        create_conflict = False
+        try:
+            self._workspaces.create_file(
+                layout,
+                WorkspaceArea.WORK,
+                component,
+                payload,
+            )
+        except Exception:
+            existing = self._workspaces.read_file(
+                layout,
+                WorkspaceArea.WORK,
+                component,
+                maximum_bytes=maximum_bytes,
+            )
+            if existing != payload:
+                create_conflict = True
+        if create_conflict:
+            raise _error(PreparedCorpusErrorCode.INTEGRITY)
 
     def _store_request(
         self,
@@ -641,13 +716,19 @@ class PreparedCorpusService:
         layout: WorkspaceLayout,
         request: WorkerInputV1,
         request_component: str,
+        resolved_workflow_config: ResolvedWorkflowConfigV1,
+        workflow_config_component: str,
     ) -> None:
         request_payload = canonical_worker_json(request)
+        workflow_config_payload = canonical_p008_json(resolved_workflow_config)
         index = _PreparedRequestIndex(
-            schema_version="prepared-stylo-request-index-v1",
+            schema_version="prepared-stylo-request-index-v2",
             request_component=request_component,
             request_byte_count=len(request_payload),
             request_sha256=hashlib.sha256(request_payload).hexdigest(),
+            workflow_config_component=workflow_config_component,
+            workflow_config_byte_count=len(workflow_config_payload),
+            workflow_config_sha256=hashlib.sha256(workflow_config_payload).hexdigest(),
         )
         expected_index = _index_payload(index)
         existing_index = self._workspaces.read_file(
@@ -667,34 +748,37 @@ class PreparedCorpusService:
                 parsed.request_component,
                 maximum_bytes=INPUT_MAX_BYTES,
             )
+            existing_workflow_config = self._workspaces.read_file(
+                layout,
+                WorkspaceArea.WORK,
+                parsed.workflow_config_component,
+                maximum_bytes=MAX_WORKFLOW_CONFIG_BYTES,
+            )
             if (
                 parsed != index
                 or existing_index != expected_index
                 or existing_request != request_payload
+                or existing_workflow_config != workflow_config_payload
             ):
                 raise _error(PreparedCorpusErrorCode.INTEGRITY)
             return
-        if (
-            self._workspaces.read_file(
-                layout,
-                WorkspaceArea.WORK,
-                request_component,
-                maximum_bytes=INPUT_MAX_BYTES,
-            )
-            is not None
-        ):
-            raise _error(PreparedCorpusErrorCode.INTEGRITY)
-        self._workspaces.create_file(
-            layout,
-            WorkspaceArea.WORK,
-            request_component,
-            request_payload,
+        self._create_or_verify(
+            layout=layout,
+            component=request_component,
+            payload=request_payload,
+            maximum_bytes=INPUT_MAX_BYTES,
         )
-        self._workspaces.create_file(
-            layout,
-            WorkspaceArea.WORK,
-            PREPARED_REQUEST_INDEX_COMPONENT,
-            expected_index,
+        self._create_or_verify(
+            layout=layout,
+            component=workflow_config_component,
+            payload=workflow_config_payload,
+            maximum_bytes=MAX_WORKFLOW_CONFIG_BYTES,
+        )
+        self._create_or_verify(
+            layout=layout,
+            component=PREPARED_REQUEST_INDEX_COMPONENT,
+            payload=expected_index,
+            maximum_bytes=_INDEX_MAX_BYTES,
         )
 
     @_content_free
@@ -707,14 +791,25 @@ class PreparedCorpusService:
         inventory: CorpusInventory,
         annotations: CorpusAnalysisAnnotationsV1,
         config: PreprocessingConfigV1,
+        resolved_workflow_config: ResolvedWorkflowConfigV1,
         custom_exclusions_bytes: bytes | None = None,
     ) -> JobPresentation:
         """Rebuild all bindings, persist one private request, and enqueue exactly once."""
 
-        if not isinstance(materialization_receipt, CorpusMaterializationReceipt) or not isinstance(
-            ready_receipt, AnalysisPreparationReceiptV1
+        if (
+            not isinstance(materialization_receipt, CorpusMaterializationReceipt)
+            or not isinstance(ready_receipt, AnalysisPreparationReceiptV1)
+            or not isinstance(resolved_workflow_config, ResolvedWorkflowConfigV1)
         ):
             raise _error(PreparedCorpusErrorCode.INVALID_REQUEST)
+        try:
+            checked_workflow_config = parse_resolved_workflow_config(
+                canonical_p008_json(resolved_workflow_config)
+            )
+        except P008ContractError:
+            raise _error(PreparedCorpusErrorCode.BINDING_MISMATCH) from None
+        if checked_workflow_config.purpose is not inventory.purpose:
+            raise _error(PreparedCorpusErrorCode.BINDING_MISMATCH)
         exclusions, validation = self._public_setup(
             inventory=inventory,
             annotations=annotations,
@@ -722,8 +817,16 @@ class PreparedCorpusService:
             custom_exclusions_bytes=custom_exclusions_bytes,
         )
         receipt_hmac = self._receipt_hmac(ready_receipt)
-        request_id, reference_key, request_component, operation_id = self._request_identity(
-            receipt_hmac
+        resolved_config_sha256 = workflow_config_sha256(resolved_workflow_config)
+        (
+            request_id,
+            reference_key,
+            request_component,
+            workflow_config_component,
+            operation_id,
+        ) = self._request_identity(
+            receipt_hmac,
+            resolved_config_sha256,
         )
 
         def prepare_private_request(
@@ -749,6 +852,7 @@ class PreparedCorpusService:
                 receipt=ready_receipt,
                 documents=bundle.documents,
                 candidate_inventory=bundle.candidates,
+                resolved_config=resolved_workflow_config,
                 request_id=request_id,
                 reference_key=reference_key,
                 at_utc=self._now(),
@@ -757,6 +861,8 @@ class PreparedCorpusService:
                 layout=layout,
                 request=request,
                 request_component=request_component,
+                resolved_workflow_config=resolved_workflow_config,
+                workflow_config_component=workflow_config_component,
             )
 
         try:

@@ -51,6 +51,13 @@ from delta_lemmata.preprocessing_models import (
 )
 from delta_lemmata.session_identity import JobId, SessionCapability
 from delta_lemmata.stylo_contracts import WorkerInputV1
+from delta_lemmata.workflow_models import (
+    ResolvedWorkflowConfigV1,
+    canonical_p008_json,
+    parse_resolved_workflow_config,
+    resolve_guided_workflow,
+    workflow_config_sha256,
+)
 
 NOW = datetime(2026, 7, 14, 23, 0, tzinfo=UTC)
 STORE_SECRET = b"prepared-corpus-store-owner-secret-32bytes"
@@ -256,7 +263,26 @@ def _prepare(environment: Environment):
     )
 
 
-def _admit(environment: Environment, ready_receipt: AnalysisPreparationReceiptV1):
+def _workflow(environment: Environment) -> ResolvedWorkflowConfigV1:
+    return resolve_guided_workflow(
+        purpose=environment.inventory.purpose,
+        known_work_count=sum(
+            annotation.analysis_role is AnalysisRole.KNOWN
+            for annotation in environment.annotations.annotations
+        ),
+        unknown_work_count=sum(
+            annotation.analysis_role is AnalysisRole.UNKNOWN
+            for annotation in environment.annotations.annotations
+        ),
+    )
+
+
+def _admit(
+    environment: Environment,
+    ready_receipt: AnalysisPreparationReceiptV1,
+    *,
+    workflow: ResolvedWorkflowConfigV1 | None = None,
+):
     return environment.service.admit_once(
         owner_key="browser-session",
         materialization_receipt=environment.materialization_receipt,
@@ -264,6 +290,7 @@ def _admit(environment: Environment, ready_receipt: AnalysisPreparationReceiptV1
         inventory=environment.inventory,
         annotations=environment.annotations,
         config=environment.config,
+        resolved_workflow_config=workflow or _workflow(environment),
     )
 
 
@@ -312,7 +339,12 @@ def test_prepare_and_admit_keep_private_text_inside_the_owned_workspace(
     layout = environment.workspaces.list_layouts()[0]
     index_bytes = (layout.work / PREPARED_REQUEST_INDEX_COMPONENT).read_bytes()
     index = json.loads(index_bytes)
+    workflow_bytes = (layout.work / index["workflow_config_component"]).read_bytes()
     request_bytes = (layout.work / index["request_component"]).read_bytes()
+    assert index["schema_version"] == "prepared-stylo-request-index-v2"
+    assert workflow_bytes == canonical_p008_json(_workflow(environment))
+    assert parse_resolved_workflow_config(workflow_bytes) == _workflow(environment)
+    assert index["workflow_config_sha256"] == workflow_config_sha256(_workflow(environment))
     request = WorkerInputV1.model_validate_json(request_bytes)
     assert request.request_id.startswith("request_")
     assert len(request.documents) == 2
@@ -435,6 +467,141 @@ def test_rejected_queue_admission_can_retry_the_exact_private_request(
     assert after == before
 
 
+def test_partial_private_bundle_write_recovers_only_the_exact_binding(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _environment(tmp_path)
+    outcome = _prepare(environment)
+    assert outcome.ready_receipt is not None
+    original_consume = environment.materializations.consume_ready
+
+    def reject_once(**_kwargs):
+        raise CorpusMaterializationError(CorpusMaterializationErrorCode.READY_REJECTED)
+
+    monkeypatch.setattr(environment.materializations, "consume_ready", reject_once)
+    _expect_error(
+        lambda: _admit(environment, outcome.ready_receipt),
+        PreparedCorpusErrorCode.ADMISSION_REJECTED,
+    )
+    layout = environment.workspaces.list_layouts()[0]
+    index_path = layout.work / PREPARED_REQUEST_INDEX_COMPONENT
+    index = json.loads(index_path.read_bytes())
+    request_before = (layout.work / index["request_component"]).read_bytes()
+    index_path.unlink()
+    (layout.work / index["workflow_config_component"]).unlink()
+
+    environment.clock.advance(timedelta(minutes=1))
+    monkeypatch.setattr(environment.materializations, "consume_ready", original_consume)
+    assert _admit(environment, outcome.ready_receipt).state_id == "queued"
+    recovered_index = json.loads(index_path.read_bytes())
+    assert recovered_index == index
+    assert (layout.work / recovered_index["request_component"]).read_bytes() == request_before
+    assert (layout.work / recovered_index["workflow_config_component"]).read_bytes() == (
+        canonical_p008_json(_workflow(environment))
+    )
+
+
+def test_workflow_digest_changes_all_admission_identities_and_purpose_is_bound(
+    tmp_path: Path,
+) -> None:
+    environment = _environment(tmp_path)
+    outcome = _prepare(environment)
+    assert outcome.ready_receipt is not None
+    guided = _workflow(environment)
+    other = resolve_guided_workflow(
+        purpose=PurposeId.GROUP_COMPARISON,
+        known_work_count=guided.known_work_count,
+        unknown_work_count=guided.unknown_work_count,
+    )
+    receipt_hmac = environment.service._receipt_hmac(outcome.ready_receipt)
+
+    assert environment.service._request_identity(
+        receipt_hmac,
+        workflow_config_sha256(guided),
+    ) != environment.service._request_identity(
+        receipt_hmac,
+        workflow_config_sha256(other),
+    )
+    _expect_error(
+        lambda: _admit(environment, outcome.ready_receipt, workflow=other),
+        PreparedCorpusErrorCode.BINDING_MISMATCH,
+    )
+    assert tuple(environment.workspaces.list_layouts()[0].work.iterdir()) == ()
+
+    invalid = guided.model_copy(update={"unknown_work_count": 1})
+    _expect_error(
+        lambda: _admit(environment, outcome.ready_receipt, workflow=invalid),
+        PreparedCorpusErrorCode.BINDING_MISMATCH,
+    )
+
+    _expect_error(
+        lambda: environment.service._request_identity("invalid", "f" * 64),
+        PreparedCorpusErrorCode.INVALID_REQUEST,
+    )
+    _expect_error(
+        lambda: environment.service._request_identity("f" * 64, "invalid"),
+        PreparedCorpusErrorCode.INVALID_REQUEST,
+    )
+
+
+def test_private_component_creation_recovers_an_exact_race_and_rejects_a_conflict(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _environment(tmp_path)
+    layout = environment.workspaces.list_layouts()[0]
+    original_create = environment.workspaces.create_file
+    expected_component = "a" * 64
+    conflicting_component = "b" * 64
+
+    def create_exact_then_report_failure(
+        layout_arg,
+        area,
+        component,
+        content,
+    ):
+        original_create(layout_arg, area, component, content)
+        raise RuntimeError("simulated response loss")
+
+    monkeypatch.setattr(
+        environment.workspaces,
+        "create_file",
+        create_exact_then_report_failure,
+    )
+    environment.service._create_or_verify(
+        layout=layout,
+        component=expected_component,
+        payload=b"expected",
+        maximum_bytes=32,
+    )
+    assert (layout.work / expected_component).read_bytes() == b"expected"
+
+    def create_conflict_then_report_failure(
+        layout_arg,
+        area,
+        component,
+        _content,
+    ):
+        original_create(layout_arg, area, component, b"conflict")
+        raise RuntimeError("simulated conflicting writer")
+
+    monkeypatch.setattr(
+        environment.workspaces,
+        "create_file",
+        create_conflict_then_report_failure,
+    )
+    _expect_error(
+        lambda: environment.service._create_or_verify(
+            layout=layout,
+            component=conflicting_component,
+            payload=b"expected",
+            maximum_bytes=32,
+        ),
+        PreparedCorpusErrorCode.INTEGRITY,
+    )
+
+
 def test_request_tampering_and_exact_expiry_remove_private_workspace(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
@@ -443,7 +610,12 @@ def test_request_tampering_and_exact_expiry_remove_private_workspace(
     outcome = _prepare(tampered)
     assert outcome.ready_receipt is not None
     receipt_hmac = tampered.service._receipt_hmac(outcome.ready_receipt)
-    _request_id, _key, component, _operation = tampered.service._request_identity(receipt_hmac)
+    _request_id, _key, component, _workflow_component, _operation = (
+        tampered.service._request_identity(
+            receipt_hmac,
+            workflow_config_sha256(_workflow(tampered)),
+        )
+    )
     original_consume = tampered.materializations.consume_ready
 
     def reject_once(**_kwargs):
@@ -806,6 +978,7 @@ def test_admission_validates_types_and_request_index_integrity(
             inventory=invalid.inventory,
             annotations=invalid.annotations,
             config=invalid.config,
+            resolved_workflow_config=_workflow(invalid),
         ),
         PreparedCorpusErrorCode.INVALID_REQUEST,
     )
@@ -840,7 +1013,12 @@ def test_admission_validates_types_and_request_index_integrity(
     orphan_outcome = _prepare(orphan)
     assert orphan_outcome.ready_receipt is not None
     receipt_hmac = orphan.service._receipt_hmac(orphan_outcome.ready_receipt)
-    _request_id, _key, component, _operation = orphan.service._request_identity(receipt_hmac)
+    _request_id, _key, component, _workflow_component, _operation = (
+        orphan.service._request_identity(
+            receipt_hmac,
+            workflow_config_sha256(_workflow(orphan)),
+        )
+    )
     orphan_layout = orphan.workspaces.list_layouts()[0]
     orphan.workspaces.create_file(
         orphan_layout,

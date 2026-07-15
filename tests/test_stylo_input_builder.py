@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Callable
 from dataclasses import replace
 from datetime import UTC, datetime, timedelta
 
 import pytest
 
 import delta_lemmata.stylo_input_builder as input_builder
+from delta_lemmata.corpus_models import PurposeId
 from delta_lemmata.preprocessing import (
     CandidateInventory,
     PreparedDocument,
@@ -29,6 +31,7 @@ from delta_lemmata.stylo_input_builder import (
     StyloInputBuilderError,
     StyloInputBuilderErrorCode,
 )
+from delta_lemmata.workflow_models import ResolvedWorkflowConfigV1, resolve_guided_workflow
 
 NOW = datetime(2026, 7, 14, 22, 0, tzinfo=UTC)
 REQUEST_ID = "request_" + "9" * 64
@@ -94,7 +97,22 @@ def _inputs() -> tuple[
     return documents, candidates, receipt
 
 
-def _expect_error(action, code: StyloInputBuilderErrorCode) -> None:
+def _workflow(documents: tuple[PreparedDocument, ...]) -> ResolvedWorkflowConfigV1:
+    return resolve_guided_workflow(
+        purpose=PurposeId.TEXT_PROXIMITY,
+        known_work_count=sum(
+            document.annotation.analysis_role is AnalysisRole.KNOWN for document in documents
+        ),
+        unknown_work_count=sum(
+            document.annotation.analysis_role is AnalysisRole.UNKNOWN for document in documents
+        ),
+    )
+
+
+def _expect_error(
+    action: Callable[[], object],
+    code: StyloInputBuilderErrorCode,
+) -> None:
     with pytest.raises(StyloInputBuilderError) as captured:
         action()
     assert captured.value.code is code
@@ -110,6 +128,7 @@ def test_guided_builder_preserves_order_counts_roles_and_fixed_alpha_grid() -> N
         receipt=receipt,
         documents=documents,
         candidate_inventory=candidates,
+        resolved_config=_workflow(documents),
         request_id=REQUEST_ID,
         reference_key=REFERENCE_KEY,
         at_utc=NOW,
@@ -148,6 +167,7 @@ def test_guided_builder_preserves_order_counts_roles_and_fixed_alpha_grid() -> N
         receipt=receipt,
         documents=documents,
         candidate_inventory=candidates,
+        resolved_config=_workflow(documents),
         request_id=REQUEST_ID,
         reference_key=REFERENCE_KEY,
         at_utc=NOW,
@@ -158,6 +178,7 @@ def test_guided_builder_preserves_order_counts_roles_and_fixed_alpha_grid() -> N
         receipt=receipt,
         documents=documents,
         candidate_inventory=candidates,
+        resolved_config=_workflow(documents),
         request_id=REQUEST_ID,
         reference_key=bytes(reversed(range(32))),
         at_utc=NOW,
@@ -181,6 +202,7 @@ def test_builder_rejects_invalid_request_not_ready_and_binding_mutations() -> No
             receipt=object(),  # type: ignore[arg-type]
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=NOW,
@@ -192,6 +214,7 @@ def test_builder_rejects_invalid_request_not_ready_and_binding_mutations() -> No
             receipt=receipt,
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=b"too-short",
             at_utc=NOW,
@@ -203,6 +226,7 @@ def test_builder_rejects_invalid_request_not_ready_and_binding_mutations() -> No
             receipt=receipt,
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id="request-invalid",
             reference_key=REFERENCE_KEY,
             at_utc=NOW,
@@ -215,6 +239,7 @@ def test_builder_rejects_invalid_request_not_ready_and_binding_mutations() -> No
             receipt=blocked,
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=NOW,
@@ -226,11 +251,42 @@ def test_builder_rejects_invalid_request_not_ready_and_binding_mutations() -> No
             receipt=receipt,
             documents=tuple(reversed(documents)),
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=NOW,
         ),
         StyloInputBuilderErrorCode.BINDING_MISMATCH,
+    )
+
+
+def test_builder_binds_the_exact_resolved_workflow_to_document_roles() -> None:
+    documents, candidates, receipt = _inputs()
+    wrong_counts = _workflow(documents).model_copy(update={"unknown_work_count": 0})
+
+    _expect_error(
+        lambda: input_builder._build_guided_worker_input(
+            receipt=receipt,
+            documents=documents,
+            candidate_inventory=candidates,
+            resolved_config=wrong_counts,
+            request_id=REQUEST_ID,
+            reference_key=REFERENCE_KEY,
+            at_utc=NOW,
+        ),
+        StyloInputBuilderErrorCode.BINDING_MISMATCH,
+    )
+    _expect_error(
+        lambda: input_builder._build_guided_worker_input(
+            receipt=receipt,
+            documents=documents,
+            candidate_inventory=candidates,
+            resolved_config=object(),  # type: ignore[arg-type]
+            request_id=REQUEST_ID,
+            reference_key=REFERENCE_KEY,
+            at_utc=NOW,
+        ),
+        StyloInputBuilderErrorCode.INVALID_REQUEST,
     )
     changed_hash = receipt.model_copy(update={"candidate_inventory_sha256": "f" * 64})
     _expect_error(
@@ -238,6 +294,7 @@ def test_builder_rejects_invalid_request_not_ready_and_binding_mutations() -> No
             receipt=changed_hash,
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=NOW,
@@ -266,6 +323,7 @@ def test_builder_enforces_utc_and_receipt_validity_window(
             receipt=receipt,
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=at_utc,
@@ -289,6 +347,7 @@ def test_private_text_features_and_count_rows_are_absent_from_repr() -> None:
         receipt=receipt,
         documents=documents,
         candidate_inventory=candidates,
+        resolved_config=_workflow(documents),
         request_id=REQUEST_ID,
         reference_key=REFERENCE_KEY,
         at_utc=NOW,
@@ -331,6 +390,7 @@ def test_builder_rechecks_private_preparation_and_candidate_integrity(mutation: 
             receipt=receipt,
             documents=changed_documents,
             candidate_inventory=changed_candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=NOW,
@@ -353,6 +413,7 @@ def test_builder_detaches_unexpected_private_exceptions(
             receipt=receipt,
             documents=documents,
             candidate_inventory=candidates,
+            resolved_config=_workflow(documents),
             request_id=REQUEST_ID,
             reference_key=REFERENCE_KEY,
             at_utc=NOW,

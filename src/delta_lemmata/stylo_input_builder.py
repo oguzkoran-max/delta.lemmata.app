@@ -13,8 +13,9 @@ from datetime import datetime
 from enum import StrEnum
 from functools import wraps
 
+from pydantic import ValidationError
+
 from delta_lemmata.clock import require_utc
-from delta_lemmata.corpus_health import GUIDED_MFW
 from delta_lemmata.preprocessing import CandidateInventory, PreparedDocument
 from delta_lemmata.preprocessing_models import (
     AnalysisPreparationReceiptV1,
@@ -28,12 +29,12 @@ from delta_lemmata.stylo_contracts import (
     MAX_FEATURES,
     MAX_TOKEN_COUNT,
     CellRequest,
-    DistanceMeasure,
     DocumentCounts,
     DocumentRole,
     FitRequest,
     WorkerInputV1,
 )
+from delta_lemmata.workflow_models import ResolvedWorkflowConfigV1
 
 _REQUEST_ID = re.compile(r"^request_[0-9a-f]{64}$", flags=re.ASCII)
 _OPAQUE_DOMAIN = b"delta-lemmata\x00p007-p006-opaque-reference\x00v1\x00"
@@ -170,8 +171,19 @@ def _verify_candidate_inventory(
         raise _error(StyloInputBuilderErrorCode.INTEGRITY)
 
 
-def _fit_id(reference_key: bytes, request_id: str, mfw: int) -> str:
-    return _opaque_reference(reference_key, "fit", request_id, str(mfw), "0")
+def _fit_id(
+    reference_key: bytes,
+    request_id: str,
+    mfw: int,
+    culling_percent: int,
+) -> str:
+    return _opaque_reference(
+        reference_key,
+        "fit",
+        request_id,
+        str(mfw),
+        str(culling_percent),
+    )
 
 
 @_content_free
@@ -180,6 +192,7 @@ def _build_guided_worker_input(
     receipt: AnalysisPreparationReceiptV1,
     documents: tuple[PreparedDocument, ...],
     candidate_inventory: CandidateInventory,
+    resolved_config: ResolvedWorkflowConfigV1,
     request_id: str,
     reference_key: bytes,
     at_utc: datetime,
@@ -191,6 +204,7 @@ def _build_guided_worker_input(
         or not isinstance(documents, tuple)
         or not all(isinstance(document, PreparedDocument) for document in documents)
         or not isinstance(candidate_inventory, CandidateInventory)
+        or not isinstance(resolved_config, ResolvedWorkflowConfigV1)
         or not isinstance(request_id, str)
         or _REQUEST_ID.fullmatch(request_id) is None
         or not isinstance(reference_key, bytes)
@@ -212,9 +226,24 @@ def _build_guided_worker_input(
     for document in documents:
         _verify_document(document)
     _verify_candidate_inventory(documents, candidate_inventory)
+    try:
+        checked_config = ResolvedWorkflowConfigV1.model_validate(
+            resolved_config.model_dump(mode="python")
+        )
+    except ValidationError:
+        raise _error(StyloInputBuilderErrorCode.BINDING_MISMATCH) from None
+    known_count = sum(
+        document.annotation.analysis_role is AnalysisRole.KNOWN for document in documents
+    )
+    unknown_count = sum(
+        document.annotation.analysis_role is AnalysisRole.UNKNOWN for document in documents
+    )
     if (
         receipt.candidate_inventory_sha256 != candidate_inventory.sha256
         or receipt.candidate_feature_count != len(candidate_inventory.features)
+        or checked_config != resolved_config
+        or resolved_config.known_work_count != known_count
+        or resolved_config.unknown_work_count != unknown_count
     ):
         raise _error(StyloInputBuilderErrorCode.BINDING_MISMATCH)
 
@@ -247,34 +276,38 @@ def _build_guided_worker_input(
         )
         for document in documents
     )
+    fit_keys = tuple(
+        dict.fromkeys((cell.mfw, cell.culling_percent) for cell in resolved_config.cells)
+    )
     fits = tuple(
         FitRequest(
-            fit_id=_fit_id(reference_key, request_id, mfw),
+            fit_id=_fit_id(reference_key, request_id, mfw, culling_percent),
             mfw=mfw,
-            culling_percent=0,
+            culling_percent=culling_percent,
         )
-        for mfw in GUIDED_MFW
+        for mfw, culling_percent in fit_keys
     )
+    fit_ids = {(fit.mfw, fit.culling_percent): fit.fit_id for fit in fits}
     cells = tuple(
         CellRequest(
             cell_id=_opaque_reference(
                 reference_key,
                 "cell",
                 request_id,
-                fit.fit_id,
-                DistanceMeasure.CLASSIC_DELTA.value,
+                fit_ids[(cell.mfw, cell.culling_percent)],
+                cell.distance.value,
             ),
-            fit_id=fit.fit_id,
-            distance=DistanceMeasure.CLASSIC_DELTA,
+            fit_id=fit_ids[(cell.mfw, cell.culling_percent)],
+            distance=cell.distance,
         )
-        for fit in fits
+        for cell in resolved_config.cells
     )
     return WorkerInputV1(
         schema_version="stylo-worker-input-v1",
         request_id=request_id,
         limit_profile="stylo-worker-contract-limits-v1",
-        analysis_unit="whole_text",
-        seed=20260713,
+        analysis_unit=resolved_config.analysis_unit,
+        seed=resolved_config.seed,
         candidate_features=features,
         documents=document_rows,
         fits=fits,
