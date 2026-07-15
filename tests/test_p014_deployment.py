@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 import copy
+import http.server
 import importlib.util
 import os
+import socketserver
 import stat
 import subprocess
 import sys
+import threading
+import time
 from pathlib import Path
 
 import pytest
@@ -13,6 +17,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR_PATH = ROOT / "scripts" / "validate_p014_deployment.py"
 GENERATOR_PATH = ROOT / "scripts" / "generate_p014_secrets.py"
+SMOKE_PATH = ROOT / "scripts" / "smoke_p014_stack.sh"
 
 
 def _load_script(name: str, path: Path):
@@ -39,6 +44,92 @@ def test_runtime_gate_cleans_failed_start_and_logs_only_the_pre_public_gateway()
     assert "--no-color --tail 100 gateway" in gate
     assert "--no-color --tail 100 app" not in gate
     assert "p014-runtime-stack-start-failed" in gate
+    assert "p014-runtime-published-gateway-failed" in gate
+    assert gate.count("gateway_start_diagnostics") == 3
+
+
+def test_stack_smoke_waits_for_delayed_published_gateway() -> None:
+    class Handler(http.server.BaseHTTPRequestHandler):
+        def do_GET(self) -> None:  # noqa: N802
+            if self.headers.get("Host") == "invalid.example":
+                self.send_response(421)
+                self.end_headers()
+                return
+            self.send_response(200)
+            self.send_header("X-Content-Type-Options", "nosniff")
+            self.send_header("X-Frame-Options", "DENY")
+            self.send_header("Referrer-Policy", "no-referrer")
+            self.send_header("Cross-Origin-Opener-Policy", "same-origin")
+            self.send_header("Cross-Origin-Resource-Policy", "same-origin")
+            self.end_headers()
+            self.wfile.write(b"ok")
+
+        def log_message(self, _format: str, *args: object) -> None:
+            del args
+
+    server = socketserver.TCPServer(("127.0.0.1", 0), Handler, bind_and_activate=False)
+    server.server_bind()
+    port = server.server_address[1]
+
+    def delayed_server() -> None:
+        time.sleep(0.15)
+        server.server_activate()
+        server.serve_forever(poll_interval=0.01)
+
+    thread = threading.Thread(target=delayed_server, daemon=True)
+    thread.start()
+    env = {
+        **os.environ,
+        "DELTA_SMOKE_URL": f"http://127.0.0.1:{port}",
+        "DELTA_SMOKE_READINESS_ATTEMPTS": "20",
+        "DELTA_SMOKE_READINESS_DELAY": "0.05",
+    }
+    try:
+        completed = subprocess.run(
+            [str(SMOKE_PATH)],
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    finally:
+        server.shutdown()
+        server.server_close()
+        thread.join(timeout=1)
+
+    assert completed.returncode == 0
+    assert completed.stdout == "p014-stack-smoke-ok\n"
+    assert completed.stderr == ""
+
+
+def test_stack_smoke_fails_closed_after_bounded_readiness_attempts() -> None:
+    server = socketserver.TCPServer(("127.0.0.1", 0), None, bind_and_activate=False)
+    server.server_bind()
+    port = server.server_address[1]
+    env = {
+        **os.environ,
+        "DELTA_SMOKE_URL": f"http://127.0.0.1:{port}",
+        "DELTA_SMOKE_READINESS_ATTEMPTS": "2",
+        "DELTA_SMOKE_READINESS_DELAY": "0.01",
+    }
+    try:
+        completed = subprocess.run(
+            [str(SMOKE_PATH)],
+            cwd=ROOT,
+            env=env,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+    finally:
+        server.server_close()
+
+    assert completed.returncode == 1
+    assert completed.stdout == ""
+    assert "p014-smoke-published-gateway-unavailable" in completed.stderr
 
 
 def test_compose_tampering_is_rejected() -> None:

@@ -32,16 +32,20 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
+gateway_start_diagnostics() {
+  docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" ps --all >&2 || true
+  # No public request or corpus upload has occurred when this helper is called.
+  docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" logs \
+    --no-color --tail 100 gateway >&2 || true
+}
+
 cd "$DEPLOYMENT"
 "$UV_BIN" run python "$ROOT/scripts/validate_p014_deployment.py"
 docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" config --quiet
 STACK_STARTED=1
 if ! docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" up \
   --detach --remove-orphans --wait --wait-timeout 180; then
-  docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" ps --all >&2 || true
-  # The gateway has not accepted public traffic or corpus data at this point.
-  docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" logs \
-    --no-color --tail 100 gateway >&2 || true
+  gateway_start_diagnostics
   printf '%s\n' "p014-runtime-stack-start-failed" >&2
   exit 1
 fi
@@ -55,7 +59,11 @@ fi
 
 "$UV_BIN" run python "$ROOT/scripts/inspect_p014_runtime.py" \
   --app "$APP_ID" --gateway "$GATEWAY_ID"
-"$ROOT/scripts/smoke_p014_stack.sh"
+if ! "$ROOT/scripts/smoke_p014_stack.sh"; then
+  gateway_start_diagnostics
+  printf '%s\n' "p014-runtime-published-gateway-failed" >&2
+  exit 1
+fi
 
 if docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" exec -T app \
   /bin/sh -c 'touch /opt/delta/p014-write-probe' >/dev/null 2>&1; then
