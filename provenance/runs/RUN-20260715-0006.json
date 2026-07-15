@@ -1,0 +1,157 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0006",
+  "run_type": "security",
+  "status": "passed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-15T15:11:23Z",
+  "ended_at_utc": "2026-07-15T15:17:35Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "8579e4e335cfa3ccbd1368588bf11d60dca08764",
+  "environment": {
+    "publication_ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "timezone": "UTC",
+      "workflow": "P014 publish immutable image",
+      "run": "29426974523",
+      "job": "87391795653",
+      "trigger": "workflow_dispatch",
+      "source_commit": "8579e4e335cfa3ccbd1368588bf11d60dca08764",
+      "prerequisite_ci_run": "29426588836",
+      "prerequisite_verify_job": "87390451573",
+      "prerequisite_container_job": "87390451645"
+    },
+    "application_image": {
+      "local_image_id": "sha256:d03752691358a8aeb9387f90f97523c5779ecded0e63f8dc1d463b9fa5cddacf",
+      "exact_commit_tag": "ghcr.io/oguzkoran-max/delta.lemmata.app:sha-8579e4e335cfa3ccbd1368588bf11d60dca08764",
+      "immutable_manifest": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2",
+      "manifest_size_bytes": 5144,
+      "latest_tag_published": false,
+      "registry_visibility": "private"
+    },
+    "repeated_hardened_gate": {
+      "gateway_manifest": "nginxinc/nginx-unprivileged:1.30.3-alpine-slim@sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81",
+      "gateway_runtime_image_id": "sha256:acffd179eaca40d7d73dc928ed314730fc7110a2f34c03f295245c344c90d037",
+      "runtime_inspection": "passed",
+      "hostile_request_smoke": "passed",
+      "application_default_route_egress": false,
+      "cleanup": "passed",
+      "browser": {
+        "url": "https://delta.lemmata.app:9443",
+        "entry_status": 200,
+        "entry_rendered": true,
+        "response_status_counts": {
+          "200": 79
+        },
+        "blocked_requests": 0,
+        "request_failures": 0,
+        "websocket_count": 1,
+        "websocket_pass": true,
+        "strict_expected_host_only": true,
+        "console_errors": 0,
+        "page_errors": 0,
+        "viewports": [
+          "1280x900",
+          "390x844",
+          "320x720"
+        ],
+        "horizontal_overflow": 0,
+        "release_labels_visible": true,
+        "result": "passed"
+      }
+    },
+    "retained_publication_attempts": [
+      {
+        "source_ref": "codex/p014-public-alpha-deploy",
+        "source_commit": "dea9e67154d75852c5d69db9871fd4a1868bc236",
+        "status": "failed_before_run_creation",
+        "reason": "GitHub returned HTTP 404 because the workflow_dispatch workflow was not yet registered on the default branch."
+      },
+      {
+        "source_ref": "main",
+        "source_commit": "8579e4e335cfa3ccbd1368588bf11d60dca08764",
+        "status": "passed",
+        "run": "29426974523",
+        "reason": "The exact green merge commit passed source identity, hardened runtime, browser, publication, digest, and logout steps."
+      }
+    ]
+  },
+  "command": "GitHub Actions workflow_dispatch: .github/workflows/p014-publish-image.yml with source_sha=8579e4e335cfa3ccbd1368588bf11d60dca08764 (run 29426974523)",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/p014-publish-image.yml",
+      "sha256": "0cd26309eca4605c10b5b1152e111890b40eab233581c0d03ea3fac716346385"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "7e3812352e11f43f345f2a21886ab708e1737b910882efe096fde33cb181a996"
+    },
+    {
+      "path": "containers/gateway-images.lock.json",
+      "sha256": "c8dfd31b8edb1ea5e6f9e3a198369b2d1e5fd79176ac6c459d36a083674d4e77"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "scripts/run_p014_runtime_gate.sh",
+      "sha256": "82feeba84eb62f2c3ced94e53ed870c2153f15397e71681b81800e68086f6cdf"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub Actions Ubuntu 24.04 x86_64 checkout of exact commit 8579e4e335cfa3ccbd1368588bf11d60dca08764",
+    "command": "GitHub Actions workflow_dispatch: .github/workflows/p014-publish-image.yml with source_sha=8579e4e335cfa3ccbd1368588bf11d60dca08764 (run 29426974523)",
+    "limitations": [
+      "The GitHub-hosted runner is named and time-stamped but is not represented by an immutable runner-image digest.",
+      "The private GHCR manifest can be replay-pulled only with separately authorised package access; no registry credential is retained in the repository.",
+      "The application image is content-addressed but is not represented as cryptographically signed or supplied with a separate provenance attestation.",
+      "The TLS browser bridge is test-only; no live target-host Caddy route was used.",
+      "The run did not prove target-host pull access, install Delta, modify the VPS, test Lemmata coexistence under load, rehearse host restart or rollback, or obtain owner acceptance."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/p014-publish-image.yml",
+      "sha256": "0cd26309eca4605c10b5b1152e111890b40eab233581c0d03ea3fac716346385"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "7e3812352e11f43f345f2a21886ab708e1737b910882efe096fde33cb181a996"
+    },
+    {
+      "path": "containers/gateway-images.lock.json",
+      "sha256": "c8dfd31b8edb1ea5e6f9e3a198369b2d1e5fd79176ac6c459d36a083674d4e77"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "1d1161534abff65850b8bb221137d90299befe7126ef9bda82995d400a2baa0c"
+    },
+    {
+      "path": "scripts/run_p014_runtime_gate.sh",
+      "sha256": "82feeba84eb62f2c3ced94e53ed870c2153f15397e71681b81800e68086f6cdf"
+    },
+    {
+      "path": "provenance/evidence/P014/canonical-alpha-stack-validation.md",
+      "sha256": "846dbd7222ecf1031ad31b15c9d45ae06e56388b27e1668a7a4ea516b26191db"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/immutable-image-publication.md",
+      "sha256": "68ea1d00f0114ae17f1729e0244208e596a9241cef30a3c831435c47b5244c0c"
+    }
+  ],
+  "notes": "The exact green main merge commit was rebuilt, re-gated, and published only as an exact-commit private GHCR image with immutable manifest digest sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2. No mutable latest tag or live-host change occurred."
+}
