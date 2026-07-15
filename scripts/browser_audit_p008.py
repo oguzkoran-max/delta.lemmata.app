@@ -110,18 +110,41 @@ def _wait_until_enabled(page: Page, locator: Locator, *, timeout: float = 15.0) 
 def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
     option_locator = page.get_by_role("option", name=option, exact=True)
     last_error = "no option interaction attempted"
-    for _ in range(5):
+    for _ in range(6):
         try:
-            locator.click(force=True, timeout=2_500)
-            locator.fill(option, timeout=2_500)
-            option_locator.wait_for(state="visible", timeout=2_500)
-            locator.press("Enter", timeout=2_500)
-            page.wait_for_timeout(250)
-            return
+            locator.wait_for(state="visible", timeout=5_000)
+            locator.scroll_into_view_if_needed(timeout=5_000)
+            locator.click(force=True, timeout=5_000)
+            page.wait_for_timeout(150)
+            if not option_locator.is_visible():
+                locator.fill(option, timeout=5_000)
+                option_locator.wait_for(state="visible", timeout=5_000)
+            option_locator.click(force=True, timeout=5_000)
+            deadline = time.monotonic() + 5
+            while time.monotonic() < deadline:
+                rendered = locator.evaluate(
+                    """element => {
+                      let current = element;
+                      for (let depth = 0; depth < 8 && current; depth += 1) {
+                        const text = (current.textContent || '').trim();
+                        if (text.includes('Analysis only') || text.includes('MFW')) {
+                          return text;
+                        }
+                        current = current.parentElement;
+                      }
+                      return (element.value || '').trim();
+                    }"""
+                )
+                if option in str(rendered):
+                    return
+                page.wait_for_timeout(100)
+            last_error = "selected option was not retained after the Streamlit rerun"
         except PlaywrightTimeoutError as error:
             last_error = str(error).splitlines()[0]
+        except Exception as error:
+            last_error = f"{type(error).__name__}: {error}"
         page.keyboard.press("Escape")
-        page.wait_for_timeout(150)
+        page.wait_for_timeout(500)
     raise RuntimeError(
         f"Selectbox option did not become available: {option}; last_error={last_error}"
     )
@@ -209,11 +232,31 @@ def _document_corpus(
             field.wait_for(state="visible")
         return field
 
+    def fill_document_field(group_label: str, label: str, value: str) -> None:
+        last_value = ""
+        for _ in range(5):
+            field = document_field(group_label, label)
+            field.fill(value)
+            field.press("Tab")
+            page.wait_for_timeout(500)
+            try:
+                last_value = document_field(group_label, label).input_value(timeout=3_000)
+            except PlaywrightTimeoutError:
+                last_value = ""
+            if last_value == value:
+                return
+        raise RuntimeError(
+            f"Document field did not retain its value: {group_label} -> {label}; "
+            f"last_value={last_value!r}"
+        )
+
     for index, (name, _payload) in enumerate(documents):
         group_label = f"{index + 1}. {name}"
-        document_field(group_label, "Primary author name").fill("Delta Synthetic Author")
-        document_field(group_label, "Bibliographic citation").fill(
-            f"Synthetic P008 browser-audit source record for {name}."
+        fill_document_field(group_label, "Primary author name", "Delta Synthetic Author")
+        fill_document_field(
+            group_label,
+            "Bibliographic citation",
+            f"Synthetic P008 browser-audit source record for {name}.",
         )
         rights = document_field(
             group_label,
@@ -225,6 +268,17 @@ def _document_corpus(
             rights,
             "Analysis only · permit upload and analysis, prohibit text export",
         )
+
+    for index, (name, _payload) in enumerate(documents):
+        group_label = f"{index + 1}. {name}"
+        expected = {
+            "Primary author name": "Delta Synthetic Author",
+            "Bibliographic citation": f"Synthetic P008 browser-audit source record for {name}.",
+        }
+        for label, value in expected.items():
+            retained = document_field(group_label, label).input_value(timeout=3_000)
+            if retained != value:
+                fill_document_field(group_label, label, value)
 
     page.get_by_role("button", name="Build corpus review", exact=True).click()
     review_heading = page.get_by_role("heading", name="Review the documented corpus", level=2)
