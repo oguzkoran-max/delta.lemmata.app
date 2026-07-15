@@ -30,6 +30,16 @@ def test_public_alpha_deployment_package_is_fail_closed() -> None:
     VALIDATOR.validate()
 
 
+def test_runtime_gate_cleans_failed_start_and_logs_only_the_pre_public_gateway() -> None:
+    gate = (ROOT / "scripts" / "run_p014_runtime_gate.sh").read_text(encoding="utf-8")
+    marker = "STACK_STARTED=1\nif ! docker compose"
+    assert marker in gate
+    assert gate.index("STACK_STARTED=1") < gate.index("up \\")
+    assert "--no-color --tail 100 gateway" in gate
+    assert "--no-color --tail 100 app" not in gate
+    assert "p014-runtime-stack-start-failed" in gate
+
+
 def test_compose_tampering_is_rejected() -> None:
     compose = VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")
     copied = {**compose, "services": {**compose["services"]}}

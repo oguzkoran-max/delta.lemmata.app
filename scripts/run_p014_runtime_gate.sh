@@ -35,9 +35,16 @@ trap cleanup EXIT HUP INT TERM
 cd "$DEPLOYMENT"
 "$UV_BIN" run python "$ROOT/scripts/validate_p014_deployment.py"
 docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" config --quiet
-docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" up \
-  --detach --remove-orphans --wait --wait-timeout 180
 STACK_STARTED=1
+if ! docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" up \
+  --detach --remove-orphans --wait --wait-timeout 180; then
+  docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" ps --all >&2 || true
+  # The gateway has not accepted public traffic or corpus data at this point.
+  docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" logs \
+    --no-color --tail 100 gateway >&2 || true
+  printf '%s\n' "p014-runtime-stack-start-failed" >&2
+  exit 1
+fi
 
 APP_ID=$(docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" ps --quiet app)
 GATEWAY_ID=$(docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" ps --quiet gateway)
