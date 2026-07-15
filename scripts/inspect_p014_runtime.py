@@ -12,6 +12,18 @@ from typing import Any
 
 APP_MEMORY = 1536 * 1024 * 1024
 GATEWAY_MEMORY = 128 * 1024 * 1024
+APP_TMPFS = {
+    "/tmp": {"size": "64m", "mode": "1777", "uid": "10001", "gid": "10001"},
+    "/var/lib/delta/runtime": {
+        "size": "512m",
+        "mode": "0700",
+        "uid": "10001",
+        "gid": "10001",
+    },
+}
+GATEWAY_TMPFS = {
+    "/tmp": {"size": "32m", "mode": "0700", "uid": "101", "gid": "101"},
+}
 GATEWAY_REFERENCE = (
     "nginxinc/nginx-unprivileged:1.30.3-alpine-slim@"
     "sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81"
@@ -99,6 +111,28 @@ def _mount_destinations(record: Mapping[str, Any]) -> Mapping[str, Mapping[str, 
     return projected
 
 
+def _validate_tmpfs(
+    host: Mapping[str, Any],
+    expected: Mapping[str, Mapping[str, str]],
+) -> None:
+    raw = _mapping(host.get("Tmpfs"), "P014_RUNTIME_TMPFS_INVALID")
+    _require(set(raw) == set(expected), "P014_RUNTIME_TMPFS_SET_INVALID")
+    for destination, expected_values in expected.items():
+        options = raw[destination]
+        _require(isinstance(options, str), "P014_RUNTIME_TMPFS_INVALID")
+        flags: set[str] = set()
+        values: dict[str, str] = {}
+        for option in options.split(","):
+            name, separator, value = option.partition("=")
+            if separator:
+                _require(name not in values, "P014_RUNTIME_TMPFS_INVALID")
+                values[name] = value
+            else:
+                flags.add(name)
+        _require(flags == {"rw", "nosuid", "nodev", "noexec"}, "P014_RUNTIME_TMPFS_FLAGS_INVALID")
+        _require(values == expected_values, "P014_RUNTIME_TMPFS_OPTIONS_INVALID")
+
+
 def _validate_network(record: Mapping[str, Any]) -> None:
     network_settings = _mapping(record.get("NetworkSettings"), "P014_RUNTIME_NETWORK_INVALID")
     networks = _mapping(network_settings.get("Networks"), "P014_RUNTIME_NETWORK_INVALID")
@@ -150,6 +184,9 @@ def validate_runtime_records(
 
     app_host = _mapping(app.get("HostConfig"), "P014_RUNTIME_HOST_CONFIG_INVALID")
     gateway_host = _mapping(gateway.get("HostConfig"), "P014_RUNTIME_HOST_CONFIG_INVALID")
+    _require(app_host.get("Init") is True, "P014_APP_INIT_INVALID")
+    _validate_tmpfs(app_host, APP_TMPFS)
+    _validate_tmpfs(gateway_host, GATEWAY_TMPFS)
     _require(not app_host.get("PortBindings"), "P014_APP_PORT_PUBLISHED")
     bindings = _mapping(gateway_host.get("PortBindings"), "P014_GATEWAY_PORTS_INVALID")
     _require(set(bindings) == {"8080/tcp"}, "P014_GATEWAY_PORT_SET_INVALID")
@@ -161,14 +198,18 @@ def validate_runtime_records(
     )
 
     app_mounts = _mount_destinations(app)
-    _require(set(app_mounts) == {"/tmp", "/var/lib/delta/runtime"}, "P014_APP_MOUNT_SET_INVALID")
+    _require(
+        set(app_mounts).issubset(APP_TMPFS),
+        "P014_APP_MOUNT_SET_INVALID",
+    )
     _require(
         all(item.get("Type") == "tmpfs" for item in app_mounts.values()),
         "P014_APP_MOUNT_TYPE_INVALID",
     )
     gateway_mounts = _mount_destinations(gateway)
     _require(
-        set(gateway_mounts) == {"/tmp", "/etc/nginx/nginx.conf"},
+        "/etc/nginx/nginx.conf" in gateway_mounts
+        and set(gateway_mounts).issubset({"/tmp", "/etc/nginx/nginx.conf"}),
         "P014_GATEWAY_MOUNT_SET_INVALID",
     )
     config_mount = gateway_mounts["/etc/nginx/nginx.conf"]
@@ -176,7 +217,8 @@ def validate_runtime_records(
         config_mount.get("Type") == "bind" and config_mount.get("RW") is False,
         "P014_GATEWAY_CONFIG_MOUNT_INVALID",
     )
-    _require(gateway_mounts["/tmp"].get("Type") == "tmpfs", "P014_GATEWAY_TMPFS_INVALID")
+    if "/tmp" in gateway_mounts:
+        _require(gateway_mounts["/tmp"].get("Type") == "tmpfs", "P014_GATEWAY_TMPFS_INVALID")
 
     app_labels = _mapping(app_config.get("Labels"), "P014_APP_LABELS_INVALID")
     gateway_labels = _mapping(gateway_config.get("Labels"), "P014_GATEWAY_LABELS_INVALID")

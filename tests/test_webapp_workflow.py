@@ -8,6 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import pyarrow as pa
 import pytest
 from streamlit.testing.v1 import AppTest
 
@@ -751,6 +752,36 @@ def test_result_helpers_reject_missing_ready_bindings_and_unavailable_matrices()
         webapp_module._render_distance_matrix(unavailable, view)
     with pytest.raises(ValueError, match="distance matrix is unavailable"):
         webapp_module._render_heatmap(unavailable, view)
+
+
+def test_result_charts_bypass_pandas_string_inference(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        webapp_module.st,
+        "vega_lite_chart",
+        lambda **kwargs: calls.append(kwargs),
+    )
+    monkeypatch.setattr(webapp_module.st, "markdown", lambda *_args, **_kwargs: None)
+    view = _public_result_view()
+    cell = view.cells[0]
+
+    webapp_module._render_heatmap(cell, view)
+    webapp_module._render_mds(cell, view)
+
+    assert len(calls) == 2
+    tables = [call["spec"]["data"]["values"] for call in calls]  # type: ignore[index]
+    assert all(isinstance(table, pa.Table) for table in tables)
+    assert tables[0].column_names == [
+        "reference",
+        "reference_title",
+        "compared",
+        "compared_title",
+        "distance",
+        "distance_label",
+    ]
+    assert tables[1].column_names == ["key", "title", "role", "x", "y"]
 
 
 def test_research_parameter_mode_is_visibly_locked() -> None:

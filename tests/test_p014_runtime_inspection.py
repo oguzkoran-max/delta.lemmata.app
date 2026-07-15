@@ -39,6 +39,7 @@ def _common(
             "Memory": memory,
             "MemorySwap": memory,
             "RestartPolicy": {"Name": "on-failure", "MaximumRetryCount": 3},
+            "Tmpfs": {},
         },
         "State": {"Running": True, "Health": {"Status": "healthy"}},
         "NetworkSettings": {"Networks": {"delta-public-alpha_delta_internal": {}}},
@@ -85,6 +86,12 @@ def _records() -> tuple[dict[str, Any], dict[str, Any]]:
         }
     )
     app["HostConfig"]["PortBindings"] = {}
+    app["HostConfig"]["Init"] = True
+    app["HostConfig"]["Tmpfs"] = {
+        destination: "rw,nosuid,nodev,noexec,"
+        + ",".join(f"{name}={value}" for name, value in options.items())
+        for destination, options in INSPECTOR.APP_TMPFS.items()
+    }
 
     gateway = _common(
         user="101:101",
@@ -101,11 +108,23 @@ def _records() -> tuple[dict[str, Any], dict[str, Any]]:
     gateway["HostConfig"]["PortBindings"] = {
         "8080/tcp": [{"HostIp": "127.0.0.1", "HostPort": "8502"}]
     }
+    gateway["HostConfig"]["Tmpfs"] = {
+        destination: "rw,nosuid,nodev,noexec,"
+        + ",".join(f"{name}={value}" for name, value in options.items())
+        for destination, options in INSPECTOR.GATEWAY_TMPFS.items()
+    }
     return app, gateway
 
 
 def test_runtime_inspection_accepts_only_the_bounded_profile() -> None:
     app, gateway = _records()
+    assert INSPECTOR.validate_runtime_records(app, gateway) == (APP_ID, GATEWAY_ID)
+
+
+def test_runtime_inspection_accepts_engine_that_reports_short_tmpfs_only_in_host_config() -> None:
+    app, gateway = _records()
+    app["Mounts"] = []
+    gateway["Mounts"] = [gateway["Mounts"][1]]
     assert INSPECTOR.validate_runtime_records(app, gateway) == (APP_ID, GATEWAY_ID)
 
 
@@ -117,6 +136,13 @@ def test_runtime_inspection_accepts_only_the_bounded_profile() -> None:
         ("app", ("HostConfig", "PortBindings"), {"8501/tcp": [{}]}, "P014_APP_PORT_PUBLISHED"),
         ("gateway", ("HostConfig", "PidsLimit"), 0, "P014_RUNTIME_PID_LIMIT_INVALID"),
         ("gateway", ("State", "Health", "Status"), "unhealthy", "P014_RUNTIME_NOT_HEALTHY"),
+        ("app", ("HostConfig", "Init"), False, "P014_APP_INIT_INVALID"),
+        (
+            "gateway",
+            ("HostConfig", "Tmpfs", "/tmp"),
+            "rw,nosuid,nodev,noexec,size=1g,mode=0700,uid=101,gid=101",
+            "P014_RUNTIME_TMPFS_OPTIONS_INVALID",
+        ),
         (
             "app",
             ("Config", "Labels", "org.opencontainers.image.revision"),

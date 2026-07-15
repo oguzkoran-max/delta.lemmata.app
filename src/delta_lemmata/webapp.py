@@ -11,6 +11,7 @@ from enum import StrEnum
 from html import escape
 from typing import Any, Literal, cast
 
+import pyarrow as pa  # type: ignore[import-untyped]
 import streamlit as st
 from pydantic import HttpUrl, TypeAdapter, ValidationError
 
@@ -2507,8 +2508,24 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
         for column_key, distance in zip(matrix.document_keys, row, strict=True)
     ]
     order = list(matrix.document_keys)
+    chart_data = pa.table(
+        {
+            "reference": pa.array((value["reference"] for value in values), type=pa.string()),
+            "reference_title": pa.array(
+                (value["reference_title"] for value in values), type=pa.string()
+            ),
+            "compared": pa.array((value["compared"] for value in values), type=pa.string()),
+            "compared_title": pa.array(
+                (value["compared_title"] for value in values), type=pa.string()
+            ),
+            "distance": pa.array((value["distance"] for value in values), type=pa.float64()),
+            "distance_label": pa.array(
+                (value["distance_label"] for value in values), type=pa.string()
+            ),
+        }
+    )
     spec = {
-        "data": {"values": values},
+        "data": {"values": chart_data},
         "layer": [
             {
                 "mark": {"type": "rect", "cornerRadius": 3},
@@ -2605,8 +2622,17 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         }
         for point in points
     ]
+    chart_data = pa.table(
+        {
+            "key": pa.array((value["key"] for value in values), type=pa.string()),
+            "title": pa.array((value["title"] for value in values), type=pa.string()),
+            "role": pa.array((value["role"] for value in values), type=pa.string()),
+            "x": pa.array((value["x"] for value in values), type=pa.float64()),
+            "y": pa.array((value["y"] for value in values), type=pa.float64()),
+        }
+    )
     spec = {
-        "data": {"values": values},
+        "data": {"values": chart_data},
         "layer": [
             {
                 "mark": {
