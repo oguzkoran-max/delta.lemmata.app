@@ -248,6 +248,7 @@ name = "delta-lemmata"
 source = { editable = "." }
 dependencies = [
     { name = "jsonschema" },
+    { name = "numpy" },
     { name = "pydantic" },
     { name = "streamlit" },
 ]
@@ -269,6 +270,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "jsonschema", specifier = ">=4.23,<5" },
+    { name = "numpy", specifier = ">=2.0,<3" },
     { name = "pydantic", specifier = ">=2.10,<3" },
     { name = "streamlit", specifier = ">=1.40,<2" },
 ]
