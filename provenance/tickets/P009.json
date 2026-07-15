@@ -30,14 +30,28 @@
   "threat_ids": ["SEC-05", "SEC-08", "EPI-08", "EPI-10", "EPI-11"],
   "decision_ids": ["HD-20260712-0001", "HD-20260714-0002", "HD-20260715-0001"],
   "prompt_event_ids": ["PE-20260715-0003"],
-  "commit_ids": ["e2fb35ece5eb0db3eec16486a1960d92985fc2b1"],
-  "run_ids": [],
+  "commit_ids": [
+    "e2fb35ece5eb0db3eec16486a1960d92985fc2b1",
+    "2dd8dd8fff5946d612d2a097d2061cdc55123682",
+    "abd0fb065ca4863165eb73c7cff2f0e358306164",
+    "dd515a935d4d21d32826de973cabf331d608d5e9",
+    "1b71cd3196fea6e7dba51aa1718023432d5c513f",
+    "084e4bc3b547e67ad9be36285ddda806658ea746",
+    "a0138fb4f0a38f68ccb44eedd77d620c465f5957",
+    "86ace5c30e353c88c3e94b421a01fc97e5bba4df",
+    "42c8bccd74a081b526a2338578d6c23bf961b9e3",
+    "59c2ce161bc31c3394640709e504db42209ac263",
+    "c5e39b07bb65a11613684a10269b186c987ef980"
+  ],
+  "run_ids": ["RUN-20260715-0003"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex", "OpenAI Codex independent review agents"],
   "supplemental_evidence": [
     "prompts/P009-start.md",
     "docs/development/p009-results-guardrails-contract.md",
+    "provenance/evidence/P009/minimum-alpha-results-validation.md",
+    "provenance/runs/RUN-20260715-0003.json",
     "memory/checkpoints/2026-07-15-p009-start.md",
     "decisions/ADR-0002-methodology-and-validation.md",
     "decisions/ADR-0005-public-research-and-stability.md",
@@ -49,19 +63,29 @@
     "docs/security/threat-model.md"
   ],
   "acceptance": [
-    {"id":"P009-AC-01","criterion":"One owned result is returned only after capability authorization and exact receipt, digest, byte-count, strict JSON/schema, request, outcome, retained-artifact, and guardian-confirmation checks; every mismatch fails closed.","status":"pending","evidence":[]},
-    {"id":"P009-AC-02","criterion":"A strict canonical result-view-v1 maps the reviewed documents and all four declared cells without exposing raw text, token streams, feature words, fitting vectors, secrets, capabilities, paths, or private ownership identifiers.","status":"pending","evidence":[]},
-    {"id":"P009-AC-03","criterion":"The overview retains all complete, not-enough-features, and failed cells in declared order; 500 MFW is a fixed non-optimal reference and cell inspection cannot rerun, rank, erase, or substitute results.","status":"pending","evidence":[]},
-    {"id":"P009-AC-04","criterion":"Heatmap values, nearest-neighbour rows with exact ties, and deterministic classical MDS coordinates derive only from one selected validated matrix and match their semantic-table labels and numbers.","status":"pending","evidence":[]},
-    {"id":"P009-AC-05","criterion":"Every analytical panel explains what it shows and does not show; claim lint rejects confidence, authorship probability or proof, pure style, causal age or maturation, turning-point, and equivalent prohibited language.","status":"pending","evidence":[]},
-    {"id":"P009-AC-06","criterion":"A canonical result-only JSON export is created before cleanup and becomes available only after input and work verified absence; the public lifecycle then reports Analysis complete without retaining raw text in the export.","status":"pending","evidence":[]},
-    {"id":"P009-AC-07","criterion":"Golden fixtures and browser E2E prove nonblank exact-data charts, keyboard-adjacent semantic tables, no page overflow or incoherent overlap at desktop, mobile, and 320-pixel reflow, no payload leakage, no unexpected external host, and no console error.","status":"pending","evidence":[]},
-    {"id":"P009-AC-08","criterion":"Source, schema, provenance, claim-lint, privacy-canary, adversarial result, exact-commit clean-clone, Linux CI, SBOM/dependency/secret, and canonical-container gates pass at full measured coverage.","status":"pending","evidence":[]}
+    {"id":"P009-AC-01","criterion":"One owned result is returned only after capability authorization and exact receipt, digest, byte-count, strict JSON/schema, request, outcome, retained-artifact, and guardian-confirmation checks; every mismatch fails closed.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-02","criterion":"A strict canonical result-view-v1 maps the reviewed documents and all four declared cells without exposing raw text, token streams, feature words, fitting vectors, secrets, capabilities, paths, or private ownership identifiers.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-03","criterion":"The overview retains all complete, not-enough-features, and failed cells in declared order; 500 MFW is a fixed non-optimal reference and cell inspection cannot rerun, rank, erase, or substitute results.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-04","criterion":"Heatmap values, nearest-neighbour rows with exact ties, and deterministic classical MDS coordinates derive only from one selected validated matrix and match their semantic-table labels and numbers.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-05","criterion":"Every analytical panel explains what it shows and does not show; claim lint rejects confidence, authorship probability or proof, pure style, causal age or maturation, turning-point, and equivalent prohibited language.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-06","criterion":"A canonical result-only JSON export is created before cleanup and becomes available only after input and work verified absence; the public lifecycle then reports Analysis complete without retaining raw text in the export.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-07","criterion":"Golden fixtures and browser E2E prove nonblank exact-data charts, keyboard-adjacent semantic tables, no page overflow or incoherent overlap at desktop, mobile, and 320-pixel reflow, no payload leakage, no unexpected external host, and no console error.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]},
+    {"id":"P009-AC-08","criterion":"Source, schema, provenance, claim-lint, privacy-canary, adversarial result, exact-commit clean-clone, Linux CI, SBOM/dependency/secret, and canonical-container gates pass at full measured coverage.","status":"passed","evidence":["provenance/evidence/P009/minimum-alpha-results-validation.md","provenance/runs/RUN-20260715-0003.json"]}
   ],
   "changed_files": [
-    "P009 opening prompt, result and guardrail contract, native Ticket, PromptEvent, and start checkpoint"
+    "P009 opening prompt, result and guardrail contract, native Ticket, PromptEvent, and start checkpoint",
+    "Capability-authorized exact-byte result receipt, strict result-view-v1 projection, schema generation, adversarial validators, and content-free lifecycle diagnostics",
+    "Four-cell result overview, fixed 500-MFW reading reference, display-only selector, exact heatmap, tie-preserving neighbour table, deterministic classical MDS map, semantic tables, and beginner guardrails",
+    "Result-only export written before cleanup and published only after verified input and work absence, with privacy-canary and prohibited-claim enforcement",
+    "Tracked Playwright upload-to-real-stylo-to-result gate with export validation, chart-pixel checks, desktop/mobile/reflow geometry, browser-console classification, payload canary, and observed-host checks",
+    "Exact implementation commit passed local and private-remote clean-clone verification, 1,523-test canonical Linux CI, supply-chain gates, and canonical Linux amd64 image construction"
   ],
-  "commands": [],
+  "commands": [
+    {"command":"./scripts/verify.sh","exit_code":0,"result":"The final P009 minimum-alpha source passed 1,522 tests with one documented macOS Linux-only skip, 100% of 11,377 statements and 2,964 branches, strict typing, schemas, metadata, 100 provenance records, repository scanning, frozen upstream validators, and the R lock gate.","evidence":"provenance/evidence/P009/minimum-alpha-results-validation.md"},
+    {"command":"GitHub Actions CI runs 29395359809 through 29401399006","exit_code":1,"result":"Seven failed attempts remain retained with their exact commits and observed product or harness causes; no corpus, scientific threshold, Delta value, distance matrix, or worker result was changed to obtain a pass.","evidence":"provenance/evidence/P009/minimum-alpha-results-validation.md"},
+    {"command":"GitHub Actions CI run 29402396790","exit_code":0,"result":"Exact commit c5e39b0 passed all 1,523 Linux tests at 100% measured coverage, real upload-to-R/stylo-to-result Playwright E2E, export and privacy checks, responsive chart validation, 100 provenance records, SBOM/dependency/secret gates, and canonical Linux amd64 image construction.","evidence":"provenance/evidence/P009/minimum-alpha-results-validation.md"},
+    {"command":"Fresh private-remote detached clone at c5e39b0; ./scripts/bootstrap.sh; ./scripts/verify.sh; clean post-run status","exit_code":0,"result":"The exact implementation rebuilt from committed lockfiles, passed 1,522 tests with one documented macOS skip at 100% measured coverage, and left the clean-clone worktree unchanged.","evidence":"provenance/runs/RUN-20260715-0003.json"}
+  ],
   "blockers": [
     "Full P009 purpose-specific graphics, dendrogram, broad glossary, and Style Over Time output remain outside the minimum Public-alpha slice.",
     "Public-alpha activation still requires the integrated P007 owner walkthrough and minimum P014 deployment gates."
