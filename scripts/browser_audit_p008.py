@@ -18,6 +18,7 @@ from typing import Any
 from urllib.parse import urlparse
 
 from playwright.sync_api import Browser, Locator, Page, sync_playwright
+from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -221,16 +222,39 @@ def _document_corpus(
     page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
 
     def document_field(group_label: str, label: str, *, role: str | None = None) -> Locator:
-        group = page.get_by_role("group").filter(has=page.get_by_text(group_label, exact=True))
-        field = (
-            group.get_by_role(role, name=label, exact=True)
-            if role is not None
-            else group.get_by_label(label, exact=True)
+        last_state = "unresolved"
+        for _ in range(6):
+            expander = page.locator('[data-testid="stExpander"]').filter(
+                has=page.get_by_text(group_label, exact=True)
+            )
+            details = expander.locator("details")
+            try:
+                details.wait_for(state="attached", timeout=5_000)
+                field = (
+                    details.get_by_role(role, name=label, exact=True)
+                    if role is not None
+                    else details.get_by_label(label, exact=True)
+                )
+                if not field.is_visible() and details.get_attribute("open") is None:
+                    summary = details.locator("summary")
+                    summary.wait_for(state="visible", timeout=5_000)
+                    summary.click(timeout=5_000)
+                field.wait_for(state="visible", timeout=5_000)
+                return field
+            except PlaywrightError:
+                try:
+                    last_state = (
+                        "open"
+                        if details.get_attribute("open", timeout=1_000) is not None
+                        else "closed"
+                    )
+                except PlaywrightError:
+                    last_state = "rerendering"
+                page.wait_for_timeout(250)
+        raise RuntimeError(
+            f"Document field did not become visible: {group_label} -> {label}; "
+            f"expander_state={last_state}"
         )
-        if not field.is_visible():
-            page.get_by_text(group_label, exact=True).click()
-            field.wait_for(state="visible")
-        return field
 
     def fill_document_field(group_label: str, label: str, value: str) -> None:
         last_value = ""
