@@ -2,10 +2,13 @@
 
 **Güncellendi:** 2026-07-15
 
-**Aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and Corpus
-Health teknik implementation, exact-commit clean-clone ve Linux CI kapılarından
-geçti. Yalnız Oğuz'un prepared-state corpus-uyarı dili kabulü açık; bu nedenle
-ticket henüz `complete` değil. P008 parameter review sözleşmesi sıradaki ana iş.
+**Aşama:** P001-P006 tamamlandı. P007 teknik implementation, exact-commit
+clean-clone ve Linux CI kapılarından geçti; bütünleşik son owner walkthrough'u
+açıktır. P008'in dört hücreli Guided minimum-alpha yolu gerçek R/stylo worker,
+desktop/mobile browser, clean-clone ve canonical Linux CI kapılarından geçti.
+P008, tam üç amaç ve ilgili known/unknown browser matrisi için `in-progress`
+kalır. Public-alpha kritik yolunda sıradaki ana iş minimum P009 sonuç ve yorum
+sınırı yüzeyidir.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -19,19 +22,37 @@ checksum-frozen direct-`stylo` oracle, retained worker package ve crash-safe
 scientific-result handoff var. P007'de deterministic preparation, purpose-aware
 confound warnings, exact/near/shared-passage kontrolleri, READY/BLOCKED kararı,
 beş semantic-table-bound diagnostic panel ve dört content-free CSV bağlıdır.
-Public parameter seçimi, analysis çalıştırma, benchmark, stability, FAIR run
-export ve deployment hâlâ yok.
+P008'de kapalı Guided parameter resolution, review-before-run, one-time READY
+admission ve gerçek P006 analysis orchestration bağlıdır. Sonuç grafikleri,
+export-backed completion, benchmark, stability, FAIR run export ve deployment
+hâlâ yok.
 
-**Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
+**Son tam kapanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif ticket:** `provenance/tickets/P007.json` (`in-progress`)
+**Aktif implementation ticket:** `provenance/tickets/P008.json` (`in-progress`)
 
 **Sıradaki tek ana iş:**
-P008 için beginner-first ve kapalı parameter-review sözleşmesini kur. Yalnız
-P007 receipt'in desteklediği MFW seçenekleri ile önceden kabul edilmiş culling,
-whole-text/izinli segmentation ve Delta distance seçenekleri gösterilsin. Run
-eylemi one-time READY authority'yi tüketerek mevcut P006 yoluna gitsin; lower-level
-bypass ve sessiz parameter downgrade olmasın.
+Minimum P009'u schema-first ve tests-first aç. P006'nın gerçekten ürettiği alanları
+esas alarak export-backed completion, dört parameter hücresinin complete/failed/NA
+durumu, distance matrix heatmap'i, nearest-neighbor tablosu ve tek work-level 2D
+harita üret. Her görsel aynı work ID/değerlerine bağlı erişilebilir tablo taşısın;
+her panelde `What this shows` ve `What this does not show` bulunsun. Confidence,
+authorship proof, pure style veya causal age/maturity dili üretilmesin.
+
+**P008 minimum-alpha checkpoint'i:** Guided Mode tam olarak 100, 300, 500 ve
+1000 MFW; yüzde 0 culling; whole text; Classic Delta; seed 20260713 ve optimal
+olduğu iddia edilmeyen sabit 500-MFW reference ile çalışır. Research Mode görünür
+ama kilitlidir. Exact implementation commit'i
+`7e9a28eafa4756b2cf82e6d6f3d8e0c43742edf5`; canonical Linux CI
+`29388984019` içinde 1.459 test, gerçek upload-to-R/stylo Playwright akışı,
+desktop/mobile/reflow, payload canary, console/network, SBOM/dependency/secret ve
+Linux amd64 container kapıları geçti. Aynı commit remote no-hardlinks clean clone'da
+bootstrap/full verify ve temiz post-run tree ile tekrarlandı. Kanıt:
+`RUN-20260715-0002` ve
+`provenance/evidence/P008/minimum-alpha-workflow-validation.md`. İki önceki CI
+failure, gerçek calculation başarısızlığı değil harness sınırı düzeltmeleri olarak
+değiştirilmeden tutulur. P008-AC-09 tam üç amaç ve ilgili known/unknown scope'lar
+için pending kalır.
 
 **P007 diagnostics checkpoint'i:** Purpose-aware metadata confound engine ve tek
 immutable health projection implementation commit'i

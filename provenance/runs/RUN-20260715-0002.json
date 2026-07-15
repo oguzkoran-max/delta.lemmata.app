@@ -1,0 +1,146 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0002",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P008"
+  ],
+  "started_at_utc": "2026-07-15T04:26:37Z",
+  "ended_at_utc": "2026-07-15T04:37:11Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "7e9a28eafa4756b2cf82e6d6f3d8e0c43742edf5",
+  "environment": {
+    "local": {
+      "os": "macOS",
+      "architecture": "arm64",
+      "python": "3.13.9",
+      "tests_passed": 1458,
+      "tests_skipped": 1,
+      "skip_reason": "Canonical R worker integration requires Linux",
+      "measured_statements": 10624,
+      "measured_branches": 2764,
+      "coverage_percent": 100
+    },
+    "clean_clone": {
+      "source": "private GitHub origin",
+      "mode": "remote no-hardlinks detached checkout",
+      "bootstrap": "passed",
+      "tests_passed": 1458,
+      "tests_skipped": 1,
+      "measured_statements": 10624,
+      "measured_branches": 2764,
+      "coverage_percent": 100,
+      "post_run_tree": "clean"
+    },
+    "ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "timezone": "UTC",
+      "run": "29388984019",
+      "verify_job": "87268030351",
+      "container_job": "87268030358",
+      "tests_passed": 1459,
+      "tests_skipped": 0,
+      "measured_statements": 10624,
+      "measured_branches": 2764,
+      "coverage_percent": 100,
+      "records_validated": 96,
+      "sbom_dependency_secret_gates": "passed",
+      "built_image_id": "sha256:dad60c946d0409cdc5d678b4e96d54d71a0b693913609ac97b081300e14a4584"
+    },
+    "browser": {
+      "engine": "Playwright Chromium 149.0.7827.55",
+      "synthetic_documents": 3,
+      "candidate_features": 1100,
+      "viewports": [
+        "1280x900",
+        "390x844",
+        "320x800"
+      ],
+      "horizontal_overflow": 0,
+      "overflowing_controls": 0,
+      "console_errors_or_warnings": 0,
+      "external_hosts_observed": 0,
+      "real_r_stylo_result": "passed",
+      "p009_handoff_boundary": "passed"
+    },
+    "retained_failed_ci_attempts": [
+      {
+        "run": "29388187630",
+        "commit": "9c7497c7d90b735d993e672eb80d235b67f0b60a",
+        "reason": "The harness waited for the P009 Analysis complete state after the real calculation had reached the valid P008 result boundary."
+      },
+      {
+        "run": "29388674911",
+        "commit": "46daea29c16408dbc0c61f089f150157c3b249ee",
+        "reason": "All substantive checks passed; one exact-text selector rejected the second sentence inside a two-sentence P009 handoff notice."
+      }
+    ]
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; uv run python scripts/browser_audit_p008.py --output /tmp/delta-p008-browser-audit; docker build --platform linux/amd64 --file containers/Dockerfile .",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "5d6a188176a852c3b921e11393d24f8f1a57230310e8f73b1f9337f300fd91e2"
+    },
+    {
+      "path": "scripts/browser_audit_p008.py",
+      "sha256": "4df42751ca8ce20231315b175b2059538c29e3bb4659facbfb614e6df8023b42"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "b3aca42a2e0075871cd45731c925b42d666667ab1f2c9e094b63e2ab28428a02"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Fresh remote no-hardlinks detached macOS clone plus GitHub Actions Ubuntu 24.04 checkout of exact commit 7e9a28eafa4756b2cf82e6d6f3d8e0c43742edf5",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; uv run python scripts/browser_audit_p008.py --output /tmp/delta-p008-browser-audit; docker build --platform linux/amd64 --file containers/Dockerfile .",
+    "limitations": [
+      "The macOS clean clone may reuse package-manager caches and cannot execute the canonical Linux worker boundary.",
+      "The GitHub-hosted runner image is named but is not represented by an immutable runner-image digest.",
+      "Browser screenshots and the temporary audit JSON remain in the ephemeral GitHub runner; the full JSON is retained in the GitHub job log because repository artifact quota was unavailable.",
+      "The browser gate covers the exposed four-cell Guided whole-text slice, not all three research purposes or known/unknown variants required for full P008 completion.",
+      "Synthetic workflow evidence does not establish general usability, benchmark accuracy, literary findings, FAIR certification, production readiness, or release acceptance."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "5d6a188176a852c3b921e11393d24f8f1a57230310e8f73b1f9337f300fd91e2"
+    },
+    {
+      "path": "scripts/browser_audit_p008.py",
+      "sha256": "4df42751ca8ce20231315b175b2059538c29e3bb4659facbfb614e6df8023b42"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "b3aca42a2e0075871cd45731c925b42d666667ab1f2c9e094b63e2ab28428a02"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "1748062f0de842703693bb6d60e9b10163483ca5b956ab9c59dbf56419ae1b7f"
+    },
+    {
+      "path": "src/delta_lemmata/workflow_models.py",
+      "sha256": "c748570b4d137192b117c6e9bbcae11fee9f7cd0500c8c94a70708247c482cee"
+    },
+    {
+      "path": "schemas/resolved-workflow-config-v1.schema.json",
+      "sha256": "74b886a368d7b96e1d48963bb75c67ad5dde51332ebb59d488b5a06c3eceba4c"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P008/minimum-alpha-workflow-validation.md",
+      "sha256": "6e7e14849cfe2b6ccf4f8c53d84d93c14428970bc9b34dd5f106385a1243fea3"
+    }
+  ],
+  "notes": "The exact P008 minimum-alpha implementation passed local and fresh remote clean-clone verification, canonical Linux source and container gates, and a real upload-to-R/stylo browser workflow. Two preceding CI failures are retained as harness-boundary corrections. Full P008 remains open for all-purpose and known/unknown workflow evidence plus the human-accepted Research preset."
+}

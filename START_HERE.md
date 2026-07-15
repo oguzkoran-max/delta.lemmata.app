@@ -3,10 +3,13 @@
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **Güncel aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and
-Corpus Health `codex/p007-preprocessing` dalında teknik olarak uygulanmış ve
-exact-commit clean-clone/Linux CI kapılarından geçmiştir; yalnız Oğuz'un son
-corpus-uyarı dili ve prepared-state browser kabulü açıktır. `HD-20260714-0001`
-yöntem paketini kabul etti; ADR-0014 Accepted durumundadır. `HD-20260714-0002`
+Corpus Health teknik kapılardan geçti; yalnız Oğuz'un bütünleşik son uyarı dili
+ve prepared-state browser kabulü açıktır. P008'in dört hücreli Guided minimum-alpha
+akışı `7e9a28e` commit'inde gerçek upload-to-R/stylo Linux browser kapısından,
+canonical CI `29388984019` ve exact-commit remote clean-clone tekrarından geçti.
+P008 tam üç amaç ve ilgili known/unknown matris kanıtı için `in-progress` kalır;
+Research Mode, `research-grid-v1` insan kararı gelene kadar kilitlidir. Sıradaki
+uygulama işi minimum P009 sonuç, grafik ve yorum sınırı yüzeyidir. `HD-20260714-0002`
 ve ADR-0015, gerekli P007, minimum P008/P009 ve minimum P014 kapıları geçerse
 2026-07-17 için açıkça etiketli Public-alpha hedefini kabul eder; tarih hiçbir
 başarısız kapıyı geçersiz kılmaz.
@@ -143,7 +146,12 @@ Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P0
 bekler. P007 implementation commit'i `b42da99`; `RUN-20260715-0001` ve
 `provenance/evidence/P007/corpus-health-diagnostics-validation.md` deterministic
 preparation, confound/overlap/feature-capacity projeksiyonu, content-free CSV,
-clean-clone ve Linux CI kanıtını bağlar. Sıradaki tek ana iş P008 için kapalı
-parameter-review sözleşmesini kurmak ve Run eylemini yalnız one-time P007 READY
-authority üzerinden mevcut P006 execution yoluna bağlamaktır. P007'nin son owner
-uyarı dili kabulü ayrı ve açık kalır.
+clean-clone ve Linux CI kanıtını bağlar. P008 minimum Guided akışı exact commit
+`7e9a28e`, `RUN-20260715-0002` ve CI `29388984019` ile doğrulandı: resolved config,
+one-time P007 READY admission, P006 execution, locked Research Mode ve gerçek
+browser akışı bağlıdır. Tam P008 AC-09 üç amaç ve ilgili known/unknown scope'lar
+için açık kalır; bu genişletme Public alpha'yı engellemez. Public-alpha kritik
+yolundaki sıradaki tek ana iş minimum P009 sonuç ekranıdır. Ekran export-backed
+tamamlanma durumunu, distance matrix heatmap'ini, nearest-neighbor tablosunu ve
+tek work-level 2D haritayı erişilebilir metin eşleri ve yorum sınırlarıyla sunmalıdır.
+P007'nin son owner uyarı dili kabulü bütünleşik aktivasyon turuna taşınmıştır.

@@ -333,6 +333,14 @@ kapısı genel usability veya teachability testi değildir.
 
 ### P008: Guided and Research Workflows
 
+**Durum (2026-07-15):** `in-progress`. Public-alpha için gerekli dört hücreli
+Guided whole-text dilimi exact implementation `7e9a28e`, `RUN-20260715-0002`,
+canonical Linux CI `29388984019` ve remote clean-clone tekrarında geçti. Resolved
+config, one-time P007 READY admission, gerçek P006 execution ve desktop/mobile
+browser kapıları bağlıdır. Tam P008 kapanışı, üç araştırma amacı ile ilgili
+known/unknown scope matrisini ve insan-kabul edilmiş `research-grid-v1` preset'ini
+bekler; bu geniş kapsam minimum Public-alpha aktivasyonunu engellemez.
+
 **Amaç:** Üç araştırma amacını R/Python kodu yazdırmadan, yöntemsel seçimleri saklamadan uçtan uca çalıştırmak.
 
 **Bağımlılık:** P002, P004, P005, P006, P007.
@@ -361,6 +369,12 @@ kapısı genel usability veya teachability testi değildir.
 **Sahip/denetçi:** Geliştirme ajanı uygular; Oğuz araştırma akışlarını denetler.
 
 ### P009: Results, Explanations, and Interpretive Guardrails
+
+**Durum (2026-07-15):** Public-alpha kritik yolundaki sıradaki implementation
+ticket'ıdır. Minimum dilim export-backed completion, dört parameter-cell durumu,
+distance matrix heatmap'i, nearest-neighbor tablosu ve tek work-level 2D haritayı
+erişilebilir metin eşleri ve açık yorum sınırlarıyla teslim eder. Dendrogram,
+Style Over Time'a özgü tarih haritası ve geniş glossary tam P009 kapsamındadır.
 
 **Amaç:** Hesaplama sonuçlarını incelemeye elverişli, fakat yöntemin sınırlarını aşmayan bir workbench çıktısına dönüştürmek.
 
