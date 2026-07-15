@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 import importlib.util
 import os
 import stat
@@ -46,6 +47,33 @@ def test_compose_tampering_is_rejected() -> None:
     copied["services"]["app"] = {**copied["services"]["app"], "read_only": False}
     with pytest.raises(VALIDATOR.DeploymentValidationError, match="P014_APP_HARDENING_INVALID"):
         VALIDATOR._validate_compose(copied)
+
+
+def test_gateway_requires_every_nginx_temp_directory_in_bounded_tmpfs() -> None:
+    compose = copy.deepcopy(
+        VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")
+    )
+    gateway = compose["services"]["gateway"]
+    gateway["entrypoint"][2] = gateway["entrypoint"][2].replace(
+        "/tmp/fastcgi_temp", "/tmp/missing_fastcgi_temp"
+    )
+    with pytest.raises(
+        VALIDATOR.DeploymentValidationError,
+        match="P014_GATEWAY_TEMP_SETUP_INCOMPLETE",
+    ):
+        VALIDATOR._validate_compose(compose)
+
+
+def test_gateway_rejects_writable_nginx_cache_mount() -> None:
+    compose = copy.deepcopy(
+        VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")
+    )
+    compose["services"]["gateway"]["volumes"].append("gateway-cache:/var/cache/nginx:rw")
+    with pytest.raises(
+        VALIDATOR.DeploymentValidationError,
+        match="P014_GATEWAY_CACHE_MOUNT_FORBIDDEN",
+    ):
+        VALIDATOR._validate_compose(compose)
 
 
 def test_secret_generator_creates_three_distinct_private_values(tmp_path: Path) -> None:

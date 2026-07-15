@@ -24,6 +24,13 @@ GATEWAY_REFERENCE = (
     "nginxinc/nginx-unprivileged:1.30.3-alpine-slim@"
     "sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81"
 )
+GATEWAY_TEMP_PATHS = (
+    "/tmp/client_temp",
+    "/tmp/proxy_temp",
+    "/tmp/fastcgi_temp",
+    "/tmp/uwsgi_temp",
+    "/tmp/scgi_temp",
+)
 
 
 class DeploymentValidationError(RuntimeError):
@@ -140,9 +147,25 @@ def _validate_compose(compose: Mapping[str, Any]) -> None:
         _has_hardening(gateway, pids=64, cpus="0.25", memory="128m"),
         "P014_GATEWAY_HARDENING_INVALID",
     )
+    gateway_volumes = gateway.get("volumes", [])
     _require(
-        gateway.get("volumes") == ["./nginx.conf:/etc/nginx/nginx.conf:ro"],
+        all("/var/cache/nginx" not in str(mount) for mount in gateway_volumes),
+        "P014_GATEWAY_CACHE_MOUNT_FORBIDDEN",
+    )
+    _require(
+        gateway_volumes == ["./nginx.conf:/etc/nginx/nginx.conf:ro"],
         "P014_GATEWAY_MOUNT_INVALID",
+    )
+    _require(
+        gateway.get("tmpfs") == ["/tmp:rw,nosuid,nodev,noexec,size=32m,mode=0700,uid=101,gid=101"],
+        "P014_GATEWAY_TMPFS_INVALID",
+    )
+    gateway_entrypoint = gateway.get("entrypoint", [])
+    _require(
+        isinstance(gateway_entrypoint, list)
+        and len(gateway_entrypoint) == 3
+        and all(path in str(gateway_entrypoint[2]) for path in GATEWAY_TEMP_PATHS),
+        "P014_GATEWAY_TEMP_SETUP_INCOMPLETE",
     )
     _require("healthcheck" in gateway, "P014_GATEWAY_HEALTHCHECK_MISSING")
 
@@ -241,8 +264,14 @@ def _validate_text_contracts() -> None:
         "proxy_set_header Connection $connection_upgrade;",
         'add_header X-Frame-Options "DENY" always;',
         "access_log off;",
+        "client_body_temp_path /tmp/client_temp 1 2;",
+        "proxy_temp_path /tmp/proxy_temp 1 2;",
+        "fastcgi_temp_path /tmp/fastcgi_temp 1 2;",
+        "uwsgi_temp_path /tmp/uwsgi_temp 1 2;",
+        "scgi_temp_path /tmp/scgi_temp 1 2;",
     )
     _require(all(item in nginx for item in required_nginx), "P014_GATEWAY_POLICY_INCOMPLETE")
+    _require("/var/cache/nginx" not in nginx, "P014_GATEWAY_CACHE_PATH_FORBIDDEN")
 
     caddy = (DEPLOYMENT / "Caddyfile.delta.example").read_text(encoding="utf-8")
     _require(caddy.count("delta.lemmata.app {") == 1, "P014_CADDY_HOST_INVALID")
