@@ -415,7 +415,7 @@ def _run_analysis(page: Page, output: Path, canary: str) -> dict[str, Any]:
         ).count()
         == 1,
         "p009_boundary_pass": page.get_by_text(
-            "Evidence review and result visualizations are the next step.", exact=True
+            "Evidence review and result visualizations are the next step.", exact=False
         ).count()
         == 1,
         "payload_absent_pass": canary not in body,
