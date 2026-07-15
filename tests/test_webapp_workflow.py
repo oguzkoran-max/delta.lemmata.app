@@ -608,7 +608,7 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
             prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: result_view)
         ),
     )
-    app.run()
+    app.run(timeout=40)
 
     assert len(app.exception) == 0
     assert "Explore the relative distances" in [heading.value for heading in app.header]
@@ -673,7 +673,7 @@ def test_partial_result_marks_unavailable_cell_without_hiding_completed_evidence
             prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: partial)
         ),
     )
-    app.run()
+    app.run(timeout=40)
 
     assert len(app.exception) == 0
     assert "At least one comparison could not be completed" in "\n".join(

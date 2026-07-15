@@ -19,9 +19,11 @@ preferred parameter after seeing the output.
 The only numerical input is one guardian-confirmed `stylo-worker-result-v1`
 artifact retained by P006. Before use, the server reauthorizes the owning session
 and checks the artifact against its durable receipt: component, byte count,
-SHA-256, canonical JSON, schema version, request ID, worker version, and complete
-or partial outcome. A missing, expired, altered, unconfirmed, non-canonical, or
-unauthorized result fails closed.
+SHA-256, strict JSON/schema semantics, request ID, worker version, and complete
+or partial outcome. A missing, expired, altered, unconfirmed, invalid, or
+unauthorized result fails closed. The retained R payload need not reproduce
+Python's byte spelling for equivalent JSON numbers; its exact received bytes are
+still bound to the durable receipt before semantic validation.
 
 The browser receives a bounded presentation model, not the private worker input
 or workspace. Raw text, token streams, candidate/selected feature words,

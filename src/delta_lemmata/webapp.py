@@ -2736,6 +2736,7 @@ def _render_result_view(view: ResultViewV1) -> None:
         file_name="delta-result-view-v1.json",
         mime="application/json",
         help=text("results.download.help"),
+        on_click="ignore",
         width="stretch",
         key="p009_download_result",
     )

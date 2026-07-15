@@ -7,7 +7,7 @@
   "closed_at_utc": null,
   "objective": "Turn one owned, guardian-confirmed P006 scientific result into a strict, beginner-readable, downloadable, and accessible four-cell workbench view whose heatmap, nearest-neighbour table, and deterministic classical MDS map remain bound to exact validated distances and explicit interpretation limits.",
   "scope": [
-    "Capability-authorized result readback with durable receipt, byte-count, SHA-256, canonical JSON, schema, request, outcome, and guardian-confirmation checks",
+    "Capability-authorized result readback with durable receipt, exact byte-count and SHA-256, strict JSON/schema, request, outcome, and guardian-confirmation checks",
     "A closed canonical result-view-v1 contract that excludes raw text, token streams, feature words, fitting vectors, secrets, capabilities, paths, and private ownership identifiers",
     "Complete visibility for the declared 100, 300, 500, and 1000 MFW cells with exact complete, not-enough-features, or failed states",
     "A fixed 500-MFW reading reference and view-only complete-cell selector that cannot rerun, hide, rank, or call a post-result cell best",
@@ -49,7 +49,7 @@
     "docs/security/threat-model.md"
   ],
   "acceptance": [
-    {"id":"P009-AC-01","criterion":"One owned result is returned only after capability authorization and exact receipt, digest, byte-count, canonical schema, request, outcome, retained-artifact, and guardian-confirmation checks; every mismatch fails closed.","status":"pending","evidence":[]},
+    {"id":"P009-AC-01","criterion":"One owned result is returned only after capability authorization and exact receipt, digest, byte-count, strict JSON/schema, request, outcome, retained-artifact, and guardian-confirmation checks; every mismatch fails closed.","status":"pending","evidence":[]},
     {"id":"P009-AC-02","criterion":"A strict canonical result-view-v1 maps the reviewed documents and all four declared cells without exposing raw text, token streams, feature words, fitting vectors, secrets, capabilities, paths, or private ownership identifiers.","status":"pending","evidence":[]},
     {"id":"P009-AC-03","criterion":"The overview retains all complete, not-enough-features, and failed cells in declared order; 500 MFW is a fixed non-optimal reference and cell inspection cannot rerun, rank, erase, or substitute results.","status":"pending","evidence":[]},
     {"id":"P009-AC-04","criterion":"Heatmap values, nearest-neighbour rows with exact ties, and deterministic classical MDS coordinates derive only from one selected validated matrix and match their semantic-table labels and numbers.","status":"pending","evidence":[]},

@@ -117,7 +117,7 @@ def _write_failure_record(
 def _pixel_evidence(locator: Locator, screenshot: Path) -> dict[str, Any]:
     payload = locator.screenshot(path=str(screenshot))
     image = Image.open(BytesIO(payload)).convert("RGB")
-    pixels = tuple(image.getdata())
+    pixels = tuple(image.get_flattened_data())
     non_blank = sum(1 for red, green, blue in pixels if min(red, green, blue) < 245)
     sampled_colors = len(set(pixels[:: max(1, len(pixels) // 20_000)]))
     fraction = non_blank / max(1, len(pixels))
