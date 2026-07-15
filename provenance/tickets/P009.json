@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P009",
+  "title": "Results, Explanations, and Interpretive Guardrails",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-15T04:56:12Z",
+  "closed_at_utc": null,
+  "objective": "Turn one owned, guardian-confirmed P006 scientific result into a strict, beginner-readable, downloadable, and accessible four-cell workbench view whose heatmap, nearest-neighbour table, and deterministic classical MDS map remain bound to exact validated distances and explicit interpretation limits.",
+  "scope": [
+    "Capability-authorized result readback with durable receipt, byte-count, SHA-256, canonical JSON, schema, request, outcome, and guardian-confirmation checks",
+    "A closed canonical result-view-v1 contract that excludes raw text, token streams, feature words, fitting vectors, secrets, capabilities, paths, and private ownership identifiers",
+    "Complete visibility for the declared 100, 300, 500, and 1000 MFW cells with exact complete, not-enough-features, or failed states",
+    "A fixed 500-MFW reading reference and view-only complete-cell selector that cannot rerun, hide, rank, or call a post-result cell best",
+    "Distance-matrix heatmap, exact-tie-preserving nearest-neighbour table, and deterministic work-level classical MDS map derived from one selected validated matrix",
+    "Semantic-table parity, beginner-first English explanations, panel-specific shows/does-not-show copy, and prohibited-claim lint",
+    "A result-only JSON export written before cleanup and published only after input/work verified absence so the lifecycle can honestly report Analysis complete",
+    "Desktop, mobile, 320-pixel reflow, keyboard-adjacent, nonblank-chart, payload-canary, console, network, clean-clone, Linux CI, supply-chain, and container evidence"
+  ],
+  "non_goals": [
+    "Changing P006 Delta mathematics, worker schema, fitted values, distance matrices, or result-validation rules",
+    "Selecting an optimum MFW, suppressing unattractive or failed cells, or allowing post-result parameter search",
+    "Dendrograms, full Style Over Time maps, group inference, broad glossary, stability labels, confidence, thresholds, or calibration",
+    "Raw text, prepared text, token streams, frequency vectors, candidate or selected feature words, server paths, capabilities, secrets, or private identifiers in the browser or download",
+    "A complete P012 FAIR run package, archival release, clean rerun, or reproducibility claim",
+    "Benchmark accuracy, negative controls, Pinocchio findings, production deployment, host isolation, load, rollback, or Lemmata coexistence evidence",
+    "Automatic literary interpretation, authorship proof, authenticity, influence, intention, chronology, quality, ageing, maturation, turning-point, causal, general usability, teachability, FAIR-certification, or publication-readiness claims"
+  ],
+  "dependencies": ["P008"],
+  "claim_ids": ["CE-02", "CE-03", "CE-08", "CE-09"],
+  "threat_ids": ["SEC-05", "SEC-08", "EPI-08", "EPI-10", "EPI-11"],
+  "decision_ids": ["HD-20260712-0001", "HD-20260714-0002", "HD-20260715-0001"],
+  "prompt_event_ids": ["PE-20260715-0003"],
+  "commit_ids": ["e2fb35ece5eb0db3eec16486a1960d92985fc2b1"],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex", "OpenAI Codex independent review agents"],
+  "supplemental_evidence": [
+    "prompts/P009-start.md",
+    "docs/development/p009-results-guardrails-contract.md",
+    "memory/checkpoints/2026-07-15-p009-start.md",
+    "decisions/ADR-0002-methodology-and-validation.md",
+    "decisions/ADR-0005-public-research-and-stability.md",
+    "decisions/ADR-0013-stylo-worker-parity.md",
+    "decisions/ADR-0015-accelerated-public-alpha.md",
+    "decisions/ADR-0016-deferred-integrated-owner-walkthrough.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {"id":"P009-AC-01","criterion":"One owned result is returned only after capability authorization and exact receipt, digest, byte-count, canonical schema, request, outcome, retained-artifact, and guardian-confirmation checks; every mismatch fails closed.","status":"pending","evidence":[]},
+    {"id":"P009-AC-02","criterion":"A strict canonical result-view-v1 maps the reviewed documents and all four declared cells without exposing raw text, token streams, feature words, fitting vectors, secrets, capabilities, paths, or private ownership identifiers.","status":"pending","evidence":[]},
+    {"id":"P009-AC-03","criterion":"The overview retains all complete, not-enough-features, and failed cells in declared order; 500 MFW is a fixed non-optimal reference and cell inspection cannot rerun, rank, erase, or substitute results.","status":"pending","evidence":[]},
+    {"id":"P009-AC-04","criterion":"Heatmap values, nearest-neighbour rows with exact ties, and deterministic classical MDS coordinates derive only from one selected validated matrix and match their semantic-table labels and numbers.","status":"pending","evidence":[]},
+    {"id":"P009-AC-05","criterion":"Every analytical panel explains what it shows and does not show; claim lint rejects confidence, authorship probability or proof, pure style, causal age or maturation, turning-point, and equivalent prohibited language.","status":"pending","evidence":[]},
+    {"id":"P009-AC-06","criterion":"A canonical result-only JSON export is created before cleanup and becomes available only after input and work verified absence; the public lifecycle then reports Analysis complete without retaining raw text in the export.","status":"pending","evidence":[]},
+    {"id":"P009-AC-07","criterion":"Golden fixtures and browser E2E prove nonblank exact-data charts, keyboard-adjacent semantic tables, no page overflow or incoherent overlap at desktop, mobile, and 320-pixel reflow, no payload leakage, no unexpected external host, and no console error.","status":"pending","evidence":[]},
+    {"id":"P009-AC-08","criterion":"Source, schema, provenance, claim-lint, privacy-canary, adversarial result, exact-commit clean-clone, Linux CI, SBOM/dependency/secret, and canonical-container gates pass at full measured coverage.","status":"pending","evidence":[]}
+  ],
+  "changed_files": [
+    "P009 opening prompt, result and guardrail contract, native Ticket, PromptEvent, and start checkpoint"
+  ],
+  "commands": [],
+  "blockers": [
+    "Full P009 purpose-specific graphics, dendrogram, broad glossary, and Style Over Time output remain outside the minimum Public-alpha slice.",
+    "Public-alpha activation still requires the integrated P007 owner walkthrough and minimum P014 deployment gates."
+  ]
+}
