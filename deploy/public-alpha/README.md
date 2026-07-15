@@ -70,6 +70,35 @@ Record the workflow run, job, source commit, local image ID, and returned
 commit tag. A publication failure stops the rollout and remains in the P014
 history.
 
+## Phase 1.75: Accept Runtime and Capacity Policy
+
+No package is installed until `ADR-0018` is explicitly accepted by Oğuz Koran.
+The proposed accelerated profile uses the existing VPS, the stable official
+Docker Engine and Compose plugin, and no new host swap. It does not modify or
+apply a finite resource cap to Lemmata.
+
+Immediately before installation, repeat the safe inventory and require:
+
+- Lemmata and Caddy active, Lemmata health `ok`, and port `8502` free;
+- at least `2,048 MiB` available memory and `10 GiB` available root disk;
+- recorded Lemmata start time, restart count, memory, Caddyfile hash, sockets,
+  forwarding values, firewall-rule counts, and memory-pressure values;
+- a paired Lemmata latency baseline collected immediately before the change.
+
+Install Docker only from its signed official Ubuntu repository and record exact
+package versions plus repository/key hashes. Docker documents that bridge
+networking creates firewall rules and may enable IP forwarding. Capture those
+differences and immediately rerun Lemmata health, restart, latency, Caddy, socket,
+and direct-external-port checks before pulling or installing Delta. Stop if
+available memory is below `1,800 MiB`, Lemmata restarts or errors, an unexpected
+public socket appears, or paired p95 latency increases by more than the frozen
+CE-15 budget of `20%`.
+
+Do not disable Docker firewall management as a shortcut. Do not create a plain
+swapfile. Both Delta services retain `memswap_limit == mem_limit`, so they cannot
+use swap. If the measured no-swap profile fails, stop and use a memory upgrade or
+separate VPS rather than weakening the accepted limits.
+
 ## Phase 2: Install an Immutable Release
 
 Use a release directory named by the full source commit:
@@ -101,9 +130,10 @@ DELTA_BUILD_ID=<the-same-40-character-source-commit>
 DELTA_RUNTIME_ENV_FILE=/etc/delta-public-alpha/runtime.env
 ```
 
-Pull the exact digest before systemd starts. For a private registry, use a
-least-privilege, read-only package credential, then log out after the pull; never
-put registry credentials in either Delta environment file:
+Pull the exact digest before systemd starts. For the private registry, use a
+dedicated classic personal access token with only `read:packages`, pass it through
+standard input, then log out after the pull; never put registry credentials in
+either Delta environment file:
 
 ```bash
 set -a
@@ -187,7 +217,10 @@ Delta load, sample both sites and both systemd units. Activation fails if:
 - Lemmata restarts or reports any error;
 - Delta escapes its CPU, RAM, PID, queue, worker, request, or connection limits;
 - either site's health fails;
-- Lemmata's measured p95 latency change exceeds the frozen project budget;
+- Lemmata's measured p95 latency increase exceeds the frozen `20%` CE-15 budget;
+- host available memory falls below `512 MiB`, idle post-start memory falls below
+  `768 MiB`, memory-pressure `full avg10` reaches `1.00`, or any host/container
+  OOM event occurs;
 - runtime, logs, or exported records contain uploaded text or secret material.
 
 Load evidence must record the tool, command, request count, concurrency, start/end

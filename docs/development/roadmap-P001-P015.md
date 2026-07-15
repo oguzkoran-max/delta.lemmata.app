@@ -541,10 +541,15 @@ sınırsız Lemmata kaynak profili capacity kararını açık bırakır. PR #4 m
 `8579e4e`, main CI `29426588836` ve `RUN-20260715-0006` ile exact image private
 GHCR'a immutable digest
 `sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`
-olarak yayımlandı; `latest` oluşturulmadı. Accepted post-preparation inventory,
-canlı TLS, Delta-Lemmata coexistence/load, restart cleanup, rollback ve owner
-acceptance henüz uygulanmadı; P014-AC-08 ile P014-AC-10 pending, ticket
-`in-progress` ve public activation kapalıdır.
+olarak yayımlandı; `latest` oluşturulmadı. Registry kanıtı PR #5 ve main CI
+`29429031944` ile yeşil `main`e alındı. `RUN-20260715-0007` ikinci read-only host
+gözleminde required cgroup controller'larını, boş pre-Docker firewall baseline'ını,
+sıfır memory pressure'ı, sıfır Lemmata restart'ını ve boş `8502`yi doğruladı.
+ADR-0018 same-VPS official Docker ve no-new-swap adayını fail-closed memory,
+network ve frozen yüzde 20 Lemmata p95 kapılarıyla önerir; owner kararı pending'dir.
+Accepted post-preparation inventory, canlı TLS, Delta-Lemmata coexistence/load,
+restart cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
+P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.
 
 **Deliverable'lar:**
 

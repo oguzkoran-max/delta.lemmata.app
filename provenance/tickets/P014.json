@@ -45,9 +45,11 @@
     "6f55609ace23a04c7de89670c894de46c9418833",
     "7f26dbe82437e7f9757e7c35b10b7666a3078578",
     "dea9e67154d75852c5d69db9871fd4a1868bc236",
-    "8579e4e335cfa3ccbd1368588bf11d60dca08764"
+    "8579e4e335cfa3ccbd1368588bf11d60dca08764",
+    "4c4d233d16f585c665587f1a2aa581085f21cee9",
+    "cc44132b524ae31e052a3af69ad4c416c88a223c"
   ],
-  "run_ids": ["RUN-20260715-0004", "RUN-20260715-0005", "RUN-20260715-0006"],
+  "run_ids": ["RUN-20260715-0004", "RUN-20260715-0005", "RUN-20260715-0006", "RUN-20260715-0007"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -55,15 +57,18 @@
     "prompts/P014-start.md",
     "decisions/ADR-0015-accelerated-public-alpha.md",
     "decisions/ADR-0017-public-alpha-deployment-profile.md",
+    "decisions/ADR-0018-shared-vps-runtime-capacity.md",
     "docs/development/p014-public-alpha-deployment-contract.md",
     "docs/development/public-alpha-owner-walkthrough.md",
     "deploy/public-alpha/README.md",
     "provenance/evidence/P014/canonical-alpha-stack-validation.md",
     "provenance/evidence/P014/immutable-image-publication.md",
     "provenance/evidence/P014/target-host-read-only-preflight.md",
+    "provenance/evidence/P014/target-host-runtime-capacity-observation.md",
     "provenance/runs/RUN-20260715-0004.json",
     "provenance/runs/RUN-20260715-0005.json",
     "provenance/runs/RUN-20260715-0006.json",
+    "provenance/runs/RUN-20260715-0007.json",
     "memory/checkpoints/2026-07-15-p014-start.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
@@ -77,7 +82,7 @@
     {"id":"P014-AC-05","criterion":"Application file/token/queue/concurrency and worker wall/CPU/RAM/process limits remain enforced under the deployment profile, and hostile, saturated, timeout, cancellation, and cleanup cases fail closed without payload leakage.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-06","criterion":"The English interface visibly and accessibly labels every stage Public alpha and experimental without prohibited scientific, FAIR, usability, publication, or isolation claims.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-07","criterion":"Canonical Linux CI builds and starts the exact stack, validates health and hostile requests, inspects runtime hardening, verifies denied egress and cleanup, records the image digest, and leaves no corpus artifact.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/immutable-image-publication.md","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260715-0006.json"]},
-    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":["provenance/evidence/P014/target-host-read-only-preflight.md","provenance/runs/RUN-20260715-0005.json"]},
+    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":["provenance/evidence/P014/target-host-read-only-preflight.md","provenance/evidence/P014/target-host-runtime-capacity-observation.md","provenance/runs/RUN-20260715-0005.json","provenance/runs/RUN-20260715-0007.json"]},
     {"id":"P014-AC-09","criterion":"Under the maximum accepted Delta load, Lemmata has zero restart and zero error, remains within the frozen latency budget, and both sites pass contemporaneous smoke checks.","status":"pending","evidence":[]},
     {"id":"P014-AC-10","criterion":"Restart/reboot cleanup and rollback complete without Lemmata interruption; Oğuz then passes the integrated owner walkthrough and explicitly accepts or rejects public-alpha activation.","status":"pending","evidence":[]}
   ],
@@ -86,7 +91,7 @@
     "Fail-closed package validator, runtime inspector, hostile-request smoke gate, test-only TLS browser audit, runtime gate, secret generator, and unit tests",
     "Canonical CI hardened-stack gate and exact-commit private GHCR publication workflow",
     "Public-alpha labels and claim-boundary checks across the existing workbench stages",
-    "P014 canonical CI, immutable registry publication, target-host preflight evidence, Run records, ticket links, start card, handoff, roadmap, and checkpoint"
+    "P014 canonical CI, immutable registry publication, target-host preflight and capacity evidence, proposed runtime decision, Run records, ticket links, start card, handoff, roadmap, and checkpoint"
   ],
   "commands": [
     {"command":"./scripts/verify.sh at 7f26dbe before push","exit_code":0,"result":"1,563 tests passed with one documented macOS Linux-worker skip; all 11,382 statements and 2,964 branches were covered.","evidence":"provenance/runs/RUN-20260715-0004.json"},
@@ -96,11 +101,13 @@
     {"command":"Read-only target-host inventory and 20-request Lemmata baseline","exit_code":21,"result":"Lemmata was healthy and port 8502 was free; the gate stopped before any host change because no supported container runtime was installed.","evidence":"provenance/evidence/P014/target-host-read-only-preflight.md"},
     {"command":"Merge PR #4 with a normal merge commit","exit_code":0,"result":"The cumulative P007-P014 commit and provenance history was preserved at main commit 8579e4e335cfa3ccbd1368588bf11d60dca08764.","evidence":"provenance/evidence/P014/immutable-image-publication.md"},
     {"command":"GitHub Actions main CI run 29426588836 at 8579e4e","exit_code":0,"result":"Both verify and container jobs passed for the exact merge commit.","evidence":"provenance/runs/RUN-20260715-0006.json"},
-    {"command":"GitHub Actions P014 publish immutable image run 29426974523 at 8579e4e","exit_code":0,"result":"The exact source was rebuilt and re-gated, then published privately at immutable manifest sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2 without a latest tag.","evidence":"provenance/evidence/P014/immutable-image-publication.md"}
+    {"command":"GitHub Actions P014 publish immutable image run 29426974523 at 8579e4e","exit_code":0,"result":"The exact source was rebuilt and re-gated, then published privately at immutable manifest sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2 without a latest tag.","evidence":"provenance/evidence/P014/immutable-image-publication.md"},
+    {"command":"Merge PR #5 with a normal merge commit and run main CI 29429031944","exit_code":0,"result":"Immutable publication evidence was preserved on main commit cc44132b524ae31e052a3af69ad4c416c88a223c; verify and hardened-container jobs both passed.","evidence":"provenance/evidence/P014/immutable-image-publication.md"},
+    {"command":"Read-only target-host cgroup, capacity, firewall, package-conflict, service, pressure, and socket observation","exit_code":0,"result":"Ubuntu 26.04 and required cgroup v2 controllers were present; Lemmata was healthy with zero restarts; UFW policy and firewall rules were inactive/empty; no current memory pressure was observed; no host state changed and owner runtime approval remains pending.","evidence":"provenance/evidence/P014/target-host-runtime-capacity-observation.md"}
   ],
   "blockers": [
     "The first target-host inventory is retained but failed closed before installation because no supported container runtime exists; an accepted post-preparation inventory is still required.",
-    "The approximately 4 GiB host has no swap and the existing approximately 1.04 GiB Lemmata process has no finite memory or CPU cap, so a recorded capacity decision and repeated preflight are required before Delta installation.",
+    "ADR-0018 proposes same-VPS official Docker with no new swap and explicit memory/network/latency stop gates, but Oğuz Koran has not yet accepted or rejected that live-host candidate.",
     "No live TLS, shared-VPS load, Lemmata coexistence, restart cleanup, rollback, or activation evidence exists yet.",
     "P007 integrated owner walkthrough remains a final activation gate even after technical deployment checks pass.",
     "Full P014 and CE-14/CE-15 require P012 and the normal scientific-release sequence; the accelerated minimum slice cannot close them."
