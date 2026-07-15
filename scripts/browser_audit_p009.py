@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import os
 import sqlite3
 import subprocess
@@ -47,6 +48,14 @@ FORBIDDEN_EXPORT_KEYS = (
     "capability",
     "workspace",
 )
+_ALLOWED_TRANSIENT_VEGA_WARNINGS = frozenset(
+    {
+        'WARN Infinite extent for field "distance": [Infinity, -Infinity]',
+        'WARN Infinite extent for field "x": [Infinity, -Infinity]',
+        'WARN Infinite extent for field "y": [Infinity, -Infinity]',
+    }
+)
+_MAX_ALLOWED_TRANSIENT_VEGA_WARNINGS = 12
 
 
 def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
@@ -149,6 +158,28 @@ def _selectbox_text(locator: Locator) -> str:
     )
 
 
+def _matrix_values_are_finite(matrix: Any) -> bool:
+    if not isinstance(matrix, dict):
+        return False
+    keys = matrix.get("document_keys")
+    rows = matrix.get("values")
+    if not isinstance(keys, list) or not isinstance(rows, list) or len(keys) < 2:
+        return False
+    if len(rows) != len(keys):
+        return False
+    return all(
+        isinstance(row, list)
+        and len(row) == len(keys)
+        and all(
+            not isinstance(value, bool)
+            and isinstance(value, (int, float))
+            and math.isfinite(float(value))
+            for value in row
+        )
+        for row in rows
+    )
+
+
 def _validate_export(filename: str, exported: dict[str, Any], canary: str) -> dict[str, bool]:
     serialized = json.dumps(exported, sort_keys=True, ensure_ascii=False)
     cells = exported.get("cells", [])
@@ -159,9 +190,29 @@ def _validate_export(filename: str, exported: dict[str, Any], canary: str) -> di
         "reference_pass": exported.get("reference_mfw") == 500
         and [cell.get("mfw") for cell in cells if cell.get("is_reference")] == [500],
         "matrix_pass": all(cell.get("matrix") for cell in cells),
+        "finite_matrix_values_pass": all(
+            _matrix_values_are_finite(cell.get("matrix")) for cell in cells
+        ),
         "private_material_absent_pass": canary not in serialized
         and all(key not in serialized for key in FORBIDDEN_EXPORT_KEYS),
     }
+
+
+def _partition_console_messages(
+    messages: list[dict[str, str]],
+) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
+    allowed: list[dict[str, str]] = []
+    unexpected: list[dict[str, str]] = []
+    for message in messages:
+        if (
+            len(allowed) < _MAX_ALLOWED_TRANSIENT_VEGA_WARNINGS
+            and message.get("type") == "warning"
+            and message.get("text") in _ALLOWED_TRANSIENT_VEGA_WARNINGS
+        ):
+            allowed.append(message)
+        else:
+            unexpected.append(message)
+    return allowed, unexpected
 
 
 def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
@@ -404,7 +455,11 @@ def main() -> int:
                 for key, value in section.items()
                 if key.endswith("_pass")
             ]
-            passed = all(boolean_results) and not external_hosts and not console_messages
+            allowed_console_messages, unexpected_console_messages = _partition_console_messages(
+                console_messages
+            )
+            console_policy_pass = not unexpected_console_messages
+            passed = all(boolean_results) and not external_hosts and console_policy_pass
             result = {
                 "schema_version": "1.0.0",
                 "git_commit": commit,
@@ -420,7 +475,13 @@ def main() -> int:
                 "synthetic_document_count": 3,
                 "synthetic_candidate_feature_target": FEATURE_COUNT,
                 "flow": flow,
-                "console_messages": console_messages,
+                "console_policy": (
+                    "Only a bounded set of exact Vega transient empty-dataset warnings is "
+                    "allowed after finite exported matrices and non-blank chart pixels pass."
+                ),
+                "console_policy_pass": console_policy_pass,
+                "allowed_console_messages": allowed_console_messages,
+                "console_messages": unexpected_console_messages,
                 "external_hosts_observed": external_hosts,
                 "network_scope": "Browser requests observed by Playwright; not a packet capture.",
                 "result": "passed" if passed else "failed",
