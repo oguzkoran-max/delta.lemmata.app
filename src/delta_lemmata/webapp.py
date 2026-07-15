@@ -200,6 +200,8 @@ def _html(value: str) -> str:
 def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
     version = text("header.version", version=health["version"])
     build = text("header.build", build_id=health["build_id"])
+    release_alpha = _html(text("header.release_public_alpha"))
+    release_experimental = _html(text("header.release_experimental"))
     if stage is CorpusSubstage.UPLOAD:
         stage_label = text("header.stage.upload")
     elif stage is CorpusSubstage.PARAMETERS:
@@ -215,9 +217,9 @@ def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
               <div class="delta-brand-name">{_html(text("brand.name"))}</div>
               <div class="delta-brand-subtitle">{_html(text("brand.subtitle"))}</div>
               <div class="delta-release-status" role="status"
-                   aria-label="{_html(text('header.release_status'))}">
-                <span class="delta-release-alpha">{_html(text("header.release_public_alpha"))}</span>
-                <span class="delta-release-experimental">{_html(text("header.release_experimental"))}</span>
+                   aria-label="{_html(text("header.release_status"))}">
+                <span class="delta-release-alpha">{release_alpha}</span>
+                <span class="delta-release-experimental">{release_experimental}</span>
               </div>
             </div>
           </div>

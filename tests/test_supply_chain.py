@@ -78,6 +78,25 @@ def test_container_locked_r_cache_is_readable_by_the_runtime_user() -> None:
     assert 'requireNamespace("stylo", quietly = TRUE)' in dockerfile
 
 
+def test_public_alpha_image_has_fixed_non_root_runtime_and_real_command() -> None:
+    dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
+    assert "groupadd --gid 10001 delta" in dockerfile
+    assert "useradd --uid 10001 --gid 10001" in dockerfile
+    assert "USER delta" in dockerfile
+    assert "COPY .streamlit ./.streamlit" in dockerfile
+    assert "HEALTHCHECK" in dockerfile
+    assert 'CMD ["/opt/delta/.venv/bin/streamlit", "run", "app.py"' in dockerfile
+
+
+def test_public_alpha_gateway_image_is_digest_pinned() -> None:
+    compose = (ROOT / "deploy" / "public-alpha" / "compose.yml").read_text(encoding="utf-8")
+    lock = load_json(ROOT / "containers" / "gateway-images.lock.json")
+    expected = f"{lock['repository']}:{lock['tag']}@{lock['manifest_list_digest']}"
+    assert expected in compose
+    assert lock["linux_amd64_digest"].startswith("sha256:")
+    assert lock["source"] == "Docker Registry HTTP API V2"
+
+
 def test_python_direct_dependencies_are_locked() -> None:
     with (ROOT / "uv.lock").open("rb") as handle:
         lock = tomllib.load(handle)

@@ -69,5 +69,32 @@ jobs:
       - name: Check out source
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
 
+      - name: Install pinned uv and Python
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.28"
+          python-version: "3.13.9"
+          enable-cache: false
+
+      - name: Restore locked browser-audit environment
+        run: uv sync --frozen
+
+      - name: Install Chromium for the gateway browser gate
+        run: uv run playwright install --with-deps chromium
+
       - name: Build canonical Linux amd64 image
-        run: docker build --platform linux/amd64 --file containers/Dockerfile .
+        run: |
+          docker build --platform linux/amd64 --file containers/Dockerfile --iidfile /tmp/delta-image-id .
+          printf 'DELTA_IMAGE=%s\n' "$(cat /tmp/delta-image-id)" >> "$GITHUB_ENV"
+          printf 'DELTA_BUILD_ID=%s\n' "$GITHUB_SHA" >> "$GITHUB_ENV"
+
+      - name: Create private runtime secrets
+        run: |
+          install -d -m 0700 /tmp/delta-p014-secrets
+          uv run python scripts/generate_p014_secrets.py --output /tmp/delta-p014-secrets/runtime.env
+          printf 'DELTA_RUNTIME_ENV_FILE=%s\n' /tmp/delta-p014-secrets/runtime.env >> "$GITHUB_ENV"
+
+      - name: Run hardened public-alpha stack gate
+        env:
+          DELTA_P014_BROWSER_AUDIT: "1"
+        run: ./scripts/run_p014_runtime_gate.sh

@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0.0",
+  "queried_at_utc": "2026-07-15T10:26:00Z",
+  "registry": "registry-1.docker.io",
+  "repository": "nginxinc/nginx-unprivileged",
+  "tag": "1.30.3-alpine-slim",
+  "manifest_list_digest": "sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81",
+  "linux_amd64_digest": "sha256:679095599879759174acfd716da4ca06a4b14dcbf5adb1c2ec60c64182668c90",
+  "source": "Docker Registry HTTP API V2",
+  "verification_status": "registry-digest-queried; canonical-runtime-ci-pending",
+  "verification_commit": null,
+  "verification_run": null,
+  "verification_job": null,
+  "verified_at_utc": null
+}

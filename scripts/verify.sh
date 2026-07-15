@@ -25,6 +25,7 @@ fi
 "$UV_BIN" run python scripts/validate_p006_frozen_oracle.py
 "$UV_BIN" run python scripts/validate_p006_frozen_oracle_v2.py
 "$UV_BIN" run python scripts/validate_p006_worker_evidence.py
+"$UV_BIN" run python scripts/validate_p014_deployment.py
 Rscript --vanilla -e 'invisible(parse(file="scripts/workers/p006-stylo-worker-v1.R")); cat("p006-worker-parse-ok\n")'
 if [ "$(uname -s)" = "Linux" ]; then
   "$UV_BIN" run python scripts/validate_p006_worker_parity.py

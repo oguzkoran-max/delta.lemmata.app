@@ -1,0 +1,20 @@
+# Add only after the local stack, read-only host inventory, and pre-change
+# Lemmata baseline pass. Validate the complete host Caddyfile before reload.
+delta.lemmata.app {
+    @invalid_host not host delta.lemmata.app
+    respond @invalid_host 421
+
+    header {
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        Referrer-Policy "no-referrer"
+        -Server
+    }
+
+    reverse_proxy 127.0.0.1:8502 {
+        header_up Host delta.lemmata.app
+        header_up X-Forwarded-Host delta.lemmata.app
+        header_up X-Forwarded-Proto https
+    }
+}

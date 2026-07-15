@@ -8,6 +8,8 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RENV_PATHS_CACHE=/opt/renv/cache \
     UV_PYTHON_INSTALL_DIR=/opt/uv/python \
     UV_PROJECT_ENVIRONMENT=/opt/delta/.venv \
+    HOME=/home/delta \
+    TMPDIR=/tmp \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
@@ -37,7 +39,8 @@ RUN uv python install 3.13.9
 
 WORKDIR /opt/delta
 
-COPY VERSION LICENSE README.md pyproject.toml uv.lock ./
+COPY VERSION LICENSE README.md app.py pyproject.toml uv.lock ./
+COPY .streamlit ./.streamlit
 COPY src ./src
 RUN uv sync --frozen --no-dev
 
@@ -48,7 +51,8 @@ COPY schemas ./schemas
 RUN Rscript --vanilla scripts/bootstrap_renv.R \
     && chmod -R a+rX /opt/renv/cache
 
-RUN useradd --create-home --shell /usr/sbin/nologin delta \
+RUN groupadd --gid 10001 delta \
+    && useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin delta \
     && chown -R delta:delta /opt/delta
 
 USER delta
@@ -60,4 +64,9 @@ RUN --mount=type=bind,source=tests/fixtures/stylo/p006-whole-text-v2,target=/opt
     /bin/sh -c '/opt/delta/.venv/bin/python scripts/validate_p006_worker_parity.py --require-reference-session \
       && /opt/delta/.venv/bin/python scripts/validate_p006_scientific_handoff.py'
 
-CMD ["/opt/delta/.venv/bin/python", "-c", "import delta_lemmata; print(delta_lemmata.__version__)"]
+EXPOSE 8501
+
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=6 \
+  CMD ["/opt/delta/.venv/bin/python", "-c", "import urllib.request; response = urllib.request.urlopen('http://127.0.0.1:8501/_stcore/health', timeout=2); assert response.status == 200 and response.read(16).strip() == b'ok'"]
+
+CMD ["/opt/delta/.venv/bin/streamlit", "run", "app.py", "--server.address=0.0.0.0", "--server.port=8501"]

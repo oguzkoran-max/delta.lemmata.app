@@ -1,0 +1,30 @@
+[Unit]
+Description=Delta experimental public-alpha container stack
+Documentation=https://github.com/oguzkoran-max/delta.lemmata.app
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+ConditionPathExists=/etc/delta-public-alpha/deployment.env
+ConditionPathExists=/etc/delta-public-alpha/runtime.env
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/delta-public-alpha/current/deploy/public-alpha
+EnvironmentFile=/etc/delta-public-alpha/deployment.env
+UMask=0077
+ExecStartPre=/usr/bin/docker compose --project-name delta-public-alpha --env-file /etc/delta-public-alpha/deployment.env --file compose.yml config --quiet
+ExecStart=/usr/bin/docker compose --project-name delta-public-alpha --env-file /etc/delta-public-alpha/deployment.env --file compose.yml up --detach --remove-orphans --wait --wait-timeout 180
+ExecReload=/usr/bin/docker compose --project-name delta-public-alpha --env-file /etc/delta-public-alpha/deployment.env --file compose.yml up --detach --remove-orphans --wait --wait-timeout 180
+ExecStop=/usr/bin/docker compose --project-name delta-public-alpha --env-file /etc/delta-public-alpha/deployment.env --file compose.yml down --remove-orphans --timeout 75
+TimeoutStartSec=300
+TimeoutStopSec=120
+Restart=no
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectHome=yes
+ProtectSystem=strict
+ReadWritePaths=/run/docker.sock
+
+[Install]
+WantedBy=multi-user.target
