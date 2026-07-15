@@ -8,6 +8,7 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
 
+import pyarrow as pa
 import pytest
 from streamlit.testing.v1 import AppTest
 
@@ -27,9 +28,40 @@ from delta_lemmata.corpus import (
     ValidatedFileRecord,
     VocabularyTerm,
     build_review_projection,
+    inventory_sha256,
     metadata_csv_template,
     validate_inventory,
 )
+from delta_lemmata.corpus_health_models import (
+    CorpusHealthFinding,
+    CorpusHealthFindingCode,
+    HealthSeverity,
+)
+from delta_lemmata.corpus_health_projection import (
+    ConfoundDatum,
+    CorpusHealthProjectionError,
+    CorpusHealthProjectionErrorCode,
+    OverlapDatum,
+)
+from delta_lemmata.prepared_corpus_service import (
+    PreparedCorpusError,
+    PreparedCorpusErrorCode,
+)
+from delta_lemmata.preprocessing_models import (
+    AnalysisRole,
+    OcrStatus,
+    ParatextStatus,
+)
+from delta_lemmata.result_view import (
+    BOUNDARIES,
+    ResultCellStatus,
+    ResultCellV1,
+    ResultDocumentV1,
+    ResultMatrixV1,
+    ResultViewV1,
+)
+from delta_lemmata.stylo_contracts import DistanceMeasure, DocumentRole
+from delta_lemmata.workflow_models import AnalysisScope
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "app.py"
@@ -37,6 +69,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "p004"
 
 
 def run_app() -> AppTest:
+    webapp_module._runtime.clear()
     return AppTest.from_file(str(APP), default_timeout=20).run()
 
 
@@ -54,6 +87,44 @@ def _zip_payload(entries: list[tuple[str, bytes]]) -> bytes:
         for name, payload in entries:
             archive.writestr(name, payload)
     return output.getvalue()
+
+
+def _public_result_view() -> ResultViewV1:
+    documents = (
+        ResultDocumentV1(key="D01", title="Early work", role=DocumentRole.KNOWN),
+        ResultDocumentV1(key="D02", title="Late work", role=DocumentRole.KNOWN),
+    )
+    cells = tuple(
+        ResultCellV1(
+            mfw=mfw,
+            culling_percent=0,
+            distance=DistanceMeasure.CLASSIC_DELTA,
+            is_reference=mfw == 500,
+            status=ResultCellStatus.COMPLETE,
+            error_code=None,
+            matrix=ResultMatrixV1(
+                document_keys=("D01", "D02"),
+                values=((0.0, float(index)), (float(index), 0.0)),
+            ),
+        )
+        for index, mfw in enumerate((100, 300, 500, 1000), start=1)
+    )
+    return ResultViewV1(
+        schema_version="result-view-v1",
+        purpose=PurposeId.TEXT_PROXIMITY,
+        analysis_scope=AnalysisScope.TRANSDUCTIVE_EXPLORATORY,
+        parameter_profile="guided-grid-v1",
+        workflow_config_sha256="a" * 64,
+        source_result_sha256="b" * 64,
+        source_result_outcome="complete",
+        analysis_unit="whole_text",
+        distance_measure=DistanceMeasure.CLASSIC_DELTA,
+        reference_mfw=500,
+        visualization_method="classical-mds-v1",
+        documents=documents,
+        cells=cells,
+        interpretation=BOUNDARIES,
+    )
 
 
 def _advance_to_describe(app: AppTest, payload: bytes = b"one text") -> AppTest:
@@ -110,6 +181,44 @@ def _open_guided_review() -> AppTest:
     _by_label(app.selectbox, "Documented rights state").set_value("analysis_only").run()
     app.button(key="guided_build_review").click().run()
     return app
+
+
+def _open_two_work_prepare() -> AppTest:
+    app = run_app()
+    app.segmented_control[1].set_value("zip_archive").run()
+    app.file_uploader[0].upload(
+        "corpus.zip",
+        _zip_payload(
+            [
+                ("early.txt", b"alpha beta gamma delta epsilon"),
+                ("late.txt", b"alpha beta gamma zeta eta"),
+            ]
+        ),
+        "application/zip",
+    ).run()
+    app.button(key="corpus_continue").click().run()
+    for author in _all_by_label(app.text_input, "Primary author name"):
+        author.input("Carlo Collodi")
+    for source in _all_by_label(app.text_input, "Source URL"):
+        source.input("https://www.liberliber.it/")
+    app.run()
+    for rights in _all_by_label(app.selectbox, "Documented rights state"):
+        rights.set_value("analysis_only")
+    app.run()
+    app.button(key="guided_build_review").click().run()
+    _by_label(
+        app.checkbox,
+        "I reviewed the file-to-work mappings and the documented rights records.",
+    ).check().run()
+    app.button(key="review_continue_prepare").click().run()
+    return app
+
+
+def _open_guided_parameters() -> AppTest:
+    app = _open_two_work_prepare()
+    app.button(key="prepare_run_check").click().run()
+    app.button(key="prepare_continue_parameters").click().run()
+    return app.run()
 
 
 def _two_work_inventory() -> CorpusInventory:
@@ -180,6 +289,14 @@ def test_corrupt_and_incomplete_stages_recover_to_upload() -> None:
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
 
     app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.REVIEW.value
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+
+    app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.PREPARE.value
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+
+    app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.PARAMETERS.value
     app.run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
 
@@ -370,6 +487,771 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
     assert "ZIP_CANARY_EARLY" not in state
     assert "ZIP_CANARY_LATE" not in state
     assert "storage_name" not in state
+
+
+def test_confirmed_corpus_opens_beginner_facing_preparation_decisions() -> None:
+    app = _open_two_work_prepare()
+    assert [heading.value for heading in app.header] == [
+        "Prepare and check the corpus",
+        "Method boundary",
+    ]
+    assert len(_all_by_label(app.selectbox, "Analysis role")) == 2
+    assert len(_all_by_label(app.selectbox, "OCR status")) == 2
+    assert len(_all_by_label(app.selectbox, "Paratext status")) == 2
+    assert all(
+        control.options == ["Known reference text", "Unknown or focal text"]
+        for control in _all_by_label(app.selectbox, "Analysis role")
+    )
+    captions = "\n".join(item.value for item in app.caption)
+    assert "Fixed alpha profile" in "\n".join(item.value for item in app.info)
+    assert "Analysis unit: one independent work" in captions
+    assert all(
+        "OCR means text produced by optical character recognition" in control.help
+        for control in _all_by_label(app.selectbox, "OCR status")
+    )
+    assert "no lemmatization or stemming" in "\n".join(item.value for item in app.info)
+    state = repr(app.session_state.filtered_state)
+    assert "alpha beta gamma" not in state
+    assert "SessionCapability" not in state
+
+
+def test_preparation_runs_real_health_checks_and_exports_payload_free_evidence() -> None:
+    app = _open_two_work_prepare()
+    app.button(key="prepare_run_check").click().run()
+    assert len(app.exception) == 0
+    assert [message.value for message in app.success] == [
+        "Computational preflight passed. The prepared corpus can continue to bounded "
+        "parameter review."
+    ]
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert metrics["Independent works"] == "2"
+    assert metrics["Known references"] == "2"
+    assert metrics["Candidate features"] == "7"
+    assert metrics["Blockers"] == "0"
+    assert [item.label for item in app.download_button] == [
+        "Download work-preparation CSV",
+        "Download confound-matrix CSV",
+        "Download health-findings CSV",
+        "Download feature-capacity CSV",
+        "Download corpus-health report",
+        "Download preparation settings",
+        "Download preparation manifest",
+        "Download READY receipt",
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    subheaders = [heading.value for heading in app.subheader]
+    assert "See what the fixed profile changed" in subheaders
+    assert "Review factors that may travel with style" in subheaders
+    assert "Check independence and repeated material" in subheaders
+    assert "Which MFW settings can this corpus support?" in subheaders
+    captions = "\n".join(item.value for item in app.caption)
+    assert "This is a computational preflight only" in captions
+    assert captions.count("What this does not establish") == 5
+    assert "**Flagged pairs**" in rendered
+    assert "Preparation completed deterministically" in rendered
+    state = repr(app.session_state.filtered_state)
+    assert "PreparationOutcome" in state
+    assert "AnalysisPreparationReceiptV1" in state
+    assert "alpha beta gamma" not in state
+    assert "SessionCapability" not in state
+    assert "control.sqlite3" not in state
+
+
+def test_guided_parameter_review_explains_the_complete_fixed_grid() -> None:
+    app = _open_guided_parameters()
+    assert len(app.exception) == 0
+    assert [heading.value for heading in app.header] == [
+        "Review what Delta will calculate",
+        "Method boundary",
+    ]
+    assert [
+        (control.label, control.options, control.value) for control in app.segmented_control
+    ] == [("Parameter mode", ["Guided", "Research"], "guided")]
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert metrics == {
+        "Comparisons": "4",
+        "Display reference": "500 MFW",
+        "Culling": "0%",
+        "Analysis unit": "Whole text",
+    }
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "Guided parameter comparison grid" in rendered
+    assert all(f'<th scope="row">{mfw}</th>' in rendered for mfw in (100, 300, 500, 1000))
+    assert rendered.count("<td>Classic Delta</td>") == 4
+    assert rendered.count("<td>Sensitivity check</td>") == 3
+    assert rendered.count("<td>Display reference</td>") == 1
+    assert rendered.count('<tr data-reference="true">') == 1
+    assert [expander.label for expander in app.expander] == ["Understand these settings"]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "A larger number includes more vocabulary" in captions
+    assert "it does not prove authorship" in captions
+    assert "not a claim that it is the best result" in captions
+    assert [item.label for item in app.download_button] == ["Download resolved parameter record"]
+    run_button = app.button(key="parameters_run_analysis")
+    assert run_button.disabled is True
+    assert "alpha beta gamma" not in repr(app.session_state.filtered_state)
+
+
+def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    result_view = _public_result_view()
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: result_view)
+        ),
+    )
+    app.run(timeout=40)
+
+    assert len(app.exception) == 0
+    assert "Explore the relative distances" in [heading.value for heading in app.header]
+    assert [heading.value for heading in app.subheader][-4:] == [
+        "Distance heatmap",
+        "Exact distance matrix",
+        "Nearest neighbours, including ties",
+        "Two-dimensional proximity map",
+    ]
+    selector = _by_label(app.selectbox, "View one completed comparison")
+    assert selector.value == 500
+    assert selector.options == [
+        "100 MFW",
+        "300 MFW",
+        "500 MFW · display reference",
+        "1000 MFW",
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert rendered.count('class="delta-result-cell delta-result-cell-complete"') == 4
+    assert all(f'data-mfw="{mfw}"' in rendered for mfw in (100, 300, 500, 1000))
+    assert "Exact Classic Delta distance matrix" in rendered
+    assert "Nearest-neighbour table with exact ties" in rendered
+    assert "Exact MDS coordinate table" in rendered
+    assert rendered.count("What this does not show") == 3
+    assert len(app.get("vega_lite_chart")) == 2
+    assert [button.label for button in app.download_button][-1] == (
+        "Download canonical result record"
+    )
+    state = repr(app.session_state.filtered_state)
+    assert "ResultViewV1" not in state
+    assert "feature-" not in state
+
+
+def test_partial_result_marks_unavailable_cell_without_hiding_completed_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    complete = _public_result_view()
+    unavailable = complete.cells[-1].model_copy(
+        update={
+            "status": ResultCellStatus.FAILED,
+            "error_code": "fit_unavailable",
+            "matrix": None,
+        }
+    )
+    partial = ResultViewV1.model_validate(
+        {
+            **complete.model_dump(mode="python"),
+            "source_result_outcome": "partial",
+            "cells": (*complete.cells[:-1], unavailable),
+        }
+    )
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: partial)
+        ),
+    )
+    app.run(timeout=40)
+
+    assert len(app.exception) == 0
+    assert "At least one comparison could not be completed" in "\n".join(
+        message.value for message in app.warning
+    )
+    selector = _by_label(app.selectbox, "View one completed comparison")
+    assert selector.options == [
+        "100 MFW",
+        "300 MFW",
+        "500 MFW · display reference",
+    ]
+
+
+def test_succeeded_result_readback_failure_is_visible_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+
+    def unavailable(**_kwargs: object) -> object:
+        raise PreparedCorpusError(PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(prepared_corpora=SimpleNamespace(result_view=unavailable)),
+    )
+    app.run()
+
+    assert len(app.exception) == 0
+    assert "The verified result view is not available." in "\n".join(
+        message.value for message in app.error
+    )
+
+
+def test_result_helpers_reject_missing_ready_bindings_and_unavailable_matrices() -> None:
+    inventory = _fixture_inventory()
+    with pytest.raises(ValueError, match="READY receipt"):
+        webapp_module._result_descriptors(
+            inventory,
+            SimpleNamespace(ready_receipt=None),  # type: ignore[arg-type]
+        )
+    missing_work = SimpleNamespace(
+        ready_receipt=SimpleNamespace(
+            ordered_documents=(
+                SimpleNamespace(
+                    document_id="doc_" + "a" * 64,
+                    work_id="work_" + "f" * 64,
+                    analysis_role=AnalysisRole.KNOWN,
+                ),
+            )
+        )
+    )
+    with pytest.raises(ValueError, match="descriptor binding failed"):
+        webapp_module._result_descriptors(
+            inventory,
+            missing_work,  # type: ignore[arg-type]
+        )
+
+    unavailable = ResultCellV1(
+        mfw=100,
+        culling_percent=0,
+        distance=DistanceMeasure.CLASSIC_DELTA,
+        is_reference=False,
+        status=ResultCellStatus.FAILED,
+        error_code="fit_unavailable",
+        matrix=None,
+    )
+    view = _public_result_view()
+    with pytest.raises(ValueError, match="distance matrix is unavailable"):
+        webapp_module._render_distance_matrix(unavailable, view)
+    with pytest.raises(ValueError, match="distance matrix is unavailable"):
+        webapp_module._render_heatmap(unavailable, view)
+
+
+def test_result_charts_bypass_pandas_string_inference(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    calls: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        webapp_module.st,
+        "vega_lite_chart",
+        lambda **kwargs: calls.append(kwargs),
+    )
+    monkeypatch.setattr(webapp_module.st, "markdown", lambda *_args, **_kwargs: None)
+    view = _public_result_view()
+    cell = view.cells[0]
+
+    webapp_module._render_heatmap(cell, view)
+    webapp_module._render_mds(cell, view)
+
+    assert len(calls) == 2
+    tables = [call["spec"]["data"]["values"] for call in calls]  # type: ignore[index]
+    assert all(isinstance(table, pa.Table) for table in tables)
+    assert tables[0].column_names == [
+        "reference",
+        "reference_title",
+        "compared",
+        "compared_title",
+        "distance",
+        "distance_label",
+    ]
+    assert tables[1].column_names == ["key", "title", "role", "x", "y"]
+
+
+def test_research_parameter_mode_is_visibly_locked() -> None:
+    app = _open_guided_parameters()
+    _by_label(app.segmented_control, "Parameter mode").set_value("research").run()
+    assert [message.value for message in app.warning] == [
+        "Research Mode is not available in this public alpha."
+    ]
+    assert not any(button.label == "Run the four comparisons" for button in app.button)
+    assert [button.label for button in app.button] == ["Back to corpus preparation"]
+    app.button(key="p008_back_prepare_research").click().run()
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+
+
+def test_guided_parameter_review_can_return_to_preparation() -> None:
+    app = _open_guided_parameters()
+    app.button(key="p008_back_prepare").click().run()
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+
+
+def test_invalid_parameter_binding_fails_closed_and_returns_to_preparation() -> None:
+    app = _open_guided_parameters()
+    annotations = app.session_state[webapp_module._FLOW_ANNOTATIONS_KEY]
+    invalid_annotations = annotations.model_copy(
+        update={
+            "annotations": tuple(
+                annotation.model_copy(update={"analysis_role": AnalysisRole.UNKNOWN})
+                for annotation in annotations.annotations
+            )
+        }
+    )
+    app.session_state[webapp_module._FLOW_ANNOTATIONS_KEY] = invalid_annotations
+    app.run()
+    assert [message.value for message in app.error] == [
+        "The resolved parameter record no longer matches this documented corpus. Return to "
+        "preparation and try again."
+    ]
+    app.button(key="p008_back_prepare_invalid").click().run()
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+
+
+@pytest.mark.parametrize(
+    ("state_id", "title", "surface"),
+    [
+        ("queued", "Analysis queued", "info"),
+        ("failed", "Analysis failed", "error"),
+    ],
+)
+def test_parameter_review_presents_active_and_failed_job_states(
+    state_id: str,
+    title: str,
+    surface: str,
+) -> None:
+    app = _open_guided_parameters()
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id=state_id,
+        title=title,
+        body="Content-free lifecycle detail.",
+    )
+    app.run()
+    messages = app.info if surface == "info" else app.error
+    assert title in [message.value for message in messages]
+    assert "Content-free lifecycle detail." in [caption.value for caption in app.caption]
+    assert not any(button.label == "Run the four comparisons" for button in app.button)
+
+
+def test_confirmed_guided_grid_is_admitted_and_run_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RecordingPreparedCorpora:
+        admitted: dict[str, object] | None = None
+        published: object | None = None
+        status_calls = 0
+
+        def admit_once(self, **kwargs: object) -> None:
+            self.admitted = dict(kwargs)
+
+        @staticmethod
+        def scientific_result(**_kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(result=object(), sha256="a" * 64)
+
+        def publish_result_view(self, **kwargs: object) -> None:
+            self.published = kwargs["view"]
+
+        def result_view(self, **_kwargs: object) -> object:
+            return self.published
+
+        def status(self, **_kwargs: object) -> SimpleNamespace:
+            self.status_calls += 1
+            return SimpleNamespace(
+                state_id="succeeded",
+                title="Analysis complete",
+                body="The run completed and its temporary inputs were removed.",
+            )
+
+    class RecordingAnalyses:
+        run_calls = 0
+
+        def run_next(self) -> None:
+            self.run_calls += 1
+
+    prepared = RecordingPreparedCorpora()
+    analyses = RecordingAnalyses()
+    maintenance_calls = 0
+    rendered: list[object] = []
+
+    def maintain() -> None:
+        nonlocal maintenance_calls
+        maintenance_calls += 1
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=prepared,
+            analyses=analyses,
+            maintain=maintain,
+        ),
+    )
+    monkeypatch.setattr(
+        webapp_module,
+        "project_result_view",
+        lambda **_kwargs: "verified-public-view",
+    )
+    monkeypatch.setattr(webapp_module, "_render_result_view", rendered.append)
+
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    assert app.button(key="parameters_run_analysis").disabled is False
+    app.button(key="parameters_run_analysis").click().run()
+    app.run()
+
+    assert analyses.run_calls == 1
+    assert maintenance_calls == 1
+    assert prepared.status_calls == 1
+    assert prepared.published == "verified-public-view"
+    assert rendered and set(rendered) == {"verified-public-view"}
+    assert prepared.admitted is not None
+    config = prepared.admitted["resolved_workflow_config"]
+    assert config.known_work_count == 2
+    assert config.unknown_work_count == 0
+    assert [cell.mfw for cell in config.cells] == [100, 300, 500, 1000]
+    assert [message.value for message in app.success][-1] == "Analysis complete"
+    state = repr(app.session_state.filtered_state)
+    assert "alpha beta gamma" not in state
+    assert "SessionCapability" not in state
+
+
+def test_parameter_admission_failure_is_stable_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RejectingPreparedCorpora:
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.OPERATION_FAILED)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=RejectingPreparedCorpora(),
+            analyses=SimpleNamespace(run_next=lambda: None),
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "P007_PREPARED_CORPUS_OPERATION_FAILED" in captions
+    assert "alpha beta gamma" not in captions
+
+
+def test_parameter_configuration_failure_does_not_echo_exception_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RejectingPreparedCorpora:
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            raise ValueError("PRIVATE_PARAMETER_CANARY")
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=RejectingPreparedCorpora(),
+            analyses=SimpleNamespace(run_next=lambda: None),
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "The resolved parameter record no longer matches this documented corpus. Return to "
+        "preparation and try again."
+    ]
+    rendered = repr(app)
+    assert "PRIVATE_PARAMETER_CANARY" not in rendered
+
+
+def test_one_known_work_is_blocked_with_an_explanation_and_can_restart() -> None:
+    app = _open_guided_review()
+    _by_label(
+        app.checkbox,
+        "I reviewed the file-to-work mappings and the documented rights records.",
+    ).check().run()
+    app.button(key="review_continue_prepare").click().run()
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Computational preflight found one or more blockers. No analysis request was created."
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "Too few known reference works" in rendered
+    assert "at least two independent known works" in "\n".join(item.value for item in app.caption)
+    _by_label(app.button, "Start again with revised files").click().run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+
+
+def test_preparation_confirmation_and_back_navigation_fail_closed() -> None:
+    app = _open_two_work_prepare()
+    del app.session_state[webapp_module._FLOW_CONFIRMATION_HASH_KEY]
+    app.run()
+    assert [message.value for message in app.warning] == [
+        "Corpus documentation changed or is not confirmed. Return to Review and confirm the "
+        "current inventory before preparation."
+    ]
+    _by_label(app.button, "Back to corpus review").click().run()
+    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+
+    app = _open_two_work_prepare()
+    _by_label(app.button, "Back to corpus review").click().run()
+    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+
+
+def test_review_explains_when_the_private_temporary_corpus_is_missing() -> None:
+    app = _inject_review(run_app(), _fixture_inventory())
+    _by_label(
+        app.checkbox,
+        "I reviewed the file-to-work mappings and the documented rights records.",
+    ).check().run()
+    assert [message.value for message in app.warning] == [
+        "The temporary corpus is no longer attached to this browser session. Start again "
+        "with the same files; the documentation package can still be downloaded first."
+    ]
+
+
+def test_group_preparation_uses_known_references_only() -> None:
+    app = _open_two_work_prepare()
+    inventory = app.session_state[webapp_module._FLOW_INVENTORY_KEY]
+    grouped = inventory.model_copy(
+        update={
+            "purpose": PurposeId.GROUP_COMPARISON,
+            "works": tuple(
+                work.model_copy(update={"group_label": f"group-{index}"})
+                for index, work in enumerate(inventory.works, start=1)
+            ),
+        }
+    )
+    report = validate_inventory(grouped)
+    assert report.blocked is False
+    app.session_state[webapp_module._FLOW_INVENTORY_KEY] = grouped
+    app.session_state[webapp_module._FLOW_REPORT_KEY] = report
+    app.session_state[webapp_module._FLOW_CONFIRMATION_HASH_KEY] = inventory_sha256(grouped)
+    app.run()
+    assert all(
+        control.options == ["Known reference text"]
+        for control in _all_by_label(app.selectbox, "Analysis role")
+    )
+
+
+def test_finding_measure_and_measure_free_rendering_are_explicit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    finding = CorpusHealthFinding(
+        finding_id="finding_" + "1" * 64,
+        code=CorpusHealthFindingCode.PREPARATION_SUMMARY,
+        severity=HealthSeverity.NOTE,
+    )
+    measured = finding.model_copy(
+        update={
+            "observed_count": 3,
+            "threshold_count": 2,
+            "observed_ratio": 0.75,
+            "threshold_ratio": 0.5,
+        }
+    )
+    assert webapp_module._finding_measure(finding) is None
+    assert webapp_module._finding_measure(measured) == (
+        "Observed 3 · Reference threshold 2 · Observed ratio 0.75 · Reference ratio 0.50"
+    )
+
+    fake = SimpleNamespace(
+        container=lambda **_kwargs: _Context(),
+        markdown=lambda value: None,
+        caption=lambda value: None,
+    )
+    monkeypatch.setattr(webapp_module, "st", fake)
+    webapp_module._render_health_finding(finding)
+
+
+@pytest.mark.parametrize(
+    ("mode", "start", "end", "expected"),
+    [
+        (DateMode.EXACT, 1883, None, "1883"),
+        (DateMode.APPROXIMATE, 1883, None, "About 1883"),
+        (DateMode.RANGE, 1881, 1883, "1881-1883"),
+        (DateMode.UNKNOWN, None, None, "Unknown"),
+        (DateMode.EXACT, None, None, "Unknown"),
+        (DateMode.APPROXIMATE, None, None, "Unknown"),
+        (DateMode.RANGE, None, 1883, "Unknown"),
+        (DateMode.RANGE, 1881, None, "Unknown"),
+    ],
+)
+def test_confound_chronology_labels_preserve_uncertainty(
+    mode: DateMode,
+    start: int | None,
+    end: int | None,
+    expected: str,
+) -> None:
+    item = ConfoundDatum(
+        work_id="work_one",
+        display_label="Work one",
+        edition_id="edition_one",
+        edition_label="Edition one",
+        genre="novel",
+        audience="general",
+        source_type="digital_library",
+        adaptation="original",
+        collection="independent_work",
+        chronology_mode=mode,
+        chronology_start_year=start,
+        chronology_end_year=end,
+        ocr_status="not_ocr",
+        paratext_status="absent",
+        curation_state="not_disclosed",
+        curation_note_disclosed=False,
+    )
+    assert webapp_module._chronology_label(item) == expected
+
+
+@pytest.mark.parametrize(
+    ("code", "count", "ratio", "expected"),
+    [
+        (CorpusHealthFindingCode.EXACT_DUPLICATE, None, None, "Prepared hashes match"),
+        (
+            CorpusHealthFindingCode.SHARED_PASSAGE,
+            200,
+            0.25,
+            "200 shared tokens · 25.00%",
+        ),
+        (CorpusHealthFindingCode.SHARED_PASSAGE, 200, None, "200 shared tokens"),
+        (CorpusHealthFindingCode.NEAR_DUPLICATE, None, 0.91, "91.00%"),
+        (CorpusHealthFindingCode.NEAR_DUPLICATE, None, None, "Threshold crossed"),
+    ],
+)
+def test_overlap_labels_never_echo_passage_text(
+    code: CorpusHealthFindingCode,
+    count: int | None,
+    ratio: float | None,
+    expected: str,
+) -> None:
+    item = OverlapDatum(
+        finding_id="finding_" + "a" * 64,
+        code=code,
+        work_ids=("work_one", "work_two"),
+        display_labels=("Work one", "Work two"),
+        observed_count=count,
+        observed_ratio=ratio,
+    )
+    assert webapp_module._overlap_measure(item) == expected
+    assert webapp_module._overlap_code_label(code)
+
+
+def test_preparation_projection_failure_is_visible_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_two_work_prepare()
+
+    def reject(**_kwargs: object) -> None:
+        raise CorpusHealthProjectionError(CorpusHealthProjectionErrorCode.BINDING_MISMATCH)
+
+    monkeypatch.setattr(webapp_module, "build_corpus_health_projection", reject)
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Delta could not bind the preparation evidence to this corpus. No review projection or "
+        "analysis request was created."
+    ]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "P007_HEALTH_PROJECTION_BINDING_MISMATCH" in captions
+    assert "alpha beta gamma" not in captions
+    assert "Parameter review is the next step" not in "\n".join(item.value for item in app.info)
+
+
+def test_missing_projection_annotations_fail_closed() -> None:
+    app = _open_two_work_prepare()
+    app.button(key="prepare_run_check").click().run()
+    del app.session_state[webapp_module._FLOW_ANNOTATIONS_KEY]
+    app.run()
+    assert [message.value for message in app.error] == [
+        "Delta could not bind the preparation evidence to this corpus. No review projection or "
+        "analysis request was created."
+    ]
+    assert "Parameter review is the next step" not in "\n".join(item.value for item in app.info)
+
+
+def test_preparation_rejects_bad_annotations_and_content_free_runtime_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_two_work_prepare()
+    monkeypatch.setattr(
+        webapp_module,
+        "_build_preparation_annotations",
+        lambda *_args: (_ for _ in ()).throw(ValueError("PRIVATE_CANARY")),
+    )
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Review the analysis roles, OCR states, paratext states, and curation notes "
+        "before retrying."
+    ]
+    assert "PRIVATE_CANARY" not in "\n".join(item.value for item in app.error)
+
+    monkeypatch.undo()
+    app = _open_two_work_prepare()
+
+    class RejectingPreparation:
+        @staticmethod
+        def prepare(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.OPERATION_FAILED)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(prepared_corpora=RejectingPreparation()),
+    )
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Delta could not prepare this temporary corpus safely. No stylometric result was created."
+    ]
+    assert "Rejection reference: P007_PREPARED_CORPUS_OPERATION_FAILED" in [
+        item.value for item in app.caption
+    ]
+
+
+def test_preparation_annotation_builder_is_deterministic_and_rejects_asset_mismatch() -> None:
+    inventory = _fixture_inventory()
+    asset = inventory.assets[0]
+    selection = webapp_module.PreparationSelection(
+        asset_id=asset.asset_id,
+        work_id=asset.work_id,
+        analysis_role=AnalysisRole.KNOWN,
+        ocr_status=OcrStatus.UNKNOWN,
+        paratext_status=ParatextStatus.UNKNOWN,
+        curation_note=None,
+    )
+    first = webapp_module._build_preparation_annotations(inventory, (selection,))
+    second = webapp_module._build_preparation_annotations(inventory, (selection,))
+    assert first == second
+    assert first.annotations[0].document_id.startswith("doc_")
+    with pytest.raises(ValueError, match="do not match"):
+        webapp_module._build_preparation_annotations(inventory, ())
 
 
 def test_timeline_selection_updates_details_without_mutating_inventory() -> None:

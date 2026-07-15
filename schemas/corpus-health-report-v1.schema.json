@@ -1,0 +1,340 @@
+{
+  "$defs": {
+    "CorpusHealthFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/CorpusHealthFindingCode"
+        },
+        "finding_id": {
+          "pattern": "^finding_[0-9a-f]{64}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "observed_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Count"
+        },
+        "observed_ratio": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Observed Ratio"
+        },
+        "severity": {
+          "$ref": "#/$defs/HealthSeverity"
+        },
+        "subject_refs": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/WorkId"
+          },
+          "maxItems": 200,
+          "title": "Subject Refs",
+          "type": "array"
+        },
+        "threshold_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold Count"
+        },
+        "threshold_ratio": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Threshold Ratio"
+        }
+      },
+      "required": [
+        "finding_id",
+        "code",
+        "severity"
+      ],
+      "title": "CorpusHealthFinding",
+      "type": "object"
+    },
+    "CorpusHealthFindingCode": {
+      "enum": [
+        "empty_prepared_work",
+        "too_few_known_works",
+        "non_independent_unit",
+        "duplicate_independence_unit",
+        "exact_duplicate",
+        "no_runnable_features",
+        "too_many_documents",
+        "too_few_independent_works",
+        "too_few_chronology_points",
+        "near_duplicate",
+        "shared_passage",
+        "length_imbalance",
+        "group_imbalance",
+        "ocr_confound",
+        "paratext_confound",
+        "curation_confound",
+        "edition_confound",
+        "genre_confound",
+        "audience_confound",
+        "source_confound",
+        "adaptation_confound",
+        "collection_confound",
+        "chronology_confound",
+        "mfw_unavailable",
+        "transport_feature_excluded",
+        "preparation_summary"
+      ],
+      "title": "CorpusHealthFindingCode",
+      "type": "string"
+    },
+    "CorpusHealthReadiness": {
+      "enum": [
+        "ready",
+        "blocked"
+      ],
+      "title": "CorpusHealthReadiness",
+      "type": "string"
+    },
+    "GroupCount": {
+      "additionalProperties": false,
+      "properties": {
+        "group_ref": {
+          "pattern": "^group_[0-9a-f]{64}$",
+          "title": "Group Ref",
+          "type": "string"
+        },
+        "independent_work_count": {
+          "maximum": 200,
+          "minimum": 1,
+          "title": "Independent Work Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "group_ref",
+        "independent_work_count"
+      ],
+      "title": "GroupCount",
+      "type": "object"
+    },
+    "HealthSeverity": {
+      "enum": [
+        "blocker",
+        "strong_warning",
+        "note"
+      ],
+      "title": "HealthSeverity",
+      "type": "string"
+    },
+    "MfwCapacity": {
+      "additionalProperties": false,
+      "properties": {
+        "available": {
+          "title": "Available",
+          "type": "boolean"
+        },
+        "available_features": {
+          "maximum": 20000,
+          "minimum": 0,
+          "title": "Available Features",
+          "type": "integer"
+        },
+        "requested_mfw": {
+          "enum": [
+            100,
+            300,
+            500,
+            1000
+          ],
+          "title": "Requested Mfw",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "requested_mfw",
+        "available_features",
+        "available"
+      ],
+      "title": "MfwCapacity",
+      "type": "object"
+    },
+    "PurposeId": {
+      "enum": [
+        "text_proximity",
+        "group_comparison",
+        "style_over_time"
+      ],
+      "title": "PurposeId",
+      "type": "string"
+    },
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "WorkId": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/corpus-health-report-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "annotations_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "blocker_count": {
+      "maximum": 10000,
+      "minimum": 0,
+      "title": "Blocker Count",
+      "type": "integer"
+    },
+    "candidate_feature_count": {
+      "maximum": 20000,
+      "minimum": 0,
+      "title": "Candidate Feature Count",
+      "type": "integer"
+    },
+    "candidate_inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "chronology_point_count": {
+      "maximum": 200,
+      "minimum": 0,
+      "title": "Chronology Point Count",
+      "type": "integer"
+    },
+    "config_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/CorpusHealthFinding"
+      },
+      "maxItems": 10000,
+      "title": "Findings",
+      "type": "array"
+    },
+    "group_counts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/GroupCount"
+      },
+      "maxItems": 200,
+      "title": "Group Counts",
+      "type": "array"
+    },
+    "independent_work_count": {
+      "maximum": 200,
+      "minimum": 0,
+      "title": "Independent Work Count",
+      "type": "integer"
+    },
+    "inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "known_independent_work_count": {
+      "maximum": 200,
+      "minimum": 0,
+      "title": "Known Independent Work Count",
+      "type": "integer"
+    },
+    "manifest_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "mfw_capacity": {
+      "items": {
+        "$ref": "#/$defs/MfwCapacity"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "title": "Mfw Capacity",
+      "type": "array"
+    },
+    "note_count": {
+      "maximum": 10000,
+      "minimum": 0,
+      "title": "Note Count",
+      "type": "integer"
+    },
+    "purpose": {
+      "$ref": "#/$defs/PurposeId"
+    },
+    "readiness": {
+      "$ref": "#/$defs/CorpusHealthReadiness"
+    },
+    "report_id": {
+      "pattern": "^health_[0-9a-f]{64}$",
+      "title": "Report Id",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "corpus-health-report-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "severity_profile": {
+      "const": "delta-corpus-health-v1",
+      "title": "Severity Profile",
+      "type": "string"
+    },
+    "strong_warning_count": {
+      "maximum": 10000,
+      "minimum": 0,
+      "title": "Strong Warning Count",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "schema_version",
+    "report_id",
+    "severity_profile",
+    "purpose",
+    "config_sha256",
+    "inventory_sha256",
+    "annotations_sha256",
+    "manifest_sha256",
+    "candidate_inventory_sha256",
+    "candidate_feature_count",
+    "independent_work_count",
+    "known_independent_work_count",
+    "chronology_point_count",
+    "readiness",
+    "blocker_count",
+    "strong_warning_count",
+    "note_count",
+    "mfw_capacity",
+    "findings"
+  ],
+  "title": "CorpusHealthReportV1",
+  "type": "object"
+}

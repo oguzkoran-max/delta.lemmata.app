@@ -1,0 +1,141 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0005",
+  "run_type": "security",
+  "status": "failed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-15T14:47:45Z",
+  "ended_at_utc": "2026-07-15T14:47:52Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "dea9e67154d75852c5d69db9871fd4a1868bc236",
+  "environment": {
+    "operator": {
+      "os": "macOS 26.5.2 build 25F84",
+      "architecture": "arm64",
+      "latency_client": "system curl 8.7.1 with SecureTransport",
+      "timezone": "UTC for retained timestamps"
+    },
+    "target_host": {
+      "role": "shared Lemmata VPS intended for bounded Delta public alpha",
+      "os": "Ubuntu 26.04 LTS",
+      "architecture": "x86_64",
+      "kernel": "7.0.0-22-generic",
+      "cpu_count": 2,
+      "memory_total_mib": 3814,
+      "memory_used_mib": 1454,
+      "memory_available_mib": 2360,
+      "swap_total_mib": 0,
+      "root_disk_total_mib": 38114,
+      "root_disk_used_mib": 3882,
+      "root_disk_available_mib": 32621,
+      "root_disk_use_percent": 11,
+      "docker_data_root": "absent",
+      "container_runtimes": {
+        "docker": "absent",
+        "podman": "absent",
+        "containerd": "absent",
+        "nerdctl": "absent"
+      },
+      "services": {
+        "docker": "inactive",
+        "caddy": "active",
+        "lemmata": "active/running"
+      },
+      "lemmata": {
+        "main_pid": 3467,
+        "started_at_utc": "2026-07-04T08:54:24Z",
+        "memory_current_bytes": 1118232576,
+        "tasks_current": 16,
+        "cpu_quota": "infinity",
+        "memory_high": "infinity",
+        "memory_max": "infinity",
+        "private_tmp": false,
+        "working_directory": "/opt/lemmata",
+        "loopback_port_8501": "listening",
+        "public_health": "ok"
+      },
+      "delta_loopback_port_8502": "free",
+      "caddyfile_sha256": "ec824143747f51a2b571de61ae87bf06714e7be76684d5d9e665bb653116c9e5"
+    },
+    "lemmata_latency_baseline": {
+      "method": "20 sequential HTTPS health requests from the operator workstation",
+      "status_200": 20,
+      "failures": 0,
+      "min_ms": 166.34,
+      "median_ms": 182.02,
+      "mean_ms": 206.21,
+      "p95_nearest_rank_ms": 267.73,
+      "max_ms": 268.60
+    },
+    "gate": {
+      "result": "stopped_before_host_change",
+      "reason": "container_runtime_absent",
+      "host_modifications": 0,
+      "live_service_reloads_or_restarts": 0
+    }
+  },
+  "command": "Read-only P014 target-host SSH inventory and fail-closed gate; then 20 sequential system-curl HTTPS health latency samples against https://lda.lemmata.app/_stcore/health (full content-free command transcript retained in provenance/evidence/P014/target-host-read-only-preflight.md)",
+  "exit_code": 21,
+  "configuration_artifacts": [
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "1d1161534abff65850b8bb221137d90299befe7126ef9bda82995d400a2baa0c"
+    },
+    {
+      "path": "docs/development/p014-public-alpha-deployment-contract.md",
+      "sha256": "3947a33e354ee2fae0d3bb53d4e4ab1652a4a640433feb1274b7f1f208f4fb96"
+    },
+    {
+      "path": "decisions/ADR-0017-public-alpha-deployment-profile.md",
+      "sha256": "d17bcd958f555aa26552627c8b1adcdfad37a3e63f978eab85ef565a0a030e98"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Operator workstation plus the mutable target host observed through a read-only SSH session",
+    "command": "Read-only P014 target-host SSH inventory and fail-closed gate; then 20 sequential system-curl HTTPS health latency samples against https://lda.lemmata.app/_stcore/health (full content-free command transcript retained in provenance/evidence/P014/target-host-read-only-preflight.md)",
+    "limitations": [
+      "The target host and public network are mutable, so later observations may differ even when the same command set is used.",
+      "The SSH credential and its local path are deliberately not retained; replay requires separately authorised host access.",
+      "The inventory records selected safe service properties and a Caddyfile hash, not environment values, process command lines, credentials, or configuration contents.",
+      "Twenty sequential health requests are a pre-change operational reference, not a concurrency test, benchmark, or service-level objective.",
+      "The gate stopped before installing a container runtime, creating swap, pulling an image, installing Delta, changing Caddy or DNS, or running coexistence, restart, rollback, and owner-acceptance tests."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "1d1161534abff65850b8bb221137d90299befe7126ef9bda82995d400a2baa0c"
+    },
+    {
+      "path": "docs/development/p014-public-alpha-deployment-contract.md",
+      "sha256": "3947a33e354ee2fae0d3bb53d4e4ab1652a4a640433feb1274b7f1f208f4fb96"
+    },
+    {
+      "path": "decisions/ADR-0017-public-alpha-deployment-profile.md",
+      "sha256": "d17bcd958f555aa26552627c8b1adcdfad37a3e63f978eab85ef565a0a030e98"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "provenance/evidence/P014/canonical-alpha-stack-validation.md",
+      "sha256": "846dbd7222ecf1031ad31b15c9d45ae06e56388b27e1668a7a4ea516b26191db"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/target-host-read-only-preflight.md",
+      "sha256": "41a9dcbbc53b6684a20efd367aa2c1567f2906802fa602f72caedbda741a5432"
+    }
+  ],
+  "notes": "The target host remained unchanged and Lemmata stayed healthy, but the preflight correctly failed closed because no supported container runtime exists. The no-swap, uncapped-Lemmata, approximately 4 GiB host profile also leaves capacity acceptance unresolved. P014-AC-08 remains pending and no public activation is authorised."
+}

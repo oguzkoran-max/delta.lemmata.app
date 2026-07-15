@@ -1,0 +1,276 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P007",
+  "title": "Deterministic Preprocessing and Corpus Health",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-14T18:37:57Z",
+  "closed_at_utc": null,
+  "objective": "Transform P003-validated literary text into deterministic, versioned, P006-ready whole-text counts; expose work independence, duplicate, overlap, edition, OCR, paratext, balance, and confound risks before calculation; and make a blocker-free, hash-bound P007 receipt the only public analysis-admission path without claiming automated corpus quality.",
+  "scope": [
+    "A human-accepted, versioned Unicode surface-word preprocessing profile with raw and prepared digests",
+    "Direct private materialization of P003-validated TXT bytes and safe ZIP members into P005-owned prepare-only workspaces while P004 state remains payload-free",
+    "An additive P007 annotation overlay for analysis role, text-unit independence, parent work, OCR, paratext, and disclosed pre-upload curation",
+    "Exact-token optional custom exclusions that affect only candidate feature inventory",
+    "Known-independent-work-only candidate ranking with unknown projection after inventory freeze",
+    "Deterministic exact duplicate, near-duplicate, shared-passage, work-length, group-balance, minimum-data, feature-capacity, and metadata-confound checks",
+    "Closed blocker, strong-warning, and note semantics with no corpus-quality score",
+    "One expiring, one-time, hash-bound READY receipt as the sole public P006 input-building and enqueue authority",
+    "Beginner-first English Prepare and Health review screens with accessible visuals, semantic tables, CSV parity, and explicit interpretive limits",
+    "Content-free versioned preparation and health outputs, adversarial fixtures, deterministic reruns, clean-clone, Linux CI, and canonical-container evidence"
+  ],
+  "non_goals": [
+    "OCR correction, spelling correction, modernization, transliteration, accent stripping, translation, stopword removal, lemmatization, stemming, POS tagging, named-entity removal, or automatic paratext deletion",
+    "Analytical segmentation or treating chapters, excerpts, or repeated assets as independent works",
+    "Changing accepted P003 receipt schemas, P004 v1 inventory schemas, P005 lifecycle states, or P006 worker wire schemas",
+    "Public Upload-to-Run activation, Guided or Research parameter controls, browser end-to-end analysis, retry, or cancellation workflow, which belong to P008",
+    "Stylometric result graphics, interpretation cards, confidence-like labels, stability calibration, or open-set behavior, which belong to P009 and P011",
+    "Known-author accuracy, diachronic effect validation, benchmark thresholds, or complete leakage validation, which belong to P010 and P011",
+    "A complete FAIR-oriented run package, clean-room rerun, or reproducibility claim, which belongs to P012 and P015",
+    "Pinocchio, LiberLiber, De Amicis, Pavese, or any literary case-study result, which belongs to P013 or a later research ticket",
+    "Production resource limits, egress denial, container hardening, host isolation, swap or snapshot control, secure erasure, or deployment, which belongs to P014",
+    "A universal stylometric preprocessing standard, automated corpus-quality certification, representativeness claim, statistical confound control, authorship claim, or causal interpretation"
+  ],
+  "dependencies": [
+    "P004",
+    "P006"
+  ],
+  "claim_ids": [
+    "CE-02",
+    "CE-04",
+    "CE-09"
+  ],
+  "threat_ids": [
+    "EPI-01",
+    "EPI-02",
+    "EPI-04",
+    "EPI-06",
+    "EPI-07",
+    "EPI-11"
+  ],
+  "decision_ids": [
+    "HD-20260714-0001",
+    "HD-20260714-0002"
+  ],
+  "prompt_event_ids": [
+    "PE-20260714-0001",
+    "PE-20260714-0002",
+    "PE-20260714-0003"
+  ],
+  "commit_ids": [
+    "196c5dff82be80b843ee54a796615ff798d94f38",
+    "a62210fb40c27830e0cbdc2f79d430e3cca88a65",
+    "5ad6850976310934002a223c43d10abd5e3e56cc",
+    "83a6eca2036a40e79b7e49d6b2507e914e7adcc6",
+    "e37d5a37d477422cc21b866c795576a768077a89",
+    "7436761ccc5a58de7793b8a5362ddcf6d887a3a1",
+    "3054bd22d528253d8e1fa54b9f60ca46a4472694",
+    "dd6bac0d8c6e77b887a5a652636e39e591bd25ba",
+    "3fc1d21482aca6249b1cff639ab73144d08d5181",
+    "9b5790f3c75170f9c4241fad11d51f2a26495857",
+    "d00c6a5620667959d8b5df347e730d442370825f",
+    "b42da99442f4c2a7f617da082c699f1f48942b62"
+  ],
+  "run_ids": [
+    "RUN-20260714-0006",
+    "RUN-20260715-0001"
+  ],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "OpenAI Codex",
+    "OpenAI Codex independent review agents"
+  ],
+  "supplemental_evidence": [
+    "prompts/P007-start.md",
+    "decisions/ADR-0014-preprocessing-corpus-health.md",
+    "decisions/ADR-0015-accelerated-public-alpha.md",
+    "docs/development/p007-preprocessing-corpus-health-contract.md",
+    "provenance/evidence/P007/architecture-method-audit.md",
+    "provenance/evidence/P007/start-validation.md",
+    "provenance/evidence/P007/core-validation.md",
+    "provenance/evidence/P007/web-preparation-validation.md",
+    "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+    "memory/checkpoints/2026-07-14-p007-start.md",
+    "memory/checkpoints/2026-07-14-p007-method-alpha-acceptance.md",
+    "memory/checkpoints/2026-07-15-p007-diagnostics.md",
+    "docs/development/public-alpha-owner-walkthrough.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {
+      "id": "P007-AC-01",
+      "criterion": "A separate HumanDecision accepts or revises the versioned preprocessing, severity, threshold, minimum-data, materialization, admission, output, and public-wording protocol before implementation fixtures or source code are frozen.",
+      "status": "passed",
+      "evidence": [
+        "provenance/human-decision-ledger.jsonl",
+        "decisions/ADR-0014-preprocessing-corpus-health.md",
+        "docs/development/p007-preprocessing-corpus-health-contract.md",
+        "memory/checkpoints/2026-07-14-p007-method-alpha-acceptance.md"
+      ]
+    },
+    {
+      "id": "P007-AC-02",
+      "criterion": "Closed configuration, annotation-overlay, preparation-manifest, corpus-health, and admission-receipt schemas plus canonical models reject malformed, duplicate-key, non-finite, inconsistent, unknown-field, and oversized inputs through separate structural and semantic validators.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/core-validation.md",
+        "provenance/runs/RUN-20260714-0006.json"
+      ]
+    },
+    {
+      "id": "P007-AC-03",
+      "criterion": "P003-validated TXT and safe ZIP-member bytes are rebound to raw digest, P004 identity/rights/inventory state, and a capability-owned P005 private workspace without text, snippets, tokens, paths, or capabilities entering session state, SQLite control metadata, logs, exceptions, provenance, or browser HTML; every terminal path proves bounded cleanup.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/web-preparation-validation.md",
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-04",
+      "criterion": "Golden Unicode, BOM, newline, punctuation, number, symbol, combining-mark, apostrophe, hyphen, diacritic, and empty-output fixtures prove that identical accepted input and config produce byte-identical prepared text, prepared SHA-256, counts, manifests, and candidate inventories across repeated and canonical Linux runs.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/core-validation.md",
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260714-0006.json",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-05",
+      "criterion": "Custom exclusions are exact-token and candidate-only; known independent works alone determine candidate order; changing unknown content leaves every known prepared artifact, candidate order, culling eligibility, and P006 fitting input exactly unchanged.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/core-validation.md",
+        "provenance/evidence/P007/web-preparation-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-06",
+      "criterion": "Exact duplicate, near-duplicate, shared-passage, segment/excerpt, parent-work, minimum-work, chronology-point, work-length, group-balance, and feature-capacity fixtures trigger exactly the predeclared blocker, strong-warning, note, or not-enough-features outcomes at and around every accepted boundary without exporting matching text.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/core-validation.md",
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-07",
+      "criterion": "Edition, OCR, paratext, genre, audience, source, adaptation, collection, chronology, and curation fixtures produce the expected purpose-aware confound matrix with no quality score, false clean-corpus verdict, or claim that warnings statistically control confounds.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-08",
+      "criterion": "Only an unexpired, one-time, blocker-free, hash-consistent READY receipt can build P006 input or enqueue analysis; direct, reused, expired, blocked, role-mutated, inventory-mutated, count-mutated, or lower-level bypass attempts fail closed while existing P005 and P006 contracts remain compatible.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/web-preparation-validation.md",
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-09",
+      "criterion": "Upload, Describe, Prepare, and Health review present beginner-first English copy, accessible blocker recovery, length/transformation/confound/overlap/feature-capacity visuals bound to semantic tables and CSV, mobile/reflow and keyboard behavior, no payload echo or egress, and explicit statements of what each diagnostic does not establish.",
+      "status": "pending",
+      "evidence": [
+        "provenance/evidence/P007/web-preparation-validation.md",
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    },
+    {
+      "id": "P007-AC-10",
+      "criterion": "Full source, schema, provenance, privacy-canary, adversarial method, exact-commit clean-clone, Linux CI, SBOM/dependency/secret, canonical-container, and retained checksum gates pass at full measured source coverage while P008-P015 claims remain explicitly locked.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+        "provenance/runs/RUN-20260715-0001.json"
+      ]
+    }
+  ],
+  "changed_files": [
+    "P007 execution brief, native PromptEvent, four-lens architecture/method audit, detailed proposed preprocessing and corpus-health contract, proposed ADR, active Ticket, checkpoint, and synchronized startup/claim/threat pointers",
+    "Exact opening commit 196c5df passed Linux source, schema, provenance, SBOM/dependency/secret, and canonical-container gates; the result is retained without widening P007 claims",
+    "HD-20260714-0001 accepted the bounded P007 method package; HD-20260714-0002 accepted the 2026-07-17 Public-alpha target and August evidence-dependent manuscript-draft target; ADR-0014 and ADR-0015 preserve the separate claim boundaries",
+    "Commit 83a6eca added five closed P007 schemas, strict structural and semantic parsers, deterministic delta-surface-words-v1 preparation, known-only candidate ranking, content-free corpus-health assessment, and 100% measured source and branch coverage",
+    "Private corpus materialization, guided P006 input binding, one-time analysis admission, and prepared-result handoff were added without widening P004 state or exposing payload, path, capability, or authority data",
+    "Commit 9b5790f connected Upload, Describe, Review, Prepare, deterministic health assessment, READY/BLOCKED state, and content-free downloads; exact Linux CI 29378757244 passed",
+    "Commit b42da99 added the purpose-aware ten-factor confound engine and one immutable projection for length, transformation, confound, overlap, and MFW-capacity visuals, semantic tables, and four P003-revalidated content-free CSV exports",
+    "Exact implementation source passed 1,403 Linux tests, 100% measured coverage, supply-chain gates, canonical Linux image construction, and a fresh remote clean-clone replay; P007-AC-03 through AC-08 and AC-10 pass",
+    "P007-AC-09 remains pending only for Oğuz Koran's prepared-state warning-language browser walkthrough; automated checks are not generalized as usability, ease, or teachability evidence"
+  ],
+  "commands": [
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "Before P007 edits, the P006-merged baseline passed 1,246 tests with one documented macOS canonical-worker skip, 100% of 7,768 statements and 2,080 branches, strict typing, metadata, 85 provenance records, repository scanning, frozen P006 evidence validators, and the locked R boundary.",
+      "evidence": "provenance/evidence/P007/start-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The complete P007 proposed opening package passed 1,246 tests with one documented macOS canonical-worker skip, 100% of 7,768 statements and 2,080 branches, strict typing, metadata, 87 provenance records, repository scanning, frozen P006 evidence validators, and the locked R boundary; no production source or scientific fixture changed.",
+      "evidence": "provenance/evidence/P007/start-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29360053798",
+      "exit_code": 0,
+      "result": "Exact P007 opening commit 196c5df passed pinned Linux source verification, full measured coverage, metadata, schemas, 87 provenance records, frozen P006 validators, SBOM/dependency/secret gates, and canonical Linux amd64 container construction.",
+      "evidence": "provenance/evidence/P007/start-validation.md"
+    },
+    {
+      "command": ".tools/uv/bin/uv run pytest --cov=delta_lemmata --cov-report=term-missing",
+      "exit_code": 0,
+      "result": "The P007 pure-core source passed 1,294 tests with one documented macOS Linux-only skip and measured 8,496 statements and 2,286 branches at 100% coverage; format, lint, strict typing, and generated-schema drift checks also passed.",
+      "evidence": "provenance/evidence/P007/core-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29367142454",
+      "exit_code": 0,
+      "result": "Exact commit 83a6eca passed all 1,295 tests on Linux at 100% measured statement and branch coverage, validated 91 provenance records, passed repository/R/SBOM/dependency/secret gates, and built the canonical Linux amd64 image.",
+      "evidence": "provenance/evidence/P007/core-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29378757244",
+      "exit_code": 0,
+      "result": "Exact web-preparation commit 9b5790f passed all 1,380 Linux tests, 100% of 9,758 statements and 2,570 branches, 92 provenance records, supply-chain gates, and canonical Linux amd64 image construction.",
+      "evidence": "provenance/evidence/P007/web-preparation-validation.md"
+    },
+    {
+      "command": "./scripts/verify.sh",
+      "exit_code": 0,
+      "result": "The P007 diagnostics implementation passed 1,402 tests with one documented macOS Linux-only skip, 100% of 10,088 statements and 2,642 branches, strict typing, generated schemas, metadata, 92 provenance records, repository scanning, and the locked R boundary.",
+      "evidence": "provenance/evidence/P007/corpus-health-diagnostics-validation.md"
+    },
+    {
+      "command": "Codex in-app browser desktop 1440x1000 and mobile 390x844 inspection",
+      "exit_code": 0,
+      "result": "Entry geometry, reflow, research-purpose guidance, one keyboard focus transition, and console logs passed without overflow, clipped text, or browser error/warning records; the native file chooser was not automated.",
+      "evidence": "provenance/evidence/P007/corpus-health-diagnostics-validation.md"
+    },
+    {
+      "command": "Fresh remote no-hardlinks clone; detached checkout b42da99; ./scripts/bootstrap.sh; ./scripts/verify.sh; clean post-run status",
+      "exit_code": 0,
+      "result": "The exact implementation commit rebuilt from committed Python and R lockfiles, passed 1,402 tests with one documented macOS skip at 100% measured coverage, and left the clean-clone worktree unchanged.",
+      "evidence": "provenance/evidence/P007/corpus-health-diagnostics-validation.md"
+    },
+    {
+      "command": "GitHub Actions CI run 29381188842",
+      "exit_code": 0,
+      "result": "Exact diagnostics commit b42da99 passed all 1,403 Linux tests, 100% of 10,088 statements and 2,642 branches, 92 provenance records, SBOM/dependency/secret gates, and canonical Linux amd64 image construction.",
+      "evidence": "provenance/evidence/P007/corpus-health-diagnostics-validation.md"
+    }
+  ],
+  "blockers": []
+}

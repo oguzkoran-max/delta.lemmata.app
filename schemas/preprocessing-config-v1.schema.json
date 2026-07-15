@@ -1,0 +1,120 @@
+{
+  "$defs": {
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/preprocessing-config-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "automatic_paratext_removal": {
+      "const": false,
+      "title": "Automatic Paratext Removal",
+      "type": "boolean"
+    },
+    "custom_exclusion_count": {
+      "maximum": 20000,
+      "minimum": 0,
+      "title": "Custom Exclusion Count",
+      "type": "integer"
+    },
+    "custom_exclusions_sha256": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Sha256"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "intake_profile": {
+      "const": "ingestion-limits-v1",
+      "title": "Intake Profile",
+      "type": "string"
+    },
+    "lemmatization": {
+      "const": false,
+      "title": "Lemmatization",
+      "type": "boolean"
+    },
+    "lowercase_mode": {
+      "const": "unicode_str_lower",
+      "title": "Lowercase Mode",
+      "type": "string"
+    },
+    "max_candidate_features": {
+      "maximum": 20000,
+      "minimum": 2,
+      "title": "Max Candidate Features",
+      "type": "integer"
+    },
+    "preserve_diacritics": {
+      "const": true,
+      "title": "Preserve Diacritics",
+      "type": "boolean"
+    },
+    "profile_id": {
+      "const": "delta-surface-words-v1",
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "remove_numbers": {
+      "const": true,
+      "title": "Remove Numbers",
+      "type": "boolean"
+    },
+    "remove_punctuation": {
+      "const": true,
+      "title": "Remove Punctuation",
+      "type": "boolean"
+    },
+    "retain_stopwords": {
+      "const": true,
+      "title": "Retain Stopwords",
+      "type": "boolean"
+    },
+    "schema_version": {
+      "const": "preprocessing-config-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "stemming": {
+      "const": false,
+      "title": "Stemming",
+      "type": "boolean"
+    },
+    "token_profile": {
+      "const": "letter_sequences_with_following_marks",
+      "title": "Token Profile",
+      "type": "string"
+    },
+    "unicode_normalization": {
+      "const": "NFC",
+      "title": "Unicode Normalization",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "intake_profile",
+    "unicode_normalization",
+    "lowercase_mode",
+    "token_profile",
+    "preserve_diacritics",
+    "retain_stopwords",
+    "remove_punctuation",
+    "remove_numbers",
+    "lemmatization",
+    "stemming",
+    "automatic_paratext_removal",
+    "custom_exclusions_sha256",
+    "custom_exclusion_count",
+    "max_candidate_features"
+  ],
+  "title": "PreprocessingConfigV1",
+  "type": "object"
+}

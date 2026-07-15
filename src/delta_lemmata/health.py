@@ -24,10 +24,10 @@ def public_health(build_id: str | None = None) -> Mapping[str, str | bool]:
     resolved_build = build_id if build_id is not None else os.getenv("DELTA_BUILD_ID")
     return {
         "schema_version": "1.0.0",
-        "status": "interface-only",
+        "status": "public-alpha",
         "version": __version__,
         "build_id": _safe_build_id(resolved_build),
-        "analysis_engine": "not-connected",
+        "analysis_engine": "r-stylo-connected",
         "runtime_ai": False,
         "analytics": False,
         "login": False,

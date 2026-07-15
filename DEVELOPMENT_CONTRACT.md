@@ -1,8 +1,9 @@
 # Delta Development Contract
 
-**Durum:** Kanonik; P001-P006 tamamlandı, sıradaki planlanan ticket P007
+**Durum:** Kanonik; P001-P006 tamamlandı, P007 açık ve yöntem paketi kabul edildi
 **Onay tarihi:** 2026-07-10  
-**Aşama:** P006 fixed worker, fixture-local parity, retained Linux evidence, exact-commit CI ve clean-clone kapılarıyla tamamlandı; P007 henüz açılmadı
+**Aşama:** P006 tamamlandı; P007 schema-first/tests-first implementation başladı;
+2026-07-17 Public-alpha hedefi minimum P007-P009 ve P014 kapılarına bağlıdır
 **Alan adı:** delta.lemmata.app
 
 Bu dosya Delta'nın ürün, yöntem, doğrulama, FAIR, güvenlik ve yayın sözleşmesidir. Claude, Codex veya başka bir ajan aynı sözleşmeye göre çalışır. Araç-özel talimatlar kanonik kararları değiştiremez.
@@ -110,6 +111,19 @@ v0.1 dışında kalanlar:
 - Genel amaçlı collation veya dijital edisyon platformu
 - Aynı eserin sürümlerini hizalama, diff, varyant anotasyonu veya kritik edisyon üretimi
 - Türkçe ve İtalyanca arayüz yerelleştirmesi
+
+### 5.1 Public Alpha ile Bilimsel Release Ayrımı
+
+`HD-20260714-0002` ve ADR-0015 uyarınca hedef 2026-07-17 tarihinde açıkça
+`Public alpha` ve `experimental` olarak etiketlenmiş dar bir sürümdür. Bu sürüm;
+P007 deterministic preparation/health/admission, minimum P008 gerçek run yolu,
+minimum P009 sonuç guardrail'i ve minimum P014 deployment güvenlik dilimi geçmeden
+açılmaz.
+
+Public alpha; benchmark validation, calibrated stability, complete FAIR-oriented
+run package, Pinokyo worked example, Barış expert walkthrough, general usability,
+scientific release veya publication readiness kanıtı değildir. Tarih bir hard gate'i
+geçersiz kılmaz; başarısız kapıda kapsam küçülür veya activation ertelenir.
 
 ## 6. Kanonik Metodoloji
 

@@ -1,0 +1,154 @@
+{
+  "$defs": {
+    "AnalysisRole": {
+      "enum": [
+        "known",
+        "unknown"
+      ],
+      "title": "AnalysisRole",
+      "type": "string"
+    },
+    "AssetId": {
+      "pattern": "^asset_[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    },
+    "DocumentId": {
+      "pattern": "^doc_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "PreparationState": {
+      "enum": [
+        "READY"
+      ],
+      "title": "PreparationState",
+      "type": "string"
+    },
+    "ReceiptDocumentBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_role": {
+          "$ref": "#/$defs/AnalysisRole"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "document_id": {
+          "$ref": "#/$defs/DocumentId"
+        },
+        "work_id": {
+          "$ref": "#/$defs/WorkId"
+        }
+      },
+      "required": [
+        "document_id",
+        "asset_id",
+        "work_id",
+        "analysis_role"
+      ],
+      "title": "ReceiptDocumentBinding",
+      "type": "object"
+    },
+    "ReceiptId": {
+      "pattern": "^receipt_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "WorkId": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/analysis-preparation-receipt-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "admission_nonce_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "annotations_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "blocker_count": {
+      "const": 0,
+      "title": "Blocker Count",
+      "type": "integer"
+    },
+    "candidate_feature_count": {
+      "maximum": 20000,
+      "minimum": 2,
+      "title": "Candidate Feature Count",
+      "type": "integer"
+    },
+    "candidate_inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "config_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "expires_at_utc": {
+      "format": "date-time",
+      "title": "Expires At Utc",
+      "type": "string"
+    },
+    "health_report_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "issued_at_utc": {
+      "format": "date-time",
+      "title": "Issued At Utc",
+      "type": "string"
+    },
+    "manifest_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "ordered_documents": {
+      "items": {
+        "$ref": "#/$defs/ReceiptDocumentBinding"
+      },
+      "maxItems": 50,
+      "minItems": 2,
+      "title": "Ordered Documents",
+      "type": "array"
+    },
+    "receipt_id": {
+      "$ref": "#/$defs/ReceiptId"
+    },
+    "schema_version": {
+      "const": "analysis-preparation-receipt-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "state": {
+      "$ref": "#/$defs/PreparationState"
+    },
+    "validation_report_sha256": {
+      "$ref": "#/$defs/Sha256"
+    }
+  },
+  "required": [
+    "schema_version",
+    "receipt_id",
+    "state",
+    "issued_at_utc",
+    "expires_at_utc",
+    "admission_nonce_sha256",
+    "inventory_sha256",
+    "validation_report_sha256",
+    "annotations_sha256",
+    "config_sha256",
+    "manifest_sha256",
+    "health_report_sha256",
+    "candidate_inventory_sha256",
+    "candidate_feature_count",
+    "blocker_count",
+    "ordered_documents"
+  ],
+  "title": "AnalysisPreparationReceiptV1",
+  "type": "object"
+}

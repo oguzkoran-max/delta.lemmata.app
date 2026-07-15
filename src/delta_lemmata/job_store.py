@@ -30,6 +30,7 @@ from delta_lemmata.job_models import (
     ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    commit_result_view,
     confirm_scientific_result,
     new_staged_job,
     publish_export,
@@ -57,9 +58,10 @@ JobIdFactory = Callable[[], JobId]
 
 _DATABASE_MODE = 0o600
 _BUSY_TIMEOUT_MILLISECONDS = 30_000
-_SCHEMA_VERSION = 2
+_SCHEMA_VERSION = 3
 _ZERO_DIGEST = bytes(32)
 _OPERATION_REFERENCE = re.compile(r"^op_[0-9a-f]{64}$", flags=re.ASCII)
+_RECEIPT_HMAC = re.compile(r"^[0-9a-f]{64}$", flags=re.ASCII)
 _ADMISSION_OPERATION_DOMAIN = b"delta-lemmata\x00queued-admission\x00v1\x00"
 _ADMISSION_ABANDONMENT_DOMAIN = b"delta-lemmata\x00admission-abandonment\x00v1\x00"
 _QUEUE_CANCELLATION_DOMAIN = b"delta-lemmata\x00queue-cancellation\x00v1\x00"
@@ -112,6 +114,17 @@ CREATE TABLE IF NOT EXISTS deletion_events (
     expires_at_utc TEXT NOT NULL
 ) STRICT;
 
+CREATE TABLE IF NOT EXISTS analysis_admissions (
+    receipt_hmac TEXT PRIMARY KEY CHECK (length(receipt_hmac) = 64),
+    job_id TEXT NOT NULL UNIQUE REFERENCES jobs(job_id) ON DELETE CASCADE,
+    owner_digest TEXT NOT NULL CHECK (length(owner_digest) = 64),
+    expected_job_version INTEGER NOT NULL CHECK (expected_job_version >= 0),
+    expires_at_utc TEXT NOT NULL,
+    consumed_at_utc TEXT,
+    version INTEGER NOT NULL CHECK (version >= 0),
+    CHECK (consumed_at_utc IS NULL OR consumed_at_utc < expires_at_utc)
+) STRICT;
+
 CREATE INDEX IF NOT EXISTS jobs_execution_queue_idx
 ON jobs (execution_state, queue_sequence);
 
@@ -123,6 +136,9 @@ ON deletion_events (expires_at_utc);
 
 CREATE UNIQUE INDEX IF NOT EXISTS deletion_events_identity_idx
 ON deletion_events (job_reference_digest, occurred_at_utc, reason);
+
+CREATE INDEX IF NOT EXISTS analysis_admissions_expiry_idx
+ON analysis_admissions (expires_at_utc);
 """
 
 
@@ -148,6 +164,8 @@ class JobStoreErrorCode(StrEnum):
     ADMISSION_CLEANUP_UNRESOLVED = "JOB_ADMISSION_CLEANUP_UNRESOLVED"
     NOT_AVAILABLE = "JOB_NOT_AVAILABLE"
     INVALID_UPDATE = "JOB_STORE_INVALID_UPDATE"
+    ANALYSIS_ADMISSION_REJECTED = "ANALYSIS_ADMISSION_REJECTED"
+    ANALYSIS_ADMISSION_REUSED = "ANALYSIS_ADMISSION_REUSED"
 
 
 class JobStoreError(RuntimeError):
@@ -179,6 +197,20 @@ class JobNotAvailableError(JobStoreError):
         super().__init__(JobStoreErrorCode.NOT_AVAILABLE)
 
 
+class AnalysisAdmissionRejectedError(JobStoreError):
+    """A READY binding or queue transition failed closed."""
+
+    def __init__(self) -> None:
+        super().__init__(JobStoreErrorCode.ANALYSIS_ADMISSION_REJECTED)
+
+
+class AnalysisAdmissionReusedError(JobStoreError):
+    """An authorized one-time READY receipt was already consumed."""
+
+    def __init__(self) -> None:
+        super().__init__(JobStoreErrorCode.ANALYSIS_ADMISSION_REUSED)
+
+
 def _detach(error: JobStoreError) -> None:
     error.__context__ = None
     error.__cause__ = None
@@ -206,6 +238,21 @@ def _invalid_update() -> NoReturn:
 
 def _timestamp(value: datetime) -> str:
     return value.isoformat().replace("+00:00", "Z")
+
+
+def _parse_timestamp(value: object) -> datetime:
+    if not isinstance(value, str) or not value.endswith("Z"):
+        raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD)
+    try:
+        parsed = require_utc(
+            datetime.fromisoformat(value[:-1] + "+00:00"),
+            field_name="stored timestamp",
+        )
+    except Exception:
+        raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD) from None
+    if _timestamp(parsed) != value:
+        raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD)
+    return parsed
 
 
 def _admission_operation_id(job: JobRecord) -> str:
@@ -337,7 +384,7 @@ class SQLiteJobStore:
             if journal_row[0].lower() != "wal":
                 raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE)
             version_row = cast(tuple[int], connection.execute("PRAGMA user_version").fetchone())
-            if version_row[0] not in {0, 1, _SCHEMA_VERSION}:
+            if version_row[0] not in {0, 1, 2, _SCHEMA_VERSION}:
                 raise JobStoreError(JobStoreErrorCode.INVALID_DATABASE)
             connection.executescript(_SCHEMA)
             connection.execute(f"PRAGMA user_version = {_SCHEMA_VERSION}")
@@ -684,6 +731,16 @@ class SQLiteJobStore:
                     expected_version=previous.version,
                     operation_id=operation.operation_id,
                 )
+            elif action.startswith("result_view:staged:"):
+                if updated.result_view is None:
+                    _invalid_update()
+                expected = commit_result_view(
+                    previous,
+                    receipt=updated.result_view,
+                    at_utc=previous.execution.entered_at_utc,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
+                )
             elif action == "cancellation:requested":
                 if updated.cancellation.requested_at_utc is None:
                     _invalid_update()
@@ -984,6 +1041,196 @@ class SQLiteJobStore:
                 updated=updated,
                 queue_sequence=queue_sequence,
             )
+            return updated
+
+    @_content_free
+    def bind_analysis_admission(
+        self,
+        *,
+        receipt_hmac: str,
+        job_id: JobId | str,
+        capability: SessionCapability,
+        at_utc: datetime,
+        expires_at_utc: datetime,
+        expected_job_version: int,
+    ) -> None:
+        """Bind one content-free READY authority to an owned staged job."""
+
+        if not isinstance(receipt_hmac, str) or _RECEIPT_HMAC.fullmatch(receipt_hmac) is None:
+            raise JobNotAvailableError
+        try:
+            at_utc = require_utc(at_utc, field_name="at_utc")
+            expires_at_utc = require_utc(expires_at_utc, field_name="expires_at_utc")
+        except Exception:
+            raise AnalysisAdmissionRejectedError from None
+        if (
+            isinstance(expected_job_version, bool)
+            or not isinstance(expected_job_version, int)
+            or expected_job_version < 0
+        ):
+            raise AnalysisAdmissionRejectedError
+        with self._immediate() as connection:
+            job, _queue_sequence = self._load_authorized(
+                connection,
+                job_id=job_id,
+                capability=capability,
+            )
+            deadline = job.execution.deadline_at_utc
+            if (
+                job.execution.state is not ExecutionState.STAGED
+                or job.version != expected_job_version
+                or deadline is None
+                or at_utc >= expires_at_utc
+                or expires_at_utc > deadline
+            ):
+                raise AnalysisAdmissionRejectedError
+            expiry = _timestamp(expires_at_utc)
+            existing = connection.execute(
+                """
+                SELECT receipt_hmac, job_id, owner_digest, expected_job_version,
+                       expires_at_utc, consumed_at_utc, version
+                FROM analysis_admissions
+                WHERE receipt_hmac = ? OR job_id = ?
+                """,
+                (receipt_hmac, job.job_id),
+            ).fetchone()
+            if existing is not None:
+                if (
+                    existing["receipt_hmac"] != receipt_hmac
+                    or existing["job_id"] != job.job_id
+                    or existing["owner_digest"] != job.owner_digest
+                    or existing["expected_job_version"] != expected_job_version
+                    or existing["expires_at_utc"] != expiry
+                    or existing["version"] != 0
+                ):
+                    raise AnalysisAdmissionRejectedError
+                _parse_timestamp(existing["expires_at_utc"])
+                return
+            connection.execute(
+                """
+                INSERT INTO analysis_admissions (
+                    receipt_hmac, job_id, owner_digest, expected_job_version,
+                    expires_at_utc, consumed_at_utc, version
+                ) VALUES (?, ?, ?, ?, ?, NULL, 0)
+                """,
+                (
+                    receipt_hmac,
+                    job.job_id,
+                    job.owner_digest,
+                    expected_job_version,
+                    expiry,
+                ),
+            )
+
+    @_content_free
+    def consume_analysis_admission(
+        self,
+        *,
+        receipt_hmac: str,
+        job_id: JobId | str,
+        capability: SessionCapability,
+        at_utc: datetime,
+        operation_id: str,
+    ) -> JobRecord:
+        """Consume one READY authority and enqueue its job in one transaction."""
+
+        if not isinstance(receipt_hmac, str) or _RECEIPT_HMAC.fullmatch(receipt_hmac) is None:
+            raise JobNotAvailableError
+        try:
+            at_utc = require_utc(at_utc, field_name="at_utc")
+        except Exception:
+            raise AnalysisAdmissionRejectedError from None
+        if (
+            not isinstance(operation_id, str)
+            or _OPERATION_REFERENCE.fullmatch(operation_id) is None
+        ):
+            raise AnalysisAdmissionRejectedError
+        with self._immediate() as connection:
+            previous, _queue_sequence = self._load_authorized(
+                connection,
+                job_id=job_id,
+                capability=capability,
+            )
+            row = connection.execute(
+                """
+                SELECT receipt_hmac, job_id, owner_digest, expected_job_version,
+                       expires_at_utc, consumed_at_utc, version
+                FROM analysis_admissions
+                WHERE receipt_hmac = ?
+                """,
+                (receipt_hmac,),
+            ).fetchone()
+            if (
+                row is None
+                or row["job_id"] != previous.job_id
+                or row["owner_digest"] != previous.owner_digest
+            ):
+                raise JobNotAvailableError
+            if (
+                not isinstance(row["expected_job_version"], int)
+                or isinstance(row["expected_job_version"], bool)
+                or row["expected_job_version"] < 0
+                or row["version"] not in {0, 1}
+                or (row["consumed_at_utc"] is None) != (row["version"] == 0)
+            ):
+                raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD)
+            expires_at = _parse_timestamp(row["expires_at_utc"])
+            if row["consumed_at_utc"] is not None:
+                consumed_at = _parse_timestamp(row["consumed_at_utc"])
+                if consumed_at >= expires_at:
+                    raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD)
+                raise AnalysisAdmissionReusedError
+            deadline = previous.execution.deadline_at_utc
+            if (
+                previous.execution.state is not ExecutionState.STAGED
+                or previous.version != row["expected_job_version"]
+                or deadline is None
+                or expires_at > deadline
+                or at_utc >= expires_at
+                or at_utc >= deadline
+            ):
+                raise AnalysisAdmissionRejectedError
+            count_row = cast(
+                sqlite3.Row,
+                connection.execute(
+                    "SELECT COUNT(*) FROM jobs WHERE execution_state = 'queued'"
+                ).fetchone(),
+            )
+            if int(count_row[0]) >= self._policy.max_queued:
+                raise AnalysisAdmissionRejectedError
+            try:
+                updated = transition_execution(
+                    previous,
+                    target=ExecutionState.QUEUED,
+                    at_utc=at_utc,
+                    deadline_at_utc=at_utc + timedelta(seconds=self._policy.queued_ttl_seconds),
+                    expected_version=previous.version,
+                    operation_id=operation_id,
+                )
+            except (JobModelError, ValueError):
+                raise AnalysisAdmissionRejectedError from None
+            queue_sequence = self._insert_event(
+                connection,
+                job=updated,
+                event_code="JOB_QUEUED",
+                at_utc=at_utc,
+            )
+            self._write_job(
+                connection,
+                previous=previous,
+                updated=updated,
+                queue_sequence=queue_sequence,
+            )
+            changed = connection.execute(
+                """
+                UPDATE analysis_admissions
+                SET consumed_at_utc = ?, version = 1
+                WHERE receipt_hmac = ? AND consumed_at_utc IS NULL AND version = 0
+                """,
+                (_timestamp(at_utc), receipt_hmac),
+            ).rowcount
+            if changed != 1:  # pragma: no cover - protected by BEGIN IMMEDIATE
+                raise JobStoreError(JobStoreErrorCode.CORRUPT_RECORD)
             return updated
 
     @_content_free
@@ -1368,6 +1615,8 @@ class SQLiteJobStore:
 
 
 __all__ = [
+    "AnalysisAdmissionRejectedError",
+    "AnalysisAdmissionReusedError",
     "JobAdmissionCleanupUnresolvedError",
     "JobAdmissionRejectedError",
     "JobIdFactory",

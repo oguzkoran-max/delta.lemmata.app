@@ -1,9 +1,17 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-14
+**Güncellendi:** 2026-07-15
 
-**Aşama:** P001-P006 tamamlandı. Aktif implementation Ticket yoktur; sıradaki
-planlanan iş P007 Preprocessing and Corpus Health açılış paketidir
+**Aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
+owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
+P009'un export-backed sonuç/yorum sınırı yüzeyi gerçek R/stylo worker,
+desktop/mobile/reflow browser, remote clean-clone ve canonical Linux CI
+kapılarından geçti. P008 tam üç amaç ve ilgili known/unknown browser matrisi,
+P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Minimum P014
+deployment paketi canonical Linux CI'da geçti; gerçek host inventory,
+coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
+İlk read-only host preflight'i Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat
+hostta container runtime olmadığı için kurulumdan önce fail-closed durdu.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -14,17 +22,141 @@ recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict t
 parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
 finalizer, bounded no-follow workspace read, fixed R worker, shell-free adapter,
 checksum-frozen direct-`stylo` oracle, retained worker package ve crash-safe
-scientific-result handoff var. Public analysis, preprocessing, corpus health,
-benchmark, stability, FAIR run export ve deployment hâlâ yok
+scientific-result handoff var. P007'de deterministic preparation, purpose-aware
+confound warnings, exact/near/shared-passage kontrolleri, READY/BLOCKED kararı,
+beş semantic-table-bound diagnostic panel ve dört content-free CSV bağlıdır.
+P008'de kapalı Guided parameter resolution, review-before-run, one-time READY
+admission ve gerçek P006 analysis orchestration bağlıdır. P009'da dört hücreli
+sonuç görünümü, sabit 500-MFW reading reference, distance heatmap, exact-tie
+nearest-neighbor tablosu, deterministic MDS haritası, semantic table parity,
+claim lint ve raw-text-free result export bağlıdır. P014'te versioned,
+loopback-only, egress-denied ve hardened public-alpha stack paketi vardır; canlı
+VPS kurulumu veya public route yoktur. Benchmark, calibrated stability, tam FAIR
+run package ve Pinokyo çalışması hâlâ yok.
 
-**Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
+**Son tam kapanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif ticket:** Yok
+**Aktif implementation ticket:** `provenance/tickets/P014.json` (`in-progress`,
+AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
-**Sıradaki tek ana iş:** P007 için PromptEvent, Ticket, architecture/method audit,
-accepted preprocessing boundary ve tests-first opening package oluştur. P007
-açılmadan preprocessing kodu yazma. Public workflow P008, benchmark P010/P011,
-FAIR package P012, Pinokyo P013 ve production isolation P014'te kalır.
+**Sıradaki tek ana iş:**
+Read-only preflight kanıtını doğrula ve PR #4 üzerinden normal merge commit ile
+`main`e al; provenance zincirini squash etme. `main` CI yeşil olduktan sonra exact
+green main commit'ini private GHCR'a immutable digest ile yayımla. İlk workflow
+dispatch'i, workflow henüz default branch'te kayıtlı olmadığı için GitHub 404 ile
+durdu; doğru sıra merge, main CI, sonra dispatch'tir. Canlı hostta hiçbir işlem
+yapmadan önce container-runtime ve capacity seçimini kaydet. Tekrarlanan inventory
+geçerse sıra Delta-only install, public TLS gate, coexistence/load,
+restart-cleanup, rollback ve Oğuz owner walkthrough'udur. DNS, Caddy veya public
+activation bu kapılardan önce yapılmaz.
+
+**P014 canonical package checkpoint'i:** Exact implementation commit'i
+`7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
+`RUN-20260715-0004`; canonical Linux CI `29420509541` içinde verify job
+`87369452370` ve container job `87369452318` yeşildir. CI'da 1.564 test, 11.382
+statement, 2.964 branch ve yüzde 100 measured coverage; gerçek R/stylo browser
+akışı; SBOM/dependency/secret; canonical image; hardened stack; TLS, strict Host,
+tek başarılı WebSocket; desktop/mobile/320px reflow; denied egress; hostile
+requests; runtime inspection ve cleanup geçti. App image ID
+`sha256:f96fbd196c1e71b86a3dde8254f70fca3c2ff3d69306a4f6e02be73cb69a9934`;
+pinned gateway manifest digest
+`sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81`.
+On iki başarısız veya superseded CI outcome nedenleriyle korunur. Kanıt:
+`provenance/evidence/P014/canonical-alpha-stack-validation.md`. Registry manifest
+digest, accepted post-preparation host inventory, live TLS, Lemmata load,
+restart/rollback ve owner kabulü henüz yoktur; public activation yasaktır.
+
+**P014 target-host preflight checkpoint'i:** Kanıt-link commit'i
+`dea9e67154d75852c5d69db9871fd4a1868bc236`, PR CI `29424064991` içinde verify ve
+container işlerinde yeşildir. Read-only host run'ı `RUN-20260715-0005` exit `21`
+ile fail-closed oldu. Ubuntu 26.04 x86_64 hostta 2 CPU, 3.814 MiB RAM, 2.360 MiB
+available RAM, sıfır swap ve 32.621 MiB boş root disk gözlendi. Docker, Podman,
+containerd ve nerdctl yoktur. Caddy ve Lemmata active; Lemmata yaklaşık 1,04 GiB
+kullanır ve finite CPU/RAM cap'i yoktur; `8501` dinler, `8502` boştur. Public
+Lemmata health `ok`; 20 sequential request 20/20 HTTP 200, median 182,02 ms ve
+p95 267,73 ms verdi. Hiçbir paket, swap, service, Caddy, DNS veya dosya değişikliği
+yapılmadı. Kanıt: `provenance/evidence/P014/target-host-read-only-preflight.md`.
+Bu failed preflight AC-08'i kapatmaz; accepted post-preparation inventory,
+container-runtime/capacity kararı ve bütün host-bound kapılar pending'dir.
+
+**P009 minimum-alpha checkpoint'i:** Exact implementation commit'i
+`c5e39b07bb65a11613684a10269b186c987ef980`; run kaydı
+`RUN-20260715-0003`; canonical Linux CI `29402396790` içinde 1.523 test, gerçek
+upload-to-public-result Playwright akışı, iki nonblank chart, iki result download,
+desktop/mobile/320px reflow, payload canary, console/network,
+SBOM/dependency/secret ve Linux amd64 container kapıları geçti. Yerel ve private
+remote clean-clone turu 1.522 test, bir documented macOS Linux-only skip ve yüzde
+100 measured coverage ile geçti; clone temiz kaldı. Kanıt-link commit'i
+`567d154e697609996e514447ab116f5532c1704d`, CI `29404000108` içinde verify ve
+container işlerinde yeniden yeşildir. Yedi önceki CI failure nedenleriyle birlikte
+korunur. Kanıt: `provenance/evidence/P009/minimum-alpha-results-validation.md`.
+
+**P008 minimum-alpha checkpoint'i:** Guided Mode tam olarak 100, 300, 500 ve
+1000 MFW; yüzde 0 culling; whole text; Classic Delta; seed 20260713 ve optimal
+olduğu iddia edilmeyen sabit 500-MFW reference ile çalışır. Research Mode görünür
+ama kilitlidir. Exact implementation commit'i
+`7e9a28eafa4756b2cf82e6d6f3d8e0c43742edf5`; canonical Linux CI
+`29388984019` içinde 1.459 test, gerçek upload-to-R/stylo Playwright akışı,
+desktop/mobile/reflow, payload canary, console/network, SBOM/dependency/secret ve
+Linux amd64 container kapıları geçti. Aynı commit remote no-hardlinks clean clone'da
+bootstrap/full verify ve temiz post-run tree ile tekrarlandı. Kanıt:
+`RUN-20260715-0002` ve
+`provenance/evidence/P008/minimum-alpha-workflow-validation.md`. İki önceki CI
+failure, gerçek calculation başarısızlığı değil harness sınırı düzeltmeleri olarak
+değiştirilmeden tutulur. P008-AC-09 tam üç amaç ve ilgili known/unknown scope'lar
+için pending kalır.
+
+**P007 diagnostics checkpoint'i:** Purpose-aware metadata confound engine ve tek
+immutable health projection implementation commit'i
+`b42da99442f4c2a7f617da082c699f1f48942b62` ile tamamlandı. Length,
+transformation, confound, overlap ve MFW capacity panelleri aynı projection'dan
+semantic table ve CSV üretir; stale binding fail-closed olur. Full yerel ve remote
+clean-clone kapısı 1.402 test, bir documented macOS skip, 10.088 statement, 2.642
+branch ve yüzde 100 coverage ile geçti. GitHub Actions `29381188842` bütün 1.403
+Linux testini, SBOM/dependency/secret gate'lerini ve canonical Linux amd64 image'i
+geçti. 1440px desktop ve 390px mobile browser denetiminde overflow/clipped copy/
+console error yoktu; üç research-purpose guidance'ı doğru değişti. Kanıt:
+`provenance/evidence/P007/corpus-health-diagnostics-validation.md` ve
+`RUN-20260715-0001`. Native browser file chooser ile son owner warning-copy turu
+bilinçli olarak açıktır; genel usability iddiası kurulmaz.
+
+**P007 web integration checkpoint'i:** Browser intake bytes her geçişte yeniden
+P003 doğrulamasından geçirilip P005 private prepare-only workspace'e taşınıyor.
+Streamlit state yalnız opaque owner key ile payload-free receipt/outcome tutuyor;
+capability, secret, raw/prepared text ve server path taşımıyor. Final metadata
+confirmation sonrasında fixed `delta-surface-words-v1` açıklaması, work role/OCR/
+paratext annotations, deterministic preparation, READY/BLOCKED health summary,
+token-length visualı, MFW capacity ve content-free downloads bağlıdır. Üretim
+runtime'ı explicit private root ile birbirinden farklı iki 256-bit secret olmadan
+fail-closed; process start ve yeni kabul öncesi durable P005 state uzlaştırılır,
+expired idle lease'ler toplanır ve terk edilmiş oturumların staged kapasiteyi
+kalıcı tüketmesi engellenir. Final local `./scripts/verify.sh`: 1.379 passed, bir
+documented Linux-only macOS skip, 9.758 statement, 2.570 branch ve yüzde 100
+coverage. Gerçek browser kontrolünde desktop ve 390 px mobile yatay taşma vermedi,
+araştırma yolu seçimi çalıştı ve console error/warning kaydı boştu. Exact-commit CI
+run `29378757244` içinde verify job `87237608831` ile 1.380 Linux testi ve container
+job `87237608822` ile canonical Linux amd64 image build geçti. Exact implementation
+commit'i `9b5790f3c75170f9c4241fad11d51f2a26495857`; kanıt:
+`provenance/evidence/P007/web-preparation-validation.md`.
+
+**Yeni insan kararları:** `HD-20260714-0001` P007 yöntem paketini kabul etti ve
+ADR-0014 Accepted oldu. `HD-20260714-0002` ile ADR-0015, bütün minimum kapılar
+geçerse 2026-07-17 için açıkça etiketli Public-alpha hedefini ve tamamlanan kanıta
+dayalı Ağustos 2026 tam makale taslağını kabul etti. Hız hedefi başarısız bir
+privacy, admission, calculation, explanation, resource, isolation, rollback veya
+Lemmata smoke kapısını geçersiz kılmaz.
+
+**P007 açılış checkpoint'i:** P006 main merge commit'i `5fab67c`; main CI
+`29354208853` yeşil. `codex/p007-preprocessing` dalında pre-edit gate 1.246 passed,
+bir documented macOS skip, 7.768 statement, 2.080 branch ve yüzde 100 coverage ile
+geçti. Dört adet 30k-token read-only mercek yöntem, architecture/security,
+FAIR/provenance ve beginner UX'i denetledi. Ana bulgular: payload-free P004 state
+P007'ye ham metin veremez; P003 bytes P005 private prepare-only workspace'e doğrudan
+bağlanmalıdır; lower-level P005/P006 yolları corpus health'i bypass etmemelidir;
+P006 input yalnız blocker-free, hash-bound, one-time READY receipt ile kurulmalıdır.
+Accepted profil `delta-surface-words-v1`; exact/near/shared-passage, 6-work,
+3-chronology-point, 4:1 length ve 3:1 group eşikleri Delta v0.1 policy'dir, evrensel
+stilometri yasası değildir.
 
 **P006 closure checkpoint:** Fixed worker ve scientific handoff `f0800c8` ile
 uygulandı. Capture source `79cb268`, read-only capture `29340236382`, evidence-only
@@ -299,7 +431,10 @@ GitHub CI run `29201459098` içinde verify, SBOM/dependency audit ve Linux amd64
 container işlerinde geçti. Bu checkpointte insan kabulü açıktı; P004 daha sonra
 `HD-20260712-0002` sınırlarıyla teknik olarak kapatıldı.
 
-## Önce Oku
+## Tarihsel P004 Okuma Listesi
+
+Aşağıdaki liste P004 aktifken kullanılan tarihsel devirdir; güncel P007 başlangıç
+talimatı değildir. Güncel sıra bu dosyanın üst bölümü ve START_HERE.md içindedir.
 
 1. `START_HERE.md`
 2. Bu dosya
@@ -454,8 +589,8 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
 - `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
   repository'sidir; bu henüz public release değildir.
-- Varsayılan uzak dal `main`; P003 `d5a8118` merge commit'iyle alınmıştır.
-  Aktif geliştirme dalı `codex/p004-metadata-rights` dalıdır.
+- Varsayılan uzak dal `main`; P001-P006 main'e alınmıştır. Aktif geliştirme
+  dalı `codex/p007-preprocessing` dalıdır.
 - Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
   değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
 - Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje

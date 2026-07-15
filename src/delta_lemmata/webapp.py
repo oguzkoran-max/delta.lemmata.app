@@ -1,17 +1,21 @@
-"""English-only Streamlit workbench through the P004 corpus-review boundary."""
+"""English-only Streamlit workbench through P008 guided analysis."""
 
 from __future__ import annotations
 
 import hashlib
+import secrets
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
 from html import escape
 from typing import Any, Literal, cast
 
+import pyarrow as pa  # type: ignore[import-untyped]
 import streamlit as st
 from pydantic import HttpUrl, TypeAdapter, ValidationError
 
+from delta_lemmata.analysis_orchestrator import AnalysisOrchestratorError
 from delta_lemmata.catalog import text
 from delta_lemmata.corpus import (
     DEFAULT_VOCABULARY,
@@ -39,13 +43,34 @@ from delta_lemmata.corpus import (
     export_metadata_csv,
     guided_work_id,
     import_metadata_csv,
+    inventory_sha256,
     project_corpus_receipts,
     suggested_title,
+)
+from delta_lemmata.corpus_health_models import (
+    CorpusHealthFinding,
+    CorpusHealthFindingCode,
+    CorpusHealthReadiness,
+)
+from delta_lemmata.corpus_health_projection import (
+    ConfoundDatum,
+    CorpusHealthProjectionError,
+    OverlapDatum,
+    build_corpus_health_projection,
+    export_confound_matrix_csv,
+    export_feature_capacity_csv,
+    export_health_findings_csv,
+    export_work_preparation_csv,
+)
+from delta_lemmata.corpus_materialization import (
+    CorpusMaterializationError,
+    CorpusMaterializationReceipt,
 )
 from delta_lemmata.health import public_health
 from delta_lemmata.ingestion import (
     DEFAULT_LIMITS,
     ArchiveMemberReceipt,
+    IntakeError,
     IntakeErrorCode,
     IntakeReceipt,
     IntakeRole,
@@ -57,9 +82,36 @@ from delta_lemmata.intake_ui import (
     CorpusInputMode,
     IntakeOutcome,
     validate_browser_uploads,
+    visit_browser_corpus_payloads,
+)
+from delta_lemmata.prepared_corpus_service import (
+    PreparationOutcome,
+    PreparedCorpusError,
+)
+from delta_lemmata.preprocessing import build_preprocessing_config, parse_custom_exclusions
+from delta_lemmata.preprocessing_models import (
+    AnalysisRole,
+    CorpusAnalysisAnnotation,
+    CorpusAnalysisAnnotationsV1,
+    OcrStatus,
+    ParatextStatus,
+    TextUnit,
+    canonical_p007_json,
 )
 from delta_lemmata.provenance import canonical_json_bytes
+from delta_lemmata.result_view import (
+    ResultCellStatus,
+    ResultCellV1,
+    ResultDocumentDescriptor,
+    ResultViewV1,
+    canonical_result_view,
+    classical_mds,
+    nearest_neighbours,
+    project_result_view,
+)
+from delta_lemmata.stylo_contracts import DocumentRole
 from delta_lemmata.ui_theme import APP_CSS
+from delta_lemmata.web_runtime import WebRuntime, WebRuntimeError, build_web_runtime
 from delta_lemmata.workbench import (
     MODE_BODY_KEYS,
     MODE_LABEL_KEYS,
@@ -67,6 +119,11 @@ from delta_lemmata.workbench import (
     PURPOSES,
     PurposeSpec,
     WorkbenchMode,
+)
+from delta_lemmata.workflow_models import (
+    ResolvedWorkflowConfigV1,
+    canonical_p008_json,
+    resolve_guided_workflow,
 )
 
 _UPLOAD_GENERATION_KEY = "_intake_upload_generation"
@@ -83,6 +140,12 @@ _FLOW_ORIGIN_KEY = "_p004_inventory_origin"
 _FLOW_GUIDED_INPUTS_KEY = "_p004_guided_inputs"
 _FLOW_CORRECTION_KEY = "_p004_correction_target"
 _FLOW_CONFIRMATION_HASH_KEY = "_p004_confirmation_inventory_sha256"
+_FLOW_OWNER_KEY = "_private_owner_key"
+_FLOW_MATERIALIZATION_KEY = "_p005_materialization_receipt"
+_FLOW_ANNOTATIONS_KEY = "_p007_annotations"
+_FLOW_PREPARATION_KEY = "_p007_preparation_outcome"
+_FLOW_WORKFLOW_CONFIG_KEY = "_p008_resolved_workflow_config"
+_FLOW_JOB_PRESENTATION_KEY = "_p008_job_presentation"
 _HTTP_URL_ADAPTER = TypeAdapter(HttpUrl)
 
 
@@ -90,6 +153,8 @@ class CorpusSubstage(StrEnum):
     UPLOAD = "upload"
     DESCRIBE = "describe"
     REVIEW = "review"
+    PREPARE = "prepare"
+    PARAMETERS = "parameters"
 
 
 class CorpusOrigin(StrEnum):
@@ -106,13 +171,44 @@ class CorrectionTarget:
     field_path: str
 
 
+@dataclass(frozen=True, slots=True)
+class PreparationSelection:
+    asset_id: str
+    work_id: str
+    analysis_role: AnalysisRole
+    ocr_status: OcrStatus
+    paratext_status: ParatextStatus
+    curation_note: str | None
+
+
+@st.cache_resource(show_spinner=False)
+def _runtime() -> WebRuntime:
+    return build_web_runtime()
+
+
+def _owner_key() -> str:
+    value = st.session_state.get(_FLOW_OWNER_KEY)
+    if not isinstance(value, str) or len(value) != 64:
+        value = secrets.token_hex(32)
+        st.session_state[_FLOW_OWNER_KEY] = value
+    return value
+
+
 def _html(value: str) -> str:
     return escape(value, quote=True)
 
 
-def _render_header(health: dict[str, Any]) -> None:
+def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
     version = text("header.version", version=health["version"])
     build = text("header.build", build_id=health["build_id"])
+    release_alpha = _html(text("header.release_public_alpha"))
+    release_experimental = _html(text("header.release_experimental"))
+    if stage is CorpusSubstage.UPLOAD:
+        stage_label = text("header.stage.upload")
+    elif stage is CorpusSubstage.PARAMETERS:
+        stage_label = text("header.stage.parameters")
+    else:
+        stage_label = text("header.stage.corpus")
     st.markdown(
         f"""
         <div class="delta-header">
@@ -121,11 +217,16 @@ def _render_header(health: dict[str, Any]) -> None:
             <div>
               <div class="delta-brand-name">{_html(text("brand.name"))}</div>
               <div class="delta-brand-subtitle">{_html(text("brand.subtitle"))}</div>
+              <div class="delta-release-status" role="status"
+                   aria-label="{_html(text("header.release_status"))}">
+                <span class="delta-release-alpha">{release_alpha}</span>
+                <span class="delta-release-experimental">{release_experimental}</span>
+              </div>
             </div>
           </div>
           <div class="delta-build">
             <div class="delta-build-status">
-              <span class="delta-dot"></span>{_html(text("header.stage"))}
+              <span class="delta-dot"></span>{_html(stage_label)}
             </div>
             <div class="delta-build-meta">{_html(version)} · {_html(build)}</div>
           </div>
@@ -142,6 +243,10 @@ def _stage() -> CorpusSubstage:
     except ValueError:
         st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.UPLOAD.value
         return CorpusSubstage.UPLOAD
+
+
+def _set_stage(stage: CorpusSubstage) -> None:
+    st.session_state[_FLOW_STAGE_KEY] = stage.value
 
 
 def _map_row(
@@ -167,22 +272,40 @@ def _render_stepper(stage: CorpusSubstage) -> None:
         CorpusSubstage.UPLOAD: "flow.stage.upload",
         CorpusSubstage.DESCRIBE: "flow.stage.describe",
         CorpusSubstage.REVIEW: "flow.stage.review",
+        CorpusSubstage.PREPARE: "flow.stage.prepare",
+        CorpusSubstage.PARAMETERS: "flow.stage.parameters",
     }[stage]
+    parameter_stage = stage is CorpusSubstage.PARAMETERS
+    corpus_state = "sidebar.state.complete" if parameter_stage else stage_key
+    parameter_state = stage_key if parameter_stage else "flow.locked"
     markup = (
-        '<nav class="delta-map" aria-label="Corpus documentation progress">'
+        '<nav class="delta-map" aria-label="Experiment progress">'
         '<ol class="delta-map-list">'
         + _map_row(1, "sidebar.step.purpose", "sidebar.state.complete")
-        + _map_row(2, "sidebar.step.corpus", stage_key, active=True)
-        + _map_row(3, "sidebar.step.parameters", "flow.locked")
+        + _map_row(
+            2,
+            "sidebar.step.corpus",
+            corpus_state,
+            active=not parameter_stage,
+        )
+        + _map_row(
+            3,
+            "sidebar.step.parameters",
+            parameter_state,
+            active=parameter_stage,
+        )
         + _map_row(4, "sidebar.step.evidence", "flow.locked")
         + "</ol></nav>"
     )
     st.markdown(markup, unsafe_allow_html=True)
 
 
-def _render_sidebar(health: dict[str, Any]) -> None:
+def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
     with st.sidebar:
-        st.badge(text("sidebar.badge"), icon=":material/menu_book:", color="green")
+        badge_key = (
+            "sidebar.badge.parameters" if stage is CorpusSubstage.PARAMETERS else "sidebar.badge"
+        )
+        st.badge(text(badge_key), icon=":material/menu_book:", color="green")
         guide_items = "".join(
             f"<li>{_html(text(key))}</li>"
             for key in (
@@ -231,6 +354,18 @@ def _choice_label(value: str) -> str:
 
 def _rights_label(value: str) -> str:
     return text(f"describe.rights.{value}")
+
+
+def _analysis_role_label(value: str) -> str:
+    return text(f"prepare.role.{value}.label")
+
+
+def _ocr_label(value: str) -> str:
+    return text(f"prepare.ocr.{value}")
+
+
+def _paratext_label(value: str) -> str:
+    return text(f"prepare.paratext.{value}")
 
 
 def _browser_upload(upload: Any) -> BrowserUpload:
@@ -469,6 +604,21 @@ def _clear_pending_upload_widgets() -> None:
 
 
 def _clear_documentation_state(*, keep_purpose: bool) -> None:
+    materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+    owner_key = st.session_state.get(_FLOW_OWNER_KEY)
+    preparation = st.session_state.get(_FLOW_PREPARATION_KEY)
+    materialization_already_cleaned = (
+        isinstance(preparation, PreparationOutcome) and preparation.ready_receipt is None
+    )
+    if (
+        isinstance(materialization, CorpusMaterializationReceipt)
+        and isinstance(owner_key, str)
+        and not materialization_already_cleaned
+    ):
+        _runtime().materializations.cleanup(
+            owner_key=owner_key,
+            receipt=materialization,
+        )
     for key in (
         _FLOW_CATALOG_KEY,
         _FLOW_CATALOG_HASH_KEY,
@@ -479,11 +629,22 @@ def _clear_documentation_state(*, keep_purpose: bool) -> None:
         _FLOW_GUIDED_INPUTS_KEY,
         _FLOW_CORRECTION_KEY,
         _FLOW_CONFIRMATION_HASH_KEY,
+        _FLOW_MATERIALIZATION_KEY,
+        _FLOW_ANNOTATIONS_KEY,
+        _FLOW_PREPARATION_KEY,
+        _FLOW_WORKFLOW_CONFIG_KEY,
+        _FLOW_JOB_PRESENTATION_KEY,
     ):
         st.session_state.pop(key, None)
     for session_key in tuple(st.session_state):
         if str(session_key).startswith(
-            ("draft_", "review_confirmation_", "review_timeline_selector_")
+            (
+                "draft_",
+                "prep_",
+                "review_confirmation_",
+                "review_timeline_selector_",
+                "p008_",
+            )
         ):
             st.session_state.pop(session_key, None)
     if not keep_purpose:
@@ -622,14 +783,32 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                     tuple(unit.validated_file for unit in units),
                     display_label=metadata_file.display_label,
                 )
-            st.session_state[_FLOW_PURPOSE_KEY] = purpose.value
-            st.session_state[_FLOW_CATALOG_KEY] = units
-            st.session_state[_FLOW_CATALOG_HASH_KEY] = corpus_catalog_sha256(units)
-            st.session_state[_FLOW_IMPORT_KEY] = metadata_result
-            st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.DESCRIBE.value
-            st.session_state[_PENDING_UPLOAD_CLEAR_KEY] = _upload_widget_keys(generation)
-            st.session_state[_UPLOAD_GENERATION_KEY] = generation + 1
-            st.rerun()
+            owner_key = _owner_key()
+            try:
+                runtime = _runtime()
+                runtime.maintain()
+                materialization = visit_browser_corpus_payloads(
+                    mode,
+                    corpus_files,
+                    lambda payloads: runtime.materializations.materialize(
+                        owner_key=owner_key,
+                        payloads=payloads,
+                    ),
+                )
+            except (CorpusMaterializationError, IntakeError, WebRuntimeError) as error:
+                code = error.code.value
+                st.error(text("corpus.materialization_error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=code))
+            else:
+                st.session_state[_FLOW_PURPOSE_KEY] = purpose.value
+                st.session_state[_FLOW_CATALOG_KEY] = units
+                st.session_state[_FLOW_CATALOG_HASH_KEY] = corpus_catalog_sha256(units)
+                st.session_state[_FLOW_IMPORT_KEY] = metadata_result
+                st.session_state[_FLOW_MATERIALIZATION_KEY] = materialization
+                st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.DESCRIBE.value
+                st.session_state[_PENDING_UPLOAD_CLEAR_KEY] = _upload_widget_keys(generation)
+                st.session_state[_UPLOAD_GENERATION_KEY] = generation + 1
+                st.rerun()
         return display_outcome
 
 
@@ -1538,6 +1717,1228 @@ def _render_review_stage() -> None:
             text("review.analysis_locked" if confirmed else "review.analysis_locked_confirmation"),
             icon=":material/lock:",
         )
+        materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+        if confirmed and not report.blocked:
+            if isinstance(materialization, CorpusMaterializationReceipt):
+                st.button(
+                    text("review.continue_prepare"),
+                    icon=":material/arrow_forward:",
+                    type="primary",
+                    width="stretch",
+                    key="review_continue_prepare",
+                    on_click=_set_stage,
+                    args=(CorpusSubstage.PREPARE,),
+                )
+            else:
+                st.warning(text("review.temporary_corpus_missing"), icon=":material/timer_off:")
+
+
+def _preparation_document_id(inventory_digest: str, asset_id: str) -> str:
+    material = (
+        b"delta-lemmata\x00preparation-document-id\x00v1\x00"
+        + inventory_digest.encode("ascii")
+        + b"\x00"
+        + asset_id.encode("utf-8", errors="strict")
+    )
+    return "doc_" + hashlib.sha256(material).hexdigest()
+
+
+def _build_preparation_annotations(
+    inventory: CorpusInventory,
+    selections: tuple[PreparationSelection, ...],
+) -> CorpusAnalysisAnnotationsV1:
+    digest = inventory_sha256(inventory)
+    assets = {asset.asset_id: asset for asset in inventory.assets}
+    if len(selections) != len(assets) or {item.asset_id for item in selections} != set(assets):
+        raise ValueError("preparation selections do not match the corpus assets")
+    return CorpusAnalysisAnnotationsV1(
+        schema_version="corpus-analysis-annotations-v1",
+        inventory_sha256=digest,
+        annotations=tuple(
+            CorpusAnalysisAnnotation(
+                document_id=_preparation_document_id(digest, selection.asset_id),
+                asset_id=selection.asset_id,
+                work_id=selection.work_id,
+                analysis_role=selection.analysis_role,
+                text_unit=TextUnit.INDEPENDENT_WORK,
+                parent_work_id=None,
+                ocr_status=selection.ocr_status,
+                paratext_status=selection.paratext_status,
+                preupload_curation_note=selection.curation_note,
+            )
+            for selection in selections
+        ),
+    )
+
+
+def _render_preparation_selections(
+    inventory: CorpusInventory,
+) -> tuple[PreparationSelection, ...]:
+    works = {work.work_id: work for work in inventory.works}
+    selections: list[PreparationSelection] = []
+    st.subheader(text("prepare.decisions_title"), anchor=False)
+    st.caption(text("prepare.decisions_body"))
+    role_options = [AnalysisRole.KNOWN.value]
+    if inventory.purpose is PurposeId.TEXT_PROXIMITY:
+        role_options.append(AnalysisRole.UNKNOWN.value)
+    for index, asset in enumerate(inventory.assets, start=1):
+        work = works[asset.work_id]
+        label = text(
+            "prepare.work_label",
+            index=index,
+            title=work.title_original,
+            file=asset.file_label,
+        )
+        with st.expander(label, expanded=index == 1):
+            role = st.selectbox(
+                text("prepare.role.label"),
+                options=role_options,
+                format_func=_analysis_role_label,
+                key=f"prep_role_{asset.asset_id}",
+                help=text("prepare.role.help"),
+            )
+            st.caption(text(f"prepare.role.{role}.body"))
+            first, second = st.columns(2)
+            with first:
+                ocr = st.selectbox(
+                    text("prepare.ocr.label"),
+                    options=[status.value for status in OcrStatus],
+                    index=[status.value for status in OcrStatus].index(OcrStatus.UNKNOWN.value),
+                    format_func=_ocr_label,
+                    key=f"prep_ocr_{asset.asset_id}",
+                    help=text("prepare.ocr.help"),
+                )
+            with second:
+                paratext = st.selectbox(
+                    text("prepare.paratext.label"),
+                    options=[status.value for status in ParatextStatus],
+                    index=[status.value for status in ParatextStatus].index(
+                        ParatextStatus.UNKNOWN.value
+                    ),
+                    format_func=_paratext_label,
+                    key=f"prep_paratext_{asset.asset_id}",
+                    help=text("prepare.paratext.help"),
+                )
+            note_value = st.text_area(
+                text("prepare.note.label"),
+                key=f"prep_note_{asset.asset_id}",
+                help=text("prepare.note.help"),
+                max_chars=2_000,
+            ).strip()
+            st.caption(text("prepare.unit_fixed"))
+        selections.append(
+            PreparationSelection(
+                asset_id=asset.asset_id,
+                work_id=asset.work_id,
+                analysis_role=AnalysisRole(role),
+                ocr_status=OcrStatus(ocr),
+                paratext_status=ParatextStatus(paratext),
+                curation_note=note_value or None,
+            )
+        )
+    return tuple(selections)
+
+
+def _finding_measure(finding: CorpusHealthFinding) -> str | None:
+    values: list[str] = []
+    if finding.observed_count is not None:
+        values.append(text("prepare.finding.observed_count", value=finding.observed_count))
+    if finding.threshold_count is not None:
+        values.append(text("prepare.finding.threshold_count", value=finding.threshold_count))
+    if finding.observed_ratio is not None:
+        values.append(text("prepare.finding.observed_ratio", value=finding.observed_ratio))
+    if finding.threshold_ratio is not None:
+        values.append(text("prepare.finding.threshold_ratio", value=finding.threshold_ratio))
+    return " · ".join(values) or None
+
+
+def _render_health_finding(finding: CorpusHealthFinding) -> None:
+    key = f"prepare.finding.{finding.code.value}"
+    icon = {
+        "blocker": ":material/block:",
+        "strong_warning": ":material/warning:",
+        "note": ":material/info:",
+    }[finding.severity.value]
+    with st.container(border=True):
+        st.markdown(f"**{text(f'{key}.title')}**")
+        st.caption(text(f"{key}.body"))
+        st.caption(f"{text('prepare.finding.action_label')}: {text(f'{key}.action')}")
+        measure = _finding_measure(finding)
+        if measure is not None:
+            st.caption(f"{icon} {measure}")
+
+
+def _render_panel_boundary(copy_key: str) -> None:
+    st.caption(f"**{text('prepare.panel.boundary_label')}:** {text(copy_key)}")
+
+
+def _chronology_label(item: ConfoundDatum) -> str:
+    if item.chronology_mode is DateMode.EXACT and item.chronology_start_year is not None:
+        return text("prepare.confound.chronology.exact", year=item.chronology_start_year)
+    if item.chronology_mode is DateMode.APPROXIMATE and item.chronology_start_year is not None:
+        return text("prepare.confound.chronology.approximate", year=item.chronology_start_year)
+    if (
+        item.chronology_mode is DateMode.RANGE
+        and item.chronology_start_year is not None
+        and item.chronology_end_year is not None
+    ):
+        return text(
+            "prepare.confound.chronology.range",
+            start=item.chronology_start_year,
+            end=item.chronology_end_year,
+        )
+    return text("prepare.confound.chronology.unknown")
+
+
+def _overlap_code_label(code: CorpusHealthFindingCode) -> str:
+    return text(f"prepare.overlap.code.{code.value}")
+
+
+def _overlap_measure(item: OverlapDatum) -> str:
+    if item.code is CorpusHealthFindingCode.EXACT_DUPLICATE:
+        return text("prepare.overlap.hash_match")
+    values: list[str] = []
+    if item.observed_count is not None:
+        values.append(text("prepare.overlap.tokens", count=item.observed_count))
+    if item.observed_ratio is not None:
+        values.append(text("prepare.overlap.ratio", ratio=item.observed_ratio))
+    return " · ".join(values) or text("prepare.overlap.no_measure")
+
+
+def _table_value(value: object) -> str:
+    if isinstance(value, bool):
+        return text("table.yes" if value else "table.no")
+    return str(value)
+
+
+def _render_record_table(
+    rows: Sequence[Mapping[str, object]],
+    *,
+    label: str,
+) -> None:
+    headers = tuple(rows[0])
+    body = []
+    for row in rows:
+        body.append(
+            "<tr>"
+            + "".join(
+                (
+                    f'<th scope="row">{_html(_table_value(row[header]))}</th>'
+                    if index == 0
+                    else f"<td>{_html(_table_value(row[header]))}</td>"
+                )
+                for index, header in enumerate(headers)
+            )
+            + "</tr>"
+        )
+    safe_label = _html(label)
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{safe_label}" tabindex="0">'
+        '<table class="delta-review-table">'
+        f"<caption>{safe_label}</caption><thead><tr>"
+        + "".join(f'<th scope="col">{_html(header)}</th>' for header in headers)
+        + "</tr></thead><tbody>"
+        + "".join(body)
+        + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_evidence_bars(
+    rows: Sequence[tuple[str, Sequence[tuple[str, int]]]],
+) -> None:
+    maximum = max(value for _label, series in rows for _name, value in series) or 1
+    rendered_rows = []
+    for label, series in rows:
+        rendered_series = []
+        for index, (name, value) in enumerate(series):
+            share = 100 * value / maximum
+            rendered_series.append(
+                f'<div class="delta-evidence-bar-item" data-series="{index}">'
+                f"<span>{_html(name)}</span>"
+                '<span class="delta-evidence-bar-track">'
+                f'<span class="delta-evidence-bar-fill" style="--delta-share: {share:.4f}%">'
+                "</span></span>"
+                f'<span class="delta-evidence-bar-value">{value}</span></div>'
+            )
+        rendered_rows.append(
+            '<div class="delta-evidence-bar-row">'
+            f'<span class="delta-evidence-bar-label">{_html(label)}</span>'
+            '<div class="delta-evidence-bar-series">' + "".join(rendered_series) + "</div></div>"
+        )
+    st.markdown(
+        '<div class="delta-evidence-bars" aria-hidden="true">' + "".join(rendered_rows) + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_preparation_outcome(
+    inventory: CorpusInventory,
+    annotations: CorpusAnalysisAnnotationsV1,
+    outcome: PreparationOutcome,
+) -> bool:
+    health = outcome.health_report
+    try:
+        projection = build_corpus_health_projection(
+            inventory=inventory,
+            annotations=annotations,
+            manifest=outcome.manifest,
+            health_report=health,
+        )
+        work_csv = export_work_preparation_csv(projection)
+        confound_csv = export_confound_matrix_csv(projection)
+        findings_csv = export_health_findings_csv(projection)
+        capacity_csv = export_feature_capacity_csv(projection)
+    except CorpusHealthProjectionError as error:
+        st.error(text("prepare.projection_error"), icon=":material/link_off:")
+        st.caption(text("corpus.error.reference", code=error.code.value))
+        return False
+
+    if health.readiness is CorpusHealthReadiness.READY:
+        st.success(text("prepare.ready"), icon=":material/check_circle:")
+    else:
+        st.error(text("prepare.blocked"), icon=":material/block:")
+    st.caption(text("prepare.preflight_scope"))
+    first, second, third, fourth, fifth = st.columns(5)
+    first.metric(text("prepare.metric.works"), health.independent_work_count)
+    second.metric(text("prepare.metric.known"), health.known_independent_work_count)
+    third.metric(text("prepare.metric.features"), health.candidate_feature_count)
+    fourth.metric(text("prepare.metric.blockers"), health.blocker_count)
+    fifth.metric(text("prepare.metric.warnings"), health.strong_warning_count)
+
+    length_rows = [
+        {
+            text("prepare.table.work"): item.display_label,
+            text("prepare.table.tokens"): item.token_count,
+            text("prepare.table.unique"): item.unique_token_count,
+        }
+        for item in projection.work_preparation
+    ]
+    st.subheader(text("prepare.length_title"), anchor=False)
+    st.caption(text("prepare.length_body"))
+    _render_evidence_bars(
+        tuple(
+            (
+                item.display_label,
+                ((text("prepare.table.tokens"), item.token_count),),
+            )
+            for item in projection.work_preparation
+        )
+    )
+    _render_record_table(length_rows, label=text("prepare.length_title"))
+    _render_panel_boundary("prepare.length_boundary")
+
+    transformation_rows = [
+        {
+            text("prepare.table.work"): item.display_label,
+            text("prepare.transform.lowercase"): item.lowercase_source_count,
+            text("prepare.transform.separators"): item.separator_source_count,
+            text("prepare.transform.newlines"): item.newline_replacement_count,
+            text("prepare.transform.raw_bytes"): item.raw_byte_count,
+            text("prepare.transform.prepared_bytes"): item.prepared_byte_count,
+            text("prepare.transform.bom"): item.bom_removed,
+        }
+        for item in projection.work_preparation
+    ]
+    st.subheader(text("prepare.transform_title"), anchor=False)
+    st.caption(text("prepare.transform_body"))
+    _render_evidence_bars(
+        tuple(
+            (
+                item.display_label,
+                (
+                    (text("prepare.transform.lowercase"), item.lowercase_source_count),
+                    (text("prepare.transform.separators"), item.separator_source_count),
+                    (text("prepare.transform.newlines"), item.newline_replacement_count),
+                ),
+            )
+            for item in projection.work_preparation
+        )
+    )
+    _render_record_table(transformation_rows, label=text("prepare.transform_title"))
+    _render_panel_boundary("prepare.transform_boundary")
+    st.download_button(
+        text("prepare.download_work_csv"),
+        data=work_csv,
+        file_name="delta-work-preparation-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_work_csv",
+    )
+
+    confound_rows = [
+        {
+            text("prepare.table.work"): item.display_label,
+            text("prepare.confound.edition"): item.edition_label,
+            text("prepare.confound.genre"): item.genre,
+            text("prepare.confound.audience"): item.audience,
+            text("prepare.confound.source"): item.source_type,
+            text("prepare.confound.adaptation"): item.adaptation,
+            text("prepare.confound.collection"): item.collection,
+            text("prepare.confound.chronology"): _chronology_label(item),
+            text("prepare.confound.ocr"): item.ocr_status,
+            text("prepare.confound.paratext"): item.paratext_status,
+            text("prepare.confound.curation"): text(
+                "prepare.confound.disclosed"
+                if item.curation_note_disclosed
+                else "prepare.confound.not_disclosed"
+            ),
+        }
+        for item in projection.confounds
+    ]
+    st.subheader(text("prepare.confound_title"), anchor=False)
+    st.caption(text("prepare.confound_body"))
+    _render_record_table(confound_rows, label=text("prepare.confound_title"))
+    _render_panel_boundary("prepare.confound_boundary")
+    st.download_button(
+        text("prepare.download_confound_csv"),
+        data=confound_csv,
+        file_name="delta-confound-matrix-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_confound_csv",
+    )
+
+    work_labels = {
+        item.work_id: f"{item.display_label} [{item.work_id}]"
+        for item in projection.work_preparation
+    }
+    pair_codes: dict[tuple[str, str], list[str]] = {}
+    for item in projection.overlaps:
+        pair_codes.setdefault(item.work_ids, []).append(_overlap_code_label(item.code))
+    matrix_rows: list[dict[str, str]] = []
+    for row_id, row_label in work_labels.items():
+        matrix_row = {text("prepare.table.work"): row_label}
+        for column_id, column_label in work_labels.items():
+            if row_id == column_id:
+                value = text("prepare.overlap.same_work")
+            else:
+                pair = tuple(sorted((row_id, column_id)))
+                value = " · ".join(pair_codes.get((pair[0], pair[1]), ())) or text(
+                    "prepare.overlap.not_flagged"
+                )
+            matrix_row[column_label] = value
+        matrix_rows.append(matrix_row)
+
+    st.subheader(text("prepare.overlap_title"), anchor=False)
+    st.caption(text("prepare.overlap_body"))
+    st.markdown(f"**{text('prepare.overlap.matrix_title')}**")
+    _render_record_table(matrix_rows, label=text("prepare.overlap.matrix_title"))
+    st.markdown(f"**{text('prepare.overlap.pairs_title')}**")
+    if projection.overlaps:
+        overlap_rows = [
+            {
+                text("prepare.overlap.left"): item.display_labels[0],
+                text("prepare.overlap.right"): item.display_labels[1],
+                text("prepare.overlap.check"): _overlap_code_label(item.code),
+                text("prepare.overlap.observed"): _overlap_measure(item),
+            }
+            for item in projection.overlaps
+        ]
+        _render_record_table(overlap_rows, label=text("prepare.overlap.pairs_title"))
+    else:
+        st.info(text("prepare.overlap.none"), icon=":material/rule:")
+    _render_panel_boundary("prepare.overlap_boundary")
+    st.download_button(
+        text("prepare.download_findings_csv"),
+        data=findings_csv,
+        file_name="delta-health-findings-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_findings_csv",
+    )
+
+    st.subheader(text("prepare.mfw_title"), anchor=False)
+    st.caption(text("prepare.mfw_body"))
+    capacity_columns = st.columns(4)
+    capacity_rows = []
+    for column, capacity in zip(
+        capacity_columns,
+        projection.feature_capacity,
+        strict=True,
+    ):
+        status_key = "prepare.mfw.available" if capacity.available else "prepare.mfw.unavailable"
+        with column:
+            st.metric(
+                text("prepare.mfw.metric", mfw=capacity.requested_mfw),
+                text(status_key),
+                delta=text("prepare.mfw.features", count=capacity.available_features),
+                delta_color="off",
+            )
+        capacity_rows.append(
+            {
+                text("prepare.mfw.requested"): capacity.requested_mfw,
+                text("prepare.mfw.available_features"): capacity.available_features,
+                text("prepare.mfw.status"): text(status_key),
+            }
+        )
+    _render_record_table(capacity_rows, label=text("prepare.mfw_title"))
+    _render_panel_boundary("prepare.mfw_boundary")
+    st.download_button(
+        text("prepare.download_capacity_csv"),
+        data=capacity_csv,
+        file_name="delta-feature-capacity-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_capacity_csv",
+    )
+
+    st.subheader(text("prepare.findings_title"), anchor=False)
+    st.caption(text("prepare.findings_body"))
+    for finding in health.findings:
+        _render_health_finding(finding)
+
+    st.subheader(text("prepare.downloads_title"), anchor=False)
+    first_download, second_download = st.columns(2)
+    with first_download:
+        st.download_button(
+            text("prepare.download_health"),
+            data=canonical_p007_json(health),
+            file_name="delta-corpus-health-v1.json",
+            mime="application/json",
+            width="stretch",
+        )
+        st.download_button(
+            text("prepare.download_config"),
+            data=canonical_p007_json(outcome.config),
+            file_name="delta-preprocessing-config-v1.json",
+            mime="application/json",
+            width="stretch",
+        )
+    with second_download:
+        st.download_button(
+            text("prepare.download_manifest"),
+            data=canonical_p007_json(outcome.manifest),
+            file_name="delta-preparation-manifest-v1.json",
+            mime="application/json",
+            width="stretch",
+        )
+        if outcome.ready_receipt is not None:
+            st.download_button(
+                text("prepare.download_receipt"),
+                data=canonical_p007_json(outcome.ready_receipt),
+                file_name="delta-analysis-preparation-receipt-v1.json",
+                mime="application/json",
+                width="stretch",
+            )
+    return True
+
+
+def _render_prepare_stage() -> None:
+    inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
+    report = st.session_state.get(_FLOW_REPORT_KEY)
+    materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+    if (
+        not isinstance(inventory, CorpusInventory)
+        or not isinstance(report, ValidationReport)
+        or not isinstance(materialization, CorpusMaterializationReceipt)
+    ):
+        _clear_documentation_state(keep_purpose=True)
+        st.rerun()
+
+    with st.container(border=True, key="prepare_stage"):
+        st.markdown(
+            f'<div class="delta-eyebrow">{_html(text("prepare.eyebrow"))}</div>',
+            unsafe_allow_html=True,
+        )
+        st.header(text("prepare.title"), anchor=False)
+        st.caption(text("prepare.body"))
+        st.info(text("prepare.profile_summary"), icon=":material/tune:")
+
+        outcome = st.session_state.get(_FLOW_PREPARATION_KEY)
+        if isinstance(outcome, PreparationOutcome):
+            annotations = st.session_state.get(_FLOW_ANNOTATIONS_KEY)
+            rendered = False
+            if isinstance(annotations, CorpusAnalysisAnnotationsV1):
+                rendered = _render_preparation_outcome(inventory, annotations, outcome)
+            else:
+                st.error(text("prepare.projection_error"), icon=":material/link_off:")
+            if outcome.ready_receipt is None:
+                if st.button(
+                    text("prepare.start_over"),
+                    icon=":material/restart_alt:",
+                    width="stretch",
+                ):
+                    _clear_documentation_state(keep_purpose=True)
+                    st.rerun()
+            elif rendered:
+                st.info(text("prepare.parameters_next"), icon=":material/arrow_forward:")
+                if st.button(
+                    text("prepare.continue_parameters"),
+                    type="primary",
+                    icon=":material/tune:",
+                    width="stretch",
+                    key="prepare_continue_parameters",
+                ):
+                    _set_stage(CorpusSubstage.PARAMETERS)
+                    st.rerun()
+            return
+
+        expected_hash = inventory_sha256(inventory)
+        confirmed_hash = st.session_state.get(_FLOW_CONFIRMATION_HASH_KEY)
+        if (
+            report.blocked
+            or report.inventory_sha256 != expected_hash
+            or confirmed_hash != expected_hash
+        ):
+            st.warning(text("prepare.confirmation_missing"), icon=":material/rule:")
+            if st.button(text("prepare.back_review"), icon=":material/arrow_back:"):
+                st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.REVIEW.value
+                st.rerun()
+            return
+
+        if st.button(text("prepare.back_review"), icon=":material/arrow_back:"):
+            st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.REVIEW.value
+            st.rerun()
+
+        selections = _render_preparation_selections(inventory)
+        if st.button(
+            text("prepare.run_check"),
+            type="primary",
+            icon=":material/fact_check:",
+            width="stretch",
+            key="prepare_run_check",
+        ):
+            try:
+                annotations = _build_preparation_annotations(inventory, selections)
+                config = build_preprocessing_config(parse_custom_exclusions(None))
+                preparation = _runtime().prepared_corpora.prepare(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                    inventory=inventory,
+                    annotations=annotations,
+                    config=config,
+                )
+            except (PreparedCorpusError, WebRuntimeError) as error:
+                st.error(text("prepare.error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=error.code.value))
+            except (ValidationError, ValueError):
+                st.error(text("prepare.annotation_error"), icon=":material/error:")
+            else:
+                st.session_state[_FLOW_ANNOTATIONS_KEY] = annotations
+                st.session_state[_FLOW_PREPARATION_KEY] = preparation
+                st.rerun()
+
+
+def _resolve_session_workflow(
+    inventory: CorpusInventory,
+    annotations: CorpusAnalysisAnnotationsV1,
+) -> ResolvedWorkflowConfigV1:
+    known_count = sum(
+        annotation.analysis_role is AnalysisRole.KNOWN for annotation in annotations.annotations
+    )
+    unknown_count = sum(
+        annotation.analysis_role is AnalysisRole.UNKNOWN for annotation in annotations.annotations
+    )
+    return resolve_guided_workflow(
+        purpose=inventory.purpose,
+        known_work_count=known_count,
+        unknown_work_count=unknown_count,
+    )
+
+
+def _render_parameter_grid(config: ResolvedWorkflowConfigV1) -> None:
+    rows = []
+    for cell in config.cells:
+        role = text(
+            "parameters.table.reference" if cell.is_reference else "parameters.table.sensitivity"
+        )
+        rows.append(
+            f'<tr data-reference="{str(cell.is_reference).lower()}">'
+            f'<th scope="row">{cell.mfw}</th>'
+            f"<td>{cell.culling_percent}%</td>"
+            f"<td>{_html(text('parameters.distance.classic_delta'))}</td>"
+            f"<td>{_html(role)}</td></tr>"
+        )
+    label = _html(text("parameters.table.label"))
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{label}" tabindex="0">'
+        '<table class="delta-review-table delta-parameter-table">'
+        f"<caption>{label}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("parameters.table.mfw"))}</th>'
+        f'<th scope="col">{_html(text("parameters.table.culling"))}</th>'
+        f'<th scope="col">{_html(text("parameters.table.distance"))}</th>'
+        f'<th scope="col">{_html(text("parameters.table.role"))}</th>'
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_parameter_explanations() -> None:
+    with st.expander(text("parameters.learn.title"), expanded=True):
+        st.markdown(f"**{text('parameters.learn.mfw.title')}**")
+        st.caption(text("parameters.learn.mfw.body"))
+        st.markdown(f"**{text('parameters.learn.culling.title')}**")
+        st.caption(text("parameters.learn.culling.body"))
+        st.markdown(f"**{text('parameters.learn.delta.title')}**")
+        st.caption(text("parameters.learn.delta.body"))
+        st.markdown(f"**{text('parameters.learn.reference.title')}**")
+        st.caption(text("parameters.learn.reference.body"))
+
+
+def _result_descriptors(
+    inventory: CorpusInventory,
+    preparation: PreparationOutcome,
+) -> tuple[ResultDocumentDescriptor, ...]:
+    receipt = preparation.ready_receipt
+    if receipt is None:
+        raise ValueError("result descriptors require a READY receipt")
+    titles = {work.work_id: work.title_original for work in inventory.works}
+    try:
+        return tuple(
+            ResultDocumentDescriptor(
+                document_id=binding.document_id,
+                title=titles[binding.work_id],
+                role=DocumentRole(binding.analysis_role.value),
+            )
+            for binding in receipt.ordered_documents
+        )
+    except (KeyError, ValueError):
+        raise ValueError("result descriptor binding failed") from None
+
+
+def _result_status_label(cell: ResultCellV1) -> str:
+    return text(f"results.cell.{cell.status.value}")
+
+
+def _distance_label(value: int | float) -> str:
+    return f"{float(value):.6f}"
+
+
+def _render_result_status(view: ResultViewV1) -> None:
+    cards = []
+    rows = []
+    for cell in view.cells:
+        evidence_role = text(
+            "results.cell.reference" if cell.is_reference else "results.cell.sensitivity"
+        )
+        output = text(
+            "results.cell.available"
+            if cell.status is ResultCellStatus.COMPLETE
+            else "results.cell.unavailable"
+        )
+        cards.append(
+            f'<article class="delta-result-cell delta-result-cell-{cell.status.value}" '
+            f'data-mfw="{cell.mfw}" data-status="{cell.status.value}">'
+            f'<span class="delta-result-cell-mfw">{cell.mfw} MFW</span>'
+            f"<strong>{_html(_result_status_label(cell))}</strong>"
+            f"<small>{_html(evidence_role)}</small></article>"
+        )
+        rows.append(
+            f'<tr data-mfw="{cell.mfw}" data-status="{cell.status.value}">'
+            f'<th scope="row">{cell.mfw}</th><td>{_html(evidence_role)}</td>'
+            f"<td>{_html(_result_status_label(cell))}</td><td>{_html(output)}</td></tr>"
+        )
+    label = _html(text("results.cell_grid.label"))
+    st.markdown(
+        f'<div class="delta-result-cell-grid" role="list" aria-label="{label}">'
+        + "".join(cards)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.status.table"))}" tabindex="0">'
+        '<table class="delta-review-table delta-result-status-table">'
+        f"<caption>{_html(text('results.status.table'))}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("results.status.mfw"))}</th>'
+        f'<th scope="col">{_html(text("results.status.role"))}</th>'
+        f'<th scope="col">{_html(text("results.status.state"))}</th>'
+        f'<th scope="col">{_html(text("results.status.output"))}</th>'
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_result_boundary() -> None:
+    st.markdown(
+        '<section class="delta-result-boundary">'
+        f"<div><strong>{_html(text('results.boundary.shows'))}</strong>"
+        f"<p>{_html(text('results.boundary.shows.body'))}</p></div>"
+        f"<div><strong>{_html(text('results.boundary.not'))}</strong>"
+        f"<p>{_html(text('results.boundary.not.body'))}</p></div></section>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
+    matrix = cell.matrix
+    if matrix is None:
+        raise ValueError("distance matrix is unavailable")
+    titles = {document.key: document.title for document in view.documents}
+    header = "".join(
+        f'<th scope="col" title="{_html(titles[key])}">{_html(key)}</th>'
+        for key in matrix.document_keys
+    )
+    rows = []
+    for key, values in zip(matrix.document_keys, matrix.values, strict=True):
+        cells = "".join(f"<td>{_distance_label(value)}</td>" for value in values)
+        rows.append(
+            f'<tr><th scope="row" title="{_html(titles[key])}">{_html(key)}</th>' + cells + "</tr>"
+        )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.matrix.label"))}" tabindex="0">'
+        '<table class="delta-review-table delta-result-matrix">'
+        f"<caption>{_html(text('results.matrix.label'))}</caption>"
+        f'<thead><tr><th scope="col"></th>{header}</tr></thead><tbody>'
+        + "".join(rows)
+        + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
+    matrix = cell.matrix
+    if matrix is None:
+        raise ValueError("distance matrix is unavailable")
+    titles = {document.key: document.title for document in view.documents}
+    values = [
+        {
+            "reference": row_key,
+            "reference_title": titles[row_key],
+            "compared": column_key,
+            "compared_title": titles[column_key],
+            "distance": float(distance),
+            "distance_label": _distance_label(distance),
+        }
+        for row_key, row in zip(matrix.document_keys, matrix.values, strict=True)
+        for column_key, distance in zip(matrix.document_keys, row, strict=True)
+    ]
+    order = list(matrix.document_keys)
+    chart_data = pa.table(
+        {
+            "reference": pa.array((value["reference"] for value in values), type=pa.string()),
+            "reference_title": pa.array(
+                (value["reference_title"] for value in values), type=pa.string()
+            ),
+            "compared": pa.array((value["compared"] for value in values), type=pa.string()),
+            "compared_title": pa.array(
+                (value["compared_title"] for value in values), type=pa.string()
+            ),
+            "distance": pa.array((value["distance"] for value in values), type=pa.float64()),
+            "distance_label": pa.array(
+                (value["distance_label"] for value in values), type=pa.string()
+            ),
+        }
+    )
+    spec = {
+        "data": {"values": chart_data},
+        "layer": [
+            {
+                "mark": {"type": "rect", "cornerRadius": 3},
+                "encoding": {
+                    "x": {
+                        "field": "compared",
+                        "type": "ordinal",
+                        "sort": order,
+                        "title": text("results.heatmap.x"),
+                    },
+                    "y": {
+                        "field": "reference",
+                        "type": "ordinal",
+                        "sort": order,
+                        "title": text("results.heatmap.y"),
+                    },
+                    "color": {
+                        "field": "distance",
+                        "type": "quantitative",
+                        "scale": {"range": ["#eef8f4", "#c5e8dc", "#f4c7b8", "#d85a30"]},
+                        "legend": {"title": "Classic Delta", "orient": "bottom"},
+                    },
+                    "tooltip": [
+                        {"field": "reference_title", "type": "nominal", "title": "Text"},
+                        {
+                            "field": "compared_title",
+                            "type": "nominal",
+                            "title": "Compared with",
+                        },
+                        {
+                            "field": "distance_label",
+                            "type": "nominal",
+                            "title": "Distance",
+                        },
+                    ],
+                },
+            },
+            {
+                "mark": {"type": "text", "fontSize": 12, "color": "#1a1a1a"},
+                "encoding": {
+                    "x": {"field": "compared", "type": "ordinal", "sort": order},
+                    "y": {"field": "reference", "type": "ordinal", "sort": order},
+                    "text": {"field": "distance_label", "type": "nominal"},
+                },
+            },
+        ],
+        "config": {
+            "background": "#ffffff",
+            "view": {"stroke": None},
+            "axis": {"labelColor": "#31333f", "titleColor": "#31333f"},
+        },
+    }
+    st.vega_lite_chart(
+        spec=spec,
+        width="stretch",
+        height=360,
+        theme=None,
+        key=f"p009_heatmap_{cell.mfw}",
+    )
+
+
+def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
+    titles = {document.key: document.title for document in view.documents}
+    rows = "".join(
+        f'<tr><th scope="row">{_html(titles[item.document_key])}</th>'
+        f"<td>{_html(titles[item.neighbour_key])}</td>"
+        f"<td>{_distance_label(item.distance)}</td><td>{item.tie_count}</td></tr>"
+        for item in nearest_neighbours(cell)
+    )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.neighbour.label"))}" tabindex="0">'
+        '<table class="delta-review-table delta-neighbour-table">'
+        f"<caption>{_html(text('results.neighbour.label'))}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("results.neighbour.document"))}</th>'
+        f'<th scope="col">{_html(text("results.neighbour.neighbour"))}</th>'
+        f'<th scope="col">{_html(text("results.neighbour.distance"))}</th>'
+        f'<th scope="col">{_html(text("results.neighbour.ties"))}</th>'
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
+    points = classical_mds(cell)
+    documents = {document.key: document for document in view.documents}
+    values = [
+        {
+            "key": point.document_key,
+            "title": documents[point.document_key].title,
+            "role": documents[point.document_key].role.value,
+            "x": point.x,
+            "y": point.y,
+        }
+        for point in points
+    ]
+    chart_data = pa.table(
+        {
+            "key": pa.array((value["key"] for value in values), type=pa.string()),
+            "title": pa.array((value["title"] for value in values), type=pa.string()),
+            "role": pa.array((value["role"] for value in values), type=pa.string()),
+            "x": pa.array((value["x"] for value in values), type=pa.float64()),
+            "y": pa.array((value["y"] for value in values), type=pa.float64()),
+        }
+    )
+    spec = {
+        "data": {"values": chart_data},
+        "layer": [
+            {
+                "mark": {
+                    "type": "circle",
+                    "size": 260,
+                    "opacity": 0.9,
+                    "stroke": "#ffffff",
+                    "strokeWidth": 2,
+                },
+                "encoding": {
+                    "x": {
+                        "field": "x",
+                        "type": "quantitative",
+                        "title": text("results.mds.x"),
+                        "scale": {"zero": False},
+                    },
+                    "y": {
+                        "field": "y",
+                        "type": "quantitative",
+                        "title": text("results.mds.y"),
+                        "scale": {"zero": False},
+                    },
+                    "color": {
+                        "field": "role",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": ["known", "unknown"],
+                            "range": ["#0f6e56", "#d85a30"],
+                        },
+                        "legend": {"title": text("results.mds.role"), "orient": "bottom"},
+                    },
+                    "tooltip": [
+                        {"field": "title", "type": "nominal", "title": "Text"},
+                        {"field": "role", "type": "nominal", "title": "Role"},
+                        {"field": "x", "type": "quantitative", "format": ".6f"},
+                        {"field": "y", "type": "quantitative", "format": ".6f"},
+                    ],
+                },
+            },
+            {
+                "mark": {"type": "text", "dy": -16, "fontSize": 12, "color": "#1a1a1a"},
+                "encoding": {
+                    "x": {"field": "x", "type": "quantitative", "scale": {"zero": False}},
+                    "y": {"field": "y", "type": "quantitative", "scale": {"zero": False}},
+                    "text": {"field": "key", "type": "nominal"},
+                },
+            },
+        ],
+        "config": {
+            "background": "#ffffff",
+            "view": {"stroke": "#e2e5e4"},
+            "axis": {"gridColor": "#eef0ef", "labelColor": "#31333f"},
+        },
+    }
+    st.vega_lite_chart(
+        spec=spec,
+        width="stretch",
+        height=360,
+        theme=None,
+        key=f"p009_mds_{cell.mfw}",
+    )
+    rows = "".join(
+        f'<tr><th scope="row">{_html(documents[point.document_key].title)}</th>'
+        f"<td>{_html(documents[point.document_key].role.value)}</td>"
+        f"<td>{_distance_label(point.x)}</td><td>{_distance_label(point.y)}</td></tr>"
+        for point in points
+    )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.mds.coordinates"))}" tabindex="0">'
+        '<table class="delta-review-table delta-mds-table">'
+        f"<caption>{_html(text('results.mds.coordinates'))}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("results.mds.document"))}</th>'
+        f'<th scope="col">{_html(text("results.mds.role"))}</th>'
+        f'<th scope="col">{_html(text("results.mds.x"))}</th>'
+        f'<th scope="col">{_html(text("results.mds.y"))}</th>'
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_result_view(view: ResultViewV1) -> None:
+    st.divider()
+    st.markdown(
+        f'<div class="delta-eyebrow">{_html(text("results.eyebrow"))}</div>',
+        unsafe_allow_html=True,
+    )
+    st.header(text("results.title"), anchor=False)
+    st.caption(text("results.body"))
+    _render_result_status(view)
+    if view.source_result_outcome == "partial":
+        st.warning(text("results.partial"), icon=":material/warning:")
+    completed = tuple(cell for cell in view.cells if cell.status is ResultCellStatus.COMPLETE)
+    default_index = next(
+        (index for index, cell in enumerate(completed) if cell.mfw == view.reference_mfw),
+        0,
+    )
+    selected_mfw = st.selectbox(
+        text("results.selector"),
+        options=[cell.mfw for cell in completed],
+        index=default_index,
+        format_func=lambda mfw: text(
+            "results.selector.option",
+            mfw=mfw,
+            reference=(
+                text("results.selector.reference_suffix") if mfw == view.reference_mfw else ""
+            ),
+        ),
+        key="p009_result_cell_selector",
+    )
+    selected = next(cell for cell in completed if cell.mfw == selected_mfw)
+    st.info(text("results.reference_note"), icon=":material/push_pin:")
+
+    st.subheader(text("results.heatmap.title"), anchor=False)
+    st.caption(text("results.heatmap.body"))
+    _render_heatmap(selected, view)
+    st.subheader(text("results.matrix.title"), anchor=False)
+    st.caption(text("results.matrix.body"))
+    _render_distance_matrix(selected, view)
+    _render_result_boundary()
+
+    st.subheader(text("results.neighbour.title"), anchor=False)
+    st.caption(text("results.neighbour.body"))
+    _render_nearest_neighbours(selected, view)
+    _render_result_boundary()
+
+    st.subheader(text("results.mds.title"), anchor=False)
+    st.caption(text("results.mds.body"))
+    _render_mds(selected, view)
+    _render_result_boundary()
+    st.download_button(
+        text("results.download"),
+        data=canonical_result_view(view),
+        file_name="delta-result-view-v1.json",
+        mime="application/json",
+        help=text("results.download.help"),
+        on_click="ignore",
+        width="stretch",
+        key="p009_download_result",
+    )
+
+
+def _render_parameters_stage() -> None:
+    inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
+    annotations = st.session_state.get(_FLOW_ANNOTATIONS_KEY)
+    preparation = st.session_state.get(_FLOW_PREPARATION_KEY)
+    materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+    if (
+        not isinstance(inventory, CorpusInventory)
+        or not isinstance(annotations, CorpusAnalysisAnnotationsV1)
+        or not isinstance(preparation, PreparationOutcome)
+        or preparation.ready_receipt is None
+        or not isinstance(materialization, CorpusMaterializationReceipt)
+    ):
+        _clear_documentation_state(keep_purpose=True)
+        st.rerun()
+
+    try:
+        config = _resolve_session_workflow(inventory, annotations)
+    except (ValidationError, ValueError):
+        st.error(text("parameters.configuration_error"), icon=":material/error:")
+        if st.button(
+            text("parameters.back_prepare"),
+            icon=":material/arrow_back:",
+            key="p008_back_prepare_invalid",
+        ):
+            _set_stage(CorpusSubstage.PREPARE)
+            st.rerun()
+        return
+    st.session_state[_FLOW_WORKFLOW_CONFIG_KEY] = config
+    with st.container(border=True, key="parameters_stage"):
+        st.markdown(
+            f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
+            unsafe_allow_html=True,
+        )
+        st.header(text("parameters.title"), anchor=False)
+        st.caption(text("parameters.body"))
+
+        selected = st.segmented_control(
+            text("parameters.mode.label"),
+            options=[mode.value for mode in WorkbenchMode],
+            default=WorkbenchMode.GUIDED.value,
+            format_func=_mode_label,
+            key="p008_analysis_mode",
+            width="stretch",
+        )
+        mode = WorkbenchMode(selected or WorkbenchMode.GUIDED.value)
+        if mode is WorkbenchMode.RESEARCH:
+            st.warning(text("parameters.research_locked"), icon=":material/lock:")
+            st.caption(text("parameters.research_locked_body"))
+            if st.button(
+                text("parameters.back_prepare"),
+                icon=":material/arrow_back:",
+                key="p008_back_prepare_research",
+            ):
+                _set_stage(CorpusSubstage.PREPARE)
+                st.rerun()
+            return
+
+        st.success(text("parameters.guided_ready"), icon=":material/check_circle:")
+        metric_columns = st.columns(4)
+        metric_columns[0].metric(text("parameters.metric.cells"), config.cell_count)
+        metric_columns[1].metric(text("parameters.metric.reference"), "500 MFW")
+        metric_columns[2].metric(text("parameters.metric.culling"), "0%")
+        metric_columns[3].metric(text("parameters.metric.unit"), text("parameters.unit.whole"))
+        _render_parameter_grid(config)
+        st.caption(text("parameters.grid_caption"))
+        _render_parameter_explanations()
+        st.info(text("parameters.interpretive_boundary"), icon=":material/info:")
+        st.download_button(
+            text("parameters.download_config"),
+            data=canonical_p008_json(config),
+            file_name="delta-resolved-workflow-config-v1.json",
+            mime="application/json",
+            width="stretch",
+        )
+
+        presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
+        if presentation is not None:
+            state_id = getattr(presentation, "state_id", "")
+            title = getattr(presentation, "title", text("parameters.run_status_unknown"))
+            body = getattr(presentation, "body", text("parameters.run_status_unknown"))
+            if state_id == "succeeded":
+                st.success(title, icon=":material/check_circle:")
+            elif state_id in {"queued", "running", "finalizing", "cleaning"}:
+                st.info(title, icon=":material/progress_activity:")
+            else:
+                st.error(title, icon=":material/error:")
+            st.caption(body)
+            if state_id == "succeeded":
+                try:
+                    result_view = _runtime().prepared_corpora.result_view(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+                except (PreparedCorpusError, WebRuntimeError):
+                    st.error(text("results.unavailable"), icon=":material/gpp_bad:")
+                else:
+                    _render_result_view(result_view)
+            return
+
+        confirmed = st.checkbox(
+            text("parameters.confirm"),
+            help=text("parameters.confirm_help"),
+            key="p008_parameter_confirmation",
+        )
+        action_left, action_right = st.columns(2)
+        with action_left:
+            if st.button(
+                text("parameters.back_prepare"),
+                icon=":material/arrow_back:",
+                width="stretch",
+                key="p008_back_prepare",
+            ):
+                _set_stage(CorpusSubstage.PREPARE)
+                st.rerun()
+        with action_right:
+            run_clicked = st.button(
+                text("parameters.run"),
+                type="primary",
+                icon=":material/play_arrow:",
+                width="stretch",
+                disabled=not confirmed,
+                key="parameters_run_analysis",
+            )
+        if run_clicked:
+            runtime = _runtime()
+            try:
+                runtime.prepared_corpora.admit_once(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                    ready_receipt=preparation.ready_receipt,
+                    inventory=inventory,
+                    annotations=annotations,
+                    config=preparation.config,
+                    resolved_workflow_config=config,
+                )
+                runtime.analyses.run_next()
+                verified = runtime.prepared_corpora.scientific_result(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                )
+                result_view = project_result_view(
+                    config=config,
+                    result=verified.result,
+                    source_result_sha256=verified.sha256,
+                    documents=_result_descriptors(inventory, preparation),
+                )
+                runtime.prepared_corpora.publish_result_view(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                    view=result_view,
+                )
+                runtime.maintain()
+                presentation = runtime.prepared_corpora.status(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                )
+            except (PreparedCorpusError, AnalysisOrchestratorError, WebRuntimeError) as error:
+                st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=error.code.value))
+            except (ValidationError, ValueError):
+                st.error(text("parameters.configuration_error"), icon=":material/error:")
+            else:
+                st.session_state[_FLOW_JOB_PRESENTATION_KEY] = presentation
+                st.rerun()
 
 
 def _render_setup(stage: CorpusSubstage) -> PurposeId:
@@ -1576,8 +2977,8 @@ def main() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
     _clear_pending_upload_widgets()
     health = dict(public_health())
-    _render_header(health)
     stage = _stage()
+    _render_header(health, stage)
     purpose = _render_setup(stage)
     _render_stepper(stage)
     column_ratio = [1000, 1] if stage is CorpusSubstage.UPLOAD else [1.8, 0.8]
@@ -1589,14 +2990,18 @@ def main() -> None:
             _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:
             _render_describe_stage(purpose)
-        else:
+        elif stage is CorpusSubstage.REVIEW:
             _render_review_stage()
+        elif stage is CorpusSubstage.PREPARE:
+            _render_prepare_stage()
+        else:
+            _render_parameters_stage()
     if stage is CorpusSubstage.UPLOAD:
         _render_boundary()
     else:
         with right:
             _render_boundary()
-    _render_sidebar(health)
+    _render_sidebar(health, stage)
     st.divider()
     footer_left, footer_right = st.columns(2)
     with footer_left:

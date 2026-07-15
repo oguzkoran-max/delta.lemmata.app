@@ -19,9 +19,11 @@ from delta_lemmata.job_models import (
     JobRecord,
     OperationConflictError,
     Outcome,
+    ResultViewReceipt,
     ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    commit_result_view,
     confirm_scientific_result,
     new_staged_job,
     publish_export,
@@ -58,6 +60,18 @@ def _receipt(
         artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
         byte_size=4096,
         sha256="3" * 64,
+    )
+
+
+def _view_receipt() -> ResultViewReceipt:
+    return ResultViewReceipt(
+        schema_version="result-view-receipt-v1",
+        source_result_sha256="3" * 64,
+        workflow_config_sha256="4" * 64,
+        view_schema_version="result-view-v1",
+        artifact_component="5a6b1a66f34ffa5cb516349bc4f2fe62083a8c4803fa23b2793f57a5ece0621a",
+        byte_size=2048,
+        sha256="5" * 64,
     )
 
 
@@ -692,23 +706,36 @@ def test_pending_scientific_result_cannot_publish_export_before_confirmation() -
             expected_version=current.version,
             operation_id=_operation(number),
         )
-    current = transition_artifact(
-        current,
-        kind=ArtifactKind.EXPORT,
-        target=CleanupState.PRESENT,
-        at_utc=terminal_at + timedelta(seconds=1),
-        delete_by_utc=terminal_at + timedelta(seconds=DEFAULT_JOB_POLICY.export_ttl_seconds),
-        expected_version=current.version,
-        operation_id=_operation(103),
-    )
-
     assert current.can_publish_export is False
     confirmed = confirm_scientific_result(
         current,
         expected_version=current.version,
         operation_id=_operation(104),
     )
-    assert confirmed.can_publish_export is True
+    assert confirmed.can_publish_export is False
+    staged = commit_result_view(
+        confirmed,
+        receipt=_view_receipt(),
+        at_utc=terminal_at + timedelta(seconds=1),
+        expected_version=confirmed.version,
+        operation_id=_operation(105),
+    )
+    assert staged.can_publish_export is True
+    assert staged.result_view == _view_receipt()
+    assert staged.artifacts.export.state is CleanupState.PRESENT
+    assert staged.artifacts.export.delete_by_utc == terminal_at + timedelta(
+        seconds=DEFAULT_JOB_POLICY.export_ttl_seconds
+    )
+    assert (
+        commit_result_view(
+            staged,
+            receipt=_view_receipt(),
+            at_utc=terminal_at + timedelta(seconds=1),
+            expected_version=confirmed.version,
+            operation_id=_operation(105),
+        )
+        is staged
+    )
 
     with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
         confirm_scientific_result(
@@ -716,6 +743,64 @@ def test_pending_scientific_result_cannot_publish_export_before_confirmation() -
             expected_version=_terminal().version,
             operation_id=_operation(105),
         )
+
+
+def test_result_view_transition_rejects_wrong_types_illegal_state_and_forged_records() -> None:
+    running = _scientific_running()
+    terminal = transition_scientific_success(
+        running,
+        receipt=_receipt(),
+        at_utc=NOW + timedelta(seconds=3),
+        tombstone_expires_at_utc=NOW + timedelta(days=7),
+        expected_version=running.version,
+        operation_id=_operation(110),
+    )
+    confirmed = confirm_scientific_result(
+        terminal,
+        expected_version=terminal.version,
+        operation_id=_operation(111),
+    )
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        commit_result_view(
+            confirmed,
+            receipt=object(),  # type: ignore[arg-type]
+            at_utc=NOW + timedelta(seconds=4),
+            expected_version=confirmed.version,
+            operation_id=_operation(112),
+        )
+    with pytest.raises(IllegalTransitionError, match="JOB_ILLEGAL_TRANSITION"):
+        commit_result_view(
+            terminal,
+            receipt=_view_receipt(),
+            at_utc=NOW + timedelta(seconds=4),
+            expected_version=terminal.version,
+            operation_id=_operation(113),
+        )
+
+    staged = commit_result_view(
+        confirmed,
+        receipt=_view_receipt(),
+        at_utc=NOW + timedelta(seconds=4),
+        expected_version=confirmed.version,
+        operation_id=_operation(114),
+    )
+    mismatched = staged.model_dump(mode="python")
+    mismatched["result_view"] = _view_receipt().model_copy(
+        update={"source_result_sha256": "f" * 64}
+    )
+    with pytest.raises(ValidationError, match="one confirmed scientific source"):
+        JobRecord.model_validate(mismatched)
+
+    missing_receipt = confirmed.model_dump(mode="python")
+    missing_receipt["operations"] = (
+        *confirmed.operations,
+        AppliedOperation(
+            operation_id=_operation(115),
+            action=staged.operations[-1].action,
+        ),
+    )
+    with pytest.raises(ValidationError, match="result view transition requires"):
+        JobRecord.model_validate(missing_receipt)
 
 
 def test_job_record_rejects_forged_missing_or_mismatched_scientific_operations() -> None:

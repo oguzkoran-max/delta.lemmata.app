@@ -52,7 +52,7 @@ PURPOSE_BY_ID = {purpose.purpose_id: purpose for purpose in PURPOSES}
 
 
 class WorkbenchMode(StrEnum):
-    """Modes visible in the shell before workflow implementation."""
+    """Analysis modes visible in the workbench."""
 
     GUIDED = "guided"
     RESEARCH = "research"

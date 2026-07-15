@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 from delta_lemmata.catalog import DEFAULT_LOCALE, SUPPORTED_LOCALES, UI_CATALOG, text
+from delta_lemmata.corpus_health_models import CorpusHealthFindingCode
 from delta_lemmata.workbench import MODE_BODY_KEYS, MODE_LABEL_KEYS, PURPOSES, STATE_PRESENTATIONS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -35,6 +36,13 @@ def test_every_shell_contract_key_exists_in_the_catalog() -> None:
         } <= keys
 
 
+def test_every_corpus_health_finding_has_beginner_facing_copy() -> None:
+    keys = set(UI_CATALOG["en"])
+    for code in CorpusHealthFindingCode:
+        prefix = f"prepare.finding.{code.value}"
+        assert {f"{prefix}.title", f"{prefix}.body", f"{prefix}.action"} <= keys
+
+
 def test_catalog_copy_avoids_prohibited_claims() -> None:
     copy = "\n".join(UI_CATALOG["en"].values()).casefold()
     prohibited = (
@@ -49,6 +57,12 @@ def test_catalog_copy_avoids_prohibited_claims() -> None:
         "completely isolated",
     )
     assert all(phrase not in copy for phrase in prohibited)
+
+
+def test_public_alpha_status_is_centralized_and_explicit() -> None:
+    assert text("header.release_public_alpha") == "Public alpha"
+    assert text("header.release_experimental") == "Experimental"
+    assert text("header.release_status") == "Release status: Public alpha, experimental"
 
 
 def test_user_facing_copy_does_not_expose_development_ticket_jargon() -> None:

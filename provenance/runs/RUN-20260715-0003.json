@@ -1,0 +1,222 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0003",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P009"
+  ],
+  "started_at_utc": "2026-07-15T08:52:57Z",
+  "ended_at_utc": "2026-07-15T09:04:35Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "c5e39b07bb65a11613684a10269b186c987ef980",
+  "environment": {
+    "local": {
+      "os": "macOS",
+      "architecture": "arm64",
+      "python": "3.13.9",
+      "tests_passed": 1522,
+      "tests_skipped": 1,
+      "skip_reason": "Canonical R worker integration requires Linux",
+      "measured_statements": 11377,
+      "measured_branches": 2964,
+      "coverage_percent": 100
+    },
+    "clean_clone": {
+      "source": "private GitHub origin",
+      "mode": "remote detached checkout without local object reuse",
+      "bootstrap": "passed from committed lockfiles",
+      "tests_passed": 1522,
+      "tests_skipped": 1,
+      "measured_statements": 11377,
+      "measured_branches": 2964,
+      "coverage_percent": 100,
+      "post_run_tree": "clean"
+    },
+    "ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "timezone": "UTC",
+      "run": "29402396790",
+      "verify_job": "87309788046",
+      "container_job": "87309788088",
+      "tests_passed": 1523,
+      "tests_skipped": 0,
+      "measured_statements": 11377,
+      "measured_branches": 2964,
+      "coverage_percent": 100,
+      "records_validated": 100,
+      "sbom_dependency_secret_gates": "passed",
+      "built_image_id": "sha256:be1a6a98322a5ce1694b2588ac51e1b756d7d821b9a5fbdf1cfe1b50c40a8800"
+    },
+    "browser": {
+      "engine": "Playwright Chromium 149.0.7827.55",
+      "synthetic_documents": 3,
+      "candidate_features": 1100,
+      "declared_mfw_cells": [
+        100,
+        300,
+        500,
+        1000
+      ],
+      "fixed_reading_reference_mfw": 500,
+      "viewports": [
+        "1280x900",
+        "390x844",
+        "320x800"
+      ],
+      "horizontal_overflow": 0,
+      "overflowing_controls": 0,
+      "nonblank_charts": 2,
+      "result_downloads": 2,
+      "unexpected_console_messages": 0,
+      "allowed_transient_console_warnings": 5,
+      "allowed_warning_policy": "Only the three exact Vega Infinite extent forms for distance, x, and y are allowed, with a bounded total count, after finite-matrix and nonblank-pixel checks.",
+      "external_hosts_observed": 0,
+      "real_r_stylo_result": "passed",
+      "result_view": "passed",
+      "result_export": "passed",
+      "result_export_sha256": "b06c419a266931fb3c1b0d57b225b8fe1560383bdc642dda7d5eb34237dbb93c",
+      "payload_canary_absent": true
+    },
+    "retained_failed_ci_attempts": [
+      {
+        "run": "29395359809",
+        "commit": "dd515a935d4d21d32826de973cabf331d608d5e9",
+        "reason": "A corpus-form selector race prevented the browser gate from reaching the result presentation."
+      },
+      {
+        "run": "29396477319",
+        "commit": "1b71cd3196fea6e7dba51aa1718023432d5c513f",
+        "reason": "Form interaction progressed, but the result-publication failure lacked a specific browser-side reference."
+      },
+      {
+        "run": "29397270285",
+        "commit": "084e4bc3b547e67ad9be36285ddda806658ea746",
+        "reason": "The added failure capture still returned a generic result-publication reference."
+      },
+      {
+        "run": "29398205876",
+        "commit": "a0138fb4f0a38f68ccb44eedd77d620c465f5957",
+        "reason": "Content-free lifecycle diagnostics proved scientific completion while the public result view remained absent."
+      },
+      {
+        "run": "29398868867",
+        "commit": "86ace5c30e353c88c3e94b421a01fc97e5bba4df",
+        "reason": "The full result view and export were reached, but a Streamlit rerun cancelled the second browser download."
+      },
+      {
+        "run": "29400116570",
+        "commit": "42c8bccd74a081b526a2338578d6c23bf961b9e3",
+        "reason": "The audit closed an already-open corpus documentation expander during a rerender."
+      },
+      {
+        "run": "29401399006",
+        "commit": "59c2ce161bc31c3394640709e504db42209ac263",
+        "reason": "All substantive checks passed; the strict console gate had not yet classified five exact transient Vega warnings."
+      }
+    ]
+  },
+  "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; uv run python scripts/browser_audit_p009.py --output /tmp/delta-p009-browser-audit; docker build --platform linux/amd64 --file containers/Dockerfile .",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "81c0c3b50fe2ffb41361161fbd550db4c521dc809f88fa76d6570c5a11401b4f"
+    },
+    {
+      "path": "scripts/browser_audit_p008.py",
+      "sha256": "3082bb56802fde4748f0dcc05cae5854b7bfac2cca03150a299ea90bceaf9086"
+    },
+    {
+      "path": "scripts/browser_audit_p009.py",
+      "sha256": "23798a5f1d279c9ee277cdd6e424559f8f0848d20cd62b51772312b8766cfeb9"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "d4ebf4fe2aca600d32ba1557888641d0332a58e4693f0e908406b1a67db3eacc"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Fresh private-remote detached macOS clone plus GitHub Actions Ubuntu 24.04 checkout of exact commit c5e39b07bb65a11613684a10269b186c987ef980",
+    "command": "./scripts/bootstrap.sh; ./scripts/verify.sh; uv run python scripts/browser_audit_p009.py --output /tmp/delta-p009-browser-audit; docker build --platform linux/amd64 --file containers/Dockerfile .",
+    "limitations": [
+      "The macOS clean clone may reuse package-manager caches and cannot execute the canonical Linux worker boundary.",
+      "The GitHub-hosted runner image is named but is not represented by an immutable runner-image digest.",
+      "Browser screenshots and the temporary audit JSON remain in the ephemeral GitHub runner; the full audit JSON is retained in the GitHub job log because repository artifact quota was unavailable.",
+      "Five exact transient Vega warnings are bounded and retained separately; finite exported matrices and nonblank chart pixels were independently verified.",
+      "The browser gate covers the exposed synthetic minimum-alpha Guided whole-text result slice, not all future purpose-specific P009 extensions.",
+      "Synthetic evidence does not establish general usability, benchmark accuracy, authorship, literary findings, FAIR certification, production readiness, or release acceptance."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "81c0c3b50fe2ffb41361161fbd550db4c521dc809f88fa76d6570c5a11401b4f"
+    },
+    {
+      "path": "scripts/browser_audit_p008.py",
+      "sha256": "3082bb56802fde4748f0dcc05cae5854b7bfac2cca03150a299ea90bceaf9086"
+    },
+    {
+      "path": "scripts/browser_audit_p009.py",
+      "sha256": "23798a5f1d279c9ee277cdd6e424559f8f0848d20cd62b51772312b8766cfeb9"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "d4ebf4fe2aca600d32ba1557888641d0332a58e4693f0e908406b1a67db3eacc"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "c8b8fcb8c016294ec10f1535de36df8b05c12194efbfe78f9942b6f542ffbb9c"
+    },
+    {
+      "path": "src/delta_lemmata/web_runtime.py",
+      "sha256": "47910d37990433d21c3443350ea2ed6cb5fb542156329e8838b267374ff9191a"
+    },
+    {
+      "path": "src/delta_lemmata/result_service.py",
+      "sha256": "b109412cefc0cb7e97e500ccfaca9761c92b319d8ae31628202917cd76b9b83f"
+    },
+    {
+      "path": "src/delta_lemmata/result_view.py",
+      "sha256": "ebfae2d0f48bece2aebfdda6a6125d7259e5016c135634e3f34fcb1494d6f5db"
+    },
+    {
+      "path": "src/delta_lemmata/job_store.py",
+      "sha256": "fde3842684cb0dd256654572d5b517b5692504c08dec0ffe6fbe0b35d5bf17b0"
+    },
+    {
+      "path": "schemas/result-view-v1.schema.json",
+      "sha256": "93d60c7d513761c71bf628a48338fd1ce7de91443019d12260fe13e711561fcf"
+    },
+    {
+      "path": "docs/development/p009-results-guardrails-contract.md",
+      "sha256": "6c542280e3e4a70054ec095099fd3c43faa0939e1df2f83e309adb7e39a420c2"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "d4eee7274de7b3c65daea9a579e7c65e429a170e3a4537a6b8a5e82278743602"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "ad5a7dad739e8ecb25b17e750f25c26f083fc78428efe76484bb6f1456e0c610"
+    },
+    {
+      "path": "uv.lock",
+      "sha256": "e4cb7ae518eac4eb773b81b329e4625d24654b4cf82e142d24cd45ed174a0c7b"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P009/minimum-alpha-results-validation.md",
+      "sha256": "18efa04b294ecc9a657db9fb0bc133092593b328487cee3711fa9bb8fcb9e73a"
+    }
+  ],
+  "notes": "The exact P009 minimum-alpha result implementation passed local and fresh private-remote clean-clone verification, canonical Linux source and container gates, and a real upload-to-result browser workflow. Seven preceding failed CI attempts remain recorded as product and harness corrections. Full P009 and public activation remain open."
+}

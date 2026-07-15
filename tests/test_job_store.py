@@ -21,9 +21,11 @@ from delta_lemmata.job_models import (
     CleanupState,
     ExecutionState,
     JobRecord,
+    ResultViewReceipt,
     ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    commit_result_view,
     publish_export,
     request_cancellation,
     transition_artifact,
@@ -74,6 +76,18 @@ def scientific_receipt() -> ScientificResultReceipt:
         artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
         byte_size=4096,
         sha256="3" * 64,
+    )
+
+
+def result_view_receipt() -> ResultViewReceipt:
+    return ResultViewReceipt(
+        schema_version="result-view-receipt-v1",
+        source_result_sha256="3" * 64,
+        workflow_config_sha256="4" * 64,
+        view_schema_version="result-view-v1",
+        artifact_component="5a6b1a66f34ffa5cb516349bc4f2fe62083a8c4803fa23b2793f57a5ece0621a",
+        byte_size=2048,
+        sha256="5" * 64,
     )
 
 
@@ -181,14 +195,19 @@ def test_private_wal_schema_json_round_trip_and_canary_scan(tmp_path: Path) -> N
         anchor.close()
 
     with closing(sqlite3.connect(database_file)) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone() == (2,)
+        assert connection.execute("PRAGMA user_version").fetchone() == (3,)
         table_names = {
             cast(str, row[0])
             for row in connection.execute(
                 "SELECT name FROM sqlite_schema WHERE type = 'table' ORDER BY name"
             )
         }
-        assert table_names == {"deletion_events", "events", "jobs"}
+        assert table_names == {
+            "analysis_admissions",
+            "deletion_events",
+            "events",
+            "jobs",
+        }
         columns = {
             table: [cast(str, row[1]) for row in connection.execute(f"PRAGMA table_info({table})")]
             for table in table_names
@@ -231,7 +250,7 @@ def test_schema_v2_legacy_model_json_without_scientific_receipt_remains_readable
     assert legacy_payload.pop("scientific_result") is None
 
     with closing(sqlite3.connect(database_file)) as connection:
-        assert connection.execute("PRAGMA user_version").fetchone() == (2,)
+        assert connection.execute("PRAGMA user_version").fetchone() == (3,)
         connection.execute(
             "UPDATE jobs SET model_json = ? WHERE job_id = ?",
             (json.dumps(legacy_payload, separators=(",", ":")), staged.job_id),
@@ -917,7 +936,7 @@ def test_configuration_file_identity_and_identifier_failures_are_content_free(
 
     future = tmp_path / "future.sqlite3"
     with closing(sqlite3.connect(future)) as connection:
-        connection.execute("PRAGMA user_version = 3")
+        connection.execute("PRAGMA user_version = 4")
         connection.commit()
     expect_store_error(
         JobStoreErrorCode.INVALID_DATABASE,
@@ -1300,6 +1319,28 @@ def test_scientific_success_cas_round_trip_and_terminal_proof_require_exact_rece
     )
     assert confirmed.scientific_result_confirmed is True
     assert store.get_job(job_id=confirmed.job_id, capability=owner) == confirmed
+    forged_result_view = confirmed.model_copy(
+        update={
+            "version": confirmed.version + 1,
+            "operations": (
+                *confirmed.operations,
+                AppliedOperation(
+                    operation_id=operation(88),
+                    action="result_view:staged:" + "f" * 64,
+                ),
+            ),
+        }
+    )
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.compare_and_swap(
+            job_id=confirmed.job_id,
+            capability=owner,
+            expected_version=confirmed.version,
+            updated=forged_result_view,
+            at_utc=terminal_at + timedelta(microseconds=3),
+        ),
+    )
     assert (
         store.confirm_scientific_result_after_guardian(
             job_id=saved.job_id,
@@ -1340,6 +1381,22 @@ def test_scientific_success_cas_round_trip_and_terminal_proof_require_exact_rece
             JobStoreErrorCode.INVALID_UPDATE,
             lambda arguments=arguments: store.confirm_scientific_result_after_guardian(**arguments),
         )
+
+    view_update = commit_result_view(
+        confirmed,
+        receipt=result_view_receipt(),
+        at_utc=terminal_at + timedelta(microseconds=5),
+        expected_version=confirmed.version,
+        operation_id=operation(89),
+    )
+    stored_view = store.compare_and_swap(
+        job_id=confirmed.job_id,
+        capability=owner,
+        expected_version=confirmed.version,
+        updated=view_update,
+        at_utc=terminal_at + timedelta(microseconds=5),
+    )
+    assert stored_view.result_view == result_view_receipt()
 
 
 def test_terminal_transition_proof_binds_version_outcome_and_running_operation(

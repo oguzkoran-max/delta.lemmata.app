@@ -1,0 +1,208 @@
+{
+  "$defs": {
+    "AnalysisRole": {
+      "enum": [
+        "known",
+        "unknown"
+      ],
+      "title": "AnalysisRole",
+      "type": "string"
+    },
+    "AssetId": {
+      "pattern": "^asset_[a-z0-9]+(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    },
+    "ByteCount": {
+      "maximum": 52428800,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "DocumentId": {
+      "pattern": "^doc_[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "SourceCharacterCount": {
+      "maximum": 20000000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "TextUnit": {
+      "enum": [
+        "independent_work",
+        "segment",
+        "excerpt"
+      ],
+      "title": "TextUnit",
+      "type": "string"
+    },
+    "TokenCount": {
+      "maximum": 3000000,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "WorkId": {
+      "pattern": "^[a-z][a-z0-9]*(?:[._-][a-z0-9]+)*$",
+      "type": "string"
+    },
+    "WorkPreparationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_role": {
+          "$ref": "#/$defs/AnalysisRole"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/AssetId"
+        },
+        "bom_removed": {
+          "title": "Bom Removed",
+          "type": "boolean"
+        },
+        "document_id": {
+          "$ref": "#/$defs/DocumentId"
+        },
+        "lowercase_source_count": {
+          "$ref": "#/$defs/SourceCharacterCount"
+        },
+        "newline_replacement_count": {
+          "$ref": "#/$defs/SourceCharacterCount"
+        },
+        "parent_work_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WorkId"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "prepared_byte_count": {
+          "$ref": "#/$defs/ByteCount"
+        },
+        "prepared_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "raw_byte_count": {
+          "maximum": 26214400,
+          "minimum": 0,
+          "title": "Raw Byte Count",
+          "type": "integer"
+        },
+        "raw_sha256": {
+          "$ref": "#/$defs/Sha256"
+        },
+        "separator_source_count": {
+          "$ref": "#/$defs/SourceCharacterCount"
+        },
+        "text_unit": {
+          "$ref": "#/$defs/TextUnit"
+        },
+        "token_count": {
+          "$ref": "#/$defs/TokenCount"
+        },
+        "unique_token_count": {
+          "$ref": "#/$defs/TokenCount"
+        },
+        "work_id": {
+          "$ref": "#/$defs/WorkId"
+        }
+      },
+      "required": [
+        "document_id",
+        "asset_id",
+        "work_id",
+        "analysis_role",
+        "text_unit",
+        "parent_work_id",
+        "raw_sha256",
+        "prepared_sha256",
+        "raw_byte_count",
+        "prepared_byte_count",
+        "token_count",
+        "unique_token_count",
+        "bom_removed",
+        "newline_replacement_count",
+        "lowercase_source_count",
+        "separator_source_count"
+      ],
+      "title": "WorkPreparationV1",
+      "type": "object"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/preprocessing-manifest-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "annotations_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "candidate_feature_count": {
+      "maximum": 20000,
+      "minimum": 0,
+      "title": "Candidate Feature Count",
+      "type": "integer"
+    },
+    "candidate_inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "config_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "implementation_version": {
+      "pattern": "^[A-Za-z0-9._+-]{1,64}$",
+      "title": "Implementation Version",
+      "type": "string"
+    },
+    "inventory_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "profile_id": {
+      "const": "delta-surface-words-v1",
+      "title": "Profile Id",
+      "type": "string"
+    },
+    "python_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "title": "Python Version",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "preprocessing-manifest-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "unicode_version": {
+      "pattern": "^[0-9]+(?:\\.[0-9]+){1,2}$",
+      "title": "Unicode Version",
+      "type": "string"
+    },
+    "works": {
+      "items": {
+        "$ref": "#/$defs/WorkPreparationV1"
+      },
+      "maxItems": 200,
+      "minItems": 1,
+      "title": "Works",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "config_sha256",
+    "inventory_sha256",
+    "annotations_sha256",
+    "candidate_inventory_sha256",
+    "candidate_feature_count",
+    "implementation_version",
+    "python_version",
+    "unicode_version",
+    "works"
+  ],
+  "title": "PreprocessingManifestV1",
+  "type": "object"
+}

@@ -106,6 +106,20 @@ doğrular. Site ve makale CE-14 için fallback language kullanmaya devam eder;
 `production configuration` veya Delta-LDA operational isolation claim'i P014/P015
 geçmeden kurulmaz.
 
+### P007 Claim Durum Kaydı
+
+| Claim | Durum | P007 kanıtı | Kalan kapı |
+|---|---|---|---|
+| CE-02 | `implemented: corpus-health slice only` | Zorunlu preprocessing summary, confound/overlap/feature-capacity panelleri, semantic table ve content-free CSV; her panelde interpretation boundary; `RUN-20260715-0001` | P008 parameter review, P009 result limits, P011 sensitivity ve P012 run provenance paketi |
+| CE-04 | `implemented and verified for the declared synthetic fixture boundary` | Deterministic Unicode preprocessing, exact feature inventory ve insufficient-feature gates P007; frozen direct-`stylo` parity P006; exact Linux ve clean-clone validation | Claim yalnız raporlanan fixture, R/stylo sürümü ve toleransla kurulabilir; gerçek corpus genellemesi yok |
+| CE-09 | `implemented: P007 warning engine; full claim not yet verified` | OCR, paratext, curation, edition, genre, audience, source, adaptation, collection ve purpose-aware chronology fixture matrisi; length/group/duplicate/overlap gates; kalite skoru ve control claim'i yok | P009 result-surface confound audit, P011 sensitivity/single-work-period kapısı ve Oğuz warning-copy kabulü |
+| CE-19 | `implemented for P007 development` | PromptEvent, HumanDecision, ADR, Ticket, commit, failed/intermediate checks, exact clean clone, Linux CI ve evidence kayıtları ayrı bağlı | P008-P015 coverage ve final provenance/disclosure audit |
+| CE-20 | `implemented for P007 development; owner warning-copy gate open` | Scholar-owned yöntem/threshold/claim kararı ile AI implementation/test/denetimi ayrı kayıtlı; exact technical gates AI tarafından tekrarlandı | Oğuz prepared-state language kabulü, sonraki ticket owner coverage ve Barış walkthrough'u |
+
+Bu durum kaydı corpus uyarılarının confound'ları kaldırdığını, istatistiksel
+olarak kontrol ettiğini veya temiz corpus'u onayladığını söylemez. Owner turu
+genel usability, ease veya teachability kanıtı değildir.
+
 ## 6. Claim Embargoları
 
 - CE-04 geçmeden genel `stylo parity` denmez; yalnız doğrulanan fixture adı verilir.

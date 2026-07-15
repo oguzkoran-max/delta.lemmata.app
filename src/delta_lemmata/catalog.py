@@ -16,7 +16,12 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "brand.mark": "Δ",
     "brand.name": "Delta",
     "brand.subtitle": "A Lemmata stylometry workbench",
-    "header.stage": "Secure intake",
+    "header.release_status": "Release status: Public alpha, experimental",
+    "header.release_public_alpha": "Public alpha",
+    "header.release_experimental": "Experimental",
+    "header.stage.upload": "Secure intake",
+    "header.stage.corpus": "Corpus setup",
+    "header.stage.parameters": "Guided parameters",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
     "sidebar.progress": "Experiment map · 2 of 4",
@@ -30,6 +35,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.state.validated": "Validated",
     "sidebar.state.locked": "Locked",
     "sidebar.badge": "Corpus setup",
+    "sidebar.badge.parameters": "Guided analysis",
     "sidebar.guide_title": "Start here",
     "sidebar.guide_body": (
         "Delta checks and documents your corpus before any analysis settings appear."
@@ -46,7 +52,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "build.readiness_label": "Readiness",
     "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
-    "build.engine_value": "Not connected",
+    "build.engine_value": "Connected · R stylo",
     "setup.eyebrow": "COMPARE HOW TEXTS ARE WRITTEN",
     "setup.title": "Discover patterns in writing style.",
     "setup.intro": (
@@ -96,8 +102,169 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "parameters.status.title": "Current status",
     "parameters.status.body": (
-        "Controls stay locked until corpus-health checks and the R stylo engine are "
-        "connected. No stylometric analysis is running in this build."
+        "Guided Mode becomes available after corpus documentation and computational "
+        "preflight. Research Mode remains locked in this public alpha."
+    ),
+    "parameters.eyebrow": "PARAMETERS · GUIDED MODE",
+    "parameters.title": "Review what Delta will calculate",
+    "parameters.body": (
+        "Guided Mode runs four pre-registered comparisons on the same documented corpus. "
+        "Review the complete grid and its limits before starting the analysis."
+    ),
+    "parameters.mode.label": "Parameter mode",
+    "parameters.research_locked": "Research Mode is not available in this public alpha.",
+    "parameters.research_locked_body": (
+        "Its larger parameter grid will open only after resource limits, result checks, "
+        "and owner acceptance are complete. Guided Mode is the bounded runnable workflow."
+    ),
+    "parameters.back_prepare": "Back to corpus preparation",
+    "parameters.guided_ready": (
+        "The exact Guided Mode grid is resolved and ready for your confirmation."
+    ),
+    "parameters.metric.cells": "Comparisons",
+    "parameters.metric.reference": "Display reference",
+    "parameters.metric.culling": "Culling",
+    "parameters.metric.unit": "Analysis unit",
+    "parameters.unit.whole": "Whole text",
+    "parameters.table.mfw": "Most frequent words",
+    "parameters.table.culling": "Culling",
+    "parameters.table.distance": "Distance measure",
+    "parameters.table.role": "Evidence role",
+    "parameters.table.label": "Guided parameter comparison grid",
+    "parameters.table.reference": "Display reference",
+    "parameters.table.sensitivity": "Sensitivity check",
+    "parameters.distance.classic_delta": "Classic Delta",
+    "parameters.grid_caption": (
+        "Every row is retained as evidence. The 500-MFW row is a fixed display reference, "
+        "not a claim that it is the best result."
+    ),
+    "parameters.learn.title": "Understand these settings",
+    "parameters.learn.mfw.title": "Most frequent words (MFW)",
+    "parameters.learn.mfw.body": (
+        "MFW is the number of common word features compared across the corpus. A larger "
+        "number includes more vocabulary; it is not automatically more accurate. Delta "
+        "tests 100, 300, 500, and 1,000 so sensitivity stays visible."
+    ),
+    "parameters.learn.culling.title": "Culling",
+    "parameters.learn.culling.body": (
+        "Culling can require a word to occur in a minimum share of texts before comparison. "
+        "The alpha uses 0%, so it adds no cross-document presence threshold."
+    ),
+    "parameters.learn.delta.title": "Classic Delta",
+    "parameters.learn.delta.body": (
+        "Classic Delta standardizes word frequencies and measures the average distance "
+        "between texts. A smaller distance means relatively greater stylistic proximity "
+        "inside this corpus; it does not prove authorship."
+    ),
+    "parameters.learn.reference.title": "Why 500 MFW is the display reference",
+    "parameters.learn.reference.body": (
+        "Delta uses 500 MFW as a fixed, reproducible visual anchor. It does not select the "
+        "most attractive result. The other three comparisons remain equally visible."
+    ),
+    "parameters.interpretive_boundary": (
+        "These comparisons describe relative stylistic proximity within this corpus. They "
+        "do not prove authorship, authenticity, influence, intention, chronology, or causation."
+    ),
+    "parameters.download_config": "Download resolved parameter record",
+    "parameters.confirm": "I reviewed the four comparisons and their interpretation limits.",
+    "parameters.confirm_help": (
+        "Confirmation records that you saw the complete grid before calculation; it is not "
+        "an endorsement of any future result."
+    ),
+    "parameters.run": "Run the four comparisons",
+    "parameters.run_error": (
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ),
+    "parameters.configuration_error": (
+        "The resolved parameter record no longer matches this documented corpus. Return to "
+        "preparation and try again."
+    ),
+    "parameters.run_status_unknown": "Analysis status is unavailable.",
+    "parameters.evidence_next": (
+        "The calculation finished. Evidence review and result visualizations are the next step."
+    ),
+    "results.eyebrow": "EVIDENCE · ALL GUIDED COMPARISONS",
+    "results.title": "Explore the relative distances",
+    "results.body": (
+        "Every Guided Mode comparison remains visible. Choose a completed parameter cell to "
+        "inspect its matrix and derived views; this changes the display only and never reruns "
+        "the analysis."
+    ),
+    "results.partial": (
+        "At least one comparison could not be completed. Delta keeps that cell visible instead "
+        "of substituting or hiding it."
+    ),
+    "results.cell_grid.label": "Status of all Guided Mode comparisons",
+    "results.cell.reference": "Display reference",
+    "results.cell.sensitivity": "Sensitivity check",
+    "results.cell.complete": "Complete",
+    "results.cell.not_enough_features": "Not enough eligible features",
+    "results.cell.failed": "Calculation unavailable",
+    "results.cell.available": "Distance matrix available",
+    "results.cell.unavailable": "No matrix is shown for this cell",
+    "results.status.table": "Complete Guided Mode result grid",
+    "results.status.mfw": "Most frequent words",
+    "results.status.role": "Evidence role",
+    "results.status.state": "Status",
+    "results.status.output": "Visible output",
+    "results.selector": "View one completed comparison",
+    "results.selector.option": "{mfw} MFW{reference}",
+    "results.selector.reference_suffix": " · display reference",
+    "results.reference_note": (
+        "500 MFW opens first as a pre-registered visual reference. It is not selected as the "
+        "best or most convincing result."
+    ),
+    "results.heatmap.title": "Distance heatmap",
+    "results.heatmap.body": (
+        "Each square reports the Classic Delta distance between two documented texts. Lighter "
+        "values are smaller within this selected matrix."
+    ),
+    "results.heatmap.x": "Compared text",
+    "results.heatmap.y": "Reference text",
+    "results.matrix.title": "Exact distance matrix",
+    "results.matrix.body": (
+        "The table is the accessible numerical counterpart of the heatmap. Distances are "
+        "symmetric and each text has distance zero from itself."
+    ),
+    "results.matrix.label": "Exact Classic Delta distance matrix",
+    "results.neighbour.title": "Nearest neighbours, including ties",
+    "results.neighbour.body": (
+        "For each text, Delta lists every text tied at the smallest distance in this selected "
+        "matrix. Equal minima are never broken arbitrarily."
+    ),
+    "results.neighbour.label": "Nearest-neighbour table with exact ties",
+    "results.neighbour.document": "Text",
+    "results.neighbour.neighbour": "Nearest text",
+    "results.neighbour.distance": "Distance",
+    "results.neighbour.ties": "Tied minima",
+    "results.mds.title": "Two-dimensional proximity map",
+    "results.mds.body": (
+        "Classical multidimensional scaling places texts so that their spacing approximates the "
+        "selected distance matrix in two dimensions."
+    ),
+    "results.mds.x": "MDS axis 1",
+    "results.mds.y": "MDS axis 2",
+    "results.mds.coordinates": "Exact MDS coordinate table",
+    "results.mds.document": "Text",
+    "results.mds.role": "Analysis role",
+    "results.boundary.shows": "What this shows",
+    "results.boundary.shows.body": (
+        "Relative stylistic proximity among these documented texts under this exact parameter cell."
+    ),
+    "results.boundary.not": "What this does not show",
+    "results.boundary.not.body": (
+        "Authorship, authenticity, influence, intention, chronology, causation, or a probability "
+        "that one interpretation is correct."
+    ),
+    "results.download": "Download canonical result record",
+    "results.download.help": (
+        "This bounded JSON record contains public document labels, the four cell states, distance "
+        "matrices, method identifiers, and interpretation limits. It excludes uploaded text, "
+        "tokens, feature words, fitted vectors, paths, and private capabilities."
+    ),
+    "results.unavailable": (
+        "The verified result view is not available. Delta will not display an unbound or altered "
+        "result."
     ),
     "purpose.guidance": "Understand this research path",
     "purpose.label": "What do you want to investigate?",
@@ -148,7 +315,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Will run a documented parameter grid with explicit resource limits "
         "and complete cell reporting."
     ),
-    "mode.status": "Configuration remains locked until corpus documentation is connected.",
+    "mode.status": (
+        "Guided parameters open after corpus documentation and computational preflight."
+    ),
     "corpus.eyebrow": "CORPUS · UPLOAD",
     "corpus.title": "Upload the research corpus",
     "corpus.body": ("Add UTF-8, NFC TXT files or one strict ZIP. Metadata CSV is optional."),
@@ -218,10 +387,14 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Delta could not complete the intake operation safely. No analysis state was created."
     ),
     "corpus.error.reference": "Rejection reference: {code}",
+    "corpus.materialization_error": (
+        "Delta could not create a private, temporary corpus workspace. "
+        "The documentation stage was not opened and no analysis ran."
+    ),
     "corpus.continue_button": "Continue to describe the corpus",
     "corpus.continue_button_help": (
-        "Delta will retain only the validated file catalog and will clear the uploaded "
-        "browser payload before opening corpus documentation."
+        "Delta will move validated corpus text into a private, temporary server workspace, "
+        "retain only a content-free receipt in this browser session, and clear the upload widgets."
     ),
     "corpus.zip_ready": (
         "Each validated TXT member will open as a separate work in corpus documentation."
@@ -230,6 +403,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "flow.stage.upload": "Upload",
     "flow.stage.describe": "Describe",
     "flow.stage.review": "Review",
+    "flow.stage.prepare": "Prepare",
+    "flow.stage.parameters": "Parameter review",
     "flow.locked": "Locked",
     "describe.eyebrow": "CORPUS · DESCRIBE",
     "describe.title": "Describe what each text represents",
@@ -316,8 +491,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "any parameter configuration is allowed."
     ),
     "review.ready": (
-        "Corpus documentation has no blockers. Parameter setup remains locked until "
-        "the analysis engine and its checks are connected."
+        "Corpus documentation has no blockers. Confirm this inventory to continue to "
+        "computational preflight and parameter review."
     ),
     "review.blocked": (
         "Corpus documentation contains blockers. Return to Describe and correct them; "
@@ -408,6 +583,457 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "review.analysis_locked_confirmation": (
         "No stylometric analysis has run. Final corpus confirmation, parameters, and the "
         "analysis engine remain locked."
+    ),
+    "review.continue_prepare": "Continue to corpus preparation",
+    "review.temporary_corpus_missing": (
+        "The temporary corpus is no longer attached to this browser session. Start again "
+        "with the same files; the documentation package can still be downloaded first."
+    ),
+    "prepare.eyebrow": "CORPUS · PREPARE",
+    "prepare.title": "Prepare and check the corpus",
+    "prepare.body": (
+        "Tell Delta how each uploaded text should be treated. Delta then applies one visible, "
+        "deterministic text-preparation profile and checks whether the corpus can support the "
+        "next analysis step."
+    ),
+    "prepare.profile_summary": (
+        "Fixed alpha profile: Unicode NFC, lowercase surface words, accents preserved, common "
+        "words retained, punctuation and numbers removed, no lemmatization or stemming, and no "
+        "automatic removal of titles, prefaces, notes, or other paratext."
+    ),
+    "prepare.decisions_title": "Document the analysis role of each text",
+    "prepare.decisions_body": (
+        "These choices do not change the uploaded file. They record how Delta may use it and "
+        "which editorial risks must remain visible when results are interpreted."
+    ),
+    "prepare.work_label": "{index}. {title} · {file}",
+    "prepare.role.label": "Analysis role",
+    "prepare.role.help": (
+        "Known texts define the comparison space. An unknown or focal text is placed into that "
+        "space afterwards; its nearest neighbour is not automatically its author."
+    ),
+    "prepare.role.known.label": "Known reference text",
+    "prepare.role.known.body": (
+        "Use this when the documented work identity is accepted for this experiment. At least "
+        "two independent known works are required."
+    ),
+    "prepare.role.unknown.label": "Unknown or focal text",
+    "prepare.role.unknown.body": (
+        "Use this for a text you want to position against known references. Delta reports "
+        "relative proximity and does not prove authorship or authenticity."
+    ),
+    "prepare.ocr.label": "OCR status",
+    "prepare.ocr.help": (
+        "OCR means text produced by optical character recognition from page images. Recognition "
+        "errors can imitate stylistic differences, so record what you actually know."
+    ),
+    "prepare.ocr.not_ocr": "Not produced by OCR",
+    "prepare.ocr.reviewed": "OCR reviewed against the source",
+    "prepare.ocr.unreviewed": "OCR not fully reviewed",
+    "prepare.ocr.unknown": "OCR status unknown",
+    "prepare.paratext.label": "Paratext status",
+    "prepare.paratext.help": (
+        "Paratext includes titles, contents pages, prefaces, editorial notes, page headers, and "
+        "similar material outside the main literary text."
+    ),
+    "prepare.paratext.absent": "No paratext present",
+    "prepare.paratext.retained": "Paratext retained in the file",
+    "prepare.paratext.manually_removed_before_upload": "Paratext removed before upload",
+    "prepare.paratext.unknown": "Paratext status unknown",
+    "prepare.note.label": "Optional pre-upload curation note",
+    "prepare.note.help": (
+        "Briefly record manual changes already made to this file. Do not paste corpus text here."
+    ),
+    "prepare.unit_fixed": (
+        "Analysis unit: one independent work. Segment and excerpt analysis is not admitted in "
+        "this public-alpha workflow."
+    ),
+    "prepare.run_check": "Prepare texts and check corpus health",
+    "prepare.back_review": "Back to corpus review",
+    "prepare.start_over": "Start again with revised files",
+    "prepare.confirmation_missing": (
+        "Corpus documentation changed or is not confirmed. Return to Review and confirm the "
+        "current inventory before preparation."
+    ),
+    "prepare.error": (
+        "Delta could not prepare this temporary corpus safely. No stylometric result was created."
+    ),
+    "prepare.annotation_error": (
+        "Review the analysis roles, OCR states, paratext states, and curation notes "
+        "before retrying."
+    ),
+    "prepare.ready": (
+        "Computational preflight passed. The prepared corpus can continue to bounded "
+        "parameter review."
+    ),
+    "prepare.blocked": (
+        "Computational preflight found one or more blockers. No analysis request was created."
+    ),
+    "prepare.preflight_scope": (
+        "This is a computational preflight only. It does not establish corpus validity, "
+        "authorship, "
+        "causation, representativeness, or the soundness of a later interpretation."
+    ),
+    "prepare.parameters_next": (
+        "The corpus is ready. Parameter review is the next step; no stylometric analysis "
+        "has run yet."
+    ),
+    "prepare.continue_parameters": "Continue to parameter review",
+    "prepare.metric.works": "Independent works",
+    "prepare.metric.known": "Known references",
+    "prepare.metric.features": "Candidate features",
+    "prepare.metric.blockers": "Blockers",
+    "prepare.metric.warnings": "Strong warnings",
+    "prepare.length_title": "Compare usable text lengths",
+    "prepare.length_body": (
+        "Token counts are measured after the fixed preparation profile. Large differences can "
+        "dominate a comparison and should be interpreted or corrected before analysis."
+    ),
+    "prepare.table.work": "Work",
+    "prepare.table.work_id": "Work ID",
+    "prepare.table.tokens": "Prepared tokens",
+    "prepare.table.unique": "Unique surface words",
+    "table.yes": "Yes",
+    "table.no": "No",
+    "prepare.panel.boundary_label": "What this does not establish",
+    "prepare.length_boundary": (
+        "Similar text lengths do not make the works comparable or make a later result valid."
+    ),
+    "prepare.download_work_csv": "Download work-preparation CSV",
+    "prepare.transform_title": "See what the fixed profile changed",
+    "prepare.transform_body": (
+        "These counts document how the same preparation profile handled each source. Separator "
+        "counts include spaces, punctuation, numbers, symbols, and other token boundaries; they "
+        "are not error counts."
+    ),
+    "prepare.transform.lowercase": "Characters changed to lowercase",
+    "prepare.transform.separators": "Source separators",
+    "prepare.transform.newlines": "Newline replacements",
+    "prepare.transform.raw_bytes": "Raw bytes",
+    "prepare.transform.prepared_bytes": "Prepared bytes",
+    "prepare.transform.bom": "BOM removed",
+    "prepare.transform_boundary": (
+        "Transformation counts do not measure textual quality, editorial accuracy, or the amount "
+        "of stylistically meaningful change."
+    ),
+    "prepare.confound_title": "Review factors that may travel with style",
+    "prepare.confound_body": (
+        "A confound is a documented difference that may vary alongside the factor you want to "
+        "study. The matrix keeps those differences visible before calculation."
+    ),
+    "prepare.confound.edition": "Edition",
+    "prepare.confound.genre": "Genre",
+    "prepare.confound.audience": "Audience",
+    "prepare.confound.source": "Source type",
+    "prepare.confound.adaptation": "Adaptation",
+    "prepare.confound.collection": "Collection",
+    "prepare.confound.chronology": "Chronology",
+    "prepare.confound.chronology.exact": "{year}",
+    "prepare.confound.chronology.approximate": "About {year}",
+    "prepare.confound.chronology.range": "{start}-{end}",
+    "prepare.confound.chronology.unknown": "Unknown",
+    "prepare.confound.ocr": "OCR",
+    "prepare.confound.paratext": "Paratext",
+    "prepare.confound.curation": "Curation note",
+    "prepare.confound.disclosed": "Disclosed",
+    "prepare.confound.not_disclosed": "Not disclosed",
+    "prepare.confound_boundary": (
+        "The matrix does not prove that a factor caused a pattern, remove that factor, or "
+        "statistically control it."
+    ),
+    "prepare.download_confound_csv": "Download confound-matrix CSV",
+    "prepare.overlap_title": "Check independence and repeated material",
+    "prepare.overlap_body": (
+        "Delta screens prepared texts for exact copies, near-duplicates, and long shared runs. "
+        "Only pairs that cross a declared Delta v0.1 threshold are flagged."
+    ),
+    "prepare.overlap.matrix_title": "Threshold-screening matrix",
+    "prepare.overlap.pairs_title": "Flagged pairs",
+    "prepare.overlap.left": "First work",
+    "prepare.overlap.right": "Second work",
+    "prepare.overlap.check": "Check",
+    "prepare.overlap.observed": "Observed",
+    "prepare.overlap.same_work": "Same work",
+    "prepare.overlap.not_flagged": "Not flagged",
+    "prepare.overlap.none": "No pair crossed the declared overlap-screening thresholds.",
+    "prepare.overlap.code.exact_duplicate": "Exact duplicate",
+    "prepare.overlap.code.near_duplicate": "Near duplicate",
+    "prepare.overlap.code.shared_passage": "Shared passage",
+    "prepare.overlap.hash_match": "Prepared hashes match",
+    "prepare.overlap.tokens": "{count} shared tokens",
+    "prepare.overlap.ratio": "{ratio:.2%}",
+    "prepare.overlap.no_measure": "Threshold crossed",
+    "prepare.overlap_boundary": (
+        "A pair that is not flagged may still share shorter material or other dependencies. A "
+        "flag also does not identify its editorial or historical cause."
+    ),
+    "prepare.mfw_title": "Which MFW settings can this corpus support?",
+    "prepare.mfw_body": (
+        "MFW means most frequent words. A setting is available only when the known reference texts "
+        "jointly provide at least that many usable features. Higher is not automatically better."
+    ),
+    "prepare.mfw.metric": "{mfw} MFW",
+    "prepare.mfw.available": "Available",
+    "prepare.mfw.unavailable": "Unavailable",
+    "prepare.mfw.features": "{count} features found",
+    "prepare.mfw.requested": "Requested MFW",
+    "prepare.mfw.available_features": "Available features",
+    "prepare.mfw.status": "Status",
+    "prepare.mfw_boundary": (
+        "Feature capacity does not identify a best MFW setting or show that a supported setting "
+        "will produce a stable or meaningful result."
+    ),
+    "prepare.download_capacity_csv": "Download feature-capacity CSV",
+    "prepare.findings_title": "What Delta found",
+    "prepare.findings_body": (
+        "Blockers stop the run. Strong warnings permit a later run but must remain visible in "
+        "interpretation. Notes document preparation without claiming a problem."
+    ),
+    "prepare.finding.action_label": "What to do",
+    "prepare.finding.observed_count": "Observed {value}",
+    "prepare.finding.threshold_count": "Reference threshold {value}",
+    "prepare.finding.observed_ratio": "Observed ratio {value:.2f}",
+    "prepare.finding.threshold_ratio": "Reference ratio {value:.2f}",
+    "prepare.downloads_title": "Download the preparation evidence",
+    "prepare.download_health": "Download corpus-health report",
+    "prepare.download_manifest": "Download preparation manifest",
+    "prepare.download_config": "Download preparation settings",
+    "prepare.download_findings_csv": "Download health-findings CSV",
+    "prepare.download_receipt": "Download READY receipt",
+    "prepare.projection_error": (
+        "Delta could not bind the preparation evidence to this corpus. No review projection or "
+        "analysis request was created."
+    ),
+    "prepare.finding.empty_prepared_work.title": "A text has no usable words",
+    "prepare.finding.empty_prepared_work.body": (
+        "After the declared preparation rules, this work produced zero surface-word tokens."
+    ),
+    "prepare.finding.empty_prepared_work.action": (
+        "Inspect the source file, encoding, and whether it contains literary text rather "
+        "than only markup or numbers."
+    ),
+    "prepare.finding.too_few_known_works.title": "Too few known reference works",
+    "prepare.finding.too_few_known_works.body": (
+        "Delta needs at least two independent known works to define feature statistics "
+        "and distances."
+    ),
+    "prepare.finding.too_few_known_works.action": (
+        "Mark at least two documented independent works as known references, or add "
+        "suitable reference texts."
+    ),
+    "prepare.finding.non_independent_unit.title": "A segment or excerpt is not runnable here",
+    "prepare.finding.non_independent_unit.body": (
+        "This alpha workflow compares complete independent works and blocks mixed analysis units."
+    ),
+    "prepare.finding.non_independent_unit.action": (
+        "Upload comparable complete works; use a later documented segmentation workflow "
+        "for excerpts or chapters."
+    ),
+    "prepare.finding.duplicate_independence_unit.title": "One work is represented more than once",
+    "prepare.finding.duplicate_independence_unit.body": (
+        "Repeated segments or editions of one work would be counted as if they were "
+        "independent evidence."
+    ),
+    "prepare.finding.duplicate_independence_unit.action": (
+        "Keep one documented analysis copy per independent work or redesign the corpus "
+        "as a declared segment study."
+    ),
+    "prepare.finding.exact_duplicate.title": "Two prepared texts are identical",
+    "prepare.finding.exact_duplicate.body": (
+        "Exact copies add no independent stylistic evidence and can distort the geometry "
+        "of the corpus."
+    ),
+    "prepare.finding.exact_duplicate.action": (
+        "Remove the duplicate or verify whether the files represent the same edition "
+        "under different names."
+    ),
+    "prepare.finding.no_runnable_features.title": "The corpus has too few shared usable features",
+    "prepare.finding.no_runnable_features.body": (
+        "The known texts do not provide the minimum feature inventory required by the "
+        "analysis engine."
+    ),
+    "prepare.finding.no_runnable_features.action": (
+        "Use longer language-comparable texts and review any exclusions before trying again."
+    ),
+    "prepare.finding.too_many_documents.title": "The corpus exceeds the alpha document limit",
+    "prepare.finding.too_many_documents.body": (
+        "The bounded analysis worker accepts at most 50 documents in one run."
+    ),
+    "prepare.finding.too_many_documents.action": (
+        "Reduce the corpus to a documented comparison set or divide the research question "
+        "into separate runs."
+    ),
+    "prepare.finding.too_few_independent_works.title": (
+        "The corpus is small for a robust comparison"
+    ),
+    "prepare.finding.too_few_independent_works.body": (
+        "Fewer than six independent works makes corpus-specific patterns and outliers "
+        "harder to distinguish."
+    ),
+    "prepare.finding.too_few_independent_works.action": (
+        "Add comparable independent works when possible and describe a smaller run as exploratory."
+    ),
+    "prepare.finding.too_few_chronology_points.title": "The timeline has too few documented points",
+    "prepare.finding.too_few_chronology_points.body": (
+        "A style-over-time question needs at least three distinct documented chronology "
+        "points to show a trajectory."
+    ),
+    "prepare.finding.too_few_chronology_points.action": (
+        "Add dated works from another period or narrow the claim to a comparison rather "
+        "than a developmental trend."
+    ),
+    "prepare.finding.near_duplicate.title": "Two texts are near-duplicates",
+    "prepare.finding.near_duplicate.body": (
+        "Large repeated portions may indicate the same edition, a reprint, or overlapping "
+        "source material."
+    ),
+    "prepare.finding.near_duplicate.action": (
+        "Compare the editions and remove or explicitly justify overlapping material before "
+        "interpreting distance."
+    ),
+    "prepare.finding.shared_passage.title": "A long passage is shared across works",
+    "prepare.finding.shared_passage.body": (
+        "Repeated editorial matter or embedded source text can create similarity unrelated "
+        "to authorial style."
+    ),
+    "prepare.finding.shared_passage.action": (
+        "Inspect the files for repeated prefaces, contents, quotations, collection headers, "
+        "or duplicated chapters."
+    ),
+    "prepare.finding.length_imbalance.title": "Text lengths are strongly imbalanced",
+    "prepare.finding.length_imbalance.body": (
+        "The longest independent work has at least four times as many prepared tokens as "
+        "the shortest."
+    ),
+    "prepare.finding.length_imbalance.action": (
+        "Prefer comparably sized works or use a later, explicitly validated segmentation "
+        "design; do not trim silently."
+    ),
+    "prepare.finding.group_imbalance.title": "Documented groups are imbalanced",
+    "prepare.finding.group_imbalance.body": (
+        "One group contains at least three times as many independent works as another."
+    ),
+    "prepare.finding.group_imbalance.action": (
+        "Add comparable works to the smaller group or treat group patterns as exploratory "
+        "and report the imbalance."
+    ),
+    "prepare.finding.ocr_confound.title": "OCR histories may not be comparable",
+    "prepare.finding.ocr_confound.body": (
+        "The texts have different or uncertain optical character recognition and review states. "
+        "Recognition errors can alter the words Delta counts, but this warning does not prove "
+        "that OCR caused a later pattern."
+    ),
+    "prepare.finding.ocr_confound.action": (
+        "Check each digital text against its source, document the OCR and review process, and "
+        "make the states as comparable as the sources allow."
+    ),
+    "prepare.finding.paratext_confound.title": "Paratext treatment differs across texts",
+    "prepare.finding.paratext_confound.body": (
+        "Prefaces, contents, notes, or other surrounding material were retained, removed, or "
+        "left uncertain under different policies. This warning does not prove that paratext "
+        "caused a later pattern."
+    ),
+    "prepare.finding.paratext_confound.action": (
+        "Review the files, apply one documented paratext policy where appropriate, and report "
+        "any difference that must remain."
+    ),
+    "prepare.finding.curation_confound.title": "Pre-upload curation differs across texts",
+    "prepare.finding.curation_confound.body": (
+        "Some works disclose editing before upload while others do not. Delta records this "
+        "difference but cannot reconstruct or statistically correct those interventions."
+    ),
+    "prepare.finding.curation_confound.action": (
+        "Document what was changed before upload and use a consistent curation procedure where "
+        "possible."
+    ),
+    "prepare.finding.edition_confound.title": "The editions may not be comparable",
+    "prepare.finding.edition_confound.body": (
+        "Edition descriptions differ or remain uncertain. Editorial choices can affect measured "
+        "language patterns, but Delta does not collate editions or prove an edition effect."
+    ),
+    "prepare.finding.edition_confound.action": (
+        "Verify the edition used for each work, prefer a documented comparable edition policy, "
+        "and retain unavoidable differences in the interpretation."
+    ),
+    "prepare.finding.genre_confound.title": "Genre differs or is uncertain",
+    "prepare.finding.genre_confound.body": (
+        "The corpus mixes documented genres or includes an unknown genre. A later distance may "
+        "reflect genre as well as the research factor; this check does not control genre."
+    ),
+    "prepare.finding.genre_confound.action": (
+        "Compare like genres where the question allows, or report the mixture and test a balanced "
+        "comparison in a later sensitivity analysis."
+    ),
+    "prepare.finding.audience_confound.title": "Intended audience differs or is uncertain",
+    "prepare.finding.audience_confound.body": (
+        "The works target different or undocumented audiences. Audience can shape language use, "
+        "but this warning does not establish that it explains a later pattern."
+    ),
+    "prepare.finding.audience_confound.action": (
+        "Verify the audience metadata, prefer comparable audiences where possible, and keep any "
+        "difference visible in the interpretation."
+    ),
+    "prepare.finding.source_confound.title": "Source types are not uniform",
+    "prepare.finding.source_confound.body": (
+        "The corpus combines different or uncertain source types, such as scans and born-digital "
+        "texts. Source production may affect the counted text, but this check does not measure "
+        "that effect."
+    ),
+    "prepare.finding.source_confound.action": (
+        "Verify source provenance, compare the prepared files with their sources, and document "
+        "why mixed source types are necessary."
+    ),
+    "prepare.finding.adaptation_confound.title": "Adaptation status differs or is uncertain",
+    "prepare.finding.adaptation_confound.body": (
+        "Original and adapted works may be mixed, or adaptation status may be unknown. Delta "
+        "flags the design difference but does not separate its effect statistically."
+    ),
+    "prepare.finding.adaptation_confound.action": (
+        "Verify adaptation status and compare works with the same status where the research "
+        "question permits."
+    ),
+    "prepare.finding.collection_confound.title": "Collection context differs or is uncertain",
+    "prepare.finding.collection_confound.body": (
+        "Some works belong to collections while others stand alone, or that context is unknown. "
+        "This may accompany editorial or genre differences, but the warning proves no effect."
+    ),
+    "prepare.finding.collection_confound.action": (
+        "Check collection membership and editorial context, then balance the corpus or report the "
+        "difference as a limitation."
+    ),
+    "prepare.finding.chronology_confound.title": "Chronology may complicate this comparison",
+    "prepare.finding.chronology_confound.body": (
+        "Dates differ in a way relevant to the selected purpose or include approximate, ranged, "
+        "or unknown values. Chronology alone does not prove ageing, development, or causation."
+    ),
+    "prepare.finding.chronology_confound.action": (
+        "Verify publication dates and their certainty, then align the corpus design with the "
+        "research question and report unavoidable uncertainty."
+    ),
+    "prepare.finding.mfw_unavailable.title": "One or more planned MFW levels are unavailable",
+    "prepare.finding.mfw_unavailable.body": (
+        "The known reference corpus contains fewer candidate features than a planned MFW "
+        "setting requires."
+    ),
+    "prepare.finding.mfw_unavailable.action": (
+        "Use only the available lower MFW settings; do not invent or pad missing features."
+    ),
+    "prepare.finding.transport_feature_excluded.title": "An overlong feature was excluded",
+    "prepare.finding.transport_feature_excluded.body": (
+        "A surface word exceeded the fixed worker transport limit and was not sent to the "
+        "analysis engine."
+    ),
+    "prepare.finding.transport_feature_excluded.action": (
+        "Usually no change is required; retain this note in the evidence package and "
+        "inspect unusual tokenization if frequent."
+    ),
+    "prepare.finding.preparation_summary.title": "Preparation completed deterministically",
+    "prepare.finding.preparation_summary.body": (
+        "Delta recorded document counts, token counts, feature capacity, and the exact "
+        "preparation profile without exporting raw text."
+    ),
+    "prepare.finding.preparation_summary.action": (
+        "Review the manifest and health report, then keep both with the later run evidence."
     ),
     "map.title": "Experiment map",
     "map.body": "Each stage opens only after its own checks pass.",

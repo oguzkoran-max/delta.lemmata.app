@@ -1,0 +1,274 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0004",
+  "run_type": "security",
+  "status": "passed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-15T13:44:55Z",
+  "ended_at_utc": "2026-07-15T13:50:05Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "7f26dbe82437e7f9757e7c35b10b7666a3078578",
+  "environment": {
+    "ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "timezone": "UTC",
+      "run": "29420509541",
+      "verify_job": "87369452370",
+      "container_job": "87369452318",
+      "tests_passed": 1564,
+      "tests_skipped": 0,
+      "measured_statements": 11382,
+      "measured_branches": 2964,
+      "coverage_percent": 100,
+      "records_validated": 103,
+      "sbom_dependency_secret_gates": "passed",
+      "known_python_dependency_vulnerabilities": 0,
+      "source_browser_gate": "passed",
+      "hardened_stack_gate": "passed"
+    },
+    "container_stack": {
+      "application_image_id": "sha256:f96fbd196c1e71b86a3dde8254f70fca3c2ff3d69306a4f6e02be73cb69a9934",
+      "gateway_manifest": "nginxinc/nginx-unprivileged:1.30.3-alpine-slim@sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81",
+      "gateway_runtime_image_id": "sha256:acffd179eaca40d7d73dc928ed314730fc7110a2f34c03f295245c344c90d037",
+      "application_user": "10001:10001",
+      "gateway_user": "101:101",
+      "application_host_port": null,
+      "gateway_host_bind": "127.0.0.1:8502",
+      "application_cpu_limit": "1.50",
+      "application_memory_limit_mib": 1536,
+      "application_pid_limit": 128,
+      "root_filesystems_read_only": true,
+      "capabilities_dropped": true,
+      "no_new_privileges": true,
+      "application_default_route_egress": false,
+      "persistent_corpus_volume": false,
+      "runtime_inspection": "passed",
+      "hostile_request_smoke": "passed",
+      "cleanup": "passed"
+    },
+    "gateway_browser": {
+      "url": "https://delta.lemmata.app:9443",
+      "entry_status": 200,
+      "entry_rendered": true,
+      "document_ready_state": "complete",
+      "body_text_length": 3460,
+      "response_status_counts": {
+        "200": 79
+      },
+      "blocked_requests": 0,
+      "request_failures": 0,
+      "websocket_count": 1,
+      "websocket_pass": true,
+      "strict_expected_host_only": true,
+      "console_errors": 0,
+      "page_errors": 0,
+      "viewports": [
+        "1280x900",
+        "390x844",
+        "320x720"
+      ],
+      "horizontal_overflow": 0,
+      "release_labels_visible": true,
+      "result": "passed"
+    },
+    "source_browser": {
+      "viewports": [
+        "1280x900",
+        "390x844",
+        "320x800"
+      ],
+      "real_r_stylo_result": "passed",
+      "all_four_cells_complete": true,
+      "nonblank_charts": 2,
+      "unexpected_console_messages": 0,
+      "external_hosts_observed": 0,
+      "result_export_sha256": "9a16b87e465e29b1f870d05f4ebf4d24336392c251a42e4b034b0448f7bf5320",
+      "private_material_absent": true
+    },
+    "retained_ci_attempts": [
+      {
+        "run": "29408010407",
+        "commit": "444a4f7add43ff5f2ea093fcfad96d2d1a22bf8f",
+        "status": "failed",
+        "reason": "Source verification rejected one unformatted Python file."
+      },
+      {
+        "run": "29408987359",
+        "commit": "166c53018d47a2e9d01b4b30cfc9758c49fac712",
+        "status": "cancelled",
+        "reason": "The branch concurrency policy cancelled the run after a correcting commit superseded it."
+      },
+      {
+        "run": "29410308415",
+        "commit": "c90de6d82a01df38ed83890351dd3790af83358f",
+        "status": "cancelled",
+        "reason": "The branch concurrency policy cancelled the run after a correcting commit superseded it."
+      },
+      {
+        "run": "29411048388",
+        "commit": "faaa5bd0e573da8e53fccf5a5187b37ea01d234a",
+        "status": "failed",
+        "reason": "The read-only gateway could not create required Nginx temporary cache paths."
+      },
+      {
+        "run": "29411625601",
+        "commit": "95bb878db58f5400ba224029819a5c8c0eefd272",
+        "status": "failed",
+        "reason": "Diagnostics exposed the missing gateway cache mount; the parallel verify process also encountered a pandas/Arrow segmentation fault."
+      },
+      {
+        "run": "29412290649",
+        "commit": "188d49b9066cb8612d6bf3b85ddae37d06627dfb",
+        "status": "failed",
+        "reason": "Runtime inspection rejected an incomplete expected application mount set; the parallel verify process repeated the pandas/Arrow segmentation fault."
+      },
+      {
+        "run": "29413333714",
+        "commit": "49001d8cd6f0853f8b6172769ca19fbe565feb26",
+        "status": "failed",
+        "reason": "Both services were healthy but the configured loopback gateway port was not published."
+      },
+      {
+        "run": "29414242074",
+        "commit": "dacf38f792f49bc7ebcb677c3608c55f4e973a31",
+        "status": "failed",
+        "reason": "Diagnostics proved an empty Docker PORTS field because the sole internal network suppressed publication."
+      },
+      {
+        "run": "29415155636",
+        "commit": "10c436310182325d4a8a7e42a0b63a8388aee92b",
+        "status": "failed",
+        "reason": "Chromium upgraded the .app audit URL to HTTPS while the test bridge still served plain HTTP."
+      },
+      {
+        "run": "29417081945",
+        "commit": "c63bc3f09d073579e5976250101924d98a48680b",
+        "status": "failed",
+        "reason": "The single request budget returned HTTP 429 during normal Streamlit static-asset loading."
+      },
+      {
+        "run": "29418542119",
+        "commit": "8f692f352d11df7fcb94be771520c13556f5d0c1",
+        "status": "failed",
+        "reason": "Content-free diagnostics confirmed one static-asset HTTP 429, a blank body, and no WebSocket."
+      },
+      {
+        "run": "29419546551",
+        "commit": "6f55609ace23a04c7de89670c894de46c9418833",
+        "status": "failed",
+        "reason": "All assets returned HTTP 200, but forwarded authority and scheme mismatch caused reconnecting WebSockets and a blank application."
+      },
+      {
+        "run": "29420509541",
+        "commit": "7f26dbe82437e7f9757e7c35b10b7666a3078578",
+        "status": "passed",
+        "reason": "Source, scientific browser, SBOM, image build, hardened stack, TLS browser, runtime inspection, hostile-request, and cleanup gates passed."
+      }
+    ]
+  },
+  "command": "GitHub Actions CI: ./scripts/bootstrap.sh; ./scripts/verify.sh; uv run python scripts/browser_audit_p009.py --output /tmp/delta-p009-browser-audit; ./scripts/generate_evidence.sh; docker build --platform linux/amd64 --build-arg DELTA_BUILD_ID=$GITHUB_SHA --file containers/Dockerfile .; ./scripts/run_p014_runtime_gate.sh",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "deploy/public-alpha/nginx.conf",
+      "sha256": "b939979580b9e5008d3ef6f4930f6eaab6a74a772a608c934eb24dc090f132fc"
+    },
+    {
+      "path": "scripts/run_p014_runtime_gate.sh",
+      "sha256": "82feeba84eb62f2c3ced94e53ed870c2153f15397e71681b81800e68086f6cdf"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "e019b8ee16b6536d937ad23fce0300a423e92f12786c6e95724682e9a0c7f462"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub Actions Ubuntu 24.04 x86_64 checkout of exact commit 7f26dbe82437e7f9757e7c35b10b7666a3078578",
+    "command": "GitHub Actions CI: ./scripts/bootstrap.sh; ./scripts/verify.sh; uv run python scripts/browser_audit_p009.py --output /tmp/delta-p009-browser-audit; ./scripts/generate_evidence.sh; docker build --platform linux/amd64 --build-arg DELTA_BUILD_ID=$GITHUB_SHA --file containers/Dockerfile .; ./scripts/run_p014_runtime_gate.sh",
+    "limitations": [
+      "The GitHub-hosted runner image is named and release-linked but is not represented by an immutable runner image digest.",
+      "The application image ID is a content-addressed CI build ID, not yet a published registry manifest digest.",
+      "The TLS bridge is an ephemeral test-only proxy; the live host Caddy route has not been tested.",
+      "The browser gate uses synthetic texts and does not establish benchmark accuracy, literary findings, or general usability.",
+      "No shared-VPS inventory, live Delta installation, Delta-Lemmata coexistence load, host restart cleanup, rollback, or owner acceptance occurred in this run.",
+      "A non-fatal BuildKit warning records the explicit canonical linux/amd64 platform pin."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "7e3812352e11f43f345f2a21886ab708e1737b910882efe096fde33cb181a996"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "deploy/public-alpha/nginx.conf",
+      "sha256": "b939979580b9e5008d3ef6f4930f6eaab6a74a772a608c934eb24dc090f132fc"
+    },
+    {
+      "path": "deploy/public-alpha/Caddyfile.delta.example",
+      "sha256": "5faa82ecfc99c94fe086a298736af096846130670ab9e514a4adb0b8a932fbcd"
+    },
+    {
+      "path": "deploy/public-alpha/delta-public-alpha.service",
+      "sha256": "3349d0c4faa00a178b7a0c53826b9b25d9fd341c2c5170c36b0d7cc6db595bcc"
+    },
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "1d1161534abff65850b8bb221137d90299befe7126ef9bda82995d400a2baa0c"
+    },
+    {
+      "path": "docs/development/p014-public-alpha-deployment-contract.md",
+      "sha256": "3947a33e354ee2fae0d3bb53d4e4ab1652a4a640433feb1274b7f1f208f4fb96"
+    },
+    {
+      "path": "scripts/validate_p014_deployment.py",
+      "sha256": "09efd4d97795a0770746a4b088cfe242f9c646e7b979f3c15f98d9d8d78831a3"
+    },
+    {
+      "path": "scripts/inspect_p014_runtime.py",
+      "sha256": "ae091875485aad9fbfafddee14001f426c2081af0ca85dfa67039b871b4e1287"
+    },
+    {
+      "path": "scripts/smoke_p014_stack.sh",
+      "sha256": "736b24e81e73742a318d975207c64ed3a10bcbef2012843b80dc29af9a78ec4e"
+    },
+    {
+      "path": "scripts/browser_audit_p014_gateway.py",
+      "sha256": "bc19d48fa8eaa2cd982f6f1bfbdffcc6e37e037651425103181cd86b6488d9dd"
+    },
+    {
+      "path": "scripts/run_p014_runtime_gate.sh",
+      "sha256": "82feeba84eb62f2c3ced94e53ed870c2153f15397e71681b81800e68086f6cdf"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "e019b8ee16b6536d937ad23fce0300a423e92f12786c6e95724682e9a0c7f462"
+    },
+    {
+      "path": ".github/workflows/p014-publish-image.yml",
+      "sha256": "0cd26309eca4605c10b5b1152e111890b40eab233581c0d03ea3fac716346385"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/canonical-alpha-stack-validation.md",
+      "sha256": "846dbd7222ecf1031ad31b15c9d45ae06e56388b27e1668a7a4ea516b26191db"
+    }
+  ],
+  "notes": "The exact minimum P014 public-alpha package passed canonical Linux source, scientific browser, supply-chain, image, hardened stack, TLS browser, hostile-request, runtime-inspection, denied-egress, and cleanup gates. Twelve earlier failed or superseded CI outcomes remain retained. This run does not authorize public activation; real-host inventory, coexistence load, rollback, restart cleanup, and owner acceptance remain pending."
+}

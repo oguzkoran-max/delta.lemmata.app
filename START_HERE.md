@@ -2,14 +2,28 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P001-P006 tamamlandı. P006 R `stylo` Worker and Computational
-Parity, sekiz acceptance ölçütünün tamamını fixture-local whole-text sınırında
-geçti. Fixed worker, scientific handoff, retained Linux evidence, normal CI ve
-exact-commit remote clean-clone zinciri `RUN-20260714-0004` ve
-`RUN-20260714-0005` ile kayıtlıdır. Aktif implementation Ticket yoktur. Sıradaki
-planlanan iş P007 Preprocessing and Corpus Health açılış paketidir; P007 Ticket,
-PromptEvent, architecture audit ve kabul edilmiş yöntem sınırı oluşmadan kod
-yazılmaz.
+**Güncel aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
+Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
+P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum
+sınırı yüzeyi `c5e39b0` exact commit'lerinde gerçek upload-to-R/stylo-to-result
+Linux browser, remote clean-clone ve canonical CI kapılarından geçti. P009 kanıt
+kaydı `RUN-20260715-0003`; kanıt-link commit'i `567d154` ve CI `29404000108`
+yeşildir. P008 tam üç amaç ve ilgili known/unknown matris, P009 ise dendrogram,
+Style Over Time tarih haritası ve geniş glossary için `in-progress` kalır;
+Research Mode kilitlidir. Minimum P014 deployment paketi exact commit
+`7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile Linux source,
+gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-request,
+runtime-inspection, denied-egress ve cleanup kapılarından geçti. P014-AC-01 ile
+P014-AC-07 passed; P014-AC-08 ile P014-AC-10 gerçek host inventory, Lemmata ile
+eşzamanlı load, restart/rollback ve Oğuz owner acceptance için pending'dir.
+Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` yeşildir. İlk read-only VPS
+preflight'i `RUN-20260715-0005` olarak saklandı: Lemmata sağlıklı, `8502` boş,
+fakat hostta desteklenen container runtime yoktur; yaklaşık 4 GiB RAM, sıfır swap
+ve sınırsız mevcut Lemmata profili nedeniyle kurulumdan önce capacity kararı da
+gereklidir. Kapı exit `21` ile canlı değişiklik yapmadan durdu. Registry image
+publication, VPS kurulumu, Caddy/DNS değişikliği veya public activation henüz
+yapılmadı. `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir
+başarısız kapıyı geçersiz kılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -140,4 +154,29 @@ P006-AC-08 fixture-local sınırda passed durumundadır.
 
 P006 preprocessing, public Start analysis, production limitleri, secure erase veya
 Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P011'i
-bekler. Sıradaki tek ana iş P007'nin tests-first açılış paketi ve yöntem denetimidir.
+bekler. P007 implementation commit'i `b42da99`; `RUN-20260715-0001` ve
+`provenance/evidence/P007/corpus-health-diagnostics-validation.md` deterministic
+preparation, confound/overlap/feature-capacity projeksiyonu, content-free CSV,
+clean-clone ve Linux CI kanıtını bağlar. P008 minimum Guided akışı exact commit
+`7e9a28e`, `RUN-20260715-0002` ve CI `29388984019` ile doğrulandı: resolved config,
+one-time P007 READY admission, P006 execution, locked Research Mode ve gerçek
+browser akışı bağlıdır. P009 minimum sonuç yüzeyi exact commit `c5e39b0`,
+`RUN-20260715-0003` ve CI `29402396790` ile doğrulandı: dört hücre durumu, sabit
+500-MFW reading reference, distance heatmap, exact-tie nearest-neighbor tablosu,
+deterministic MDS haritası, semantic table parity, claim lint ve raw-text-free
+result export bağlıdır. Kanıt commit'i `567d154`, CI `29404000108` içinde yeniden
+geçti. Tam P008 AC-09 ve tam P009 görsel genişletmeleri Public alpha'yı engellemez.
+P014 minimum package exact implementation commit'i
+`7f26dbe82437e7f9757e7c35b10b7666a3078578`, run kaydı
+`RUN-20260715-0004` ve canonical CI `29420509541` ile doğrulandı. Kanıt:
+`provenance/evidence/P014/canonical-alpha-stack-validation.md`. Kanıt-link commit'i
+`dea9e67154d75852c5d69db9871fd4a1868bc236`, PR CI `29424064991` içinde yeniden
+geçti. İlk target-host preflight'i `RUN-20260715-0005` ve
+`provenance/evidence/P014/target-host-read-only-preflight.md` ile kayıtlıdır:
+Lemmata 20/20 HTTP 200 ve 267,73 ms p95 ile sağlıklı, `8502` boş, fakat container
+runtime yoktur. Host değiştirilmedi; AC-08 pending kaldı. Sıradaki iş bu kanıtı
+normal PR ile `main`e almak, exact green main commit'ini private GHCR'a immutable
+digest ile yayımlamak ve canlı host için container-runtime/capacity kararını
+kaydetmektir. Ancak tekrarlanan preflight geçerse Delta-only kurulum, public TLS,
+Lemmata coexistence/load, restart-cleanup, rollback ve owner walkthrough sırasıyla
+uygulanır. Bu kapılar geçmeden DNS, Caddy veya public activation yapılmaz.

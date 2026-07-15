@@ -34,6 +34,8 @@ from delta_lemmata.job_staging import (
     materialize_validated_payloads,
 )
 from delta_lemmata.job_store import (
+    AnalysisAdmissionRejectedError,
+    AnalysisAdmissionReusedError,
     JobAdmissionCleanupUnresolvedError,
     JobAdmissionRejectedError,
     JobNotAvailableError,
@@ -78,6 +80,8 @@ class JobServiceErrorCode(StrEnum):
     NOT_AVAILABLE = "JOB_NOT_AVAILABLE"
     ARTIFACT_NOT_AVAILABLE = "JOB_ARTIFACT_NOT_AVAILABLE"
     INVALID_STATE = "JOB_SERVICE_INVALID_STATE"
+    ANALYSIS_ADMISSION_REJECTED = "JOB_SERVICE_ANALYSIS_ADMISSION_REJECTED"
+    ANALYSIS_ADMISSION_REUSED = "JOB_SERVICE_ANALYSIS_ADMISSION_REUSED"
     OPERATION_FAILED = "JOB_SERVICE_OPERATION_FAILED"
 
 
@@ -120,6 +124,10 @@ def _content_free[**P, T](method: Callable[P, T]) -> Callable[P, T]:
             rejection = JobServiceNotAvailableError()
         except JobAdmissionRejectedError:
             rejection = JobServiceAdmissionRejectedError()
+        except AnalysisAdmissionRejectedError:
+            rejection = JobServiceError(JobServiceErrorCode.ANALYSIS_ADMISSION_REJECTED)
+        except AnalysisAdmissionReusedError:
+            rejection = JobServiceError(JobServiceErrorCode.ANALYSIS_ADMISSION_REUSED)
         except Exception:
             rejection = JobServiceError(JobServiceErrorCode.OPERATION_FAILED)
         _detach(rejection)
@@ -226,6 +234,49 @@ class JobService:
         """Project one owned job without opening its workspace."""
 
         return project_job_record(self._authorize(job_id=job_id, capability=capability))
+
+    @_content_free
+    def bind_analysis_admission(
+        self,
+        *,
+        receipt_hmac: str,
+        job_id: JobId | str,
+        capability: SessionCapability,
+        at_utc: datetime,
+        expires_at_utc: datetime,
+        expected_job_version: int,
+    ) -> None:
+        """Bind one READY authority without exposing the control store."""
+
+        self._store.bind_analysis_admission(
+            receipt_hmac=receipt_hmac,
+            job_id=job_id,
+            capability=capability,
+            at_utc=at_utc,
+            expires_at_utc=expires_at_utc,
+            expected_job_version=expected_job_version,
+        )
+
+    @_content_free
+    def consume_analysis_admission(
+        self,
+        *,
+        receipt_hmac: str,
+        job_id: JobId | str,
+        capability: SessionCapability,
+        at_utc: datetime,
+        operation_id: str,
+    ) -> JobPresentation:
+        """Consume one READY authority and return its queued projection."""
+
+        queued = self._store.consume_analysis_admission(
+            receipt_hmac=receipt_hmac,
+            job_id=job_id,
+            capability=capability,
+            at_utc=at_utc,
+            operation_id=operation_id,
+        )
+        return project_job_record(queued)
 
     @_content_free
     def cancel(

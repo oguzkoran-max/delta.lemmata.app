@@ -39,7 +39,7 @@ from delta_lemmata.job_staging import (
     ValidatedPayload,
     materialize_validated_payloads,
 )
-from delta_lemmata.job_store import SQLiteJobStore
+from delta_lemmata.job_store import AnalysisAdmissionReusedError, SQLiteJobStore
 from delta_lemmata.job_workspace import WorkspaceArea, WorkspaceLayout, WorkspaceManager
 from delta_lemmata.session_identity import JobId, SessionCapability, workspace_component
 
@@ -945,3 +945,27 @@ def test_running_cancel_delivery_is_retried_after_gateway_failure(tmp_path: Path
 
     assert service.cancel(job_id=admitted.job.job_id, capability=owner).state_id == "cancelling"
     assert process.cancelled == [admitted.job.job_id, admitted.job.job_id]
+
+
+def test_analysis_admission_reuse_is_projected_content_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    service, store, _workspaces, _clock, _ids = environment(tmp_path)
+    owner = capability(1)
+    admitted = service.admit(capability=owner, payloads=(payload(),), queued=False)
+
+    def reused(**_kwargs):
+        raise AnalysisAdmissionReusedError
+
+    monkeypatch.setattr(store, "consume_analysis_admission", reused)
+    expect_service_error(
+        lambda: service.consume_analysis_admission(
+            receipt_hmac="a" * 64,
+            job_id=admitted.job.job_id,
+            capability=owner,
+            at_utc=NOW,
+            operation_id="op_" + "b" * 64,
+        ),
+        JobServiceErrorCode.ANALYSIS_ADMISSION_REUSED,
+    )

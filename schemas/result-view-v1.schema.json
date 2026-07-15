@@ -1,0 +1,308 @@
+{
+  "$defs": {
+    "AnalysisScope": {
+      "enum": [
+        "transductive_exploratory",
+        "unknown_holdout"
+      ],
+      "title": "AnalysisScope",
+      "type": "string"
+    },
+    "DisplayTitle": {
+      "maxLength": 200,
+      "minLength": 1,
+      "type": "string"
+    },
+    "DocumentKey": {
+      "pattern": "^D(?:0[1-9]|[1-4][0-9]|50)$",
+      "type": "string"
+    },
+    "DocumentRole": {
+      "enum": [
+        "known",
+        "unknown"
+      ],
+      "title": "DocumentRole",
+      "type": "string"
+    },
+    "FiniteNumber": {
+      "maximum": 1.7976931348623157e+308,
+      "minimum": -1.7976931348623157e+308,
+      "type": "number"
+    },
+    "InterpretationBoundariesV1": {
+      "additionalProperties": false,
+      "properties": {
+        "mds": {
+          "const": "MDS axes have no intrinsic literary meaning; the map is a two-dimensional approximation.",
+          "title": "Mds",
+          "type": "string"
+        },
+        "nearest_neighbour": {
+          "const": "A nearest neighbour is not an author identification or evidence of influence.",
+          "title": "Nearest Neighbour",
+          "type": "string"
+        },
+        "profile": {
+          "const": "relative-proximity-guardrails-v1",
+          "title": "Profile",
+          "type": "string"
+        },
+        "proximity": {
+          "const": "Distances show relative proximity only within this corpus and parameter cell.",
+          "title": "Proximity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "profile",
+        "proximity",
+        "nearest_neighbour",
+        "mds"
+      ],
+      "title": "InterpretationBoundariesV1",
+      "type": "object"
+    },
+    "MfwCount": {
+      "maximum": 1000,
+      "minimum": 2,
+      "type": "integer"
+    },
+    "Percentage": {
+      "maximum": 100,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "PublicCellError": {
+      "enum": [
+        "not_enough_features",
+        "fit_unavailable",
+        "distance_calculation_failed"
+      ],
+      "type": "string"
+    },
+    "PurposeId": {
+      "enum": [
+        "text_proximity",
+        "group_comparison",
+        "style_over_time"
+      ],
+      "title": "PurposeId",
+      "type": "string"
+    },
+    "ResultCellStatus": {
+      "enum": [
+        "complete",
+        "not_enough_features",
+        "failed"
+      ],
+      "title": "ResultCellStatus",
+      "type": "string"
+    },
+    "ResultCellV1": {
+      "additionalProperties": false,
+      "properties": {
+        "culling_percent": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "distance": {
+          "const": "classic_delta",
+          "title": "Distance",
+          "type": "string"
+        },
+        "error_code": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublicCellError"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "is_reference": {
+          "title": "Is Reference",
+          "type": "boolean"
+        },
+        "matrix": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ResultMatrixV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mfw": {
+          "$ref": "#/$defs/MfwCount"
+        },
+        "status": {
+          "$ref": "#/$defs/ResultCellStatus"
+        }
+      },
+      "required": [
+        "mfw",
+        "culling_percent",
+        "distance",
+        "is_reference",
+        "status",
+        "error_code",
+        "matrix"
+      ],
+      "title": "ResultCellV1",
+      "type": "object"
+    },
+    "ResultDocumentV1": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "$ref": "#/$defs/DocumentKey"
+        },
+        "role": {
+          "$ref": "#/$defs/DocumentRole"
+        },
+        "title": {
+          "$ref": "#/$defs/DisplayTitle"
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "role"
+      ],
+      "title": "ResultDocumentV1",
+      "type": "object"
+    },
+    "ResultMatrixV1": {
+      "additionalProperties": false,
+      "properties": {
+        "document_keys": {
+          "items": {
+            "$ref": "#/$defs/DocumentKey"
+          },
+          "maxItems": 50,
+          "minItems": 2,
+          "title": "Document Keys",
+          "type": "array"
+        },
+        "values": {
+          "items": {
+            "items": {
+              "$ref": "#/$defs/FiniteNumber"
+            },
+            "type": "array"
+          },
+          "maxItems": 50,
+          "minItems": 2,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "document_keys",
+        "values"
+      ],
+      "title": "ResultMatrixV1",
+      "type": "object"
+    },
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/result-view-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis_scope": {
+      "$ref": "#/$defs/AnalysisScope"
+    },
+    "analysis_unit": {
+      "const": "whole_text",
+      "title": "Analysis Unit",
+      "type": "string"
+    },
+    "cells": {
+      "items": {
+        "$ref": "#/$defs/ResultCellV1"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "title": "Cells",
+      "type": "array"
+    },
+    "distance_measure": {
+      "const": "classic_delta",
+      "title": "Distance Measure",
+      "type": "string"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/ResultDocumentV1"
+      },
+      "maxItems": 50,
+      "minItems": 2,
+      "title": "Documents",
+      "type": "array"
+    },
+    "interpretation": {
+      "$ref": "#/$defs/InterpretationBoundariesV1"
+    },
+    "parameter_profile": {
+      "const": "guided-grid-v1",
+      "title": "Parameter Profile",
+      "type": "string"
+    },
+    "purpose": {
+      "$ref": "#/$defs/PurposeId"
+    },
+    "reference_mfw": {
+      "const": 500,
+      "title": "Reference Mfw",
+      "type": "integer"
+    },
+    "schema_version": {
+      "const": "result-view-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "source_result_outcome": {
+      "enum": [
+        "complete",
+        "partial"
+      ],
+      "title": "Source Result Outcome",
+      "type": "string"
+    },
+    "source_result_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "visualization_method": {
+      "const": "classical-mds-v1",
+      "title": "Visualization Method",
+      "type": "string"
+    },
+    "workflow_config_sha256": {
+      "$ref": "#/$defs/Sha256"
+    }
+  },
+  "required": [
+    "schema_version",
+    "purpose",
+    "analysis_scope",
+    "parameter_profile",
+    "workflow_config_sha256",
+    "source_result_sha256",
+    "source_result_outcome",
+    "analysis_unit",
+    "distance_measure",
+    "reference_mfw",
+    "visualization_method",
+    "documents",
+    "cells",
+    "interpretation"
+  ],
+  "title": "ResultViewV1",
+  "type": "object"
+}

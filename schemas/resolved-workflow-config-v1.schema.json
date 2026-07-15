@@ -1,0 +1,168 @@
+{
+  "$defs": {
+    "AnalysisScope": {
+      "enum": [
+        "transductive_exploratory",
+        "unknown_holdout"
+      ],
+      "title": "AnalysisScope",
+      "type": "string"
+    },
+    "CellCount": {
+      "maximum": 24,
+      "minimum": 1,
+      "type": "integer"
+    },
+    "DistanceMeasure": {
+      "enum": [
+        "classic_delta",
+        "eders_delta",
+        "cosine_delta"
+      ],
+      "title": "DistanceMeasure",
+      "type": "string"
+    },
+    "MfwCount": {
+      "maximum": 1000,
+      "minimum": 2,
+      "type": "integer"
+    },
+    "ParameterCellV1": {
+      "additionalProperties": false,
+      "properties": {
+        "culling_percent": {
+          "$ref": "#/$defs/Percentage"
+        },
+        "distance": {
+          "$ref": "#/$defs/DistanceMeasure"
+        },
+        "is_reference": {
+          "title": "Is Reference",
+          "type": "boolean"
+        },
+        "mfw": {
+          "$ref": "#/$defs/MfwCount"
+        }
+      },
+      "required": [
+        "mfw",
+        "culling_percent",
+        "distance",
+        "is_reference"
+      ],
+      "title": "ParameterCellV1",
+      "type": "object"
+    },
+    "Percentage": {
+      "maximum": 100,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "PurposeId": {
+      "enum": [
+        "text_proximity",
+        "group_comparison",
+        "style_over_time"
+      ],
+      "title": "PurposeId",
+      "type": "string"
+    },
+    "Sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "WorkCount": {
+      "maximum": 50,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "WorkflowMode": {
+      "enum": [
+        "guided",
+        "research"
+      ],
+      "title": "WorkflowMode",
+      "type": "string"
+    }
+  },
+  "$id": "https://delta.lemmata.app/schemas/resolved-workflow-config-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis_scope": {
+      "$ref": "#/$defs/AnalysisScope"
+    },
+    "analysis_unit": {
+      "const": "whole_text",
+      "title": "Analysis Unit",
+      "type": "string"
+    },
+    "cell_count": {
+      "$ref": "#/$defs/CellCount"
+    },
+    "cells": {
+      "items": {
+        "$ref": "#/$defs/ParameterCellV1"
+      },
+      "maxItems": 24,
+      "minItems": 1,
+      "title": "Cells",
+      "type": "array"
+    },
+    "grid_sha256": {
+      "$ref": "#/$defs/Sha256"
+    },
+    "known_work_count": {
+      "$ref": "#/$defs/WorkCount"
+    },
+    "mode": {
+      "$ref": "#/$defs/WorkflowMode"
+    },
+    "parameter_profile": {
+      "enum": [
+        "guided-grid-v1",
+        "research-grid-v1"
+      ],
+      "title": "Parameter Profile",
+      "type": "string"
+    },
+    "preprocessing_profile": {
+      "const": "delta-surface-words-v1",
+      "title": "Preprocessing Profile",
+      "type": "string"
+    },
+    "purpose": {
+      "$ref": "#/$defs/PurposeId"
+    },
+    "schema_version": {
+      "const": "resolved-workflow-config-v1",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "seed": {
+      "const": 20260713,
+      "title": "Seed",
+      "type": "integer"
+    },
+    "unknown_work_count": {
+      "$ref": "#/$defs/WorkCount"
+    }
+  },
+  "required": [
+    "schema_version",
+    "purpose",
+    "mode",
+    "parameter_profile",
+    "analysis_scope",
+    "preprocessing_profile",
+    "analysis_unit",
+    "seed",
+    "known_work_count",
+    "unknown_work_count",
+    "cell_count",
+    "grid_sha256",
+    "cells"
+  ],
+  "title": "ResolvedWorkflowConfigV1",
+  "type": "object"
+}

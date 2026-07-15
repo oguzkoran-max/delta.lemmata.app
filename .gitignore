@@ -28,6 +28,8 @@ renv/python/
 
 # Runtime and evidence generated locally
 .env
+deploy/public-alpha/deployment.env
+deploy/public-alpha/runtime.env
 dist/
 build/
 tmp/

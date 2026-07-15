@@ -5,12 +5,15 @@ digital humanities research. Its supported workflows are designed to run without
 requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
-**Current stage:** P003 Secure Ingestion passed automated, adversarial,
-exact-commit clean-clone, and human acceptance gates and is merged into `main`.
-P004 Metadata, Corpus Inventory, and Rights is active on its own branch. The
-English-only workbench can validate bounded TXT, ZIP, and structural metadata CSV
-inputs; P004 metadata semantics and rights decisions are not implemented yet, and
-scientific computation remains out of scope.
+**Current stage:** P001-P006 are complete. P007 has passed its technical gates
+and remains open only for the integrated owner warning-language walkthrough. The
+minimum public-alpha Guided path in P008-P009 now validates bounded TXT or ZIP
+input, documents corpus metadata and rights, prepares a private ephemeral corpus,
+runs four fixed Classic Delta comparisons through R `stylo`, and presents a
+raw-text-free result view with explicit interpretation limits. Research Mode,
+the full three-purpose workflow matrix, benchmark and calibration claims, the
+Pinocchio worked example, complete FAIR packaging, and production deployment
+remain outside this validated minimum-alpha boundary.
 
 ## Product Boundaries
 
@@ -48,9 +51,19 @@ Run the full verification suite:
 ./scripts/verify.sh
 ```
 
-The canonical scientific and production environment will be a pinned Linux
-x86_64 OCI image. Container execution is not yet verified on the current Mac
-because Docker is not installed.
+Development creates a process-private temporary runtime automatically. Production
+requires a pre-created private runtime directory and three separately generated
+secrets; see `.env.example`. These values must never be committed.
+
+The canonical scientific environment is a pinned Linux x86_64 OCI image and is
+verified in GitHub Actions. Production deployment and shared-VPS isolation remain
+unverified until the minimum P014 activation gates pass. Container execution is
+not repeated on the current Mac because Docker is not installed.
+
+The staged public-alpha deployment and rollback procedure is documented in
+`deploy/public-alpha/README.md`. That runbook does not authorize a live rollout:
+the exact commit, container gate, read-only host inventory, coexistence checks,
+and owner activation decision must pass in order.
 
 ## Canonical Project Documents
 
@@ -59,6 +72,7 @@ because Docker is not installed.
 - `docs/development/roadmap-P001-P015.md`: acceptance-gated implementation plan
 - `docs/research/claim-evidence-matrix.md`: claims and evidence gates
 - `docs/security/threat-model.md`: security, rights, and epistemic threats
+- `deploy/public-alpha/README.md`: staged deployment, coexistence, and rollback runbook
 - `SESSION_HANDOFF.md`: current stage and next action
 
 ## Citation and License

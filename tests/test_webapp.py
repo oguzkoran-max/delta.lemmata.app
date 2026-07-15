@@ -5,15 +5,21 @@ import zipfile
 from collections.abc import Iterable
 from html import unescape
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
+import pytest
 from streamlit.testing.v1 import AppTest
+
+from delta_lemmata import webapp as webapp_module
+from delta_lemmata.web_runtime import WebRuntimeError, WebRuntimeErrorCode
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "app.py"
 
 
 def run_app() -> AppTest:
+    webapp_module._runtime.clear()
     return AppTest.from_file(str(APP), default_timeout=20).run()
 
 
@@ -33,6 +39,42 @@ def _advance_to_describe(app: AppTest, payload: bytes = b"one text") -> AppTest:
     app.file_uploader[0].upload("one.txt", payload, "text/plain").run()
     app.button(key="corpus_continue").click().run()
     return app
+
+
+def test_owner_key_is_stable_and_replaces_malformed_state(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    fake_streamlit = SimpleNamespace(session_state={})
+    monkeypatch.setattr(webapp_module, "st", fake_streamlit)
+    monkeypatch.setattr(webapp_module.secrets, "token_hex", lambda _size: "a" * 64)
+    assert webapp_module._owner_key() == "a" * 64
+    assert webapp_module._owner_key() == "a" * 64
+    fake_streamlit.session_state[webapp_module._FLOW_OWNER_KEY] = object()
+    assert webapp_module._owner_key() == "a" * 64
+
+
+def test_runtime_failure_keeps_documentation_closed_and_reports_content_free_code(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def unavailable_runtime():
+        raise WebRuntimeError(WebRuntimeErrorCode.INITIALIZATION_FAILED)
+
+    monkeypatch.setattr(webapp_module, "_runtime", unavailable_runtime)
+    app = AppTest.from_file(str(APP), default_timeout=20).run()
+    app.file_uploader[0].upload("one.txt", b"PRIVATE_CANARY", "text/plain").run()
+    app.button(key="corpus_continue").click().run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+    assert [message.value for message in app.error] == [
+        "Delta could not create a private, temporary corpus workspace. "
+        "The documentation stage was not opened and no analysis ran."
+    ]
+    assert "Rejection reference: WEB_RUNTIME_INITIALIZATION_FAILED" in [
+        caption.value for caption in app.caption
+    ]
+    visible = "\n".join(
+        [*(message.value for message in app.error), *(caption.value for caption in app.caption)]
+    )
+    assert "PRIVATE_CANARY" not in visible
 
 
 def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> None:
@@ -56,6 +98,9 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
         "No files submitted. Choose a corpus format and add files when ready."
     ]
     rendered = unescape("\n".join(element.value for element in app.markdown))
+    assert 'aria-label="Release status: Public alpha, experimental"' in rendered
+    assert '<span class="delta-release-alpha">Public alpha</span>' in rendered
+    assert '<span class="delta-release-experimental">Experimental</span>' in rendered
     assert rendered.count('<h1 id="delta-entry-title">') == 1
     assert "Discover patterns in writing style." in rendered
     assert "Stylometry compares measurable patterns in language use across texts" in rendered
@@ -83,7 +128,8 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert "this is not a 'best setting'" in rendered
     assert "bounded MFW, culling, segmentation, and distance choices" in rendered
     assert "up to 24 documented combinations" in rendered
-    assert "No stylometric analysis is running in this build" in rendered
+    assert "Guided Mode becomes available after corpus documentation" in rendered
+    assert "Research Mode remains locked in this public alpha" in rendered
     assert rendered.count('<nav class="delta-map"') == 1
     assert 'aria-current="step"' in rendered
     assert "Run analysis" not in rendered
@@ -237,6 +283,9 @@ def test_continue_opens_describe_and_clears_every_raw_upload_value() -> None:
     assert "BrowserUpload" not in state
     assert "storage_name" not in state
     assert "ValidatedCorpusUnit" in state
+    assert "CorpusMaterializationReceipt" in state
+    assert "SessionCapability" not in state
+    assert "control.sqlite3" not in state
 
 
 def test_guided_text_path_builds_review_without_running_analysis() -> None:
@@ -251,8 +300,8 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
         "Method boundary",
     ]
     assert [message.value for message in app.success] == [
-        "Corpus documentation has no blockers. Parameter setup remains locked until "
-        "the analysis engine and its checks are connected."
+        "Corpus documentation has no blockers. Confirm this inventory to continue to "
+        "computational preflight and parameter review."
     ]
     rendered = unescape("\n".join(element.value for element in app.markdown))
     assert [heading.value for heading in app.subheader] == [

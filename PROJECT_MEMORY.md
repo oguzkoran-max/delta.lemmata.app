@@ -2,8 +2,8 @@
 
 **Son güncelleme:** 2026-07-14
 
-**Durum:** P001-P006 tamamlandı; aktif implementation Ticket yoktur. Sıradaki
-planlanan ticket P007 Preprocessing and Corpus Health'tir
+**Durum:** P001-P006 tamamlandı; P007 Deterministic Preprocessing and Corpus Health
+aktif, `HD-20260714-0001` ile yöntem kabul edildi ve implementation başladı
 
 **Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
 foundation var: ayrı session/job identity, payload-free SQLite queue, private
@@ -11,8 +11,38 @@ workspace, guardian-managed POSIX process control, durable terminal ACK,
 execution-bound recovery receipt ve conservative lifecycle projection var. P006
 fixed R worker, shell-free Python adapter, strict contracts, scientific finalizer,
 known-only fitting, checksum-frozen direct-`stylo` referansları, retained Linux
-worker evidence ve crash-safe scientific-result handoff ekledi. Public analiz,
-preprocessing, corpus-health, benchmark ve stability katmanları henüz yoktur
+worker evidence ve crash-safe scientific-result handoff ekledi. P007 preprocessing
+ve corpus-health kodu henüz uygulanmamıştır; public analiz, benchmark ve stability
+katmanları da henüz yoktur
+
+**P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
+`devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
+bağlamsal olarak kabul etti. ADR-0014 Accepted durumundadır. Ayrı
+`HD-20260714-0002` ve ADR-0015, yalnız minimum P007 hazırlama/health/admission,
+P008 gerçek run, P009 result guardrail ve P014 isolation/limit/rollback/Lemmata
+smoke kapıları geçerse 2026-07-17 Public-alpha hedefini kabul eder. Ağustos 2026
+tam makale taslağı hedefidir; yalnız o tarihe kadar tamamlanan kanıtlar claim
+olabilir. Alpha, bilimsel release veya FAIR certification değildir.
+
+**P007 açılış checkpoint'i:** P006 main merge `5fab67c` ve main CI
+`29354208853` sonrası `codex/p007-preprocessing` dalı açıldı. Pre-edit full gate
+1.246 passed, bir canonical-worker macOS skip, 7.768 statement, 2.080 branch,
+yüzde 100 measured coverage ve 85 provenance record ile geçti. Dört bağımsız
+read-only mercek toplam 120k token tavanıyla stylometric method,
+architecture/security, FAIR/provenance ve beginner UX'i inceledi. P007'nin
+payload-free P004 state'ten metin alamayacağı, P003-validated bytes için doğrudan
+P005 private prepare-only handoff gerektiği, corpus health'in lower-level enqueue
+yollarından bypass edilebildiği ve P006 input'un receipt-bound kurulması gerektiği
+ortak P0 bulgulardır. Accepted `delta-surface-words-v1` Unicode lowercase + NFC,
+letter/mark surface tokens, retained diacritics/stopwords, punctuation/number
+separation, no lemmatization/stemming/OCR correction/auto-paratext deletion
+kullanır. Custom exclusions yalnız candidate inventory'yi etkiler. Accepted
+near-duplicate 5-shingle Jaccard `>=0.90`, shared passage `>=200 token veya kısa
+eserin >=%20'si`, minimum-data 6 work/3 chronology point, length 4:1 ve group 3:1
+eşikleri Delta v0.1 policy olarak kabul edilmiştir, evrensel stilometri yasası
+değildir. Ayrıntılı on maddelik paket
+`docs/development/p007-preprocessing-corpus-health-contract.md`; ADR-0014 Accepted;
+schema-first ve tests-first implementation sıradaki ana iştir.
 
 **P006 completion checkpoint:** Capture source `79cb268`, read-only run
 `29340236382`, evidence-only commit `7359cbe` ve `RUN-20260714-0004` exact 18-file

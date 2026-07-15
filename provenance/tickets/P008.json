@@ -1,0 +1,100 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P008",
+  "title": "Guided and Research Workflows",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-15T01:47:22Z",
+  "closed_at_utc": null,
+  "objective": "Connect a P007-ready corpus to the validated P006 stylo engine through beginner-first, versioned, hash-bound, review-before-run workflows that require no user-written R, Python, or shell code while preserving parameter visibility, unknown isolation, one-time admission, typed partial failure, and later-ticket claim boundaries.",
+  "scope": [
+    "A closed resolved-workflow-config-v1 contract with canonical serialization, SHA-256 binding, strict parsing, and a 24-cell public ceiling",
+    "The accepted guided-grid-v1 whole-text profile with 100, 300, 500, and 1000 MFW; zero-percent culling; Classic Delta; and a non-optimal 500-MFW reference",
+    "Explicit transductive_exploratory and unknown_holdout analysis-scope labels with known-only fitting invariants",
+    "Review-before-run presentation of all requested cells, corpus-supported availability, fixed reference, cell count, and content-free configuration digest",
+    "Single-use P007 READY consumption through the existing atomic admission transaction with no lower-level public bypass or silent parameter downgrade",
+    "Server-side claim, execution, P006 validation, durable result persistence, guardian acknowledgement, status, cancellation, retry, and partial-cell behavior",
+    "Beginner-first English Parameters and Run surfaces with keyboard, reflow, semantic-table, and honest-boundary checks",
+    "A visibly locked Research Mode until the exact versioned research-grid-v1 preset receives human method acceptance",
+    "Real upload-to-run browser evidence for the exposed minimum-alpha workflow and later all-three-purpose P008 completion evidence",
+    "Content-free provenance, exact-commit clean-clone, Linux CI, supply-chain, and canonical-container evidence"
+  ],
+  "non_goals": [
+    "Open-ended sliders, arbitrary parameter search, post-result cell selection, or calling the 500-MFW reference a best setting",
+    "Inventing unresolved culling, segmentation, calibration, threshold, or Research preset values to meet the alpha date",
+    "Changing the frozen P006 worker wire schema or reimplementing Delta mathematics in Python or Streamlit",
+    "Result interpretation graphics, nearest-neighbour explanation, dendrogram, PCA, MDS, or result downloads owned by P009",
+    "Benchmark accuracy, negative controls, leakage validation, or calibration owned by P010 and P011",
+    "A complete FAIR-oriented run package, clean rerun, reproducibility claim, or archival release owned by P012 and P015",
+    "Pinocchio or any literary case-study result owned by P013",
+    "Production deployment, host isolation, load, rollback, or Lemmata coexistence evidence owned by P014",
+    "Authorship proof, confidence, causal stylistic change, general usability, teachability, scientific validation, FAIR certification, or publication-readiness claims"
+  ],
+  "dependencies": ["P002", "P004", "P005", "P006", "P007"],
+  "claim_ids": ["CE-01", "CE-02", "CE-07"],
+  "threat_ids": ["SEC-13", "EPI-03", "EPI-04", "EPI-05"],
+  "decision_ids": ["HD-20260712-0001", "HD-20260714-0002", "HD-20260715-0001"],
+  "prompt_event_ids": ["PE-20260715-0001", "PE-20260715-0002"],
+  "commit_ids": [
+    "f01a9ec0450c1ae3908f1cb6274150b21bb24015",
+    "ac6ab53ff27c389992d39f946e8b7369b8959e27",
+    "89e78f400ec826d29aad2993f2d63c06699c8790",
+    "7cabdf723c03fa66fd4818035abd4a351fec9059",
+    "1f79e715afe001202a02da55f6d30749ceb8d264",
+    "aec2474e9c43505562d51d47a526a9e5b0481fa7",
+    "9c7497c7d90b735d993e672eb80d235b67f0b60a",
+    "46daea29c16408dbc0c61f089f150157c3b249ee",
+    "7e9a28eafa4756b2cf82e6d6f3d8e0c43742edf5"
+  ],
+  "run_ids": ["RUN-20260715-0002"],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex", "OpenAI Codex independent review agents"],
+  "supplemental_evidence": [
+    "prompts/P008-start.md",
+    "decisions/ADR-0002-methodology-and-validation.md",
+    "decisions/ADR-0005-public-research-and-stability.md",
+    "decisions/ADR-0013-stylo-worker-parity.md",
+    "decisions/ADR-0014-preprocessing-corpus-health.md",
+    "decisions/ADR-0015-accelerated-public-alpha.md",
+    "decisions/ADR-0016-deferred-integrated-owner-walkthrough.md",
+    "docs/development/p008-guided-research-workflow-contract.md",
+    "provenance/evidence/P008/minimum-alpha-workflow-validation.md",
+    "provenance/runs/RUN-20260715-0002.json",
+    "memory/checkpoints/2026-07-15-p008-start.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {"id":"P008-AC-01","criterion":"Human-owned records accept the exposed Guided parameter values, the bounded alpha sequence, and the deferred integrated owner walkthrough while unresolved Research-grid choices remain explicitly locked.","status":"passed","evidence":["provenance/human-decision-ledger.jsonl","decisions/ADR-0015-accelerated-public-alpha.md","decisions/ADR-0016-deferred-integrated-owner-walkthrough.md","docs/development/p008-guided-research-workflow-contract.md"]},
+    {"id":"P008-AC-02","criterion":"A closed resolved workflow configuration rejects malformed, duplicate-key, non-finite, unknown-field, unsupported, reordered, inconsistent, oversized, or more-than-24-cell inputs and produces deterministic canonical JSON and SHA-256.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-03","criterion":"The four-cell Guided profile resolves exactly 100, 300, 500, and 1000 MFW with zero-percent culling, whole text, Classic Delta, seed 20260713, and a 500-MFW reference that is never described as best.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-04","criterion":"All-known runs are labelled transductive_exploratory; declared unknowns are excluded from every known-derived fitting and selection artifact and are labelled unknown_holdout without confidence or authorship language.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-05","criterion":"Only the reviewed immutable configuration and an unexpired one-time hash-consistent P007 READY authority can write exact P006 input and enqueue; corpus, role, config, request, expiry, reuse, concurrency, and lower-level bypass attacks fail closed.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-06","criterion":"A queued public job is claimed and run by the real P006 boundary; complete, partial, failed, cancellation-requested, cancelled, saturated, expired, and guardian-unconfirmed states remain distinct and content-free.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-07","criterion":"Parameters and review-before-run explain MFW, culling, whole text, Delta, cell availability, fixed reference, analysis scope, workload, and method limits in beginner-first English with semantic-table and accessible mobile/keyboard parity.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-08","criterion":"Research Mode cannot accept arbitrary controls, remains unavailable until the exact research-grid-v1 is human-accepted, and can never exceed 24 versioned and hash-bound public cells.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-09","criterion":"The minimum alpha workflow completes real upload-to-validated-P006-result browser E2E without user-written code or shell; full P008 later repeats the gate for all three research purposes and relevant known/unknown scopes.","status":"pending","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]},
+    {"id":"P008-AC-10","criterion":"Full source, schema, provenance, privacy-canary, adversarial workflow, exact-commit clean-clone, Linux CI, SBOM/dependency/secret, canonical-container, and claim-boundary gates pass at full measured coverage.","status":"passed","evidence":["provenance/evidence/P008/minimum-alpha-workflow-validation.md","provenance/runs/RUN-20260715-0002.json"]}
+  ],
+  "changed_files": [
+    "P008 opening prompt, accepted minimum-alpha workflow contract, deferred-owner-walkthrough ADR, native Ticket, PromptEvent, HumanDecision, and start checkpoint",
+    "Closed resolved-workflow-config-v1 schema and models, exact Guided grid, known/unknown scope labels, canonical serialization, strict parsing, and bounded cell validation",
+    "Hash-bound one-time P007 admission, immutable P006 request construction, real queue claim and worker orchestration, and content-free lifecycle projection",
+    "Beginner-first Parameters and Run surface, semantic comparison grid, fixed 500-MFW reference, locked Research Mode, method limits, and resolved-config download",
+    "Tracked Playwright upload-to-real-stylo Linux gate with synthetic corpus, desktop/mobile/reflow geometry, payload canary, browser-console, and observed-host checks",
+    "Exact implementation commit passed local and remote no-hardlinks clean-clone verification, 1,459-test canonical Linux CI, supply-chain gates, and canonical Linux amd64 image construction"
+  ],
+  "commands": [
+    {"command":"./scripts/verify.sh","exit_code":0,"result":"The final P008 minimum-alpha source passed 1,458 tests with one documented macOS Linux-only skip, 100% of 10,624 statements and 2,764 branches, strict typing, schemas, metadata, 96 provenance records, repository scanning, frozen P006 validators, and the R lock gate.","evidence":"provenance/evidence/P008/minimum-alpha-workflow-validation.md"},
+    {"command":"GitHub Actions CI run 29388187630","exit_code":1,"result":"The real R/stylo calculation reached the valid P008 result boundary, but the first browser harness incorrectly waited for P009's future Analysis complete state. The failed run is retained.","evidence":"provenance/evidence/P008/minimum-alpha-workflow-validation.md"},
+    {"command":"GitHub Actions CI run 29388674911","exit_code":1,"result":"Preparation, parameter, viewport, real-worker, privacy, console, and network checks passed; one exact-text selector rejected a sentence embedded in the P009 handoff notice. The failed run and JSON log are retained.","evidence":"provenance/evidence/P008/minimum-alpha-workflow-validation.md"},
+    {"command":"GitHub Actions CI run 29388984019","exit_code":0,"result":"Exact commit 7e9a28e passed all 1,459 Linux tests at 100% measured coverage, real upload-to-R/stylo Playwright E2E, 96 provenance records, SBOM/dependency/secret gates, and canonical Linux amd64 image construction.","evidence":"provenance/evidence/P008/minimum-alpha-workflow-validation.md"},
+    {"command":"Fresh remote no-hardlinks clone; detached checkout 7e9a28e; ./scripts/bootstrap.sh; ./scripts/verify.sh; clean post-run status","exit_code":0,"result":"The exact implementation rebuilt from committed Python and R lockfiles, passed 1,458 tests with one documented macOS skip at 100% measured coverage, and left the clean-clone worktree unchanged.","evidence":"provenance/runs/RUN-20260715-0002.json"}
+  ],
+  "blockers": [
+    "Full P008 completion requires a separate human decision for the exact research-grid-v1 culling and any future segmentation values; this does not block the four-cell Guided public-alpha slice.",
+    "P008-AC-09 remains pending for all three research purposes and relevant known/unknown browser scopes even though the exposed minimum-alpha Guided slice passed.",
+    "Public-alpha activation still requires the carried P007 AC-09 owner walkthrough plus minimum P009 and P014 gates."
+  ]
+}

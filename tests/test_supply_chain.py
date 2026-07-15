@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import tomllib
 from pathlib import Path
 from typing import Any
@@ -15,12 +16,18 @@ def load_json(path: Path) -> dict[str, Any]:
 
 
 def test_ci_actions_are_commit_pinned_and_match_lock() -> None:
-    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    workflows = [
+        (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8"),
+        (ROOT / ".github" / "workflows" / "p014-publish-image.yml").read_text(encoding="utf-8"),
+    ]
     lock = load_json(ROOT / "containers" / "ci-actions.lock.json")
+    locked_references = {f"{action['uses']}@{action['commit']}" for action in lock["actions"]}
     for action in lock["actions"]:
-        reference = f"{action['uses']}@{action['commit']}"
-        assert reference in workflow
         assert len(action["commit"]) == 40
+    for workflow in workflows:
+        used_references = set(re.findall(r"uses:\s+([^\s]+@[0-9a-f]{40})", workflow))
+        assert used_references
+        assert used_references <= locked_references
 
 
 def test_ci_verify_fetches_complete_history_for_provenance() -> None:
@@ -76,6 +83,55 @@ def test_container_locked_r_cache_is_readable_by_the_runtime_user() -> None:
     assert user_offset < smoke_offset
     assert 'requireNamespace("jsonlite", quietly = TRUE)' in dockerfile
     assert 'requireNamespace("stylo", quietly = TRUE)' in dockerfile
+
+
+def test_public_alpha_image_has_fixed_non_root_runtime_and_real_command() -> None:
+    dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
+    assert "groupadd --gid 10001 delta" in dockerfile
+    assert "useradd --uid 10001 --gid 10001" in dockerfile
+    assert (
+        dockerfile.index("useradd --uid 10001 --gid 10001")
+        < dockerfile.index("ENV HOME=/home/delta")
+        < dockerfile.index("USER delta")
+    )
+    assert "USER delta" in dockerfile
+    assert "COPY .streamlit ./.streamlit" in dockerfile
+    assert "HEALTHCHECK" in dockerfile
+    assert 'org.opencontainers.image.revision="${DELTA_BUILD_ID}"' in dockerfile
+    assert (
+        'org.opencontainers.image.source="https://github.com/oguzkoran-max/delta.lemmata.app"'
+        in dockerfile
+    )
+    assert 'CMD ["/opt/delta/.venv/bin/streamlit", "run", "app.py"' in dockerfile
+
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    assert '--build-arg DELTA_BUILD_ID="$GITHUB_SHA"' in workflow
+
+
+def test_public_alpha_gateway_image_is_digest_pinned() -> None:
+    compose = (ROOT / "deploy" / "public-alpha" / "compose.yml").read_text(encoding="utf-8")
+    lock = load_json(ROOT / "containers" / "gateway-images.lock.json")
+    expected = f"{lock['repository']}:{lock['tag']}@{lock['manifest_list_digest']}"
+    assert expected in compose
+    assert lock["linux_amd64_digest"].startswith("sha256:")
+    assert lock["source"] == "Docker Registry HTTP API V2"
+
+
+def test_public_alpha_image_publication_is_manual_exact_and_content_free() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "p014-publish-image.yml").read_text(
+        encoding="utf-8"
+    )
+    assert "workflow_dispatch:" in workflow
+    assert "packages: write" in workflow
+    assert "persist-credentials: false" in workflow
+    assert "head_sha=$REQUESTED_SHA&status=success" in workflow
+    assert '--build-arg DELTA_BUILD_ID="$SOURCE_SHA"' in workflow
+    assert "./scripts/run_p014_runtime_gate.sh" in workflow
+    assert 'IMAGE_TAG="$IMAGE_REPOSITORY:sha-$SOURCE_SHA"' in workflow
+    assert "IMAGE_DIGEST_REFERENCE" in workflow
+    assert "\n  push:" not in workflow
+    assert "pull_request:" not in workflow
+    assert "actions/upload-artifact" not in workflow
 
 
 def test_python_direct_dependencies_are_locked() -> None:
