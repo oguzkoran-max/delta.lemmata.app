@@ -2,17 +2,18 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and
-Corpus Health teknik kapılardan geçti; yalnız Oğuz'un bütünleşik son uyarı dili
-ve prepared-state browser kabulü açıktır. P008'in dört hücreli Guided minimum-alpha
-akışı `7e9a28e` commit'inde gerçek upload-to-R/stylo Linux browser kapısından,
-canonical CI `29388984019` ve exact-commit remote clean-clone tekrarından geçti.
-P008 tam üç amaç ve ilgili known/unknown matris kanıtı için `in-progress` kalır;
-Research Mode, `research-grid-v1` insan kararı gelene kadar kilitlidir. Sıradaki
-uygulama işi minimum P009 sonuç, grafik ve yorum sınırı yüzeyidir. `HD-20260714-0002`
-ve ADR-0015, gerekli P007, minimum P008/P009 ve minimum P014 kapıları geçerse
-2026-07-17 için açıkça etiketli Public-alpha hedefini kabul eder; tarih hiçbir
-başarısız kapıyı geçersiz kılmaz.
+**Güncel aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
+Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
+P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum
+sınırı yüzeyi `c5e39b0` exact commit'lerinde gerçek upload-to-R/stylo-to-result
+Linux browser, remote clean-clone ve canonical CI kapılarından geçti. P009 kanıt
+kaydı `RUN-20260715-0003`; kanıt-link commit'i `567d154` ve CI `29404000108`
+yeşildir. P008 tam üç amaç ve ilgili known/unknown matris, P009 ise dendrogram,
+Style Over Time tarih haritası ve geniş glossary için `in-progress` kalır;
+Research Mode kilitlidir. Public-alpha öncesi açık kritik kapılar Oğuz'un tek
+bütünleşik owner walkthrough'u ve minimum P014 deployment güvenlik dilimidir.
+`HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
+geçersiz kılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -149,9 +150,12 @@ preparation, confound/overlap/feature-capacity projeksiyonu, content-free CSV,
 clean-clone ve Linux CI kanıtını bağlar. P008 minimum Guided akışı exact commit
 `7e9a28e`, `RUN-20260715-0002` ve CI `29388984019` ile doğrulandı: resolved config,
 one-time P007 READY admission, P006 execution, locked Research Mode ve gerçek
-browser akışı bağlıdır. Tam P008 AC-09 üç amaç ve ilgili known/unknown scope'lar
-için açık kalır; bu genişletme Public alpha'yı engellemez. Public-alpha kritik
-yolundaki sıradaki tek ana iş minimum P009 sonuç ekranıdır. Ekran export-backed
-tamamlanma durumunu, distance matrix heatmap'ini, nearest-neighbor tablosunu ve
-tek work-level 2D haritayı erişilebilir metin eşleri ve yorum sınırlarıyla sunmalıdır.
-P007'nin son owner uyarı dili kabulü bütünleşik aktivasyon turuna taşınmıştır.
+browser akışı bağlıdır. P009 minimum sonuç yüzeyi exact commit `c5e39b0`,
+`RUN-20260715-0003` ve CI `29402396790` ile doğrulandı: dört hücre durumu, sabit
+500-MFW reading reference, distance heatmap, exact-tie nearest-neighbor tablosu,
+deterministic MDS haritası, semantic table parity, claim lint ve raw-text-free
+result export bağlıdır. Kanıt commit'i `567d154`, CI `29404000108` içinde yeniden
+geçti. Tam P008 AC-09 ve tam P009 görsel genişletmeleri Public alpha'yı engellemez.
+Sıradaki iş canlı sunucuya dokunmadan owner walkthrough hazırlığını tamamlamak,
+ardından minimum P014 ayrı servis, sınır, sağlık, rollback ve Lemmata smoke
+kapılarını uygulamaktır.

@@ -5,13 +5,15 @@ digital humanities research. Its supported workflows are designed to run without
 requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
-**Current stage:** P001-P006 are complete. P007 Deterministic Preprocessing and
-Corpus Health is active on `codex/p007-preprocessing`. The English-only workbench
-can validate bounded TXT and ZIP inputs, document corpus metadata and rights,
-materialize accepted text in a private ephemeral workspace, apply the fixed
-`delta-surface-words-v1` profile, and present a content-free corpus-health review.
-Public parameter selection, analysis execution, results interpretation, and FAIR
-run export remain locked behind later tickets.
+**Current stage:** P001-P006 are complete. P007 has passed its technical gates
+and remains open only for the integrated owner warning-language walkthrough. The
+minimum public-alpha Guided path in P008-P009 now validates bounded TXT or ZIP
+input, documents corpus metadata and rights, prepares a private ephemeral corpus,
+runs four fixed Classic Delta comparisons through R `stylo`, and presents a
+raw-text-free result view with explicit interpretation limits. Research Mode,
+the full three-purpose workflow matrix, benchmark and calibration claims, the
+Pinocchio worked example, complete FAIR packaging, and production deployment
+remain outside this validated minimum-alpha boundary.
 
 ## Product Boundaries
 
@@ -53,9 +55,10 @@ Development creates a process-private temporary runtime automatically. Productio
 requires a pre-created private runtime directory and two separately generated
 secrets; see `.env.example`. These values must never be committed.
 
-The canonical scientific and production environment will be a pinned Linux
-x86_64 OCI image. Container execution is not yet verified on the current Mac
-because Docker is not installed.
+The canonical scientific environment is a pinned Linux x86_64 OCI image and is
+verified in GitHub Actions. Production deployment and shared-VPS isolation remain
+unverified until the minimum P014 activation gates pass. Container execution is
+not repeated on the current Mac because Docker is not installed.
 
 ## Canonical Project Documents
 

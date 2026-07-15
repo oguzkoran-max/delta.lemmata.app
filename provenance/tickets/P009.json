@@ -53,6 +53,8 @@
     "provenance/evidence/P009/minimum-alpha-results-validation.md",
     "provenance/runs/RUN-20260715-0003.json",
     "memory/checkpoints/2026-07-15-p009-start.md",
+    "memory/checkpoints/2026-07-15-p009-minimum-alpha.md",
+    "docs/development/public-alpha-owner-walkthrough.md",
     "decisions/ADR-0002-methodology-and-validation.md",
     "decisions/ADR-0005-public-research-and-stability.md",
     "decisions/ADR-0013-stylo-worker-parity.md",

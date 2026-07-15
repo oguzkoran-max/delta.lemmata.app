@@ -2,13 +2,14 @@
 
 **Güncellendi:** 2026-07-15
 
-**Aşama:** P001-P006 tamamlandı. P007 teknik implementation, exact-commit
-clean-clone ve Linux CI kapılarından geçti; bütünleşik son owner walkthrough'u
-açıktır. P008'in dört hücreli Guided minimum-alpha yolu gerçek R/stylo worker,
-desktop/mobile browser, clean-clone ve canonical Linux CI kapılarından geçti.
-P008, tam üç amaç ve ilgili known/unknown browser matrisi için `in-progress`
-kalır. Public-alpha kritik yolunda sıradaki ana iş minimum P009 sonuç ve yorum
-sınırı yüzeyidir.
+**Aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
+owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
+P009'un export-backed sonuç/yorum sınırı yüzeyi gerçek R/stylo worker,
+desktop/mobile/reflow browser, remote clean-clone ve canonical Linux CI
+kapılarından geçti. P008 tam üç amaç ve ilgili known/unknown browser matrisi,
+P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Public-alpha
+kritik yolunda açık işler owner walkthrough hazırlığı ve minimum P014 deployment
+güvenlik dilimidir.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -23,21 +24,36 @@ scientific-result handoff var. P007'de deterministic preparation, purpose-aware
 confound warnings, exact/near/shared-passage kontrolleri, READY/BLOCKED kararı,
 beş semantic-table-bound diagnostic panel ve dört content-free CSV bağlıdır.
 P008'de kapalı Guided parameter resolution, review-before-run, one-time READY
-admission ve gerçek P006 analysis orchestration bağlıdır. Sonuç grafikleri,
-export-backed completion, benchmark, stability, FAIR run export ve deployment
-hâlâ yok.
+admission ve gerçek P006 analysis orchestration bağlıdır. P009'da dört hücreli
+sonuç görünümü, sabit 500-MFW reading reference, distance heatmap, exact-tie
+nearest-neighbor tablosu, deterministic MDS haritası, semantic table parity,
+claim lint ve raw-text-free result export bağlıdır. Benchmark, calibrated
+stability, tam FAIR run package, Pinokyo çalışması ve deployment hâlâ yok.
 
 **Son tam kapanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif implementation ticket:** `provenance/tickets/P008.json` (`in-progress`)
+**Aktif implementation ticket:** `provenance/tickets/P009.json` (`in-progress`,
+minimum Public-alpha acceptance criteria passed; full extensions deferred)
 
 **Sıradaki tek ana iş:**
-Minimum P009'u schema-first ve tests-first aç. P006'nın gerçekten ürettiği alanları
-esas alarak export-backed completion, dört parameter hücresinin complete/failed/NA
-durumu, distance matrix heatmap'i, nearest-neighbor tablosu ve tek work-level 2D
-harita üret. Her görsel aynı work ID/değerlerine bağlı erişilebilir tablo taşısın;
-her panelde `What this shows` ve `What this does not show` bulunsun. Confidence,
-authorship proof, pure style veya causal age/maturity dili üretilmesin.
+`docs/development/public-alpha-owner-walkthrough.md` hazırlık paketini bitir ve
+Oğuz'un insan kabulünü otomatik test gibi sunmadan ayrı kaydet. Ardından minimum
+P014'ü ayrı Delta identity, container/service, loopback port, environment,
+runtime volume, secret, kaynak sınırı, strict Host/TLS/header, health, rollback ve
+Lemmata smoke testleriyle aç. Gerçek VPS veya `lda.lemmata.app` üzerinde kanıtsız
+değişiklik yapma.
+
+**P009 minimum-alpha checkpoint'i:** Exact implementation commit'i
+`c5e39b07bb65a11613684a10269b186c987ef980`; run kaydı
+`RUN-20260715-0003`; canonical Linux CI `29402396790` içinde 1.523 test, gerçek
+upload-to-public-result Playwright akışı, iki nonblank chart, iki result download,
+desktop/mobile/320px reflow, payload canary, console/network,
+SBOM/dependency/secret ve Linux amd64 container kapıları geçti. Yerel ve private
+remote clean-clone turu 1.522 test, bir documented macOS Linux-only skip ve yüzde
+100 measured coverage ile geçti; clone temiz kaldı. Kanıt-link commit'i
+`567d154e697609996e514447ab116f5532c1704d`, CI `29404000108` içinde verify ve
+container işlerinde yeniden yeşildir. Yedi önceki CI failure nedenleriyle birlikte
+korunur. Kanıt: `provenance/evidence/P009/minimum-alpha-results-validation.md`.
 
 **P008 minimum-alpha checkpoint'i:** Guided Mode tam olarak 100, 300, 500 ve
 1000 MFW; yüzde 0 culling; whole text; Classic Delta; seed 20260713 ve optimal

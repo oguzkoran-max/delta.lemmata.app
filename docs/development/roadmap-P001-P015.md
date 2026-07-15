@@ -370,11 +370,14 @@ bekler; bu geniş kapsam minimum Public-alpha aktivasyonunu engellemez.
 
 ### P009: Results, Explanations, and Interpretive Guardrails
 
-**Durum (2026-07-15):** Public-alpha kritik yolundaki sıradaki implementation
-ticket'ıdır. Minimum dilim export-backed completion, dört parameter-cell durumu,
-distance matrix heatmap'i, nearest-neighbor tablosu ve tek work-level 2D haritayı
-erişilebilir metin eşleri ve açık yorum sınırlarıyla teslim eder. Dendrogram,
-Style Over Time'a özgü tarih haritası ve geniş glossary tam P009 kapsamındadır.
+**Durum (2026-07-15):** `in-progress`. Public-alpha minimum dilimi exact commit
+`c5e39b0`, `RUN-20260715-0003` ve canonical Linux CI `29402396790` ile geçti.
+Export-backed completion, dört parameter-cell durumu, sabit 500-MFW reference,
+distance matrix heatmap'i, exact-tie nearest-neighbor tablosu ve tek work-level
+deterministic MDS haritası erişilebilir metin eşleri ve açık yorum sınırlarıyla
+bağlıdır. Kanıt-link commit'i `567d154`, CI `29404000108` içinde yeniden geçti.
+Dendrogram, Style Over Time'a özgü tarih haritası ve geniş glossary tam P009
+kapsamında açık kalır; bunlar minimum Public-alpha aktivasyonunu engellemez.
 
 **Amaç:** Hesaplama sonuçlarını incelemeye elverişli, fakat yöntemin sınırlarını aşmayan bir workbench çıktısına dönüştürmek.
 
