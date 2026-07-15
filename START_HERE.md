@@ -3,12 +3,13 @@
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **Güncel aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and
-Corpus Health `codex/p007-preprocessing` dalında açıktır. `HD-20260714-0001`
-yöntem paketini kabul etti; ADR-0014 Accepted durumundadır ve P007 schema-first,
-tests-first implementation başlamıştır. `HD-20260714-0002` ve ADR-0015, gerekli
-P007, minimum P008/P009 ve minimum P014 kapıları geçerse 2026-07-17 için açıkça
-etiketli Public-alpha hedefini kabul eder; tarih hiçbir başarısız kapıyı geçersiz
-kılmaz.
+Corpus Health `codex/p007-preprocessing` dalında teknik olarak uygulanmış ve
+exact-commit clean-clone/Linux CI kapılarından geçmiştir; yalnız Oğuz'un son
+corpus-uyarı dili ve prepared-state browser kabulü açıktır. `HD-20260714-0001`
+yöntem paketini kabul etti; ADR-0014 Accepted durumundadır. `HD-20260714-0002`
+ve ADR-0015, gerekli P007, minimum P008/P009 ve minimum P014 kapıları geçerse
+2026-07-17 için açıkça etiketli Public-alpha hedefini kabul eder; tarih hiçbir
+başarısız kapıyı geçersiz kılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -139,6 +140,10 @@ P006-AC-08 fixture-local sınırda passed durumundadır.
 
 P006 preprocessing, public Start analysis, production limitleri, secure erase veya
 Delta-LDA host isolation iddiası kurmaz. Genel CE-04 P007'yi, tam CE-07 P010/P011'i
-bekler. P007 yöntem paketi kabul edilmiştir; sıradaki tek ana iş kapalı P007
-şemalarını, modellerini, structural/semantic validator'larını ve golden testlerini
-uygulamaktır.
+bekler. P007 implementation commit'i `b42da99`; `RUN-20260715-0001` ve
+`provenance/evidence/P007/corpus-health-diagnostics-validation.md` deterministic
+preparation, confound/overlap/feature-capacity projeksiyonu, content-free CSV,
+clean-clone ve Linux CI kanıtını bağlar. Sıradaki tek ana iş P008 için kapalı
+parameter-review sözleşmesini kurmak ve Run eylemini yalnız one-time P007 READY
+authority üzerinden mevcut P006 execution yoluna bağlamaktır. P007'nin son owner
+uyarı dili kabulü ayrı ve açık kalır.

@@ -3,8 +3,9 @@
 **Güncellendi:** 2026-07-15
 
 **Aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and Corpus
-Health aktif; kapalı yöntem çekirdeği, private materialization, one-time admission
-ve browser preparation/health akışı uygulandı. Kanıt ve kabul kapıları henüz açık.
+Health teknik implementation, exact-commit clean-clone ve Linux CI kapılarından
+geçti. Yalnız Oğuz'un prepared-state corpus-uyarı dili kabulü açık; bu nedenle
+ticket henüz `complete` değil. P008 parameter review sözleşmesi sıradaki ana iş.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -15,19 +16,36 @@ recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict t
 parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
 finalizer, bounded no-follow workspace read, fixed R worker, shell-free adapter,
 checksum-frozen direct-`stylo` oracle, retained worker package ve crash-safe
-scientific-result handoff var. P007'de deterministic preparation, corpus-health,
-READY/BLOCKED kararı ve content-free web review bağlıdır. Public parameter seçimi,
-analysis çalıştırma, benchmark, stability, FAIR run export ve deployment hâlâ yok.
+scientific-result handoff var. P007'de deterministic preparation, purpose-aware
+confound warnings, exact/near/shared-passage kontrolleri, READY/BLOCKED kararı,
+beş semantic-table-bound diagnostic panel ve dört content-free CSV bağlıdır.
+Public parameter seçimi, analysis çalıştırma, benchmark, stability, FAIR run
+export ve deployment hâlâ yok.
 
 **Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
 **Aktif ticket:** `provenance/tickets/P007.json` (`in-progress`)
 
 **Sıradaki tek ana iş:**
-P007 web preparation dilimini tam verify, gerçek browser ve exact-commit CI ile
-kanıtla. Ardından P008 için beginner-first parameter review sözleşmesini kur;
-yalnız corpus-health tarafından desteklenen MFW seçeneklerini göster ve gerçek
-P006 çalıştırması bağlanana kadar Run eylemini fail-closed tut.
+P008 için beginner-first ve kapalı parameter-review sözleşmesini kur. Yalnız
+P007 receipt'in desteklediği MFW seçenekleri ile önceden kabul edilmiş culling,
+whole-text/izinli segmentation ve Delta distance seçenekleri gösterilsin. Run
+eylemi one-time READY authority'yi tüketerek mevcut P006 yoluna gitsin; lower-level
+bypass ve sessiz parameter downgrade olmasın.
+
+**P007 diagnostics checkpoint'i:** Purpose-aware metadata confound engine ve tek
+immutable health projection implementation commit'i
+`b42da99442f4c2a7f617da082c699f1f48942b62` ile tamamlandı. Length,
+transformation, confound, overlap ve MFW capacity panelleri aynı projection'dan
+semantic table ve CSV üretir; stale binding fail-closed olur. Full yerel ve remote
+clean-clone kapısı 1.402 test, bir documented macOS skip, 10.088 statement, 2.642
+branch ve yüzde 100 coverage ile geçti. GitHub Actions `29381188842` bütün 1.403
+Linux testini, SBOM/dependency/secret gate'lerini ve canonical Linux amd64 image'i
+geçti. 1440px desktop ve 390px mobile browser denetiminde overflow/clipped copy/
+console error yoktu; üç research-purpose guidance'ı doğru değişti. Kanıt:
+`provenance/evidence/P007/corpus-health-diagnostics-validation.md` ve
+`RUN-20260715-0001`. Native browser file chooser ile son owner warning-copy turu
+bilinçli olarak açıktır; genel usability iddiası kurulmaz.
 
 **P007 web integration checkpoint'i:** Browser intake bytes her geçişte yeniden
 P003 doğrulamasından geçirilip P005 private prepare-only workspace'e taşınıyor.
@@ -498,8 +516,8 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
 - `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
   repository'sidir; bu henüz public release değildir.
-- Varsayılan uzak dal `main`; P003 `d5a8118` merge commit'iyle alınmıştır.
-  Aktif geliştirme dalı `codex/p004-metadata-rights` dalıdır.
+- Varsayılan uzak dal `main`; P001-P006 main'e alınmıştır. Aktif geliştirme
+  dalı `codex/p007-preprocessing` dalıdır.
 - Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
   değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
 - Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje

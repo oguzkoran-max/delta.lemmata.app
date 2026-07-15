@@ -155,6 +155,21 @@ olarak işaretlenmez.
 | EPI-01 | `P004 identity, provenance, and correction controls technically verified` | Exact file label + SHA-256 P003 catalog bağı individual TXT ve validated ZIP member için aynı deterministic P004 unit'e projekte edilir; stable work/edition/source kimliği, row-aware validation ve canonical round trip korunur; guided editor canonical inventory üretir ve payload-free input state ile Review dönüşünde değer kaybetmez; hash-bound completeness matrix identity, chronology, edition, source, classification, rights ve normalization alanlarını score üretmeden görünür yapar; non-complete field path exact guided work/section'a veya source CSV `work_id` + field düzeltmesine yönlenir; final mapping/rights acknowledgement inventory hash'ine bağlıdır ve rebuild ile invalidated olur | Paratext ve ileri corpus-health kontrolleri P007; worked-example audit P013; final owner walkthrough P015 |
 | EPI-07 | `P004 metadata warnings and selectable projection technically verified` | Unknown genre, audience, adaptation, collection ve source confound olarak görünür kalır; her composition boyutu tüm work kayıtlarını paydada tutar; görsel, semantic table ve CSV aynı projection key'lerini paylaşır; selectable chronology yalnız documented date/order gösterir ve distance/trajectory/quality kodlamaz; Style Over Time mixed author set ve mixed language durumlarını blocker yapar; readiness threshold ve completeness state bilimsel yeterlilik diye sunulmaz | Diachronic benchmark ve worked-example report P010/P013; final owner walkthrough P015 |
 
+### P007 Temel Kontrol Durumu
+
+| Threat | Durum | P007 temel kontrolü | Kalan doğrulama |
+|---|---|---|---|
+| EPI-01 | `P007 preparation and annotation controls technically verified` | Her asset work kimliği, analysis role, OCR, paratext ve disclosed pre-upload curation durumuna hash-bound; inconsistent veya stale projection fail-closed; text ve curation note health export'una girmez | Gerçek Collodi metadata/curation audit'i P013; owner warning-copy turu açık |
+| EPI-02 | `P007 duplicate and overlap gates technically verified on fixtures` | Exact prepared hash, unique 5-shingle near-duplicate ve longest contiguous shared-passage kontrolleri önceden kabul edilmiş eşiklerde deterministic finding üretir; eşleşen pasaj metni export edilmez; aynı independence key blocker'dır | Work-grouped benchmark leakage P010 ve Collodi corpus audit'i P013 |
+| EPI-04 | `P007 independent-work and length controls technically verified` | Segment/excerpt independent work sayılamaz; parent/independence key tekrarlanamaz; 4:1 work-length uyarısı ve work-level counts görünürdür | Segment aggregation/fold behavior P008/P010/P011 |
+| EPI-06 | `P007 OCR, edition, and normalization visibility technically verified` | Edition/OCR/paratext farkları purpose-aware strong warning; raw/prepared hash ve byte/token/transformation summaries aynı projection'da; otomatik OCR düzeltme veya quality score yok | Diachronic sensitivity P010/P011 ve Pinokyo audit'i P013 |
+| EPI-07 | `P007 confound warning engine technically verified; statistical control not claimed` | Genre, audience, source, edition, adaptation, collection, chronology certainty ve curation variation fixture'ları warning üretir; exact chronology variation Style Over Time'da beklenen eksen olarak kalır; her panel neyi göstermediğini açıklar | Result-surface confound audit P009, benchmark/sensitivity P010/P011 ve owner wording gate |
+| EPI-11 | `P007 minimum-data and feature-capacity gates technically verified` | İki known work altı ve runnable-feature eksikliği blocker; altı work, üç chronology point, 3:1 group ve Guided MFW kapasitesi açık warning/not-enough state; sessiz parameter downgrade yok | P008 resolved-config ve P009 result-surface kapıları |
+
+Bu teknik durumlar warning'in confound'u kaldırdığını, corpus'u temiz
+onayladığını veya bir edebî sonucu doğruladığını göstermez. P007 kanıtı
+`provenance/evidence/P007/corpus-health-diagnostics-validation.md` içindedir.
+
 ## 8. Release Kapıları
 
 ### Public Beta Kapısı

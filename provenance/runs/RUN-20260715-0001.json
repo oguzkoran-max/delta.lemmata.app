@@ -1,0 +1,142 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0001",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P007"
+  ],
+  "started_at_utc": "2026-07-15T01:15:14Z",
+  "ended_at_utc": "2026-07-15T01:20:25Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "b42da99442f4c2a7f617da082c699f1f48942b62",
+  "environment": {
+    "local": {
+      "os": "macOS",
+      "architecture": "arm64",
+      "python": "3.13.9",
+      "tests_passed": 1402,
+      "tests_skipped": 1,
+      "measured_statements": 10088,
+      "measured_branches": 2642,
+      "coverage_percent": 100
+    },
+    "browser": {
+      "client": "Codex in-app browser",
+      "url": "http://127.0.0.1:8501/",
+      "viewports": [
+        "1440x1000",
+        "390x844"
+      ],
+      "horizontal_overflow": 0,
+      "clipped_text": 0,
+      "console_errors_or_warnings": 0,
+      "native_file_chooser_automated": false
+    },
+    "clean_clone": {
+      "source": "private GitHub origin",
+      "mode": "remote no-hardlinks detached checkout",
+      "bootstrap": "passed",
+      "tests_passed": 1402,
+      "tests_skipped": 1,
+      "measured_statements": 10088,
+      "measured_branches": 2642,
+      "coverage_percent": 100,
+      "post_run_tree": "clean"
+    },
+    "ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "timezone": "UTC",
+      "run": "29381188842",
+      "verify_job": "87244975281",
+      "container_job": "87244975195",
+      "tests_passed": 1403,
+      "measured_statements": 10088,
+      "measured_branches": 2642,
+      "coverage_percent": 100,
+      "records_validated": 92,
+      "sbom_dependency_secret_gates": "passed",
+      "built_image_id": "sha256:16b67de0cc560e31cac7d123387f697f868a9ef6a1e9bacd4c325837506b78d4"
+    }
+  },
+  "command": "./scripts/bootstrap.sh && ./scripts/verify.sh",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "18963100d7dc7f3692487c00e5352f4e8b90f1256a2c861272f23c5e6f6f83bf"
+    },
+    {
+      "path": "scripts/generate_p007_schemas.py",
+      "sha256": "329455a1b466f7ceb48769e8778bbc996264bd815e06813fd57323d118c3a564"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Fresh remote no-hardlinks clone and GitHub Actions checkout of exact commit b42da99442f4c2a7f617da082c699f1f48942b62",
+    "command": "./scripts/bootstrap.sh && ./scripts/verify.sh",
+    "limitations": [
+      "The macOS clean clone may reuse package-manager caches and is not an independent non-developer reproduction.",
+      "The native browser file chooser was not automated; upload-through-preparation behavior is covered by real-service Streamlit tests rather than a final owner browser walkthrough.",
+      "The GitHub-hosted runner image is named but is not represented by an immutable runner-image digest.",
+      "Synthetic fixtures and UI checks do not establish literary findings, benchmark accuracy, stability, general usability, a complete FAIR run package, or production readiness."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "scripts/verify.sh",
+      "sha256": "18963100d7dc7f3692487c00e5352f4e8b90f1256a2c861272f23c5e6f6f83bf"
+    },
+    {
+      "path": "scripts/generate_p007_schemas.py",
+      "sha256": "329455a1b466f7ceb48769e8778bbc996264bd815e06813fd57323d118c3a564"
+    },
+    {
+      "path": "src/delta_lemmata/corpus_health.py",
+      "sha256": "0563d37fa6af5c414daa2327f50703011ca1edabe15c94217d5104b42a9cb9cb"
+    },
+    {
+      "path": "src/delta_lemmata/corpus_health_models.py",
+      "sha256": "92d44eff3a524d6abf107115ad79e41462bae6994e6727a2fb7e477a15b9e959"
+    },
+    {
+      "path": "src/delta_lemmata/corpus_health_projection.py",
+      "sha256": "c7aadf71c44a269927cbc4e83f8902a846efcc2408ad68a5f8c4dcc26dab3854"
+    },
+    {
+      "path": "src/delta_lemmata/prepared_corpus_service.py",
+      "sha256": "1281751cde5b942380a77480c43955b686045cde54084db6839c13f4b7b3e804"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "8d0436e0558147b90d84343c818b7ee9459f41b89b4bbb97444a809ab4255886"
+    },
+    {
+      "path": "tests/test_corpus_health.py",
+      "sha256": "b159445db6c9a0d093fc9d09c2f776bb381184390de482007c0343fd3369122b"
+    },
+    {
+      "path": "tests/test_corpus_health_projection.py",
+      "sha256": "41ca51b799ce6b644be5c38664717d27d62cb3240917c2a929877f640f2bc65a"
+    },
+    {
+      "path": "tests/test_webapp_workflow.py",
+      "sha256": "18b9ad52ba02595f4d2847fe5d808a382b03bf486f87b7bb693cdfd8930ca52f"
+    },
+    {
+      "path": "schemas/corpus-health-report-v1.schema.json",
+      "sha256": "0243c1a095a87fbeb53e587458d3e3c80d3f2763f0edf982e0b80a13c3c6bbe2"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P007/corpus-health-diagnostics-validation.md",
+      "sha256": "27e29c7a7071df150a2667916b21f9caee19ec8cd76a0f8505c11f933ec66a1a"
+    }
+  ],
+  "notes": "Exact P007 diagnostics implementation passed local, remote clean-clone, browser geometry/copy, Linux source, supply-chain, and canonical-container gates. P007-AC-03 through AC-08 and AC-10 are technically supported. P007-AC-09 remains pending only for the owner's prepared-state warning-language walkthrough; no general usability inference is permitted."
+}

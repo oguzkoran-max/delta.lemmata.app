@@ -298,9 +298,12 @@ P004 inventory identities and P005 process/workspace lifecycle.
 ### P007: Preprocessing and Corpus Health
 
 **Durum:** 2026-07-14 tarihinde `codex/p007-preprocessing` dalında açıldı.
-`provenance/tickets/P007.json` aktiftir. `HD-20260714-0001` on maddelik yöntem
-paketini kabul etti; ADR-0014 Accepted durumundadır ve schema-first/tests-first
-implementation başlamıştır.
+`HD-20260714-0001` on maddelik yöntem paketini kabul etti; ADR-0014 Accepted
+durumundadır. 2026-07-15'te kapalı çekirdek, private materialization, one-time
+READY admission, browser preparation ve ortak health projection teknik olarak
+uygulandı; exact-commit clean-clone ve Linux CI geçti. Ticket, Oğuz'un son
+prepared-state corpus-uyarı dili kabulü için `in-progress` kalır. Bu açık insan
+kapısı genel usability veya teachability testi değildir.
 
 **Amaç:** Analizden önce corpus'un neye dönüştürüldüğünü, hangi riskleri taşıdığını ve analizin durması gerekip gerekmediğini görünür kılmak.
 
