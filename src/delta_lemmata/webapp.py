@@ -214,6 +214,11 @@ def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
             <div>
               <div class="delta-brand-name">{_html(text("brand.name"))}</div>
               <div class="delta-brand-subtitle">{_html(text("brand.subtitle"))}</div>
+              <div class="delta-release-status" role="status"
+                   aria-label="{_html(text('header.release_status'))}">
+                <span class="delta-release-alpha">{_html(text("header.release_public_alpha"))}</span>
+                <span class="delta-release-experimental">{_html(text("header.release_experimental"))}</span>
+              </div>
             </div>
           </div>
           <div class="delta-build">

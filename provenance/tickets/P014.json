@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P014",
+  "title": "Isolated Deployment, Load, and Rollback",
+  "status": "in-progress",
+  "opened_at_utc": "2026-07-15T10:14:36Z",
+  "closed_at_utc": null,
+  "objective": "Package, validate, deploy, measure, and reversibly activate Delta as an explicitly experimental public alpha on the shared VPS without reusing or endangering the live Lemmata service, while keeping full production-isolation and retention claims locked until their complete host evidence passes.",
+  "scope": [
+    "A fixed non-root production application image with a real Streamlit command, public-safe health check, immutable source/image identity, and no embedded secret",
+    "A separate Delta service/container identity, loopback port, environment, three secrets, private network, temporary writable storage, and explicit CPU/RAM/PID/restart limits",
+    "A Delta-only unprivileged gateway with strict Host, request-size, rate, connection, timeout, security-header, and Streamlit WebSocket policy",
+    "Retained Streamlit XSRF/CORS protections, no direct public application bind, no runtime AI or analytics, and denied application egress",
+    "Fail-closed local and canonical Linux CI validators for deployment structure, runtime user, health, filesystem, limits, labels, secrets, hostile requests, and cleanup",
+    "Read-only shared-VPS inventory followed by isolated installation, exact TLS route, health, owner walkthrough, load, Lemmata coexistence, reboot/cleanup, and rollback evidence",
+    "Visible and accessible Public alpha and experimental status on every workbench stage",
+    "Content-free P014 records that distinguish local package evidence, real-host evidence, activation acceptance, and deferred full-P014 claims"
+  ],
+  "non_goals": [
+    "Changing, restarting, rebuilding, mounting, importing, or reusing the Lemmata application, service, environment, data, volume, secret, network, or internal port",
+    "Calling containers on one shared VPS complete, absolute, kernel-level, or production-grade isolation",
+    "Closing CE-14 or CE-15 from configuration inspection or local CI alone",
+    "Benchmark, calibration, stability, Pinocchio, complete FAIR package, expert-validation, usability, teachability, or publication-readiness claims",
+    "Adding runtime AI, login, analytics, permanent project storage, Research Mode, or unbounded public parameters",
+    "Weakening P003-P009 privacy, lifecycle, scientific validation, result, or interpretation gates to meet the activation date"
+  ],
+  "dependencies": ["P005", "P008", "P009"],
+  "claim_ids": ["CE-14", "CE-15", "CE-18"],
+  "threat_ids": ["SEC-07", "SEC-12", "SEC-13", "SEC-14", "SEC-15", "SEC-16"],
+  "decision_ids": ["HD-20260714-0002"],
+  "prompt_event_ids": ["PE-20260715-0004"],
+  "commit_ids": ["147813c7c492fe82eb4a6a78e55e80a0ea10f058"],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": ["OpenAI Codex"],
+  "supplemental_evidence": [
+    "prompts/P014-start.md",
+    "decisions/ADR-0015-accelerated-public-alpha.md",
+    "decisions/ADR-0017-public-alpha-deployment-profile.md",
+    "docs/development/p014-public-alpha-deployment-contract.md",
+    "docs/development/public-alpha-owner-walkthrough.md",
+    "memory/checkpoints/2026-07-15-p014-start.md",
+    "docs/development/roadmap-P001-P015.md",
+    "docs/research/claim-evidence-matrix.md",
+    "docs/security/threat-model.md"
+  ],
+  "acceptance": [
+    {"id":"P014-AC-01","criterion":"The production image starts the real Streamlit application as fixed numeric non-root UID/GID, exposes only public-safe health, is identified by source and immutable image digest, and contains no production secret.","status":"pending","evidence":[]},
+    {"id":"P014-AC-02","criterion":"Delta has separate service/container identity, loopback port, environment, three unique secrets, network, runtime storage, and resource limits, with no Lemmata path, service, environment, volume, secret, network, or internal-port reference.","status":"pending","evidence":[]},
+    {"id":"P014-AC-03","criterion":"The Delta gateway enforces exact Host, request-size, rate, connection, timeout, security-header, and WebSocket policy while Streamlit XSRF/CORS protections remain enabled and Streamlit has no direct public bind.","status":"pending","evidence":[]},
+    {"id":"P014-AC-04","criterion":"Application root is read-only, writable runtime paths are private and size-bounded, capabilities are dropped, no-new-privileges is active, egress is denied, and CPU/RAM/PID/restart limits are inspected at runtime.","status":"pending","evidence":[]},
+    {"id":"P014-AC-05","criterion":"Application file/token/queue/concurrency and worker wall/CPU/RAM/process limits remain enforced under the deployment profile, and hostile, saturated, timeout, cancellation, and cleanup cases fail closed without payload leakage.","status":"pending","evidence":[]},
+    {"id":"P014-AC-06","criterion":"The English interface visibly and accessibly labels every stage Public alpha and experimental without prohibited scientific, FAIR, usability, publication, or isolation claims.","status":"pending","evidence":[]},
+    {"id":"P014-AC-07","criterion":"Canonical Linux CI builds and starts the exact stack, validates health and hostile requests, inspects runtime hardening, verifies denied egress and cleanup, records the image digest, and leaves no corpus artifact.","status":"pending","evidence":[]},
+    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":[]},
+    {"id":"P014-AC-09","criterion":"Under the maximum accepted Delta load, Lemmata has zero restart and zero error, remains within the frozen latency budget, and both sites pass contemporaneous smoke checks.","status":"pending","evidence":[]},
+    {"id":"P014-AC-10","criterion":"Restart/reboot cleanup and rollback complete without Lemmata interruption; Oğuz then passes the integrated owner walkthrough and explicitly accepts or rejects public-alpha activation.","status":"pending","evidence":[]}
+  ],
+  "changed_files": [
+    "P014 opening prompt, proposed deployment-profile ADR, minimum deployment contract, native Ticket, PromptEvent, and start checkpoint"
+  ],
+  "commands": [],
+  "blockers": [
+    "No shared-VPS isolation, TLS, load, Lemmata coexistence, reboot cleanup, rollback, or activation evidence exists at P014 opening.",
+    "The exact deployable image digest and gateway image digest must be created and recorded by canonical CI before live installation.",
+    "P007 integrated owner walkthrough remains a final activation gate even after technical deployment checks pass.",
+    "Full P014 and CE-14/CE-15 require P012 and the normal scientific-release sequence; the accelerated minimum slice cannot close them."
+  ]
+}

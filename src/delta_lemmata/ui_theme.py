@@ -181,6 +181,36 @@ footer,
   line-height: 1.35;
 }
 
+.delta-release-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.35rem;
+}
+
+.delta-release-status span {
+  display: inline-flex;
+  min-height: 20px;
+  align-items: center;
+  padding: 0.08rem 0.42rem;
+  border: 1px solid var(--delta-mint-strong);
+  border-radius: 3px;
+  font-size: 0.68rem;
+  font-weight: 750;
+  line-height: 1.2;
+}
+
+.delta-release-alpha {
+  background: var(--delta-mint);
+  color: var(--delta-teal-dark);
+}
+
+.delta-release-experimental {
+  border-color: #efd8a4 !important;
+  background: var(--delta-amber-soft);
+  color: #765600;
+}
+
 .delta-build {
   text-align: right;
 }
@@ -1683,6 +1713,17 @@ div[data-testid="stMainBlockContainer"] h3 {
 
   .delta-brand-subtitle {
     display: none;
+  }
+
+  .delta-release-status {
+    gap: 0.2rem;
+    margin-top: 0.25rem;
+  }
+
+  .delta-release-status span {
+    padding-right: 0.3rem;
+    padding-left: 0.3rem;
+    font-size: 0.62rem;
   }
 
   .delta-build {

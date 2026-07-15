@@ -59,6 +59,12 @@ def test_catalog_copy_avoids_prohibited_claims() -> None:
     assert all(phrase not in copy for phrase in prohibited)
 
 
+def test_public_alpha_status_is_centralized_and_explicit() -> None:
+    assert text("header.release_public_alpha") == "Public alpha"
+    assert text("header.release_experimental") == "Experimental"
+    assert text("header.release_status") == "Release status: Public alpha, experimental"
+
+
 def test_user_facing_copy_does_not_expose_development_ticket_jargon() -> None:
     copy = "\n".join(UI_CATALOG["en"].values())
     assert re.search(r"\bP\d{3}\b|\btickets?\b", copy, flags=re.IGNORECASE) is None
