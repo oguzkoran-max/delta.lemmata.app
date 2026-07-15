@@ -519,8 +519,81 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "dominate a comparison and should be interpreted or corrected before analysis."
     ),
     "prepare.table.work": "Work",
+    "prepare.table.work_id": "Work ID",
     "prepare.table.tokens": "Prepared tokens",
     "prepare.table.unique": "Unique surface words",
+    "prepare.panel.boundary_label": "What this does not establish",
+    "prepare.length_boundary": (
+        "Similar text lengths do not make the works comparable or make a later result valid."
+    ),
+    "prepare.download_work_csv": "Download work-preparation CSV",
+    "prepare.transform_title": "See what the fixed profile changed",
+    "prepare.transform_body": (
+        "These counts document how the same preparation profile handled each source. Separator "
+        "counts include spaces, punctuation, numbers, symbols, and other token boundaries; they "
+        "are not error counts."
+    ),
+    "prepare.transform.lowercase": "Characters changed to lowercase",
+    "prepare.transform.separators": "Source separators",
+    "prepare.transform.newlines": "Newline replacements",
+    "prepare.transform.raw_bytes": "Raw bytes",
+    "prepare.transform.prepared_bytes": "Prepared bytes",
+    "prepare.transform.bom": "BOM removed",
+    "prepare.transform_boundary": (
+        "Transformation counts do not measure textual quality, editorial accuracy, or the amount "
+        "of stylistically meaningful change."
+    ),
+    "prepare.confound_title": "Review factors that may travel with style",
+    "prepare.confound_body": (
+        "A confound is a documented difference that may vary alongside the factor you want to "
+        "study. The matrix keeps those differences visible before calculation."
+    ),
+    "prepare.confound.edition": "Edition",
+    "prepare.confound.genre": "Genre",
+    "prepare.confound.audience": "Audience",
+    "prepare.confound.source": "Source type",
+    "prepare.confound.adaptation": "Adaptation",
+    "prepare.confound.collection": "Collection",
+    "prepare.confound.chronology": "Chronology",
+    "prepare.confound.chronology.exact": "{year}",
+    "prepare.confound.chronology.approximate": "About {year}",
+    "prepare.confound.chronology.range": "{start}-{end}",
+    "prepare.confound.chronology.unknown": "Unknown",
+    "prepare.confound.ocr": "OCR",
+    "prepare.confound.paratext": "Paratext",
+    "prepare.confound.curation": "Curation note",
+    "prepare.confound.disclosed": "Disclosed",
+    "prepare.confound.not_disclosed": "Not disclosed",
+    "prepare.confound_boundary": (
+        "The matrix does not prove that a factor caused a pattern, remove that factor, or "
+        "statistically control it."
+    ),
+    "prepare.download_confound_csv": "Download confound-matrix CSV",
+    "prepare.overlap_title": "Check independence and repeated material",
+    "prepare.overlap_body": (
+        "Delta screens prepared texts for exact copies, near-duplicates, and long shared runs. "
+        "Only pairs that cross a declared Delta v0.1 threshold are flagged."
+    ),
+    "prepare.overlap.matrix_title": "Threshold-screening matrix",
+    "prepare.overlap.pairs_title": "Flagged pairs",
+    "prepare.overlap.left": "First work",
+    "prepare.overlap.right": "Second work",
+    "prepare.overlap.check": "Check",
+    "prepare.overlap.observed": "Observed",
+    "prepare.overlap.same_work": "Same work",
+    "prepare.overlap.not_flagged": "Not flagged",
+    "prepare.overlap.none": "No pair crossed the declared overlap-screening thresholds.",
+    "prepare.overlap.code.exact_duplicate": "Exact duplicate",
+    "prepare.overlap.code.near_duplicate": "Near duplicate",
+    "prepare.overlap.code.shared_passage": "Shared passage",
+    "prepare.overlap.hash_match": "Prepared hashes match",
+    "prepare.overlap.tokens": "{count} shared tokens",
+    "prepare.overlap.ratio": "{ratio:.2%}",
+    "prepare.overlap.no_measure": "Threshold crossed",
+    "prepare.overlap_boundary": (
+        "A pair that is not flagged may still share shorter material or other dependencies. A "
+        "flag also does not identify its editorial or historical cause."
+    ),
     "prepare.mfw_title": "Which MFW settings can this corpus support?",
     "prepare.mfw_body": (
         "MFW means most frequent words. A setting is available only when the known reference texts "
@@ -530,6 +603,14 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "prepare.mfw.available": "Available",
     "prepare.mfw.unavailable": "Unavailable",
     "prepare.mfw.features": "{count} features found",
+    "prepare.mfw.requested": "Requested MFW",
+    "prepare.mfw.available_features": "Available features",
+    "prepare.mfw.status": "Status",
+    "prepare.mfw_boundary": (
+        "Feature capacity does not identify a best MFW setting or show that a supported setting "
+        "will produce a stable or meaningful result."
+    ),
+    "prepare.download_capacity_csv": "Download feature-capacity CSV",
     "prepare.findings_title": "What Delta found",
     "prepare.findings_body": (
         "Blockers stop the run. Strong warnings permit a later run but must remain visible in "
@@ -544,6 +625,12 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "prepare.download_health": "Download corpus-health report",
     "prepare.download_manifest": "Download preparation manifest",
     "prepare.download_config": "Download preparation settings",
+    "prepare.download_findings_csv": "Download health-findings CSV",
+    "prepare.download_receipt": "Download READY receipt",
+    "prepare.projection_error": (
+        "Delta could not bind the preparation evidence to this corpus. No review projection or "
+        "analysis request was created."
+    ),
     "prepare.finding.empty_prepared_work.title": "A text has no usable words",
     "prepare.finding.empty_prepared_work.body": (
         "After the declared preparation rules, this work produced zero surface-word tokens."
@@ -656,6 +743,99 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "prepare.finding.group_imbalance.action": (
         "Add comparable works to the smaller group or treat group patterns as exploratory "
         "and report the imbalance."
+    ),
+    "prepare.finding.ocr_confound.title": "OCR histories may not be comparable",
+    "prepare.finding.ocr_confound.body": (
+        "The texts have different or uncertain optical character recognition and review states. "
+        "Recognition errors can alter the words Delta counts, but this warning does not prove "
+        "that OCR caused a later pattern."
+    ),
+    "prepare.finding.ocr_confound.action": (
+        "Check each digital text against its source, document the OCR and review process, and "
+        "make the states as comparable as the sources allow."
+    ),
+    "prepare.finding.paratext_confound.title": "Paratext treatment differs across texts",
+    "prepare.finding.paratext_confound.body": (
+        "Prefaces, contents, notes, or other surrounding material were retained, removed, or "
+        "left uncertain under different policies. This warning does not prove that paratext "
+        "caused a later pattern."
+    ),
+    "prepare.finding.paratext_confound.action": (
+        "Review the files, apply one documented paratext policy where appropriate, and report "
+        "any difference that must remain."
+    ),
+    "prepare.finding.curation_confound.title": "Pre-upload curation differs across texts",
+    "prepare.finding.curation_confound.body": (
+        "Some works disclose editing before upload while others do not. Delta records this "
+        "difference but cannot reconstruct or statistically correct those interventions."
+    ),
+    "prepare.finding.curation_confound.action": (
+        "Document what was changed before upload and use a consistent curation procedure where "
+        "possible."
+    ),
+    "prepare.finding.edition_confound.title": "The editions may not be comparable",
+    "prepare.finding.edition_confound.body": (
+        "Edition descriptions differ or remain uncertain. Editorial choices can affect measured "
+        "language patterns, but Delta does not collate editions or prove an edition effect."
+    ),
+    "prepare.finding.edition_confound.action": (
+        "Verify the edition used for each work, prefer a documented comparable edition policy, "
+        "and retain unavoidable differences in the interpretation."
+    ),
+    "prepare.finding.genre_confound.title": "Genre differs or is uncertain",
+    "prepare.finding.genre_confound.body": (
+        "The corpus mixes documented genres or includes an unknown genre. A later distance may "
+        "reflect genre as well as the research factor; this check does not control genre."
+    ),
+    "prepare.finding.genre_confound.action": (
+        "Compare like genres where the question allows, or report the mixture and test a balanced "
+        "comparison in a later sensitivity analysis."
+    ),
+    "prepare.finding.audience_confound.title": "Intended audience differs or is uncertain",
+    "prepare.finding.audience_confound.body": (
+        "The works target different or undocumented audiences. Audience can shape language use, "
+        "but this warning does not establish that it explains a later pattern."
+    ),
+    "prepare.finding.audience_confound.action": (
+        "Verify the audience metadata, prefer comparable audiences where possible, and keep any "
+        "difference visible in the interpretation."
+    ),
+    "prepare.finding.source_confound.title": "Source types are not uniform",
+    "prepare.finding.source_confound.body": (
+        "The corpus combines different or uncertain source types, such as scans and born-digital "
+        "texts. Source production may affect the counted text, but this check does not measure "
+        "that effect."
+    ),
+    "prepare.finding.source_confound.action": (
+        "Verify source provenance, compare the prepared files with their sources, and document "
+        "why mixed source types are necessary."
+    ),
+    "prepare.finding.adaptation_confound.title": "Adaptation status differs or is uncertain",
+    "prepare.finding.adaptation_confound.body": (
+        "Original and adapted works may be mixed, or adaptation status may be unknown. Delta "
+        "flags the design difference but does not separate its effect statistically."
+    ),
+    "prepare.finding.adaptation_confound.action": (
+        "Verify adaptation status and compare works with the same status where the research "
+        "question permits."
+    ),
+    "prepare.finding.collection_confound.title": "Collection context differs or is uncertain",
+    "prepare.finding.collection_confound.body": (
+        "Some works belong to collections while others stand alone, or that context is unknown. "
+        "This may accompany editorial or genre differences, but the warning proves no effect."
+    ),
+    "prepare.finding.collection_confound.action": (
+        "Check collection membership and editorial context, then balance the corpus or report the "
+        "difference as a limitation."
+    ),
+    "prepare.finding.chronology_confound.title": "Chronology may complicate this comparison",
+    "prepare.finding.chronology_confound.body": (
+        "Dates differ in a way relevant to the selected purpose or include approximate, ranged, "
+        "or unknown values. Chronology alone does not prove ageing, development, or causation."
+    ),
+    "prepare.finding.chronology_confound.action": (
+        "Verify publication dates and their certainty, then align the corpus design with the "
+        "research question and report unavoidable uncertainty."
     ),
     "prepare.finding.mfw_unavailable.title": "One or more planned MFW levels are unavailable",
     "prepare.finding.mfw_unavailable.body": (

@@ -46,7 +46,18 @@ from delta_lemmata.corpus import (
 )
 from delta_lemmata.corpus_health_models import (
     CorpusHealthFinding,
+    CorpusHealthFindingCode,
     CorpusHealthReadiness,
+)
+from delta_lemmata.corpus_health_projection import (
+    ConfoundDatum,
+    CorpusHealthProjectionError,
+    OverlapDatum,
+    build_corpus_health_projection,
+    export_confound_matrix_csv,
+    export_feature_capacity_csv,
+    export_health_findings_csv,
+    export_work_preparation_csv,
 )
 from delta_lemmata.corpus_materialization import (
     CorpusMaterializationError,
@@ -1802,11 +1813,65 @@ def _render_health_finding(finding: CorpusHealthFinding) -> None:
             st.caption(f"{icon} {measure}")
 
 
+def _render_panel_boundary(copy_key: str) -> None:
+    st.caption(f"**{text('prepare.panel.boundary_label')}:** {text(copy_key)}")
+
+
+def _chronology_label(item: ConfoundDatum) -> str:
+    if item.chronology_mode is DateMode.EXACT and item.chronology_start_year is not None:
+        return text("prepare.confound.chronology.exact", year=item.chronology_start_year)
+    if item.chronology_mode is DateMode.APPROXIMATE and item.chronology_start_year is not None:
+        return text("prepare.confound.chronology.approximate", year=item.chronology_start_year)
+    if (
+        item.chronology_mode is DateMode.RANGE
+        and item.chronology_start_year is not None
+        and item.chronology_end_year is not None
+    ):
+        return text(
+            "prepare.confound.chronology.range",
+            start=item.chronology_start_year,
+            end=item.chronology_end_year,
+        )
+    return text("prepare.confound.chronology.unknown")
+
+
+def _overlap_code_label(code: CorpusHealthFindingCode) -> str:
+    return text(f"prepare.overlap.code.{code.value}")
+
+
+def _overlap_measure(item: OverlapDatum) -> str:
+    if item.code is CorpusHealthFindingCode.EXACT_DUPLICATE:
+        return text("prepare.overlap.hash_match")
+    values: list[str] = []
+    if item.observed_count is not None:
+        values.append(text("prepare.overlap.tokens", count=item.observed_count))
+    if item.observed_ratio is not None:
+        values.append(text("prepare.overlap.ratio", ratio=item.observed_ratio))
+    return " · ".join(values) or text("prepare.overlap.no_measure")
+
+
 def _render_preparation_outcome(
     inventory: CorpusInventory,
+    annotations: CorpusAnalysisAnnotationsV1,
     outcome: PreparationOutcome,
-) -> None:
+) -> bool:
     health = outcome.health_report
+    try:
+        projection = build_corpus_health_projection(
+            inventory=inventory,
+            annotations=annotations,
+            manifest=outcome.manifest,
+            health_report=health,
+        )
+        work_csv = export_work_preparation_csv(projection)
+        confound_csv = export_confound_matrix_csv(projection)
+        findings_csv = export_health_findings_csv(projection)
+        capacity_csv = export_feature_capacity_csv(projection)
+    except CorpusHealthProjectionError as error:
+        st.error(text("prepare.projection_error"), icon=":material/link_off:")
+        st.caption(text("corpus.error.reference", code=error.code.value))
+        return False
+
     if health.readiness is CorpusHealthReadiness.READY:
         st.success(text("prepare.ready"), icon=":material/check_circle:")
     else:
@@ -1819,14 +1884,13 @@ def _render_preparation_outcome(
     fourth.metric(text("prepare.metric.blockers"), health.blocker_count)
     fifth.metric(text("prepare.metric.warnings"), health.strong_warning_count)
 
-    works = {work.work_id: work.title_original for work in inventory.works}
     length_rows = [
         {
-            text("prepare.table.work"): works[item.work_id],
+            text("prepare.table.work"): item.display_label,
             text("prepare.table.tokens"): item.token_count,
             text("prepare.table.unique"): item.unique_token_count,
         }
-        for item in outcome.manifest.works
+        for item in projection.work_preparation
     ]
     st.subheader(text("prepare.length_title"), anchor=False)
     st.caption(text("prepare.length_body"))
@@ -1837,21 +1901,159 @@ def _render_preparation_outcome(
         color="#0f6e56",
     )
     st.dataframe(length_rows, hide_index=True, width="stretch")
+    _render_panel_boundary("prepare.length_boundary")
+
+    transformation_rows = [
+        {
+            text("prepare.table.work"): item.display_label,
+            text("prepare.transform.lowercase"): item.lowercase_source_count,
+            text("prepare.transform.separators"): item.separator_source_count,
+            text("prepare.transform.newlines"): item.newline_replacement_count,
+            text("prepare.transform.raw_bytes"): item.raw_byte_count,
+            text("prepare.transform.prepared_bytes"): item.prepared_byte_count,
+            text("prepare.transform.bom"): item.bom_removed,
+        }
+        for item in projection.work_preparation
+    ]
+    st.subheader(text("prepare.transform_title"), anchor=False)
+    st.caption(text("prepare.transform_body"))
+    st.bar_chart(
+        transformation_rows,
+        x=text("prepare.table.work"),
+        y=[
+            text("prepare.transform.lowercase"),
+            text("prepare.transform.separators"),
+            text("prepare.transform.newlines"),
+        ],
+        color=["#0f6e56", "#c5842f", "#5e6f86"],
+    )
+    st.dataframe(transformation_rows, hide_index=True, width="stretch")
+    _render_panel_boundary("prepare.transform_boundary")
+    st.download_button(
+        text("prepare.download_work_csv"),
+        data=work_csv,
+        file_name="delta-work-preparation-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_work_csv",
+    )
+
+    confound_rows = [
+        {
+            text("prepare.table.work"): item.display_label,
+            text("prepare.confound.edition"): item.edition_label,
+            text("prepare.confound.genre"): item.genre,
+            text("prepare.confound.audience"): item.audience,
+            text("prepare.confound.source"): item.source_type,
+            text("prepare.confound.adaptation"): item.adaptation,
+            text("prepare.confound.collection"): item.collection,
+            text("prepare.confound.chronology"): _chronology_label(item),
+            text("prepare.confound.ocr"): item.ocr_status,
+            text("prepare.confound.paratext"): item.paratext_status,
+            text("prepare.confound.curation"): text(
+                "prepare.confound.disclosed"
+                if item.curation_note_disclosed
+                else "prepare.confound.not_disclosed"
+            ),
+        }
+        for item in projection.confounds
+    ]
+    st.subheader(text("prepare.confound_title"), anchor=False)
+    st.caption(text("prepare.confound_body"))
+    st.dataframe(confound_rows, hide_index=True, width="stretch")
+    _render_panel_boundary("prepare.confound_boundary")
+    st.download_button(
+        text("prepare.download_confound_csv"),
+        data=confound_csv,
+        file_name="delta-confound-matrix-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_confound_csv",
+    )
+
+    work_labels = {
+        item.work_id: f"{item.display_label} [{item.work_id}]"
+        for item in projection.work_preparation
+    }
+    pair_codes: dict[tuple[str, str], list[str]] = {}
+    for item in projection.overlaps:
+        pair_codes.setdefault(item.work_ids, []).append(_overlap_code_label(item.code))
+    matrix_rows: list[dict[str, str]] = []
+    for row_id, row_label in work_labels.items():
+        matrix_row = {text("prepare.table.work"): row_label}
+        for column_id, column_label in work_labels.items():
+            if row_id == column_id:
+                value = text("prepare.overlap.same_work")
+            else:
+                pair = tuple(sorted((row_id, column_id)))
+                value = " · ".join(pair_codes.get((pair[0], pair[1]), ())) or text(
+                    "prepare.overlap.not_flagged"
+                )
+            matrix_row[column_label] = value
+        matrix_rows.append(matrix_row)
+
+    st.subheader(text("prepare.overlap_title"), anchor=False)
+    st.caption(text("prepare.overlap_body"))
+    st.markdown(f"**{text('prepare.overlap.matrix_title')}**")
+    st.dataframe(matrix_rows, hide_index=True, width="stretch")
+    st.markdown(f"**{text('prepare.overlap.pairs_title')}**")
+    if projection.overlaps:
+        overlap_rows = [
+            {
+                text("prepare.overlap.left"): item.display_labels[0],
+                text("prepare.overlap.right"): item.display_labels[1],
+                text("prepare.overlap.check"): _overlap_code_label(item.code),
+                text("prepare.overlap.observed"): _overlap_measure(item),
+            }
+            for item in projection.overlaps
+        ]
+        st.dataframe(overlap_rows, hide_index=True, width="stretch")
+    else:
+        st.info(text("prepare.overlap.none"), icon=":material/rule:")
+    _render_panel_boundary("prepare.overlap_boundary")
+    st.download_button(
+        text("prepare.download_findings_csv"),
+        data=findings_csv,
+        file_name="delta-health-findings-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_findings_csv",
+    )
 
     st.subheader(text("prepare.mfw_title"), anchor=False)
     st.caption(text("prepare.mfw_body"))
     capacity_columns = st.columns(4)
-    for column, capacity in zip(capacity_columns, health.mfw_capacity, strict=True):
+    capacity_rows = []
+    for column, capacity in zip(
+        capacity_columns,
+        projection.feature_capacity,
+        strict=True,
+    ):
+        status_key = "prepare.mfw.available" if capacity.available else "prepare.mfw.unavailable"
         with column:
-            status_key = (
-                "prepare.mfw.available" if capacity.available else "prepare.mfw.unavailable"
-            )
             st.metric(
                 text("prepare.mfw.metric", mfw=capacity.requested_mfw),
                 text(status_key),
                 delta=text("prepare.mfw.features", count=capacity.available_features),
                 delta_color="off",
             )
+        capacity_rows.append(
+            {
+                text("prepare.mfw.requested"): capacity.requested_mfw,
+                text("prepare.mfw.available_features"): capacity.available_features,
+                text("prepare.mfw.status"): text(status_key),
+            }
+        )
+    st.dataframe(capacity_rows, hide_index=True, width="stretch")
+    _render_panel_boundary("prepare.mfw_boundary")
+    st.download_button(
+        text("prepare.download_capacity_csv"),
+        data=capacity_csv,
+        file_name="delta-feature-capacity-v1.csv",
+        mime="text/csv",
+        icon=":material/download:",
+        key="prepare_download_capacity_csv",
+    )
 
     st.subheader(text("prepare.findings_title"), anchor=False)
     st.caption(text("prepare.findings_body"))
@@ -1859,12 +2061,19 @@ def _render_preparation_outcome(
         _render_health_finding(finding)
 
     st.subheader(text("prepare.downloads_title"), anchor=False)
-    first_download, second_download, third_download = st.columns(3)
+    first_download, second_download = st.columns(2)
     with first_download:
         st.download_button(
             text("prepare.download_health"),
             data=canonical_p007_json(health),
-            file_name="delta-corpus-health.json",
+            file_name="delta-corpus-health-v1.json",
+            mime="application/json",
+            width="stretch",
+        )
+        st.download_button(
+            text("prepare.download_config"),
+            data=canonical_p007_json(outcome.config),
+            file_name="delta-preprocessing-config-v1.json",
             mime="application/json",
             width="stretch",
         )
@@ -1872,18 +2081,19 @@ def _render_preparation_outcome(
         st.download_button(
             text("prepare.download_manifest"),
             data=canonical_p007_json(outcome.manifest),
-            file_name="delta-preprocessing-manifest.json",
+            file_name="delta-preparation-manifest-v1.json",
             mime="application/json",
             width="stretch",
         )
-    with third_download:
-        st.download_button(
-            text("prepare.download_config"),
-            data=canonical_p007_json(outcome.config),
-            file_name="delta-preprocessing-config.json",
-            mime="application/json",
-            width="stretch",
-        )
+        if outcome.ready_receipt is not None:
+            st.download_button(
+                text("prepare.download_receipt"),
+                data=canonical_p007_json(outcome.ready_receipt),
+                file_name="delta-analysis-preparation-receipt-v1.json",
+                mime="application/json",
+                width="stretch",
+            )
+    return True
 
 
 def _render_prepare_stage() -> None:
@@ -1909,7 +2119,12 @@ def _render_prepare_stage() -> None:
 
         outcome = st.session_state.get(_FLOW_PREPARATION_KEY)
         if isinstance(outcome, PreparationOutcome):
-            _render_preparation_outcome(inventory, outcome)
+            annotations = st.session_state.get(_FLOW_ANNOTATIONS_KEY)
+            rendered = False
+            if isinstance(annotations, CorpusAnalysisAnnotationsV1):
+                rendered = _render_preparation_outcome(inventory, annotations, outcome)
+            else:
+                st.error(text("prepare.projection_error"), icon=":material/link_off:")
             if outcome.ready_receipt is None:
                 if st.button(
                     text("prepare.start_over"),
@@ -1918,7 +2133,7 @@ def _render_prepare_stage() -> None:
                 ):
                     _clear_documentation_state(keep_purpose=True)
                     st.rerun()
-            else:
+            elif rendered:
                 st.info(text("prepare.parameters_next"), icon=":material/arrow_forward:")
             return
 

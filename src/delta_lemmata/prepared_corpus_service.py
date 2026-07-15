@@ -358,12 +358,32 @@ class PreparedCorpusService:
             candidate_inventory=candidates,
         )
         works_by_id = {item.work_id: item for item in inventory.works}
+        editions_by_id = {item.edition_id: item for item in inventory.editions}
+        sources_by_id = {item.source_id: item for item in inventory.sources}
         contexts = tuple(
             WorkHealthContext(
                 work_id=annotation.work_id,
                 group_label=works_by_id[annotation.work_id].group_label,
                 chronology_point=_chronology_point(
                     works_by_id[annotation.work_id].first_publication
+                ),
+                chronology_certainty=works_by_id[annotation.work_id].first_publication.mode.value,
+                edition_context=editions_by_id[
+                    assets_by_id[annotation.asset_id].edition_id
+                ].edition_label,
+                genre=works_by_id[annotation.work_id].genre.value,
+                audience=works_by_id[annotation.work_id].audience.value,
+                source_type=sources_by_id[
+                    assets_by_id[annotation.asset_id].source_id
+                ].source_type.value,
+                adaptation=works_by_id[annotation.work_id].adaptation.value,
+                collection=works_by_id[annotation.work_id].collection.value,
+                ocr_status=annotation.ocr_status.value,
+                paratext_status=annotation.paratext_status.value,
+                curation_state=(
+                    "disclosed"
+                    if annotation.preupload_curation_note is not None
+                    else "not_disclosed"
                 ),
             )
             for annotation in annotations.annotations

@@ -46,6 +46,29 @@ class WorkHealthContext:
     work_id: str
     group_label: str | None = None
     chronology_point: str | None = None
+    chronology_certainty: str | None = None
+    edition_context: str | None = None
+    genre: str | None = None
+    audience: str | None = None
+    source_type: str | None = None
+    adaptation: str | None = None
+    collection: str | None = None
+    ocr_status: str | None = None
+    paratext_status: str | None = None
+    curation_state: str | None = None
+
+
+_CONFOUND_FACTORS: tuple[tuple[CorpusHealthFindingCode, str, frozenset[str]], ...] = (
+    (CorpusHealthFindingCode.OCR_CONFOUND, "ocr_status", frozenset({"unknown", "unreviewed"})),
+    (CorpusHealthFindingCode.PARATEXT_CONFOUND, "paratext_status", frozenset({"unknown"})),
+    (CorpusHealthFindingCode.CURATION_CONFOUND, "curation_state", frozenset()),
+    (CorpusHealthFindingCode.EDITION_CONFOUND, "edition_context", frozenset({"unknown"})),
+    (CorpusHealthFindingCode.GENRE_CONFOUND, "genre", frozenset({"unknown"})),
+    (CorpusHealthFindingCode.AUDIENCE_CONFOUND, "audience", frozenset({"unknown"})),
+    (CorpusHealthFindingCode.SOURCE_CONFOUND, "source_type", frozenset({"unknown"})),
+    (CorpusHealthFindingCode.ADAPTATION_CONFOUND, "adaptation", frozenset({"unknown"})),
+    (CorpusHealthFindingCode.COLLECTION_CONFOUND, "collection", frozenset({"unknown"})),
+)
 
 
 def _shingle_digest(tokens: tuple[str, ...]) -> bytes:
@@ -202,6 +225,76 @@ def _finding(
 
 def _group_ref(label: str) -> str:
     return "group_" + hashlib.sha256(label.encode("utf-8")).hexdigest()
+
+
+def _factor_subjects(
+    contexts: tuple[WorkHealthContext, ...],
+    field_name: str,
+    *,
+    risky_values: frozenset[str],
+) -> tuple[str, ...]:
+    values = tuple((context.work_id, getattr(context, field_name)) for context in contexts)
+    if not any(value is not None for _work_id, value in values):
+        return ()
+    normalized = tuple(
+        (work_id, "__missing__" if value is None else value) for work_id, value in values
+    )
+    distinct = {value for _work_id, value in normalized}
+    if len(distinct) > 1:
+        return tuple(sorted(work_id for work_id, _value in normalized))
+    return tuple(
+        sorted(
+            work_id
+            for work_id, value in normalized
+            if value == "__missing__" or value in risky_values
+        )
+    )
+
+
+def _metadata_confound_findings(
+    *,
+    purpose: PurposeId,
+    known_work_ids: frozenset[str],
+    context_by_work: dict[str, WorkHealthContext],
+) -> tuple[CorpusHealthFinding, ...]:
+    contexts = tuple(
+        context_by_work[work_id] for work_id in sorted(known_work_ids) if work_id in context_by_work
+    )
+    findings: list[CorpusHealthFinding] = []
+    for code, field_name, risky_values in _CONFOUND_FACTORS:
+        subjects = _factor_subjects(contexts, field_name, risky_values=risky_values)
+        if subjects:
+            findings.append(
+                _finding(
+                    code,
+                    HealthSeverity.STRONG_WARNING,
+                    subjects,
+                    observed_count=len(subjects),
+                )
+            )
+
+    certainty_subjects = _factor_subjects(
+        contexts,
+        "chronology_certainty",
+        risky_values=frozenset({"unknown", "approximate", "range"}),
+    )
+    points = {
+        context.chronology_point for context in contexts if context.chronology_point is not None
+    }
+    if purpose is not PurposeId.STYLE_OVER_TIME and len(points) > 1:
+        chronology_subjects = tuple(context.work_id for context in contexts)
+    else:
+        chronology_subjects = certainty_subjects
+    if chronology_subjects:
+        findings.append(
+            _finding(
+                CorpusHealthFindingCode.CHRONOLOGY_CONFOUND,
+                HealthSeverity.STRONG_WARNING,
+                tuple(sorted(chronology_subjects)),
+                observed_count=len(chronology_subjects),
+            )
+        )
+    return tuple(findings)
 
 
 def assess_corpus_health(
@@ -368,6 +461,14 @@ def assess_corpus_health(
                 threshold_count=MIN_CHRONOLOGY_POINTS,
             )
         )
+
+    findings.extend(
+        _metadata_confound_findings(
+            purpose=purpose,
+            known_work_ids=frozenset(document.annotation.work_id for document in known_independent),
+            context_by_work=context_by_work,
+        )
+    )
 
     non_empty = tuple(document for document in known_independent if document.prepared.token_count)
     if len(non_empty) >= 2:

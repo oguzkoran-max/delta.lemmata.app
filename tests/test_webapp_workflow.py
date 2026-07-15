@@ -36,6 +36,12 @@ from delta_lemmata.corpus_health_models import (
     CorpusHealthFindingCode,
     HealthSeverity,
 )
+from delta_lemmata.corpus_health_projection import (
+    ConfoundDatum,
+    CorpusHealthProjectionError,
+    CorpusHealthProjectionErrorCode,
+    OverlapDatum,
+)
 from delta_lemmata.prepared_corpus_service import (
     PreparedCorpusError,
     PreparedCorpusErrorCode,
@@ -463,15 +469,25 @@ def test_preparation_runs_real_health_checks_and_exports_payload_free_evidence()
     assert metrics["Candidate features"] == "7"
     assert metrics["Blockers"] == "0"
     assert [item.label for item in app.download_button] == [
+        "Download work-preparation CSV",
+        "Download confound-matrix CSV",
+        "Download health-findings CSV",
+        "Download feature-capacity CSV",
         "Download corpus-health report",
-        "Download preparation manifest",
         "Download preparation settings",
+        "Download preparation manifest",
+        "Download READY receipt",
     ]
     rendered = "\n".join(item.value for item in app.markdown)
-    assert "Which MFW settings can this corpus support?" in [
-        heading.value for heading in app.subheader
-    ]
-    assert "This is a computational preflight only" in "\n".join(item.value for item in app.caption)
+    subheaders = [heading.value for heading in app.subheader]
+    assert "See what the fixed profile changed" in subheaders
+    assert "Review factors that may travel with style" in subheaders
+    assert "Check independence and repeated material" in subheaders
+    assert "Which MFW settings can this corpus support?" in subheaders
+    captions = "\n".join(item.value for item in app.caption)
+    assert "This is a computational preflight only" in captions
+    assert captions.count("What this does not establish") == 5
+    assert "**Flagged pairs**" in rendered
     assert "Preparation completed deterministically" in rendered
     state = repr(app.session_state.filtered_state)
     assert "PreparationOutcome" in state
@@ -579,6 +595,111 @@ def test_finding_measure_and_measure_free_rendering_are_explicit(
     )
     monkeypatch.setattr(webapp_module, "st", fake)
     webapp_module._render_health_finding(finding)
+
+
+@pytest.mark.parametrize(
+    ("mode", "start", "end", "expected"),
+    [
+        (DateMode.EXACT, 1883, None, "1883"),
+        (DateMode.APPROXIMATE, 1883, None, "About 1883"),
+        (DateMode.RANGE, 1881, 1883, "1881-1883"),
+        (DateMode.UNKNOWN, None, None, "Unknown"),
+        (DateMode.EXACT, None, None, "Unknown"),
+        (DateMode.APPROXIMATE, None, None, "Unknown"),
+        (DateMode.RANGE, None, 1883, "Unknown"),
+        (DateMode.RANGE, 1881, None, "Unknown"),
+    ],
+)
+def test_confound_chronology_labels_preserve_uncertainty(
+    mode: DateMode,
+    start: int | None,
+    end: int | None,
+    expected: str,
+) -> None:
+    item = ConfoundDatum(
+        work_id="work_one",
+        display_label="Work one",
+        edition_id="edition_one",
+        edition_label="Edition one",
+        genre="novel",
+        audience="general",
+        source_type="digital_library",
+        adaptation="original",
+        collection="independent_work",
+        chronology_mode=mode,
+        chronology_start_year=start,
+        chronology_end_year=end,
+        ocr_status="not_ocr",
+        paratext_status="absent",
+        curation_state="not_disclosed",
+        curation_note_disclosed=False,
+    )
+    assert webapp_module._chronology_label(item) == expected
+
+
+@pytest.mark.parametrize(
+    ("code", "count", "ratio", "expected"),
+    [
+        (CorpusHealthFindingCode.EXACT_DUPLICATE, None, None, "Prepared hashes match"),
+        (
+            CorpusHealthFindingCode.SHARED_PASSAGE,
+            200,
+            0.25,
+            "200 shared tokens · 25.00%",
+        ),
+        (CorpusHealthFindingCode.SHARED_PASSAGE, 200, None, "200 shared tokens"),
+        (CorpusHealthFindingCode.NEAR_DUPLICATE, None, 0.91, "91.00%"),
+        (CorpusHealthFindingCode.NEAR_DUPLICATE, None, None, "Threshold crossed"),
+    ],
+)
+def test_overlap_labels_never_echo_passage_text(
+    code: CorpusHealthFindingCode,
+    count: int | None,
+    ratio: float | None,
+    expected: str,
+) -> None:
+    item = OverlapDatum(
+        finding_id="finding_" + "a" * 64,
+        code=code,
+        work_ids=("work_one", "work_two"),
+        display_labels=("Work one", "Work two"),
+        observed_count=count,
+        observed_ratio=ratio,
+    )
+    assert webapp_module._overlap_measure(item) == expected
+    assert webapp_module._overlap_code_label(code)
+
+
+def test_preparation_projection_failure_is_visible_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_two_work_prepare()
+
+    def reject(**_kwargs: object) -> None:
+        raise CorpusHealthProjectionError(CorpusHealthProjectionErrorCode.BINDING_MISMATCH)
+
+    monkeypatch.setattr(webapp_module, "build_corpus_health_projection", reject)
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Delta could not bind the preparation evidence to this corpus. No review projection or "
+        "analysis request was created."
+    ]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "P007_HEALTH_PROJECTION_BINDING_MISMATCH" in captions
+    assert "alpha beta gamma" not in captions
+    assert "Parameter review is the next step" not in "\n".join(item.value for item in app.info)
+
+
+def test_missing_projection_annotations_fail_closed() -> None:
+    app = _open_two_work_prepare()
+    app.button(key="prepare_run_check").click().run()
+    del app.session_state[webapp_module._FLOW_ANNOTATIONS_KEY]
+    app.run()
+    assert [message.value for message in app.error] == [
+        "Delta could not bind the preparation evidence to this corpus. No review projection or "
+        "analysis request was created."
+    ]
+    assert "Parameter review is the next step" not in "\n".join(item.value for item in app.info)
 
 
 def test_preparation_rejects_bad_annotations_and_content_free_runtime_failures(

@@ -244,6 +244,97 @@ def test_style_over_time_requires_three_chronology_points_and_six_works() -> Non
     assert CorpusHealthFindingCode.TOO_FEW_CHRONOLOGY_POINTS in _codes(report)
 
 
+def test_metadata_confounds_are_purpose_aware_and_content_free() -> None:
+    documents = (
+        _document(1, ["alpha", "common", "one"]),
+        _document(2, ["beta", "common", "two"]),
+    )
+    contexts = (
+        WorkHealthContext(
+            work_id="work_01",
+            chronology_point="1900:1900",
+            chronology_certainty="exact",
+            edition_context="first",
+            genre="novel",
+            audience="adult",
+            source_type="digital_library",
+            adaptation="original",
+            collection="standalone",
+            ocr_status="not_ocr",
+            paratext_status="absent",
+            curation_state="not_disclosed",
+        ),
+        WorkHealthContext(
+            work_id="work_02",
+            chronology_point="1950:1950",
+            chronology_certainty="approximate",
+            edition_context="critical",
+            genre="short_story",
+            audience="unknown",
+            source_type="scanned_book",
+            adaptation="adapted",
+            collection="collection",
+            ocr_status="unreviewed",
+            paratext_status="retained",
+            curation_state="disclosed",
+        ),
+    )
+
+    report = _health(documents, contexts=contexts)
+    confound_codes = {
+        CorpusHealthFindingCode.OCR_CONFOUND,
+        CorpusHealthFindingCode.PARATEXT_CONFOUND,
+        CorpusHealthFindingCode.CURATION_CONFOUND,
+        CorpusHealthFindingCode.EDITION_CONFOUND,
+        CorpusHealthFindingCode.GENRE_CONFOUND,
+        CorpusHealthFindingCode.AUDIENCE_CONFOUND,
+        CorpusHealthFindingCode.SOURCE_CONFOUND,
+        CorpusHealthFindingCode.ADAPTATION_CONFOUND,
+        CorpusHealthFindingCode.COLLECTION_CONFOUND,
+        CorpusHealthFindingCode.CHRONOLOGY_CONFOUND,
+    }
+    assert confound_codes <= _codes(report)
+    for finding in report.findings:
+        if finding.code in confound_codes:
+            assert finding.severity is HealthSeverity.STRONG_WARNING
+            assert finding.subject_refs == ("work_01", "work_02")
+    encoded = report.model_dump_json()
+    assert "first" not in encoded
+    assert "critical" not in encoded
+    assert "digital_library" not in encoded
+
+
+def test_exact_chronology_variation_is_expected_in_style_over_time() -> None:
+    documents = tuple(
+        _document(index, [_word("style", index), "common", _word("period", index)])
+        for index in range(1, 4)
+    )
+    contexts = tuple(
+        WorkHealthContext(
+            work_id=f"work_{index:02d}",
+            chronology_point=f"19{index}0:19{index}0",
+            chronology_certainty="exact",
+            edition_context="first",
+            genre="novel",
+            audience="adult",
+            source_type="digital_library",
+            adaptation="original",
+            collection="standalone",
+            ocr_status="not_ocr",
+            paratext_status="absent",
+            curation_state="not_disclosed",
+        )
+        for index in range(1, 4)
+    )
+
+    report = _health(
+        documents,
+        purpose=PurposeId.STYLE_OVER_TIME,
+        contexts=contexts,
+    )
+    assert CorpusHealthFindingCode.CHRONOLOGY_CONFOUND not in _codes(report)
+
+
 def test_mfw_capacity_is_visible_without_silent_substitution() -> None:
     documents = (
         _document(1, [_word("alpha", index) for index in range(150)]),
