@@ -23,6 +23,8 @@ SECRET_NAMES = (
 )
 IMMUTABLE_IMAGE = re.compile(r"(?:^sha256:|@sha256:)[0-9a-f]{64}$")
 SECRET_VALUE = re.compile(r"[0-9a-f]{64}")
+SOURCE_COMMIT = re.compile(r"[0-9a-f]{40}")
+SOURCE_URL = "https://github.com/oguzkoran-max/delta.lemmata.app"
 
 
 class RuntimeInspectionError(RuntimeError):
@@ -129,6 +131,8 @@ def validate_runtime_records(
 
     environment = _environment(app)
     _require(environment.get("DELTA_ENV") == "production", "P014_RUNTIME_PROFILE_INVALID")
+    build_id = environment.get("DELTA_BUILD_ID", "")
+    _require(SOURCE_COMMIT.fullmatch(build_id) is not None, "P014_RUNTIME_BUILD_ID_INVALID")
     _require(
         environment.get("DELTA_EXTERNAL_NETWORK") == "disabled",
         "P014_RUNTIME_EGRESS_POLICY_INVALID",
@@ -179,6 +183,18 @@ def validate_runtime_records(
     _require(
         app_labels.get("app.delta-lemmata.release-stage") == "public-alpha",
         "P014_APP_RELEASE_LABEL_INVALID",
+    )
+    _require(
+        app_labels.get("org.opencontainers.image.source") == SOURCE_URL,
+        "P014_APP_SOURCE_LABEL_INVALID",
+    )
+    _require(
+        app_labels.get("org.opencontainers.image.revision") == build_id,
+        "P014_APP_REVISION_LABEL_INVALID",
+    )
+    _require(
+        app_labels.get("org.opencontainers.image.licenses") == "MIT",
+        "P014_APP_LICENSE_LABEL_INVALID",
     )
     _require(
         gateway_labels.get("app.delta-lemmata.release-stage") == "public-alpha",

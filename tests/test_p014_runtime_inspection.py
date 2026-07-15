@@ -17,6 +17,7 @@ SPEC.loader.exec_module(INSPECTOR)
 
 APP_ID = "sha256:" + "a" * 64
 GATEWAY_ID = "sha256:" + "b" * 64
+BUILD_ID = "c" * 40
 
 
 def _common(
@@ -69,12 +70,20 @@ def _records() -> tuple[dict[str, Any], dict[str, Any]]:
     )
     app["Config"]["Env"] = [
         "DELTA_ENV=production",
+        f"DELTA_BUILD_ID={BUILD_ID}",
         "DELTA_EXTERNAL_NETWORK=disabled",
         "DELTA_RUNTIME_ROOT=/var/lib/delta/runtime",
         f"DELTA_JOB_OWNER_SECRET_HEX={'1' * 64}",
         f"DELTA_PREPARATION_AUTHORITY_SECRET_HEX={'2' * 64}",
         f"DELTA_RECOVERY_RECEIPT_SECRET_HEX={'3' * 64}",
     ]
+    app["Config"]["Labels"].update(
+        {
+            "org.opencontainers.image.source": INSPECTOR.SOURCE_URL,
+            "org.opencontainers.image.revision": BUILD_ID,
+            "org.opencontainers.image.licenses": "MIT",
+        }
+    )
     app["HostConfig"]["PortBindings"] = {}
 
     gateway = _common(
@@ -108,6 +117,12 @@ def test_runtime_inspection_accepts_only_the_bounded_profile() -> None:
         ("app", ("HostConfig", "PortBindings"), {"8501/tcp": [{}]}, "P014_APP_PORT_PUBLISHED"),
         ("gateway", ("HostConfig", "PidsLimit"), 0, "P014_RUNTIME_PID_LIMIT_INVALID"),
         ("gateway", ("State", "Health", "Status"), "unhealthy", "P014_RUNTIME_NOT_HEALTHY"),
+        (
+            "app",
+            ("Config", "Labels", "org.opencontainers.image.revision"),
+            "d" * 40,
+            "P014_APP_REVISION_LABEL_INVALID",
+        ),
     ],
 )
 def test_runtime_inspection_rejects_weakened_controls(

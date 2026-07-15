@@ -176,10 +176,51 @@ def _validate_text_contracts() -> None:
     _require("useradd --uid 10001 --gid 10001" in dockerfile, "P014_DOCKER_UID_MISSING")
     _require("COPY .streamlit ./.streamlit" in dockerfile, "P014_STREAMLIT_CONFIG_NOT_COPIED")
     _require("HEALTHCHECK" in dockerfile, "P014_IMAGE_HEALTHCHECK_MISSING")
+    _require("ARG DELTA_BUILD_ID=development" in dockerfile, "P014_IMAGE_BUILD_ID_MISSING")
+    _require(
+        'org.opencontainers.image.revision="${DELTA_BUILD_ID}"' in dockerfile,
+        "P014_IMAGE_REVISION_LABEL_MISSING",
+    )
+    _require(
+        'org.opencontainers.image.source="https://github.com/oguzkoran-max/delta.lemmata.app"'
+        in dockerfile,
+        "P014_IMAGE_SOURCE_LABEL_MISSING",
+    )
     _require(
         'CMD ["/opt/delta/.venv/bin/streamlit", "run", "app.py"' in dockerfile,
         "P014_RUNTIME_COMMAND_INVALID",
     )
+
+    ci = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+    _require(
+        '--build-arg DELTA_BUILD_ID="$GITHUB_SHA"' in ci,
+        "P014_CI_BUILD_ID_NOT_BOUND",
+    )
+
+    publisher = (ROOT / ".github" / "workflows" / "p014-publish-image.yml").read_text(
+        encoding="utf-8"
+    )
+    required_publisher = (
+        "workflow_dispatch:",
+        "actions: read",
+        "contents: read",
+        "packages: write",
+        "persist-credentials: false",
+        "ref: ${{ inputs.source_sha }}",
+        "head_sha=$REQUESTED_SHA&status=success",
+        '--build-arg DELTA_BUILD_ID="$SOURCE_SHA"',
+        "./scripts/run_p014_runtime_gate.sh",
+        'IMAGE_TAG="$IMAGE_REPOSITORY:sha-$SOURCE_SHA"',
+        "IMAGE_DIGEST_REFERENCE",
+        "Mutable `latest` tag: not published",
+    )
+    _require(
+        all(item in publisher for item in required_publisher),
+        "P014_PUBLISH_WORKFLOW_INCOMPLETE",
+    )
+    _require("pull_request:" not in publisher, "P014_PUBLISH_TRIGGER_TOO_BROAD")
+    _require("\n  push:" not in publisher, "P014_PUBLISH_TRIGGER_TOO_BROAD")
+    _require("actions/upload-artifact" not in publisher, "P014_PUBLISH_ARTIFACT_FORBIDDEN")
 
     nginx = (DEPLOYMENT / "nginx.conf").read_text(encoding="utf-8")
     required_nginx = (

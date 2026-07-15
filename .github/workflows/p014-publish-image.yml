@@ -1,0 +1,120 @@
+name: P014 publish immutable image
+
+on:
+  workflow_dispatch:
+    inputs:
+      source_sha:
+        description: Exact 40-character source commit with a green CI run
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: read
+  packages: write
+
+concurrency:
+  group: p014-publish-image
+  cancel-in-progress: false
+
+jobs:
+  gate-and-publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - name: Check out the requested exact source
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          ref: ${{ inputs.source_sha }}
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate source identity and green CI prerequisite
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REQUESTED_SHA: ${{ inputs.source_sha }}
+        run: |
+          case "$REQUESTED_SHA" in
+            *[!0-9a-f]*|'') echo 'p014-publish-source-sha-invalid' >&2; exit 1 ;;
+          esac
+          test "${#REQUESTED_SHA}" -eq 40
+          test "$(git rev-parse HEAD)" = "$REQUESTED_SHA"
+          test -z "$(git status --short)"
+          CI_RUN_ID=$(gh api \
+            --method GET \
+            -H 'Accept: application/vnd.github+json' \
+            "/repos/$GITHUB_REPOSITORY/actions/workflows/ci.yml/runs?head_sha=$REQUESTED_SHA&status=success&per_page=1" \
+            --jq '.workflow_runs[0].id // empty')
+          test -n "$CI_RUN_ID"
+          printf 'SOURCE_SHA=%s\n' "$REQUESTED_SHA" >> "$GITHUB_ENV"
+          printf 'GREEN_CI_RUN_ID=%s\n' "$CI_RUN_ID" >> "$GITHUB_ENV"
+
+      - name: Install pinned uv and Python
+        uses: astral-sh/setup-uv@11f9893b081a58869d3b5fccaea48c9e9e46f990 # v8.3.2
+        with:
+          version: "0.11.28"
+          python-version: "3.13.9"
+          enable-cache: false
+
+      - name: Restore locked browser-audit environment
+        run: uv sync --frozen
+
+      - name: Install Chromium for the gateway browser gate
+        run: uv run playwright install --with-deps chromium
+
+      - name: Build the exact Linux amd64 image
+        run: |
+          docker build \
+            --platform linux/amd64 \
+            --build-arg DELTA_BUILD_ID="$SOURCE_SHA" \
+            --file containers/Dockerfile \
+            --iidfile /tmp/delta-image-id \
+            .
+          printf 'DELTA_IMAGE=%s\n' "$(cat /tmp/delta-image-id)" >> "$GITHUB_ENV"
+          printf 'DELTA_BUILD_ID=%s\n' "$SOURCE_SHA" >> "$GITHUB_ENV"
+
+      - name: Create private runtime secrets
+        run: |
+          install -d -m 0700 /tmp/delta-p014-secrets
+          uv run python scripts/generate_p014_secrets.py --output /tmp/delta-p014-secrets/runtime.env
+          printf 'DELTA_RUNTIME_ENV_FILE=%s\n' /tmp/delta-p014-secrets/runtime.env >> "$GITHUB_ENV"
+
+      - name: Re-run the hardened stack gate before publication
+        env:
+          DELTA_P014_BROWSER_AUDIT: "1"
+        run: ./scripts/run_p014_runtime_gate.sh
+
+      - name: Publish only the exact commit tag
+        env:
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          IMAGE_REPOSITORY="ghcr.io/${GITHUB_REPOSITORY,,}"
+          IMAGE_TAG="$IMAGE_REPOSITORY:sha-$SOURCE_SHA"
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io --username "$GITHUB_ACTOR" --password-stdin
+          trap 'docker logout ghcr.io >/dev/null 2>&1 || true' EXIT
+          docker tag "$DELTA_IMAGE" "$IMAGE_TAG"
+          docker push "$IMAGE_TAG"
+          IMAGE_DIGEST_REFERENCE=$(docker image inspect "$IMAGE_TAG" --format '{{index .RepoDigests 0}}')
+          DIGEST_PREFIX="$IMAGE_REPOSITORY@sha256:"
+          case "$IMAGE_DIGEST_REFERENCE" in
+            "$DIGEST_PREFIX"*) ;;
+            *) echo 'p014-publish-digest-missing' >&2; exit 1 ;;
+          esac
+          IMAGE_DIGEST=${IMAGE_DIGEST_REFERENCE#"$DIGEST_PREFIX"}
+          case "$IMAGE_DIGEST" in
+            *[!0-9a-f]*|'') echo 'p014-publish-digest-invalid' >&2; exit 1 ;;
+          esac
+          test "${#IMAGE_DIGEST}" -eq 64
+          printf 'IMAGE_DIGEST_REFERENCE=%s\n' "$IMAGE_DIGEST_REFERENCE" >> "$GITHUB_ENV"
+          docker logout ghcr.io
+
+      - name: Record content-free release evidence
+        run: |
+          {
+            printf '## P014 immutable image\n\n'
+            printf -- '- Source commit: `%s`\n' "$SOURCE_SHA"
+            printf -- '- Prerequisite CI run: `%s`\n' "$GREEN_CI_RUN_ID"
+            printf -- '- Image: `%s`\n' "$IMAGE_DIGEST_REFERENCE"
+            printf -- '- Local image ID: `%s`\n' "$DELTA_IMAGE"
+            printf -- '- Mutable `latest` tag: not published\n'
+          } >> "$GITHUB_STEP_SUMMARY"

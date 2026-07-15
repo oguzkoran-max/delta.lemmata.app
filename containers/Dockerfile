@@ -3,6 +3,12 @@ FROM --platform=linux/amd64 rocker/r-ver:4.5.2@sha256:fd4ccdd3a4a6f7ef805e2daeee
 
 ARG UV_VERSION=0.11.28
 ARG UV_ARCHIVE_SHA256=e490a6464492183c5d4534a5527fb4440f7f2bb2f228162ad7e4afe076dc0224
+ARG DELTA_BUILD_ID=development
+
+LABEL org.opencontainers.image.title="Delta" \
+      org.opencontainers.image.source="https://github.com/oguzkoran-max/delta.lemmata.app" \
+      org.opencontainers.image.revision="${DELTA_BUILD_ID}" \
+      org.opencontainers.image.licenses="MIT"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     RENV_PATHS_CACHE=/opt/renv/cache \

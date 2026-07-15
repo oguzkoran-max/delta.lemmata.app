@@ -84,7 +84,7 @@ jobs:
 
       - name: Build canonical Linux amd64 image
         run: |
-          docker build --platform linux/amd64 --file containers/Dockerfile --iidfile /tmp/delta-image-id .
+          docker build --platform linux/amd64 --build-arg DELTA_BUILD_ID="$GITHUB_SHA" --file containers/Dockerfile --iidfile /tmp/delta-image-id .
           printf 'DELTA_IMAGE=%s\n' "$(cat /tmp/delta-image-id)" >> "$GITHUB_ENV"
           printf 'DELTA_BUILD_ID=%s\n' "$GITHUB_SHA" >> "$GITHUB_ENV"
 

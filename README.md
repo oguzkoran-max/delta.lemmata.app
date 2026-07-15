@@ -52,13 +52,18 @@ Run the full verification suite:
 ```
 
 Development creates a process-private temporary runtime automatically. Production
-requires a pre-created private runtime directory and two separately generated
+requires a pre-created private runtime directory and three separately generated
 secrets; see `.env.example`. These values must never be committed.
 
 The canonical scientific environment is a pinned Linux x86_64 OCI image and is
 verified in GitHub Actions. Production deployment and shared-VPS isolation remain
 unverified until the minimum P014 activation gates pass. Container execution is
 not repeated on the current Mac because Docker is not installed.
+
+The staged public-alpha deployment and rollback procedure is documented in
+`deploy/public-alpha/README.md`. That runbook does not authorize a live rollout:
+the exact commit, container gate, read-only host inventory, coexistence checks,
+and owner activation decision must pass in order.
 
 ## Canonical Project Documents
 
@@ -67,6 +72,7 @@ not repeated on the current Mac because Docker is not installed.
 - `docs/development/roadmap-P001-P015.md`: acceptance-gated implementation plan
 - `docs/research/claim-evidence-matrix.md`: claims and evidence gates
 - `docs/security/threat-model.md`: security, rights, and epistemic threats
+- `deploy/public-alpha/README.md`: staged deployment, coexistence, and rollback runbook
 - `SESSION_HANDOFF.md`: current stage and next action
 
 ## Citation and License
