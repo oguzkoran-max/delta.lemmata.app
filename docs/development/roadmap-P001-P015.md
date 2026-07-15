@@ -533,9 +533,13 @@ Tam P014 ve CE-14/CE-15 iddiaları P012 dahil normal bağımlılıklarını koru
 
 **2026-07-15 minimum-alpha checkpoint'i:** Versioned deployment package exact
 commit `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile geçti.
-P014-AC-01 ile P014-AC-07 CI sınırında passed'dir. Image publication, read-only
-target-host inventory, canlı TLS, Delta-Lemmata coexistence/load, restart
-cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
+Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` de yeşildir. P014-AC-01 ile
+P014-AC-07 CI sınırında passed'dir. `RUN-20260715-0005` read-only target-host
+inventory'si Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat container runtime
+olmadığı için host değişikliği yapmadan exit `21` ile durdu; sıfır swap ve
+sınırsız Lemmata kaynak profili capacity kararını açık bırakır. Image publication,
+accepted post-preparation inventory, canlı TLS, Delta-Lemmata coexistence/load,
+restart cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
 P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.
 
 **Deliverable'lar:**

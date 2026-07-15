@@ -16,9 +16,14 @@ gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-reques
 runtime-inspection, denied-egress ve cleanup kapılarından geçti. P014-AC-01 ile
 P014-AC-07 passed; P014-AC-08 ile P014-AC-10 gerçek host inventory, Lemmata ile
 eşzamanlı load, restart/rollback ve Oğuz owner acceptance için pending'dir.
-Registry image publication, VPS kurulumu, Caddy/DNS değişikliği veya public
-activation henüz yapılmadı. `HD-20260714-0002` ve ADR-0015 hedefi kabul eder;
-tarih hiçbir başarısız kapıyı geçersiz kılmaz.
+Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` yeşildir. İlk read-only VPS
+preflight'i `RUN-20260715-0005` olarak saklandı: Lemmata sağlıklı, `8502` boş,
+fakat hostta desteklenen container runtime yoktur; yaklaşık 4 GiB RAM, sıfır swap
+ve sınırsız mevcut Lemmata profili nedeniyle kurulumdan önce capacity kararı da
+gereklidir. Kapı exit `21` ile canlı değişiklik yapmadan durdu. Registry image
+publication, VPS kurulumu, Caddy/DNS değişikliği veya public activation henüz
+yapılmadı. `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir
+başarısız kapıyı geçersiz kılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -164,10 +169,14 @@ geçti. Tam P008 AC-09 ve tam P009 görsel genişletmeleri Public alpha'yı enge
 P014 minimum package exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`, run kaydı
 `RUN-20260715-0004` ve canonical CI `29420509541` ile doğrulandı. Kanıt:
-`provenance/evidence/P014/canonical-alpha-stack-validation.md`. Sıradaki iş,
-kanıt-link commit'inin CI sonucunu geçmek ve sonra canlı durumu değiştirmeyen
-read-only VPS inventory'sini çalıştırmaktır. Inventory geçerse exact green
-commit private GHCR'a digest ile yayımlanır; ardından Delta-only kurulum, public
-TLS, Lemmata coexistence/load, restart-cleanup, rollback ve owner walkthrough
-sırasıyla uygulanır. Bu kapılar geçmeden DNS, Caddy veya public activation
-yapılmaz.
+`provenance/evidence/P014/canonical-alpha-stack-validation.md`. Kanıt-link commit'i
+`dea9e67154d75852c5d69db9871fd4a1868bc236`, PR CI `29424064991` içinde yeniden
+geçti. İlk target-host preflight'i `RUN-20260715-0005` ve
+`provenance/evidence/P014/target-host-read-only-preflight.md` ile kayıtlıdır:
+Lemmata 20/20 HTTP 200 ve 267,73 ms p95 ile sağlıklı, `8502` boş, fakat container
+runtime yoktur. Host değiştirilmedi; AC-08 pending kaldı. Sıradaki iş bu kanıtı
+normal PR ile `main`e almak, exact green main commit'ini private GHCR'a immutable
+digest ile yayımlamak ve canlı host için container-runtime/capacity kararını
+kaydetmektir. Ancak tekrarlanan preflight geçerse Delta-only kurulum, public TLS,
+Lemmata coexistence/load, restart-cleanup, rollback ve owner walkthrough sırasıyla
+uygulanır. Bu kapılar geçmeden DNS, Caddy veya public activation yapılmaz.

@@ -10,6 +10,8 @@ kapılarından geçti. P008 tam üç amaç ve ilgili known/unknown browser matri
 P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Minimum P014
 deployment paketi canonical Linux CI'da geçti; gerçek host inventory,
 coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
+İlk read-only host preflight'i Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat
+hostta container runtime olmadığı için kurulumdan önce fail-closed durdu.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -38,11 +40,13 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Kanıt-link commit'inin canonical CI sonucunu geçir. Sonra P014 runbook Phase 1'i
-yalnız read-only komutlarla çalıştır; canlı durumu değiştirme ve secret/env/process
-command line yazdırma. Inventory'de Lemmata sağlıklı, `8502` boş ve kaynak payı
-yeterliyse exact green source commit'i private GHCR'a immutable digest ile
-yayımla. Sonraki sıra Delta-only install, public TLS gate, coexistence/load,
+Read-only preflight kanıtını doğrula ve PR #4 üzerinden normal merge commit ile
+`main`e al; provenance zincirini squash etme. `main` CI yeşil olduktan sonra exact
+green main commit'ini private GHCR'a immutable digest ile yayımla. İlk workflow
+dispatch'i, workflow henüz default branch'te kayıtlı olmadığı için GitHub 404 ile
+durdu; doğru sıra merge, main CI, sonra dispatch'tir. Canlı hostta hiçbir işlem
+yapmadan önce container-runtime ve capacity seçimini kaydet. Tekrarlanan inventory
+geçerse sıra Delta-only install, public TLS gate, coexistence/load,
 restart-cleanup, rollback ve Oğuz owner walkthrough'udur. DNS, Caddy veya public
 activation bu kapılardan önce yapılmaz.
 
@@ -59,8 +63,21 @@ pinned gateway manifest digest
 `sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81`.
 On iki başarısız veya superseded CI outcome nedenleriyle korunur. Kanıt:
 `provenance/evidence/P014/canonical-alpha-stack-validation.md`. Registry manifest
-digest, host inventory, live TLS, Lemmata load, restart/rollback ve owner kabulü
-henüz yoktur; public activation yasaktır.
+digest, accepted post-preparation host inventory, live TLS, Lemmata load,
+restart/rollback ve owner kabulü henüz yoktur; public activation yasaktır.
+
+**P014 target-host preflight checkpoint'i:** Kanıt-link commit'i
+`dea9e67154d75852c5d69db9871fd4a1868bc236`, PR CI `29424064991` içinde verify ve
+container işlerinde yeşildir. Read-only host run'ı `RUN-20260715-0005` exit `21`
+ile fail-closed oldu. Ubuntu 26.04 x86_64 hostta 2 CPU, 3.814 MiB RAM, 2.360 MiB
+available RAM, sıfır swap ve 32.621 MiB boş root disk gözlendi. Docker, Podman,
+containerd ve nerdctl yoktur. Caddy ve Lemmata active; Lemmata yaklaşık 1,04 GiB
+kullanır ve finite CPU/RAM cap'i yoktur; `8501` dinler, `8502` boştur. Public
+Lemmata health `ok`; 20 sequential request 20/20 HTTP 200, median 182,02 ms ve
+p95 267,73 ms verdi. Hiçbir paket, swap, service, Caddy, DNS veya dosya değişikliği
+yapılmadı. Kanıt: `provenance/evidence/P014/target-host-read-only-preflight.md`.
+Bu failed preflight AC-08'i kapatmaz; accepted post-preparation inventory,
+container-runtime/capacity kararı ve bütün host-bound kapılar pending'dir.
 
 **P009 minimum-alpha checkpoint'i:** Exact implementation commit'i
 `c5e39b07bb65a11613684a10269b186c987ef980`; run kaydı

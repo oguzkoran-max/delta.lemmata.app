@@ -43,9 +43,10 @@
     "c63bc3f09d073579e5976250101924d98a48680b",
     "8f692f352d11df7fcb94be771520c13556f5d0c1",
     "6f55609ace23a04c7de89670c894de46c9418833",
-    "7f26dbe82437e7f9757e7c35b10b7666a3078578"
+    "7f26dbe82437e7f9757e7c35b10b7666a3078578",
+    "dea9e67154d75852c5d69db9871fd4a1868bc236"
   ],
-  "run_ids": ["RUN-20260715-0004"],
+  "run_ids": ["RUN-20260715-0004", "RUN-20260715-0005"],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": ["OpenAI Codex"],
@@ -57,7 +58,9 @@
     "docs/development/public-alpha-owner-walkthrough.md",
     "deploy/public-alpha/README.md",
     "provenance/evidence/P014/canonical-alpha-stack-validation.md",
+    "provenance/evidence/P014/target-host-read-only-preflight.md",
     "provenance/runs/RUN-20260715-0004.json",
+    "provenance/runs/RUN-20260715-0005.json",
     "memory/checkpoints/2026-07-15-p014-start.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
@@ -71,7 +74,7 @@
     {"id":"P014-AC-05","criterion":"Application file/token/queue/concurrency and worker wall/CPU/RAM/process limits remain enforced under the deployment profile, and hostile, saturated, timeout, cancellation, and cleanup cases fail closed without payload leakage.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-06","criterion":"The English interface visibly and accessibly labels every stage Public alpha and experimental without prohibited scientific, FAIR, usability, publication, or isolation claims.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-07","criterion":"Canonical Linux CI builds and starts the exact stack, validates health and hostile requests, inspects runtime hardening, verifies denied egress and cleanup, records the image digest, and leaves no corpus artifact.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
-    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":[]},
+    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":["provenance/evidence/P014/target-host-read-only-preflight.md","provenance/runs/RUN-20260715-0005.json"]},
     {"id":"P014-AC-09","criterion":"Under the maximum accepted Delta load, Lemmata has zero restart and zero error, remains within the frozen latency budget, and both sites pass contemporaneous smoke checks.","status":"pending","evidence":[]},
     {"id":"P014-AC-10","criterion":"Restart/reboot cleanup and rollback complete without Lemmata interruption; Oğuz then passes the integrated owner walkthrough and explicitly accepts or rejects public-alpha activation.","status":"pending","evidence":[]}
   ],
@@ -80,14 +83,19 @@
     "Fail-closed package validator, runtime inspector, hostile-request smoke gate, test-only TLS browser audit, runtime gate, secret generator, and unit tests",
     "Canonical CI hardened-stack gate and exact-commit private GHCR publication workflow",
     "Public-alpha labels and claim-boundary checks across the existing workbench stages",
-    "P014 canonical CI evidence, Run record, ticket links, start card, handoff, roadmap, and checkpoint"
+    "P014 canonical CI evidence, target-host preflight evidence, Run records, ticket links, start card, handoff, roadmap, and checkpoint"
   ],
   "commands": [
     {"command":"./scripts/verify.sh at 7f26dbe before push","exit_code":0,"result":"1,563 tests passed with one documented macOS Linux-worker skip; all 11,382 statements and 2,964 branches were covered.","evidence":"provenance/runs/RUN-20260715-0004.json"},
-    {"command":"GitHub Actions CI run 29420509541 at 7f26dbe","exit_code":0,"result":"1,564 Linux tests, real R/stylo browser workflow, SBOM/audit, canonical image, hardened stack, TLS/WebSocket browser, hostile-request, runtime-inspection, denied-egress, and cleanup gates passed.","evidence":"provenance/evidence/P014/canonical-alpha-stack-validation.md"}
+    {"command":"GitHub Actions CI run 29420509541 at 7f26dbe","exit_code":0,"result":"1,564 Linux tests, real R/stylo browser workflow, SBOM/audit, canonical image, hardened stack, TLS/WebSocket browser, hostile-request, runtime-inspection, denied-egress, and cleanup gates passed.","evidence":"provenance/evidence/P014/canonical-alpha-stack-validation.md"},
+    {"command":"Pull-request CI run 29424064991 at dea9e67","exit_code":0,"result":"Both verify and container jobs passed for the evidence-linked source before target-host observation.","evidence":"provenance/runs/RUN-20260715-0005.json"},
+    {"command":"gh workflow run p014-publish-image.yml --ref codex/p014-public-alpha-deploy -f source_sha=dea9e67154d75852c5d69db9871fd4a1868bc236","exit_code":1,"result":"GitHub returned HTTP 404 because a workflow_dispatch workflow is registered from the default branch; the retained correction is merge, green main CI, then dispatch.","evidence":"SESSION_HANDOFF.md"},
+    {"command":"Read-only target-host inventory and 20-request Lemmata baseline","exit_code":21,"result":"Lemmata was healthy and port 8502 was free; the gate stopped before any host change because no supported container runtime was installed.","evidence":"provenance/evidence/P014/target-host-read-only-preflight.md"}
   ],
   "blockers": [
-    "No target-host inventory, live TLS, shared-VPS load, Lemmata coexistence, restart cleanup, rollback, or activation evidence exists yet.",
+    "The first target-host inventory is retained but failed closed before installation because no supported container runtime exists; an accepted post-preparation inventory is still required.",
+    "The approximately 4 GiB host has no swap and the existing approximately 1.04 GiB Lemmata process has no finite memory or CPU cap, so a recorded capacity decision and repeated preflight are required before Delta installation.",
+    "No live TLS, shared-VPS load, Lemmata coexistence, restart cleanup, rollback, or activation evidence exists yet.",
     "The exact source commit must be published to the private registry and its immutable registry manifest digest recorded before live installation.",
     "P007 integrated owner walkthrough remains a final activation gate even after technical deployment checks pass.",
     "Full P014 and CE-14/CE-15 require P012 and the normal scientific-release sequence; the accelerated minimum slice cannot close them."
