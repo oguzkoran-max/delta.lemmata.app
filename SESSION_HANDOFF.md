@@ -1,10 +1,10 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-14
+**Güncellendi:** 2026-07-15
 
 **Aşama:** P001-P006 tamamlandı. P007 Deterministic Preprocessing and Corpus
-Health aktif; yöntem paketi kabul edildi ve schema-first/tests-first implementation
-başlıyor
+Health aktif; kapalı yöntem çekirdeği, private materialization, one-time admission
+ve browser preparation/health akışı uygulandı. Kanıt ve kabul kapıları henüz açık.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -15,18 +15,35 @@ recovery receipt var. P006 kapalı input/result/fatal-error şemaları, strict t
 parser, input-dependent semantic validator, process sonucundan ayrı saf scientific
 finalizer, bounded no-follow workspace read, fixed R worker, shell-free adapter,
 checksum-frozen direct-`stylo` oracle, retained worker package ve crash-safe
-scientific-result handoff var. Public analysis, preprocessing, corpus health,
-benchmark, stability, FAIR run export ve deployment hâlâ yok
+scientific-result handoff var. P007'de deterministic preparation, corpus-health,
+READY/BLOCKED kararı ve content-free web review bağlıdır. Public parameter seçimi,
+analysis çalıştırma, benchmark, stability, FAIR run export ve deployment hâlâ yok.
 
 **Son tamamlanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
 **Aktif ticket:** `provenance/tickets/P007.json` (`in-progress`)
 
 **Sıradaki tek ana iş:**
-Kapalı P007 config, annotation-overlay, preparation-manifest, corpus-health ve
-admission-receipt şemalarını; kanonik modelleri; ayrı structural/semantic
-validator'ları; deterministic preparation ve health golden testlerini uygula.
-Sonra P005 private materialization ve one-time READY admission'a bağla.
+P007 web preparation dilimini tam verify, gerçek browser ve exact-commit CI ile
+kanıtla. Ardından P008 için beginner-first parameter review sözleşmesini kur;
+yalnız corpus-health tarafından desteklenen MFW seçeneklerini göster ve gerçek
+P006 çalıştırması bağlanana kadar Run eylemini fail-closed tut.
+
+**P007 web integration checkpoint'i:** Browser intake bytes her geçişte yeniden
+P003 doğrulamasından geçirilip P005 private prepare-only workspace'e taşınıyor.
+Streamlit state yalnız opaque owner key ile payload-free receipt/outcome tutuyor;
+capability, secret, raw/prepared text ve server path taşımıyor. Final metadata
+confirmation sonrasında fixed `delta-surface-words-v1` açıklaması, work role/OCR/
+paratext annotations, deterministic preparation, READY/BLOCKED health summary,
+token-length visualı, MFW capacity ve content-free downloads bağlıdır. Üretim
+runtime'ı explicit private root ile birbirinden farklı iki 256-bit secret olmadan
+fail-closed; process start ve yeni kabul öncesi durable P005 state uzlaştırılır,
+expired idle lease'ler toplanır ve terk edilmiş oturumların staged kapasiteyi
+kalıcı tüketmesi engellenir. Final local `./scripts/verify.sh`: 1.379 passed, bir
+documented Linux-only macOS skip, 9.758 statement, 2.570 branch ve yüzde 100
+coverage. Gerçek browser kontrolünde desktop ve 390 px mobile yatay taşma vermedi,
+araştırma yolu seçimi çalıştı ve console error/warning kaydı boştu. Exact-commit CI
+kanıtı bu checkpointte henüz tamamlanmadı.
 
 **Yeni insan kararları:** `HD-20260714-0001` P007 yöntem paketini kabul etti ve
 ADR-0014 Accepted oldu. `HD-20260714-0002` ile ADR-0015, bütün minimum kapılar

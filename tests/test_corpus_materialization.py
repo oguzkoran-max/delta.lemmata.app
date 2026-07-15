@@ -125,6 +125,55 @@ def test_materialization_returns_only_a_payload_free_public_receipt(tmp_path: Pa
     assert len(tuple(workspaces.list_layouts()[0].input.iterdir())) == 2
 
 
+def test_expired_idle_leases_are_reaped_without_owner_secrets(tmp_path: Path) -> None:
+    service, workspaces, clock = _environment(tmp_path)
+    source = _source(1, b"expired private corpus")
+    first = service.materialize(owner_key="owner-a", payloads=(source,))
+    second = service.materialize(owner_key="owner-b", payloads=(source,))
+
+    assert service.reap_expired() == 0
+    clock.advance(timedelta(hours=1))
+    assert service.reap_expired() == 2
+    assert service.reap_expired() == 0
+    assert workspaces.list_layouts() == ()
+    _expect_error(
+        lambda: service.status(owner_key="owner-a", receipt=first),
+        CorpusMaterializationErrorCode.NOT_AVAILABLE,
+    )
+    _expect_error(
+        lambda: service.status(owner_key="owner-b", receipt=second),
+        CorpusMaterializationErrorCode.NOT_AVAILABLE,
+    )
+
+
+def test_reaper_skips_active_visits_and_retains_failed_cleanup_for_retry(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    service, workspaces, clock = _environment(tmp_path)
+    source = _source(1, b"retry private corpus")
+    receipt = service.materialize(owner_key="owner-a", payloads=(source,))
+    state = service._leases[receipt.lease_id]
+    state.visiting = True
+    clock.advance(timedelta(hours=1))
+    assert service.reap_expired() == 0
+    state.visiting = False
+
+    original_cleanup = service._jobs.cleanup
+
+    def fail_cleanup(**_kwargs):
+        raise RuntimeError("retry private corpus")
+
+    monkeypatch.setattr(service._jobs, "cleanup", fail_cleanup)
+    _expect_error(service.reap_expired, CorpusMaterializationErrorCode.CLEANUP_FAILED)
+    assert workspaces.list_layouts() != ()
+    assert state.visiting is False
+
+    monkeypatch.setattr(service._jobs, "cleanup", original_cleanup)
+    assert service.reap_expired() == 1
+    assert workspaces.list_layouts() == ()
+
+
 def test_visit_reauthorizes_owner_and_rechecks_every_staged_digest(tmp_path: Path) -> None:
     service, workspaces, _clock = _environment(tmp_path)
     sources = (

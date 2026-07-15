@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from enum import StrEnum
 
@@ -15,7 +15,9 @@ from delta_lemmata.ingestion import (
     IntakeErrorCode,
     IntakeReceipt,
     IntakeRole,
+    ValidatedCorpusPayload,
     validate_batch,
+    visit_validated_corpus_payloads,
 )
 
 
@@ -160,3 +162,30 @@ def validate_browser_uploads(
     except IntakeError as error:
         return IntakeOutcome(submitted_count=submitted_count, error_code=error.code)
     return IntakeOutcome(submitted_count=submitted_count, receipts=receipts)
+
+
+def visit_browser_corpus_payloads[ResultT](
+    mode: CorpusInputMode,
+    corpus_files: Sequence[BrowserUpload],
+    visitor: Callable[[tuple[ValidatedCorpusPayload, ...]], ResultT],
+    *,
+    limits: IngestionLimits = DEFAULT_LIMITS,
+    id_factory: AssetIdFactory | None = None,
+) -> ResultT:
+    """Revalidate browser corpus bytes and expose them only to a trusted callback."""
+
+    requests = tuple(
+        IncomingUpload(
+            role=_CORPUS_ROLE[mode],
+            display_label=upload.display_label,
+            data=upload.data,
+            declared_mime=upload.declared_mime,
+        )
+        for upload in corpus_files
+    )
+    return visit_validated_corpus_payloads(
+        requests,
+        visitor,
+        limits=limits,
+        id_factory=id_factory,
+    )

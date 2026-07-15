@@ -1,8 +1,9 @@
-"""English-only Streamlit workbench through the P004 corpus-review boundary."""
+"""English-only Streamlit workbench through P007 corpus preparation."""
 
 from __future__ import annotations
 
 import hashlib
+import secrets
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -39,13 +40,23 @@ from delta_lemmata.corpus import (
     export_metadata_csv,
     guided_work_id,
     import_metadata_csv,
+    inventory_sha256,
     project_corpus_receipts,
     suggested_title,
+)
+from delta_lemmata.corpus_health_models import (
+    CorpusHealthFinding,
+    CorpusHealthReadiness,
+)
+from delta_lemmata.corpus_materialization import (
+    CorpusMaterializationError,
+    CorpusMaterializationReceipt,
 )
 from delta_lemmata.health import public_health
 from delta_lemmata.ingestion import (
     DEFAULT_LIMITS,
     ArchiveMemberReceipt,
+    IntakeError,
     IntakeErrorCode,
     IntakeReceipt,
     IntakeRole,
@@ -57,9 +68,25 @@ from delta_lemmata.intake_ui import (
     CorpusInputMode,
     IntakeOutcome,
     validate_browser_uploads,
+    visit_browser_corpus_payloads,
+)
+from delta_lemmata.prepared_corpus_service import (
+    PreparationOutcome,
+    PreparedCorpusError,
+)
+from delta_lemmata.preprocessing import build_preprocessing_config, parse_custom_exclusions
+from delta_lemmata.preprocessing_models import (
+    AnalysisRole,
+    CorpusAnalysisAnnotation,
+    CorpusAnalysisAnnotationsV1,
+    OcrStatus,
+    ParatextStatus,
+    TextUnit,
+    canonical_p007_json,
 )
 from delta_lemmata.provenance import canonical_json_bytes
 from delta_lemmata.ui_theme import APP_CSS
+from delta_lemmata.web_runtime import WebRuntime, WebRuntimeError, build_web_runtime
 from delta_lemmata.workbench import (
     MODE_BODY_KEYS,
     MODE_LABEL_KEYS,
@@ -83,6 +110,10 @@ _FLOW_ORIGIN_KEY = "_p004_inventory_origin"
 _FLOW_GUIDED_INPUTS_KEY = "_p004_guided_inputs"
 _FLOW_CORRECTION_KEY = "_p004_correction_target"
 _FLOW_CONFIRMATION_HASH_KEY = "_p004_confirmation_inventory_sha256"
+_FLOW_OWNER_KEY = "_private_owner_key"
+_FLOW_MATERIALIZATION_KEY = "_p005_materialization_receipt"
+_FLOW_ANNOTATIONS_KEY = "_p007_annotations"
+_FLOW_PREPARATION_KEY = "_p007_preparation_outcome"
 _HTTP_URL_ADAPTER = TypeAdapter(HttpUrl)
 
 
@@ -90,6 +121,7 @@ class CorpusSubstage(StrEnum):
     UPLOAD = "upload"
     DESCRIBE = "describe"
     REVIEW = "review"
+    PREPARE = "prepare"
 
 
 class CorpusOrigin(StrEnum):
@@ -104,6 +136,29 @@ class CorrectionTarget:
     work_title: str
     group: CompletenessGroup
     field_path: str
+
+
+@dataclass(frozen=True, slots=True)
+class PreparationSelection:
+    asset_id: str
+    work_id: str
+    analysis_role: AnalysisRole
+    ocr_status: OcrStatus
+    paratext_status: ParatextStatus
+    curation_note: str | None
+
+
+@st.cache_resource(show_spinner=False)
+def _runtime() -> WebRuntime:
+    return build_web_runtime()
+
+
+def _owner_key() -> str:
+    value = st.session_state.get(_FLOW_OWNER_KEY)
+    if not isinstance(value, str) or len(value) != 64:
+        value = secrets.token_hex(32)
+        st.session_state[_FLOW_OWNER_KEY] = value
+    return value
 
 
 def _html(value: str) -> str:
@@ -144,6 +199,10 @@ def _stage() -> CorpusSubstage:
         return CorpusSubstage.UPLOAD
 
 
+def _set_stage(stage: CorpusSubstage) -> None:
+    st.session_state[_FLOW_STAGE_KEY] = stage.value
+
+
 def _map_row(
     number: int,
     label_key: str,
@@ -167,6 +226,7 @@ def _render_stepper(stage: CorpusSubstage) -> None:
         CorpusSubstage.UPLOAD: "flow.stage.upload",
         CorpusSubstage.DESCRIBE: "flow.stage.describe",
         CorpusSubstage.REVIEW: "flow.stage.review",
+        CorpusSubstage.PREPARE: "flow.stage.prepare",
     }[stage]
     markup = (
         '<nav class="delta-map" aria-label="Corpus documentation progress">'
@@ -231,6 +291,18 @@ def _choice_label(value: str) -> str:
 
 def _rights_label(value: str) -> str:
     return text(f"describe.rights.{value}")
+
+
+def _analysis_role_label(value: str) -> str:
+    return text(f"prepare.role.{value}.label")
+
+
+def _ocr_label(value: str) -> str:
+    return text(f"prepare.ocr.{value}")
+
+
+def _paratext_label(value: str) -> str:
+    return text(f"prepare.paratext.{value}")
 
 
 def _browser_upload(upload: Any) -> BrowserUpload:
@@ -469,6 +541,21 @@ def _clear_pending_upload_widgets() -> None:
 
 
 def _clear_documentation_state(*, keep_purpose: bool) -> None:
+    materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+    owner_key = st.session_state.get(_FLOW_OWNER_KEY)
+    preparation = st.session_state.get(_FLOW_PREPARATION_KEY)
+    materialization_already_cleaned = (
+        isinstance(preparation, PreparationOutcome) and preparation.ready_receipt is None
+    )
+    if (
+        isinstance(materialization, CorpusMaterializationReceipt)
+        and isinstance(owner_key, str)
+        and not materialization_already_cleaned
+    ):
+        _runtime().materializations.cleanup(
+            owner_key=owner_key,
+            receipt=materialization,
+        )
     for key in (
         _FLOW_CATALOG_KEY,
         _FLOW_CATALOG_HASH_KEY,
@@ -479,11 +566,19 @@ def _clear_documentation_state(*, keep_purpose: bool) -> None:
         _FLOW_GUIDED_INPUTS_KEY,
         _FLOW_CORRECTION_KEY,
         _FLOW_CONFIRMATION_HASH_KEY,
+        _FLOW_MATERIALIZATION_KEY,
+        _FLOW_ANNOTATIONS_KEY,
+        _FLOW_PREPARATION_KEY,
     ):
         st.session_state.pop(key, None)
     for session_key in tuple(st.session_state):
         if str(session_key).startswith(
-            ("draft_", "review_confirmation_", "review_timeline_selector_")
+            (
+                "draft_",
+                "prep_",
+                "review_confirmation_",
+                "review_timeline_selector_",
+            )
         ):
             st.session_state.pop(session_key, None)
     if not keep_purpose:
@@ -622,14 +717,32 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                     tuple(unit.validated_file for unit in units),
                     display_label=metadata_file.display_label,
                 )
-            st.session_state[_FLOW_PURPOSE_KEY] = purpose.value
-            st.session_state[_FLOW_CATALOG_KEY] = units
-            st.session_state[_FLOW_CATALOG_HASH_KEY] = corpus_catalog_sha256(units)
-            st.session_state[_FLOW_IMPORT_KEY] = metadata_result
-            st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.DESCRIBE.value
-            st.session_state[_PENDING_UPLOAD_CLEAR_KEY] = _upload_widget_keys(generation)
-            st.session_state[_UPLOAD_GENERATION_KEY] = generation + 1
-            st.rerun()
+            owner_key = _owner_key()
+            try:
+                runtime = _runtime()
+                runtime.maintain()
+                materialization = visit_browser_corpus_payloads(
+                    mode,
+                    corpus_files,
+                    lambda payloads: runtime.materializations.materialize(
+                        owner_key=owner_key,
+                        payloads=payloads,
+                    ),
+                )
+            except (CorpusMaterializationError, IntakeError, WebRuntimeError) as error:
+                code = error.code.value
+                st.error(text("corpus.materialization_error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=code))
+            else:
+                st.session_state[_FLOW_PURPOSE_KEY] = purpose.value
+                st.session_state[_FLOW_CATALOG_KEY] = units
+                st.session_state[_FLOW_CATALOG_HASH_KEY] = corpus_catalog_sha256(units)
+                st.session_state[_FLOW_IMPORT_KEY] = metadata_result
+                st.session_state[_FLOW_MATERIALIZATION_KEY] = materialization
+                st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.DESCRIBE.value
+                st.session_state[_PENDING_UPLOAD_CLEAR_KEY] = _upload_widget_keys(generation)
+                st.session_state[_UPLOAD_GENERATION_KEY] = generation + 1
+                st.rerun()
         return display_outcome
 
 
@@ -1538,6 +1651,321 @@ def _render_review_stage() -> None:
             text("review.analysis_locked" if confirmed else "review.analysis_locked_confirmation"),
             icon=":material/lock:",
         )
+        materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+        if confirmed and not report.blocked:
+            if isinstance(materialization, CorpusMaterializationReceipt):
+                st.button(
+                    text("review.continue_prepare"),
+                    icon=":material/arrow_forward:",
+                    type="primary",
+                    width="stretch",
+                    key="review_continue_prepare",
+                    on_click=_set_stage,
+                    args=(CorpusSubstage.PREPARE,),
+                )
+            else:
+                st.warning(text("review.temporary_corpus_missing"), icon=":material/timer_off:")
+
+
+def _preparation_document_id(inventory_digest: str, asset_id: str) -> str:
+    material = (
+        b"delta-lemmata\x00preparation-document-id\x00v1\x00"
+        + inventory_digest.encode("ascii")
+        + b"\x00"
+        + asset_id.encode("utf-8", errors="strict")
+    )
+    return "doc_" + hashlib.sha256(material).hexdigest()
+
+
+def _build_preparation_annotations(
+    inventory: CorpusInventory,
+    selections: tuple[PreparationSelection, ...],
+) -> CorpusAnalysisAnnotationsV1:
+    digest = inventory_sha256(inventory)
+    assets = {asset.asset_id: asset for asset in inventory.assets}
+    if len(selections) != len(assets) or {item.asset_id for item in selections} != set(assets):
+        raise ValueError("preparation selections do not match the corpus assets")
+    return CorpusAnalysisAnnotationsV1(
+        schema_version="corpus-analysis-annotations-v1",
+        inventory_sha256=digest,
+        annotations=tuple(
+            CorpusAnalysisAnnotation(
+                document_id=_preparation_document_id(digest, selection.asset_id),
+                asset_id=selection.asset_id,
+                work_id=selection.work_id,
+                analysis_role=selection.analysis_role,
+                text_unit=TextUnit.INDEPENDENT_WORK,
+                parent_work_id=None,
+                ocr_status=selection.ocr_status,
+                paratext_status=selection.paratext_status,
+                preupload_curation_note=selection.curation_note,
+            )
+            for selection in selections
+        ),
+    )
+
+
+def _render_preparation_selections(
+    inventory: CorpusInventory,
+) -> tuple[PreparationSelection, ...]:
+    works = {work.work_id: work for work in inventory.works}
+    selections: list[PreparationSelection] = []
+    st.subheader(text("prepare.decisions_title"), anchor=False)
+    st.caption(text("prepare.decisions_body"))
+    role_options = [AnalysisRole.KNOWN.value]
+    if inventory.purpose is PurposeId.TEXT_PROXIMITY:
+        role_options.append(AnalysisRole.UNKNOWN.value)
+    for index, asset in enumerate(inventory.assets, start=1):
+        work = works[asset.work_id]
+        label = text(
+            "prepare.work_label",
+            index=index,
+            title=work.title_original,
+            file=asset.file_label,
+        )
+        with st.expander(label, expanded=index == 1):
+            role = st.selectbox(
+                text("prepare.role.label"),
+                options=role_options,
+                format_func=_analysis_role_label,
+                key=f"prep_role_{asset.asset_id}",
+                help=text("prepare.role.help"),
+            )
+            st.caption(text(f"prepare.role.{role}.body"))
+            first, second = st.columns(2)
+            with first:
+                ocr = st.selectbox(
+                    text("prepare.ocr.label"),
+                    options=[status.value for status in OcrStatus],
+                    index=[status.value for status in OcrStatus].index(OcrStatus.UNKNOWN.value),
+                    format_func=_ocr_label,
+                    key=f"prep_ocr_{asset.asset_id}",
+                    help=text("prepare.ocr.help"),
+                )
+            with second:
+                paratext = st.selectbox(
+                    text("prepare.paratext.label"),
+                    options=[status.value for status in ParatextStatus],
+                    index=[status.value for status in ParatextStatus].index(
+                        ParatextStatus.UNKNOWN.value
+                    ),
+                    format_func=_paratext_label,
+                    key=f"prep_paratext_{asset.asset_id}",
+                    help=text("prepare.paratext.help"),
+                )
+            note_value = st.text_area(
+                text("prepare.note.label"),
+                key=f"prep_note_{asset.asset_id}",
+                help=text("prepare.note.help"),
+                max_chars=2_000,
+            ).strip()
+            st.caption(text("prepare.unit_fixed"))
+        selections.append(
+            PreparationSelection(
+                asset_id=asset.asset_id,
+                work_id=asset.work_id,
+                analysis_role=AnalysisRole(role),
+                ocr_status=OcrStatus(ocr),
+                paratext_status=ParatextStatus(paratext),
+                curation_note=note_value or None,
+            )
+        )
+    return tuple(selections)
+
+
+def _finding_measure(finding: CorpusHealthFinding) -> str | None:
+    values: list[str] = []
+    if finding.observed_count is not None:
+        values.append(text("prepare.finding.observed_count", value=finding.observed_count))
+    if finding.threshold_count is not None:
+        values.append(text("prepare.finding.threshold_count", value=finding.threshold_count))
+    if finding.observed_ratio is not None:
+        values.append(text("prepare.finding.observed_ratio", value=finding.observed_ratio))
+    if finding.threshold_ratio is not None:
+        values.append(text("prepare.finding.threshold_ratio", value=finding.threshold_ratio))
+    return " · ".join(values) or None
+
+
+def _render_health_finding(finding: CorpusHealthFinding) -> None:
+    key = f"prepare.finding.{finding.code.value}"
+    icon = {
+        "blocker": ":material/block:",
+        "strong_warning": ":material/warning:",
+        "note": ":material/info:",
+    }[finding.severity.value]
+    with st.container(border=True):
+        st.markdown(f"**{text(f'{key}.title')}**")
+        st.caption(text(f"{key}.body"))
+        st.caption(f"{text('prepare.finding.action_label')}: {text(f'{key}.action')}")
+        measure = _finding_measure(finding)
+        if measure is not None:
+            st.caption(f"{icon} {measure}")
+
+
+def _render_preparation_outcome(
+    inventory: CorpusInventory,
+    outcome: PreparationOutcome,
+) -> None:
+    health = outcome.health_report
+    if health.readiness is CorpusHealthReadiness.READY:
+        st.success(text("prepare.ready"), icon=":material/check_circle:")
+    else:
+        st.error(text("prepare.blocked"), icon=":material/block:")
+    st.caption(text("prepare.preflight_scope"))
+    first, second, third, fourth, fifth = st.columns(5)
+    first.metric(text("prepare.metric.works"), health.independent_work_count)
+    second.metric(text("prepare.metric.known"), health.known_independent_work_count)
+    third.metric(text("prepare.metric.features"), health.candidate_feature_count)
+    fourth.metric(text("prepare.metric.blockers"), health.blocker_count)
+    fifth.metric(text("prepare.metric.warnings"), health.strong_warning_count)
+
+    works = {work.work_id: work.title_original for work in inventory.works}
+    length_rows = [
+        {
+            text("prepare.table.work"): works[item.work_id],
+            text("prepare.table.tokens"): item.token_count,
+            text("prepare.table.unique"): item.unique_token_count,
+        }
+        for item in outcome.manifest.works
+    ]
+    st.subheader(text("prepare.length_title"), anchor=False)
+    st.caption(text("prepare.length_body"))
+    st.bar_chart(
+        length_rows,
+        x=text("prepare.table.work"),
+        y=text("prepare.table.tokens"),
+        color="#0f6e56",
+    )
+    st.dataframe(length_rows, hide_index=True, width="stretch")
+
+    st.subheader(text("prepare.mfw_title"), anchor=False)
+    st.caption(text("prepare.mfw_body"))
+    capacity_columns = st.columns(4)
+    for column, capacity in zip(capacity_columns, health.mfw_capacity, strict=True):
+        with column:
+            status_key = (
+                "prepare.mfw.available" if capacity.available else "prepare.mfw.unavailable"
+            )
+            st.metric(
+                text("prepare.mfw.metric", mfw=capacity.requested_mfw),
+                text(status_key),
+                delta=text("prepare.mfw.features", count=capacity.available_features),
+                delta_color="off",
+            )
+
+    st.subheader(text("prepare.findings_title"), anchor=False)
+    st.caption(text("prepare.findings_body"))
+    for finding in health.findings:
+        _render_health_finding(finding)
+
+    st.subheader(text("prepare.downloads_title"), anchor=False)
+    first_download, second_download, third_download = st.columns(3)
+    with first_download:
+        st.download_button(
+            text("prepare.download_health"),
+            data=canonical_p007_json(health),
+            file_name="delta-corpus-health.json",
+            mime="application/json",
+            width="stretch",
+        )
+    with second_download:
+        st.download_button(
+            text("prepare.download_manifest"),
+            data=canonical_p007_json(outcome.manifest),
+            file_name="delta-preprocessing-manifest.json",
+            mime="application/json",
+            width="stretch",
+        )
+    with third_download:
+        st.download_button(
+            text("prepare.download_config"),
+            data=canonical_p007_json(outcome.config),
+            file_name="delta-preprocessing-config.json",
+            mime="application/json",
+            width="stretch",
+        )
+
+
+def _render_prepare_stage() -> None:
+    inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
+    report = st.session_state.get(_FLOW_REPORT_KEY)
+    materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+    if (
+        not isinstance(inventory, CorpusInventory)
+        or not isinstance(report, ValidationReport)
+        or not isinstance(materialization, CorpusMaterializationReceipt)
+    ):
+        _clear_documentation_state(keep_purpose=True)
+        st.rerun()
+
+    with st.container(border=True, key="prepare_stage"):
+        st.markdown(
+            f'<div class="delta-eyebrow">{_html(text("prepare.eyebrow"))}</div>',
+            unsafe_allow_html=True,
+        )
+        st.header(text("prepare.title"), anchor=False)
+        st.caption(text("prepare.body"))
+        st.info(text("prepare.profile_summary"), icon=":material/tune:")
+
+        outcome = st.session_state.get(_FLOW_PREPARATION_KEY)
+        if isinstance(outcome, PreparationOutcome):
+            _render_preparation_outcome(inventory, outcome)
+            if outcome.ready_receipt is None:
+                if st.button(
+                    text("prepare.start_over"),
+                    icon=":material/restart_alt:",
+                    width="stretch",
+                ):
+                    _clear_documentation_state(keep_purpose=True)
+                    st.rerun()
+            else:
+                st.info(text("prepare.parameters_next"), icon=":material/arrow_forward:")
+            return
+
+        expected_hash = inventory_sha256(inventory)
+        confirmed_hash = st.session_state.get(_FLOW_CONFIRMATION_HASH_KEY)
+        if (
+            report.blocked
+            or report.inventory_sha256 != expected_hash
+            or confirmed_hash != expected_hash
+        ):
+            st.warning(text("prepare.confirmation_missing"), icon=":material/rule:")
+            if st.button(text("prepare.back_review"), icon=":material/arrow_back:"):
+                st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.REVIEW.value
+                st.rerun()
+            return
+
+        if st.button(text("prepare.back_review"), icon=":material/arrow_back:"):
+            st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.REVIEW.value
+            st.rerun()
+
+        selections = _render_preparation_selections(inventory)
+        if st.button(
+            text("prepare.run_check"),
+            type="primary",
+            icon=":material/fact_check:",
+            width="stretch",
+            key="prepare_run_check",
+        ):
+            try:
+                annotations = _build_preparation_annotations(inventory, selections)
+                config = build_preprocessing_config(parse_custom_exclusions(None))
+                preparation = _runtime().prepared_corpora.prepare(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                    inventory=inventory,
+                    annotations=annotations,
+                    config=config,
+                )
+            except (PreparedCorpusError, WebRuntimeError) as error:
+                st.error(text("prepare.error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=error.code.value))
+            except (ValidationError, ValueError):
+                st.error(text("prepare.annotation_error"), icon=":material/error:")
+            else:
+                st.session_state[_FLOW_ANNOTATIONS_KEY] = annotations
+                st.session_state[_FLOW_PREPARATION_KEY] = preparation
+                st.rerun()
 
 
 def _render_setup(stage: CorpusSubstage) -> PurposeId:
@@ -1589,8 +2017,10 @@ def main() -> None:
             _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:
             _render_describe_stage(purpose)
-        else:
+        elif stage is CorpusSubstage.REVIEW:
             _render_review_stage()
+        else:
+            _render_prepare_stage()
     if stage is CorpusSubstage.UPLOAD:
         _render_boundary()
     else:

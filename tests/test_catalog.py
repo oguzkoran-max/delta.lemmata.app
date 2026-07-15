@@ -4,6 +4,7 @@ import re
 from pathlib import Path
 
 from delta_lemmata.catalog import DEFAULT_LOCALE, SUPPORTED_LOCALES, UI_CATALOG, text
+from delta_lemmata.corpus_health_models import CorpusHealthFindingCode
 from delta_lemmata.workbench import MODE_BODY_KEYS, MODE_LABEL_KEYS, PURPOSES, STATE_PRESENTATIONS
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -33,6 +34,13 @@ def test_every_shell_contract_key_exists_in_the_catalog() -> None:
             presentation.title_key,
             presentation.body_key,
         } <= keys
+
+
+def test_every_corpus_health_finding_has_beginner_facing_copy() -> None:
+    keys = set(UI_CATALOG["en"])
+    for code in CorpusHealthFindingCode:
+        prefix = f"prepare.finding.{code.value}"
+        assert {f"{prefix}.title", f"{prefix}.body", f"{prefix}.action"} <= keys
 
 
 def test_catalog_copy_avoids_prohibited_claims() -> None:

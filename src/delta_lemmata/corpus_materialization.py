@@ -373,6 +373,28 @@ class CorpusMaterializationService:
         return report
 
     @_content_free
+    def reap_expired(self) -> int:
+        """Remove expired, idle leases before admitting more browser work."""
+
+        now = self._now()
+        removed = 0
+        while True:
+            with self._lock:
+                state = next(
+                    (
+                        candidate
+                        for candidate in self._leases.values()
+                        if not candidate.visiting and now >= candidate.receipt.expires_at_utc
+                    ),
+                    None,
+                )
+                if state is None:
+                    return removed
+                state.visiting = True
+            self._cleanup_state(state)
+            removed += 1
+
+    @_content_free
     def visit[ResultT](
         self,
         *,

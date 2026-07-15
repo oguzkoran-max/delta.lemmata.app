@@ -27,8 +27,23 @@ from delta_lemmata.corpus import (
     ValidatedFileRecord,
     VocabularyTerm,
     build_review_projection,
+    inventory_sha256,
     metadata_csv_template,
     validate_inventory,
+)
+from delta_lemmata.corpus_health_models import (
+    CorpusHealthFinding,
+    CorpusHealthFindingCode,
+    HealthSeverity,
+)
+from delta_lemmata.prepared_corpus_service import (
+    PreparedCorpusError,
+    PreparedCorpusErrorCode,
+)
+from delta_lemmata.preprocessing_models import (
+    AnalysisRole,
+    OcrStatus,
+    ParatextStatus,
 )
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -37,6 +52,7 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "p004"
 
 
 def run_app() -> AppTest:
+    webapp_module._runtime.clear()
     return AppTest.from_file(str(APP), default_timeout=20).run()
 
 
@@ -112,6 +128,37 @@ def _open_guided_review() -> AppTest:
     return app
 
 
+def _open_two_work_prepare() -> AppTest:
+    app = run_app()
+    app.segmented_control[1].set_value("zip_archive").run()
+    app.file_uploader[0].upload(
+        "corpus.zip",
+        _zip_payload(
+            [
+                ("early.txt", b"alpha beta gamma delta epsilon"),
+                ("late.txt", b"alpha beta gamma zeta eta"),
+            ]
+        ),
+        "application/zip",
+    ).run()
+    app.button(key="corpus_continue").click().run()
+    for author in _all_by_label(app.text_input, "Primary author name"):
+        author.input("Carlo Collodi")
+    for source in _all_by_label(app.text_input, "Source URL"):
+        source.input("https://www.liberliber.it/")
+    app.run()
+    for rights in _all_by_label(app.selectbox, "Documented rights state"):
+        rights.set_value("analysis_only")
+    app.run()
+    app.button(key="guided_build_review").click().run()
+    _by_label(
+        app.checkbox,
+        "I reviewed the file-to-work mappings and the documented rights records.",
+    ).check().run()
+    app.button(key="review_continue_prepare").click().run()
+    return app
+
+
 def _two_work_inventory() -> CorpusInventory:
     inventory = _fixture_inventory()
     second_work = inventory.works[0].model_copy(
@@ -180,6 +227,10 @@ def test_corrupt_and_incomplete_stages_recover_to_upload() -> None:
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
 
     app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.REVIEW.value
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+
+    app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.PREPARE.value
     app.run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
 
@@ -370,6 +421,221 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
     assert "ZIP_CANARY_EARLY" not in state
     assert "ZIP_CANARY_LATE" not in state
     assert "storage_name" not in state
+
+
+def test_confirmed_corpus_opens_beginner_facing_preparation_decisions() -> None:
+    app = _open_two_work_prepare()
+    assert [heading.value for heading in app.header] == [
+        "Prepare and check the corpus",
+        "Method boundary",
+    ]
+    assert len(_all_by_label(app.selectbox, "Analysis role")) == 2
+    assert len(_all_by_label(app.selectbox, "OCR status")) == 2
+    assert len(_all_by_label(app.selectbox, "Paratext status")) == 2
+    assert all(
+        control.options == ["Known reference text", "Unknown or focal text"]
+        for control in _all_by_label(app.selectbox, "Analysis role")
+    )
+    captions = "\n".join(item.value for item in app.caption)
+    assert "Fixed alpha profile" in "\n".join(item.value for item in app.info)
+    assert "Analysis unit: one independent work" in captions
+    assert all(
+        "OCR means text produced by optical character recognition" in control.help
+        for control in _all_by_label(app.selectbox, "OCR status")
+    )
+    assert "no lemmatization or stemming" in "\n".join(item.value for item in app.info)
+    state = repr(app.session_state.filtered_state)
+    assert "alpha beta gamma" not in state
+    assert "SessionCapability" not in state
+
+
+def test_preparation_runs_real_health_checks_and_exports_payload_free_evidence() -> None:
+    app = _open_two_work_prepare()
+    app.button(key="prepare_run_check").click().run()
+    assert len(app.exception) == 0
+    assert [message.value for message in app.success] == [
+        "Computational preflight passed. The prepared corpus can continue to bounded "
+        "parameter review."
+    ]
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert metrics["Independent works"] == "2"
+    assert metrics["Known references"] == "2"
+    assert metrics["Candidate features"] == "7"
+    assert metrics["Blockers"] == "0"
+    assert [item.label for item in app.download_button] == [
+        "Download corpus-health report",
+        "Download preparation manifest",
+        "Download preparation settings",
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "Which MFW settings can this corpus support?" in [
+        heading.value for heading in app.subheader
+    ]
+    assert "This is a computational preflight only" in "\n".join(item.value for item in app.caption)
+    assert "Preparation completed deterministically" in rendered
+    state = repr(app.session_state.filtered_state)
+    assert "PreparationOutcome" in state
+    assert "AnalysisPreparationReceiptV1" in state
+    assert "alpha beta gamma" not in state
+    assert "SessionCapability" not in state
+    assert "control.sqlite3" not in state
+
+
+def test_one_known_work_is_blocked_with_an_explanation_and_can_restart() -> None:
+    app = _open_guided_review()
+    _by_label(
+        app.checkbox,
+        "I reviewed the file-to-work mappings and the documented rights records.",
+    ).check().run()
+    app.button(key="review_continue_prepare").click().run()
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Computational preflight found one or more blockers. No analysis request was created."
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "Too few known reference works" in rendered
+    assert "at least two independent known works" in "\n".join(item.value for item in app.caption)
+    _by_label(app.button, "Start again with revised files").click().run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+
+
+def test_preparation_confirmation_and_back_navigation_fail_closed() -> None:
+    app = _open_two_work_prepare()
+    del app.session_state[webapp_module._FLOW_CONFIRMATION_HASH_KEY]
+    app.run()
+    assert [message.value for message in app.warning] == [
+        "Corpus documentation changed or is not confirmed. Return to Review and confirm the "
+        "current inventory before preparation."
+    ]
+    _by_label(app.button, "Back to corpus review").click().run()
+    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+
+    app = _open_two_work_prepare()
+    _by_label(app.button, "Back to corpus review").click().run()
+    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+
+
+def test_review_explains_when_the_private_temporary_corpus_is_missing() -> None:
+    app = _inject_review(run_app(), _fixture_inventory())
+    _by_label(
+        app.checkbox,
+        "I reviewed the file-to-work mappings and the documented rights records.",
+    ).check().run()
+    assert [message.value for message in app.warning] == [
+        "The temporary corpus is no longer attached to this browser session. Start again "
+        "with the same files; the documentation package can still be downloaded first."
+    ]
+
+
+def test_group_preparation_uses_known_references_only() -> None:
+    app = _open_two_work_prepare()
+    inventory = app.session_state[webapp_module._FLOW_INVENTORY_KEY]
+    grouped = inventory.model_copy(
+        update={
+            "purpose": PurposeId.GROUP_COMPARISON,
+            "works": tuple(
+                work.model_copy(update={"group_label": f"group-{index}"})
+                for index, work in enumerate(inventory.works, start=1)
+            ),
+        }
+    )
+    report = validate_inventory(grouped)
+    assert report.blocked is False
+    app.session_state[webapp_module._FLOW_INVENTORY_KEY] = grouped
+    app.session_state[webapp_module._FLOW_REPORT_KEY] = report
+    app.session_state[webapp_module._FLOW_CONFIRMATION_HASH_KEY] = inventory_sha256(grouped)
+    app.run()
+    assert all(
+        control.options == ["Known reference text"]
+        for control in _all_by_label(app.selectbox, "Analysis role")
+    )
+
+
+def test_finding_measure_and_measure_free_rendering_are_explicit(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    finding = CorpusHealthFinding(
+        finding_id="finding_" + "1" * 64,
+        code=CorpusHealthFindingCode.PREPARATION_SUMMARY,
+        severity=HealthSeverity.NOTE,
+    )
+    measured = finding.model_copy(
+        update={
+            "observed_count": 3,
+            "threshold_count": 2,
+            "observed_ratio": 0.75,
+            "threshold_ratio": 0.5,
+        }
+    )
+    assert webapp_module._finding_measure(finding) is None
+    assert webapp_module._finding_measure(measured) == (
+        "Observed 3 · Reference threshold 2 · Observed ratio 0.75 · Reference ratio 0.50"
+    )
+
+    fake = SimpleNamespace(
+        container=lambda **_kwargs: _Context(),
+        markdown=lambda value: None,
+        caption=lambda value: None,
+    )
+    monkeypatch.setattr(webapp_module, "st", fake)
+    webapp_module._render_health_finding(finding)
+
+
+def test_preparation_rejects_bad_annotations_and_content_free_runtime_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_two_work_prepare()
+    monkeypatch.setattr(
+        webapp_module,
+        "_build_preparation_annotations",
+        lambda *_args: (_ for _ in ()).throw(ValueError("PRIVATE_CANARY")),
+    )
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Review the analysis roles, OCR states, paratext states, and curation notes "
+        "before retrying."
+    ]
+    assert "PRIVATE_CANARY" not in "\n".join(item.value for item in app.error)
+
+    monkeypatch.undo()
+    app = _open_two_work_prepare()
+
+    class RejectingPreparation:
+        @staticmethod
+        def prepare(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.OPERATION_FAILED)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(prepared_corpora=RejectingPreparation()),
+    )
+    app.button(key="prepare_run_check").click().run()
+    assert [message.value for message in app.error] == [
+        "Delta could not prepare this temporary corpus safely. No stylometric result was created."
+    ]
+    assert "Rejection reference: P007_PREPARED_CORPUS_OPERATION_FAILED" in [
+        item.value for item in app.caption
+    ]
+
+
+def test_preparation_annotation_builder_is_deterministic_and_rejects_asset_mismatch() -> None:
+    inventory = _fixture_inventory()
+    asset = inventory.assets[0]
+    selection = webapp_module.PreparationSelection(
+        asset_id=asset.asset_id,
+        work_id=asset.work_id,
+        analysis_role=AnalysisRole.KNOWN,
+        ocr_status=OcrStatus.UNKNOWN,
+        paratext_status=ParatextStatus.UNKNOWN,
+        curation_note=None,
+    )
+    first = webapp_module._build_preparation_annotations(inventory, (selection,))
+    second = webapp_module._build_preparation_annotations(inventory, (selection,))
+    assert first == second
+    assert first.annotations[0].document_id.startswith("doc_")
+    with pytest.raises(ValueError, match="do not match"):
+        webapp_module._build_preparation_annotations(inventory, ())
 
 
 def test_timeline_selection_updates_details_without_mutating_inventory() -> None:

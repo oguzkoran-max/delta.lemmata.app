@@ -5,12 +5,13 @@ digital humanities research. Its supported workflows are designed to run without
 requiring users to first learn or write R or Python code, while keeping corpus
 choices, parameters, limitations, and rerun evidence visible.
 
-**Current stage:** P003 Secure Ingestion passed automated, adversarial,
-exact-commit clean-clone, and human acceptance gates and is merged into `main`.
-P004 Metadata, Corpus Inventory, and Rights is active on its own branch. The
-English-only workbench can validate bounded TXT, ZIP, and structural metadata CSV
-inputs; P004 metadata semantics and rights decisions are not implemented yet, and
-scientific computation remains out of scope.
+**Current stage:** P001-P006 are complete. P007 Deterministic Preprocessing and
+Corpus Health is active on `codex/p007-preprocessing`. The English-only workbench
+can validate bounded TXT and ZIP inputs, document corpus metadata and rights,
+materialize accepted text in a private ephemeral workspace, apply the fixed
+`delta-surface-words-v1` profile, and present a content-free corpus-health review.
+Public parameter selection, analysis execution, results interpretation, and FAIR
+run export remain locked behind later tickets.
 
 ## Product Boundaries
 
@@ -47,6 +48,10 @@ Run the full verification suite:
 ```bash
 ./scripts/verify.sh
 ```
+
+Development creates a process-private temporary runtime automatically. Production
+requires a pre-created private runtime directory and two separately generated
+secrets; see `.env.example`. These values must never be committed.
 
 The canonical scientific and production environment will be a pinned Linux
 x86_64 OCI image. Container execution is not yet verified on the current Mac

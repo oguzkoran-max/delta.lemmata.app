@@ -77,6 +77,24 @@ authorship, interpretive validity, corpus representativeness, or a research
 conclusion. Presentation projections expose the machine-readable scope
 `computational_preflight_only`.
 
+### Web Runtime Composition
+
+- The browser reruns P003 validation immediately before materialization; only the
+  revalidated corpus bytes cross into the server-only runtime.
+- Streamlit session state retains an opaque owner key plus payload-free receipts
+  and outcomes. It never retains source bytes, prepared text, capabilities,
+  secrets, or readable server paths.
+- Development and tests use a process-private temporary runtime. Production fails
+  closed unless `DELTA_RUNTIME_ROOT` names a pre-created private directory and
+  `DELTA_JOB_OWNER_SECRET_HEX` and
+  `DELTA_PREPARATION_AUTHORITY_SECRET_HEX` provide distinct 256-bit secrets.
+- At process start and before accepting new browser materialization, the server
+  reconciles durable P005 state and reaps expired idle leases so abandoned sessions
+  cannot permanently consume staged-job capacity across browser or process loss.
+- Browser upload, metadata review, final confirmation, preparation, and corpus
+  health are connected. Parameter selection and public analysis remain unavailable
+  until their own contracts and gates are implemented.
+
 ## 4. Accepted Canonical Profile
 
 Profile identifier: `delta-surface-words-v1`

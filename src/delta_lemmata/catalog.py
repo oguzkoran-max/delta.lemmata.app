@@ -96,8 +96,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "parameters.status.title": "Current status",
     "parameters.status.body": (
-        "Controls stay locked until corpus-health checks and the R stylo engine are "
-        "connected. No stylometric analysis is running in this build."
+        "Controls stay locked while parameter review and the public analysis handoff "
+        "are being connected. No stylometric analysis is running in this build."
     ),
     "purpose.guidance": "Understand this research path",
     "purpose.label": "What do you want to investigate?",
@@ -218,10 +218,14 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Delta could not complete the intake operation safely. No analysis state was created."
     ),
     "corpus.error.reference": "Rejection reference: {code}",
+    "corpus.materialization_error": (
+        "Delta could not create a private, temporary corpus workspace. "
+        "The documentation stage was not opened and no analysis ran."
+    ),
     "corpus.continue_button": "Continue to describe the corpus",
     "corpus.continue_button_help": (
-        "Delta will retain only the validated file catalog and will clear the uploaded "
-        "browser payload before opening corpus documentation."
+        "Delta will move validated corpus text into a private, temporary server workspace, "
+        "retain only a content-free receipt in this browser session, and clear the upload widgets."
     ),
     "corpus.zip_ready": (
         "Each validated TXT member will open as a separate work in corpus documentation."
@@ -230,6 +234,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "flow.stage.upload": "Upload",
     "flow.stage.describe": "Describe",
     "flow.stage.review": "Review",
+    "flow.stage.prepare": "Prepare",
     "flow.locked": "Locked",
     "describe.eyebrow": "CORPUS · DESCRIBE",
     "describe.title": "Describe what each text represents",
@@ -408,6 +413,274 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "review.analysis_locked_confirmation": (
         "No stylometric analysis has run. Final corpus confirmation, parameters, and the "
         "analysis engine remain locked."
+    ),
+    "review.continue_prepare": "Continue to corpus preparation",
+    "review.temporary_corpus_missing": (
+        "The temporary corpus is no longer attached to this browser session. Start again "
+        "with the same files; the documentation package can still be downloaded first."
+    ),
+    "prepare.eyebrow": "CORPUS · PREPARE",
+    "prepare.title": "Prepare and check the corpus",
+    "prepare.body": (
+        "Tell Delta how each uploaded text should be treated. Delta then applies one visible, "
+        "deterministic text-preparation profile and checks whether the corpus can support the "
+        "next analysis step."
+    ),
+    "prepare.profile_summary": (
+        "Fixed alpha profile: Unicode NFC, lowercase surface words, accents preserved, common "
+        "words retained, punctuation and numbers removed, no lemmatization or stemming, and no "
+        "automatic removal of titles, prefaces, notes, or other paratext."
+    ),
+    "prepare.decisions_title": "Document the analysis role of each text",
+    "prepare.decisions_body": (
+        "These choices do not change the uploaded file. They record how Delta may use it and "
+        "which editorial risks must remain visible when results are interpreted."
+    ),
+    "prepare.work_label": "{index}. {title} · {file}",
+    "prepare.role.label": "Analysis role",
+    "prepare.role.help": (
+        "Known texts define the comparison space. An unknown or focal text is placed into that "
+        "space afterwards; its nearest neighbour is not automatically its author."
+    ),
+    "prepare.role.known.label": "Known reference text",
+    "prepare.role.known.body": (
+        "Use this when the documented work identity is accepted for this experiment. At least "
+        "two independent known works are required."
+    ),
+    "prepare.role.unknown.label": "Unknown or focal text",
+    "prepare.role.unknown.body": (
+        "Use this for a text you want to position against known references. Delta reports "
+        "relative proximity and does not prove authorship or authenticity."
+    ),
+    "prepare.ocr.label": "OCR status",
+    "prepare.ocr.help": (
+        "OCR means text produced by optical character recognition from page images. Recognition "
+        "errors can imitate stylistic differences, so record what you actually know."
+    ),
+    "prepare.ocr.not_ocr": "Not produced by OCR",
+    "prepare.ocr.reviewed": "OCR reviewed against the source",
+    "prepare.ocr.unreviewed": "OCR not fully reviewed",
+    "prepare.ocr.unknown": "OCR status unknown",
+    "prepare.paratext.label": "Paratext status",
+    "prepare.paratext.help": (
+        "Paratext includes titles, contents pages, prefaces, editorial notes, page headers, and "
+        "similar material outside the main literary text."
+    ),
+    "prepare.paratext.absent": "No paratext present",
+    "prepare.paratext.retained": "Paratext retained in the file",
+    "prepare.paratext.manually_removed_before_upload": "Paratext removed before upload",
+    "prepare.paratext.unknown": "Paratext status unknown",
+    "prepare.note.label": "Optional pre-upload curation note",
+    "prepare.note.help": (
+        "Briefly record manual changes already made to this file. Do not paste corpus text here."
+    ),
+    "prepare.unit_fixed": (
+        "Analysis unit: one independent work. Segment and excerpt analysis is not admitted in "
+        "this public-alpha workflow."
+    ),
+    "prepare.run_check": "Prepare texts and check corpus health",
+    "prepare.back_review": "Back to corpus review",
+    "prepare.start_over": "Start again with revised files",
+    "prepare.confirmation_missing": (
+        "Corpus documentation changed or is not confirmed. Return to Review and confirm the "
+        "current inventory before preparation."
+    ),
+    "prepare.error": (
+        "Delta could not prepare this temporary corpus safely. No stylometric result was created."
+    ),
+    "prepare.annotation_error": (
+        "Review the analysis roles, OCR states, paratext states, and curation notes "
+        "before retrying."
+    ),
+    "prepare.ready": (
+        "Computational preflight passed. The prepared corpus can continue to bounded "
+        "parameter review."
+    ),
+    "prepare.blocked": (
+        "Computational preflight found one or more blockers. No analysis request was created."
+    ),
+    "prepare.preflight_scope": (
+        "This is a computational preflight only. It does not establish corpus validity, "
+        "authorship, "
+        "causation, representativeness, or the soundness of a later interpretation."
+    ),
+    "prepare.parameters_next": (
+        "The corpus is ready. Parameter review is the next step; no stylometric analysis "
+        "has run yet."
+    ),
+    "prepare.metric.works": "Independent works",
+    "prepare.metric.known": "Known references",
+    "prepare.metric.features": "Candidate features",
+    "prepare.metric.blockers": "Blockers",
+    "prepare.metric.warnings": "Strong warnings",
+    "prepare.length_title": "Compare usable text lengths",
+    "prepare.length_body": (
+        "Token counts are measured after the fixed preparation profile. Large differences can "
+        "dominate a comparison and should be interpreted or corrected before analysis."
+    ),
+    "prepare.table.work": "Work",
+    "prepare.table.tokens": "Prepared tokens",
+    "prepare.table.unique": "Unique surface words",
+    "prepare.mfw_title": "Which MFW settings can this corpus support?",
+    "prepare.mfw_body": (
+        "MFW means most frequent words. A setting is available only when the known reference texts "
+        "jointly provide at least that many usable features. Higher is not automatically better."
+    ),
+    "prepare.mfw.metric": "{mfw} MFW",
+    "prepare.mfw.available": "Available",
+    "prepare.mfw.unavailable": "Unavailable",
+    "prepare.mfw.features": "{count} features found",
+    "prepare.findings_title": "What Delta found",
+    "prepare.findings_body": (
+        "Blockers stop the run. Strong warnings permit a later run but must remain visible in "
+        "interpretation. Notes document preparation without claiming a problem."
+    ),
+    "prepare.finding.action_label": "What to do",
+    "prepare.finding.observed_count": "Observed {value}",
+    "prepare.finding.threshold_count": "Reference threshold {value}",
+    "prepare.finding.observed_ratio": "Observed ratio {value:.2f}",
+    "prepare.finding.threshold_ratio": "Reference ratio {value:.2f}",
+    "prepare.downloads_title": "Download the preparation evidence",
+    "prepare.download_health": "Download corpus-health report",
+    "prepare.download_manifest": "Download preparation manifest",
+    "prepare.download_config": "Download preparation settings",
+    "prepare.finding.empty_prepared_work.title": "A text has no usable words",
+    "prepare.finding.empty_prepared_work.body": (
+        "After the declared preparation rules, this work produced zero surface-word tokens."
+    ),
+    "prepare.finding.empty_prepared_work.action": (
+        "Inspect the source file, encoding, and whether it contains literary text rather "
+        "than only markup or numbers."
+    ),
+    "prepare.finding.too_few_known_works.title": "Too few known reference works",
+    "prepare.finding.too_few_known_works.body": (
+        "Delta needs at least two independent known works to define feature statistics "
+        "and distances."
+    ),
+    "prepare.finding.too_few_known_works.action": (
+        "Mark at least two documented independent works as known references, or add "
+        "suitable reference texts."
+    ),
+    "prepare.finding.non_independent_unit.title": "A segment or excerpt is not runnable here",
+    "prepare.finding.non_independent_unit.body": (
+        "This alpha workflow compares complete independent works and blocks mixed analysis units."
+    ),
+    "prepare.finding.non_independent_unit.action": (
+        "Upload comparable complete works; use a later documented segmentation workflow "
+        "for excerpts or chapters."
+    ),
+    "prepare.finding.duplicate_independence_unit.title": "One work is represented more than once",
+    "prepare.finding.duplicate_independence_unit.body": (
+        "Repeated segments or editions of one work would be counted as if they were "
+        "independent evidence."
+    ),
+    "prepare.finding.duplicate_independence_unit.action": (
+        "Keep one documented analysis copy per independent work or redesign the corpus "
+        "as a declared segment study."
+    ),
+    "prepare.finding.exact_duplicate.title": "Two prepared texts are identical",
+    "prepare.finding.exact_duplicate.body": (
+        "Exact copies add no independent stylistic evidence and can distort the geometry "
+        "of the corpus."
+    ),
+    "prepare.finding.exact_duplicate.action": (
+        "Remove the duplicate or verify whether the files represent the same edition "
+        "under different names."
+    ),
+    "prepare.finding.no_runnable_features.title": "The corpus has too few shared usable features",
+    "prepare.finding.no_runnable_features.body": (
+        "The known texts do not provide the minimum feature inventory required by the "
+        "analysis engine."
+    ),
+    "prepare.finding.no_runnable_features.action": (
+        "Use longer language-comparable texts and review any exclusions before trying again."
+    ),
+    "prepare.finding.too_many_documents.title": "The corpus exceeds the alpha document limit",
+    "prepare.finding.too_many_documents.body": (
+        "The bounded analysis worker accepts at most 50 documents in one run."
+    ),
+    "prepare.finding.too_many_documents.action": (
+        "Reduce the corpus to a documented comparison set or divide the research question "
+        "into separate runs."
+    ),
+    "prepare.finding.too_few_independent_works.title": (
+        "The corpus is small for a robust comparison"
+    ),
+    "prepare.finding.too_few_independent_works.body": (
+        "Fewer than six independent works makes corpus-specific patterns and outliers "
+        "harder to distinguish."
+    ),
+    "prepare.finding.too_few_independent_works.action": (
+        "Add comparable independent works when possible and describe a smaller run as exploratory."
+    ),
+    "prepare.finding.too_few_chronology_points.title": "The timeline has too few documented points",
+    "prepare.finding.too_few_chronology_points.body": (
+        "A style-over-time question needs at least three distinct documented chronology "
+        "points to show a trajectory."
+    ),
+    "prepare.finding.too_few_chronology_points.action": (
+        "Add dated works from another period or narrow the claim to a comparison rather "
+        "than a developmental trend."
+    ),
+    "prepare.finding.near_duplicate.title": "Two texts are near-duplicates",
+    "prepare.finding.near_duplicate.body": (
+        "Large repeated portions may indicate the same edition, a reprint, or overlapping "
+        "source material."
+    ),
+    "prepare.finding.near_duplicate.action": (
+        "Compare the editions and remove or explicitly justify overlapping material before "
+        "interpreting distance."
+    ),
+    "prepare.finding.shared_passage.title": "A long passage is shared across works",
+    "prepare.finding.shared_passage.body": (
+        "Repeated editorial matter or embedded source text can create similarity unrelated "
+        "to authorial style."
+    ),
+    "prepare.finding.shared_passage.action": (
+        "Inspect the files for repeated prefaces, contents, quotations, collection headers, "
+        "or duplicated chapters."
+    ),
+    "prepare.finding.length_imbalance.title": "Text lengths are strongly imbalanced",
+    "prepare.finding.length_imbalance.body": (
+        "The longest independent work has at least four times as many prepared tokens as "
+        "the shortest."
+    ),
+    "prepare.finding.length_imbalance.action": (
+        "Prefer comparably sized works or use a later, explicitly validated segmentation "
+        "design; do not trim silently."
+    ),
+    "prepare.finding.group_imbalance.title": "Documented groups are imbalanced",
+    "prepare.finding.group_imbalance.body": (
+        "One group contains at least three times as many independent works as another."
+    ),
+    "prepare.finding.group_imbalance.action": (
+        "Add comparable works to the smaller group or treat group patterns as exploratory "
+        "and report the imbalance."
+    ),
+    "prepare.finding.mfw_unavailable.title": "One or more planned MFW levels are unavailable",
+    "prepare.finding.mfw_unavailable.body": (
+        "The known reference corpus contains fewer candidate features than a planned MFW "
+        "setting requires."
+    ),
+    "prepare.finding.mfw_unavailable.action": (
+        "Use only the available lower MFW settings; do not invent or pad missing features."
+    ),
+    "prepare.finding.transport_feature_excluded.title": "An overlong feature was excluded",
+    "prepare.finding.transport_feature_excluded.body": (
+        "A surface word exceeded the fixed worker transport limit and was not sent to the "
+        "analysis engine."
+    ),
+    "prepare.finding.transport_feature_excluded.action": (
+        "Usually no change is required; retain this note in the evidence package and "
+        "inspect unusual tokenization if frequent."
+    ),
+    "prepare.finding.preparation_summary.title": "Preparation completed deterministically",
+    "prepare.finding.preparation_summary.body": (
+        "Delta recorded document counts, token counts, feature capacity, and the exact "
+        "preparation profile without exporting raw text."
+    ),
+    "prepare.finding.preparation_summary.action": (
+        "Review the manifest and health report, then keep both with the later run evidence."
     ),
     "map.title": "Experiment map",
     "map.body": "Each stage opens only after its own checks pass.",
