@@ -125,7 +125,8 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert "this is not a 'best setting'" in rendered
     assert "bounded MFW, culling, segmentation, and distance choices" in rendered
     assert "up to 24 documented combinations" in rendered
-    assert "No stylometric analysis is running in this build" in rendered
+    assert "Guided Mode becomes available after corpus documentation" in rendered
+    assert "Research Mode remains locked in this public alpha" in rendered
     assert rendered.count('<nav class="delta-map"') == 1
     assert 'aria-current="step"' in rendered
     assert "Run analysis" not in rendered
@@ -296,8 +297,8 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
         "Method boundary",
     ]
     assert [message.value for message in app.success] == [
-        "Corpus documentation has no blockers. Parameter setup remains locked until "
-        "the analysis engine and its checks are connected."
+        "Corpus documentation has no blockers. Confirm this inventory to continue to "
+        "computational preflight and parameter review."
     ]
     rendered = unescape("\n".join(element.value for element in app.markdown))
     assert [heading.value for heading in app.subheader] == [

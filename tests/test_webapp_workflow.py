@@ -165,6 +165,13 @@ def _open_two_work_prepare() -> AppTest:
     return app
 
 
+def _open_guided_parameters() -> AppTest:
+    app = _open_two_work_prepare()
+    app.button(key="prepare_run_check").click().run()
+    app.button(key="prepare_continue_parameters").click().run()
+    return app.run()
+
+
 def _two_work_inventory() -> CorpusInventory:
     inventory = _fixture_inventory()
     second_work = inventory.works[0].model_copy(
@@ -237,6 +244,10 @@ def test_corrupt_and_incomplete_stages_recover_to_upload() -> None:
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
 
     app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.PREPARE.value
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Upload the research corpus"
+
+    app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.PARAMETERS.value
     app.run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
 
@@ -495,6 +506,219 @@ def test_preparation_runs_real_health_checks_and_exports_payload_free_evidence()
     assert "alpha beta gamma" not in state
     assert "SessionCapability" not in state
     assert "control.sqlite3" not in state
+
+
+def test_guided_parameter_review_explains_the_complete_fixed_grid() -> None:
+    app = _open_guided_parameters()
+    assert len(app.exception) == 0
+    assert [heading.value for heading in app.header] == [
+        "Review what Delta will calculate",
+        "Method boundary",
+    ]
+    assert [
+        (control.label, control.options, control.value) for control in app.segmented_control
+    ] == [("Parameter mode", ["Guided", "Research"], "guided")]
+    metrics = {metric.label: metric.value for metric in app.metric}
+    assert metrics == {
+        "Comparisons": "4",
+        "Display reference": "500 MFW",
+        "Culling": "0%",
+        "Analysis unit": "Whole text",
+    }
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "Guided parameter comparison grid" in rendered
+    assert all(f'<th scope="row">{mfw}</th>' in rendered for mfw in (100, 300, 500, 1000))
+    assert rendered.count("<td>Classic Delta</td>") == 4
+    assert rendered.count("<td>Sensitivity check</td>") == 3
+    assert rendered.count("<td>Display reference</td>") == 1
+    assert rendered.count('<tr data-reference="true">') == 1
+    assert [expander.label for expander in app.expander] == ["Understand these settings"]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "A larger number includes more vocabulary" in captions
+    assert "it does not prove authorship" in captions
+    assert "not a claim that it is the best result" in captions
+    assert [item.label for item in app.download_button] == ["Download resolved parameter record"]
+    run_button = app.button(key="parameters_run_analysis")
+    assert run_button.disabled is True
+    assert "alpha beta gamma" not in repr(app.session_state.filtered_state)
+
+
+def test_research_parameter_mode_is_visibly_locked() -> None:
+    app = _open_guided_parameters()
+    _by_label(app.segmented_control, "Parameter mode").set_value("research").run()
+    assert [message.value for message in app.warning] == [
+        "Research Mode is not available in this public alpha."
+    ]
+    assert not any(button.label == "Run the four comparisons" for button in app.button)
+    assert [button.label for button in app.button] == ["Back to corpus preparation"]
+    app.button(key="p008_back_prepare_research").click().run()
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+
+
+def test_guided_parameter_review_can_return_to_preparation() -> None:
+    app = _open_guided_parameters()
+    app.button(key="p008_back_prepare").click().run()
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+
+
+def test_invalid_parameter_binding_fails_closed_and_returns_to_preparation() -> None:
+    app = _open_guided_parameters()
+    annotations = app.session_state[webapp_module._FLOW_ANNOTATIONS_KEY]
+    invalid_annotations = annotations.model_copy(
+        update={
+            "annotations": tuple(
+                annotation.model_copy(update={"analysis_role": AnalysisRole.UNKNOWN})
+                for annotation in annotations.annotations
+            )
+        }
+    )
+    app.session_state[webapp_module._FLOW_ANNOTATIONS_KEY] = invalid_annotations
+    app.run()
+    assert [message.value for message in app.error] == [
+        "The resolved parameter record no longer matches this documented corpus. Return to "
+        "preparation and try again."
+    ]
+    app.button(key="p008_back_prepare_invalid").click().run()
+    app.run()
+    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+
+
+@pytest.mark.parametrize(
+    ("state_id", "title", "surface"),
+    [
+        ("queued", "Analysis queued", "info"),
+        ("failed", "Analysis failed", "error"),
+    ],
+)
+def test_parameter_review_presents_active_and_failed_job_states(
+    state_id: str,
+    title: str,
+    surface: str,
+) -> None:
+    app = _open_guided_parameters()
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id=state_id,
+        title=title,
+        body="Content-free lifecycle detail.",
+    )
+    app.run()
+    messages = app.info if surface == "info" else app.error
+    assert title in [message.value for message in messages]
+    assert "Content-free lifecycle detail." in [caption.value for caption in app.caption]
+    assert not any(button.label == "Run the four comparisons" for button in app.button)
+
+
+def test_confirmed_guided_grid_is_admitted_and_run_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RecordingPreparedCorpora:
+        admitted: dict[str, object] | None = None
+        status_calls = 0
+
+        def admit_once(self, **kwargs: object) -> None:
+            self.admitted = dict(kwargs)
+
+        def status(self, **_kwargs: object) -> SimpleNamespace:
+            self.status_calls += 1
+            return SimpleNamespace(
+                state_id="succeeded",
+                title="Analysis complete",
+                body="The run completed and its temporary inputs were removed.",
+            )
+
+    class RecordingAnalyses:
+        run_calls = 0
+
+        def run_next(self) -> None:
+            self.run_calls += 1
+
+    prepared = RecordingPreparedCorpora()
+    analyses = RecordingAnalyses()
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(prepared_corpora=prepared, analyses=analyses),
+    )
+
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    assert app.button(key="parameters_run_analysis").disabled is False
+    app.button(key="parameters_run_analysis").click().run()
+    app.run()
+
+    assert analyses.run_calls == 1
+    assert prepared.status_calls == 1
+    assert prepared.admitted is not None
+    config = prepared.admitted["resolved_workflow_config"]
+    assert config.known_work_count == 2
+    assert config.unknown_work_count == 0
+    assert [cell.mfw for cell in config.cells] == [100, 300, 500, 1000]
+    assert [message.value for message in app.success][-1] == "Analysis complete"
+    assert any("Evidence review" in message.value for message in app.info)
+    state = repr(app.session_state.filtered_state)
+    assert "alpha beta gamma" not in state
+    assert "SessionCapability" not in state
+
+
+def test_parameter_admission_failure_is_stable_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RejectingPreparedCorpora:
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.OPERATION_FAILED)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=RejectingPreparedCorpora(),
+            analyses=SimpleNamespace(run_next=lambda: None),
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "P007_PREPARED_CORPUS_OPERATION_FAILED" in captions
+    assert "alpha beta gamma" not in captions
+
+
+def test_parameter_configuration_failure_does_not_echo_exception_text(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RejectingPreparedCorpora:
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            raise ValueError("PRIVATE_PARAMETER_CANARY")
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=RejectingPreparedCorpora(),
+            analyses=SimpleNamespace(run_next=lambda: None),
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "The resolved parameter record no longer matches this documented corpus. Return to "
+        "preparation and try again."
+    ]
+    rendered = repr(app)
+    assert "PRIVATE_PARAMETER_CANARY" not in rendered
 
 
 def test_one_known_work_is_blocked_with_an_explanation_and_can_restart() -> None:

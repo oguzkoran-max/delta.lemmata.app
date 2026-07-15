@@ -966,6 +966,16 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   min-width: 1100px;
 }
 
+.delta-parameter-table {
+  min-width: 620px;
+}
+
+.delta-parameter-table tr[data-reference="true"] th,
+.delta-parameter-table tr[data-reference="true"] td {
+  background: #edf7f2;
+  font-weight: 650;
+}
+
 .delta-timeline-table tr[aria-current="true"] th,
 .delta-timeline-table tr[aria-current="true"] td {
   background: #edf7f2;

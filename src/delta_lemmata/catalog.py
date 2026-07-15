@@ -16,7 +16,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "brand.mark": "Δ",
     "brand.name": "Delta",
     "brand.subtitle": "A Lemmata stylometry workbench",
-    "header.stage": "Secure intake",
+    "header.stage.upload": "Secure intake",
+    "header.stage.corpus": "Corpus setup",
+    "header.stage.parameters": "Guided parameters",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
     "sidebar.progress": "Experiment map · 2 of 4",
@@ -30,6 +32,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.state.validated": "Validated",
     "sidebar.state.locked": "Locked",
     "sidebar.badge": "Corpus setup",
+    "sidebar.badge.parameters": "Guided analysis",
     "sidebar.guide_title": "Start here",
     "sidebar.guide_body": (
         "Delta checks and documents your corpus before any analysis settings appear."
@@ -46,7 +49,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "build.readiness_label": "Readiness",
     "build.readiness_value": "Secure intake available",
     "build.engine_label": "Analysis engine",
-    "build.engine_value": "Not connected",
+    "build.engine_value": "Connected · R stylo",
     "setup.eyebrow": "COMPARE HOW TEXTS ARE WRITTEN",
     "setup.title": "Discover patterns in writing style.",
     "setup.intro": (
@@ -96,8 +99,86 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "parameters.status.title": "Current status",
     "parameters.status.body": (
-        "Controls stay locked while parameter review and the public analysis handoff "
-        "are being connected. No stylometric analysis is running in this build."
+        "Guided Mode becomes available after corpus documentation and computational "
+        "preflight. Research Mode remains locked in this public alpha."
+    ),
+    "parameters.eyebrow": "PARAMETERS · GUIDED MODE",
+    "parameters.title": "Review what Delta will calculate",
+    "parameters.body": (
+        "Guided Mode runs four pre-registered comparisons on the same documented corpus. "
+        "Review the complete grid and its limits before starting the analysis."
+    ),
+    "parameters.mode.label": "Parameter mode",
+    "parameters.research_locked": "Research Mode is not available in this public alpha.",
+    "parameters.research_locked_body": (
+        "Its larger parameter grid will open only after resource limits, result checks, "
+        "and owner acceptance are complete. Guided Mode is the bounded runnable workflow."
+    ),
+    "parameters.back_prepare": "Back to corpus preparation",
+    "parameters.guided_ready": (
+        "The exact Guided Mode grid is resolved and ready for your confirmation."
+    ),
+    "parameters.metric.cells": "Comparisons",
+    "parameters.metric.reference": "Display reference",
+    "parameters.metric.culling": "Culling",
+    "parameters.metric.unit": "Analysis unit",
+    "parameters.unit.whole": "Whole text",
+    "parameters.table.mfw": "Most frequent words",
+    "parameters.table.culling": "Culling",
+    "parameters.table.distance": "Distance measure",
+    "parameters.table.role": "Evidence role",
+    "parameters.table.label": "Guided parameter comparison grid",
+    "parameters.table.reference": "Display reference",
+    "parameters.table.sensitivity": "Sensitivity check",
+    "parameters.distance.classic_delta": "Classic Delta",
+    "parameters.grid_caption": (
+        "Every row is retained as evidence. The 500-MFW row is a fixed display reference, "
+        "not a claim that it is the best result."
+    ),
+    "parameters.learn.title": "Understand these settings",
+    "parameters.learn.mfw.title": "Most frequent words (MFW)",
+    "parameters.learn.mfw.body": (
+        "MFW is the number of common word features compared across the corpus. A larger "
+        "number includes more vocabulary; it is not automatically more accurate. Delta "
+        "tests 100, 300, 500, and 1,000 so sensitivity stays visible."
+    ),
+    "parameters.learn.culling.title": "Culling",
+    "parameters.learn.culling.body": (
+        "Culling can require a word to occur in a minimum share of texts before comparison. "
+        "The alpha uses 0%, so it adds no cross-document presence threshold."
+    ),
+    "parameters.learn.delta.title": "Classic Delta",
+    "parameters.learn.delta.body": (
+        "Classic Delta standardizes word frequencies and measures the average distance "
+        "between texts. A smaller distance means relatively greater stylistic proximity "
+        "inside this corpus; it does not prove authorship."
+    ),
+    "parameters.learn.reference.title": "Why 500 MFW is the display reference",
+    "parameters.learn.reference.body": (
+        "Delta uses 500 MFW as a fixed, reproducible visual anchor. It does not select the "
+        "most attractive result. The other three comparisons remain equally visible."
+    ),
+    "parameters.interpretive_boundary": (
+        "These comparisons describe relative stylistic proximity within this corpus. They "
+        "do not prove authorship, authenticity, influence, intention, chronology, or causation."
+    ),
+    "parameters.download_config": "Download resolved parameter record",
+    "parameters.confirm": "I reviewed the four comparisons and their interpretation limits.",
+    "parameters.confirm_help": (
+        "Confirmation records that you saw the complete grid before calculation; it is not "
+        "an endorsement of any future result."
+    ),
+    "parameters.run": "Run the four comparisons",
+    "parameters.run_error": (
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ),
+    "parameters.configuration_error": (
+        "The resolved parameter record no longer matches this documented corpus. Return to "
+        "preparation and try again."
+    ),
+    "parameters.run_status_unknown": "Analysis status is unavailable.",
+    "parameters.evidence_next": (
+        "The calculation finished. Evidence review and result visualizations are the next step."
     ),
     "purpose.guidance": "Understand this research path",
     "purpose.label": "What do you want to investigate?",
@@ -148,7 +229,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Will run a documented parameter grid with explicit resource limits "
         "and complete cell reporting."
     ),
-    "mode.status": "Configuration remains locked until corpus documentation is connected.",
+    "mode.status": (
+        "Guided parameters open after corpus documentation and computational preflight."
+    ),
     "corpus.eyebrow": "CORPUS · UPLOAD",
     "corpus.title": "Upload the research corpus",
     "corpus.body": ("Add UTF-8, NFC TXT files or one strict ZIP. Metadata CSV is optional."),
@@ -235,6 +318,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "flow.stage.describe": "Describe",
     "flow.stage.review": "Review",
     "flow.stage.prepare": "Prepare",
+    "flow.stage.parameters": "Parameter review",
     "flow.locked": "Locked",
     "describe.eyebrow": "CORPUS · DESCRIBE",
     "describe.title": "Describe what each text represents",
@@ -321,8 +405,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "any parameter configuration is allowed."
     ),
     "review.ready": (
-        "Corpus documentation has no blockers. Parameter setup remains locked until "
-        "the analysis engine and its checks are connected."
+        "Corpus documentation has no blockers. Confirm this inventory to continue to "
+        "computational preflight and parameter review."
     ),
     "review.blocked": (
         "Corpus documentation contains blockers. Return to Describe and correct them; "
@@ -508,6 +592,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "The corpus is ready. Parameter review is the next step; no stylometric analysis "
         "has run yet."
     ),
+    "prepare.continue_parameters": "Continue to parameter review",
     "prepare.metric.works": "Independent works",
     "prepare.metric.known": "Known references",
     "prepare.metric.features": "Candidate features",

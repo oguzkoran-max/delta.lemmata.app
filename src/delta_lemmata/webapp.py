@@ -1,4 +1,4 @@
-"""English-only Streamlit workbench through P007 corpus preparation."""
+"""English-only Streamlit workbench through P008 guided analysis."""
 
 from __future__ import annotations
 
@@ -13,6 +13,7 @@ from typing import Any, Literal, cast
 import streamlit as st
 from pydantic import HttpUrl, TypeAdapter, ValidationError
 
+from delta_lemmata.analysis_orchestrator import AnalysisOrchestratorError
 from delta_lemmata.catalog import text
 from delta_lemmata.corpus import (
     DEFAULT_VOCABULARY,
@@ -106,6 +107,11 @@ from delta_lemmata.workbench import (
     PurposeSpec,
     WorkbenchMode,
 )
+from delta_lemmata.workflow_models import (
+    ResolvedWorkflowConfigV1,
+    canonical_p008_json,
+    resolve_guided_workflow,
+)
 
 _UPLOAD_GENERATION_KEY = "_intake_upload_generation"
 _PENDING_ERROR_KEY = "_intake_pending_error"
@@ -125,6 +131,8 @@ _FLOW_OWNER_KEY = "_private_owner_key"
 _FLOW_MATERIALIZATION_KEY = "_p005_materialization_receipt"
 _FLOW_ANNOTATIONS_KEY = "_p007_annotations"
 _FLOW_PREPARATION_KEY = "_p007_preparation_outcome"
+_FLOW_WORKFLOW_CONFIG_KEY = "_p008_resolved_workflow_config"
+_FLOW_JOB_PRESENTATION_KEY = "_p008_job_presentation"
 _HTTP_URL_ADAPTER = TypeAdapter(HttpUrl)
 
 
@@ -133,6 +141,7 @@ class CorpusSubstage(StrEnum):
     DESCRIBE = "describe"
     REVIEW = "review"
     PREPARE = "prepare"
+    PARAMETERS = "parameters"
 
 
 class CorpusOrigin(StrEnum):
@@ -176,9 +185,15 @@ def _html(value: str) -> str:
     return escape(value, quote=True)
 
 
-def _render_header(health: dict[str, Any]) -> None:
+def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
     version = text("header.version", version=health["version"])
     build = text("header.build", build_id=health["build_id"])
+    if stage is CorpusSubstage.UPLOAD:
+        stage_label = text("header.stage.upload")
+    elif stage is CorpusSubstage.PARAMETERS:
+        stage_label = text("header.stage.parameters")
+    else:
+        stage_label = text("header.stage.corpus")
     st.markdown(
         f"""
         <div class="delta-header">
@@ -191,7 +206,7 @@ def _render_header(health: dict[str, Any]) -> None:
           </div>
           <div class="delta-build">
             <div class="delta-build-status">
-              <span class="delta-dot"></span>{_html(text("header.stage"))}
+              <span class="delta-dot"></span>{_html(stage_label)}
             </div>
             <div class="delta-build-meta">{_html(version)} · {_html(build)}</div>
           </div>
@@ -238,22 +253,39 @@ def _render_stepper(stage: CorpusSubstage) -> None:
         CorpusSubstage.DESCRIBE: "flow.stage.describe",
         CorpusSubstage.REVIEW: "flow.stage.review",
         CorpusSubstage.PREPARE: "flow.stage.prepare",
+        CorpusSubstage.PARAMETERS: "flow.stage.parameters",
     }[stage]
+    parameter_stage = stage is CorpusSubstage.PARAMETERS
+    corpus_state = "sidebar.state.complete" if parameter_stage else stage_key
+    parameter_state = stage_key if parameter_stage else "flow.locked"
     markup = (
-        '<nav class="delta-map" aria-label="Corpus documentation progress">'
+        '<nav class="delta-map" aria-label="Experiment progress">'
         '<ol class="delta-map-list">'
         + _map_row(1, "sidebar.step.purpose", "sidebar.state.complete")
-        + _map_row(2, "sidebar.step.corpus", stage_key, active=True)
-        + _map_row(3, "sidebar.step.parameters", "flow.locked")
+        + _map_row(
+            2,
+            "sidebar.step.corpus",
+            corpus_state,
+            active=not parameter_stage,
+        )
+        + _map_row(
+            3,
+            "sidebar.step.parameters",
+            parameter_state,
+            active=parameter_stage,
+        )
         + _map_row(4, "sidebar.step.evidence", "flow.locked")
         + "</ol></nav>"
     )
     st.markdown(markup, unsafe_allow_html=True)
 
 
-def _render_sidebar(health: dict[str, Any]) -> None:
+def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
     with st.sidebar:
-        st.badge(text("sidebar.badge"), icon=":material/menu_book:", color="green")
+        badge_key = (
+            "sidebar.badge.parameters" if stage is CorpusSubstage.PARAMETERS else "sidebar.badge"
+        )
+        st.badge(text(badge_key), icon=":material/menu_book:", color="green")
         guide_items = "".join(
             f"<li>{_html(text(key))}</li>"
             for key in (
@@ -580,6 +612,8 @@ def _clear_documentation_state(*, keep_purpose: bool) -> None:
         _FLOW_MATERIALIZATION_KEY,
         _FLOW_ANNOTATIONS_KEY,
         _FLOW_PREPARATION_KEY,
+        _FLOW_WORKFLOW_CONFIG_KEY,
+        _FLOW_JOB_PRESENTATION_KEY,
     ):
         st.session_state.pop(key, None)
     for session_key in tuple(st.session_state):
@@ -589,6 +623,7 @@ def _clear_documentation_state(*, keep_purpose: bool) -> None:
                 "prep_",
                 "review_confirmation_",
                 "review_timeline_selector_",
+                "p008_",
             )
         ):
             st.session_state.pop(session_key, None)
@@ -2135,6 +2170,15 @@ def _render_prepare_stage() -> None:
                     st.rerun()
             elif rendered:
                 st.info(text("prepare.parameters_next"), icon=":material/arrow_forward:")
+                if st.button(
+                    text("prepare.continue_parameters"),
+                    type="primary",
+                    icon=":material/tune:",
+                    width="stretch",
+                    key="prepare_continue_parameters",
+                ):
+                    _set_stage(CorpusSubstage.PARAMETERS)
+                    st.rerun()
             return
 
         expected_hash = inventory_sha256(inventory)
@@ -2183,6 +2227,204 @@ def _render_prepare_stage() -> None:
                 st.rerun()
 
 
+def _resolve_session_workflow(
+    inventory: CorpusInventory,
+    annotations: CorpusAnalysisAnnotationsV1,
+) -> ResolvedWorkflowConfigV1:
+    known_count = sum(
+        annotation.analysis_role is AnalysisRole.KNOWN for annotation in annotations.annotations
+    )
+    unknown_count = sum(
+        annotation.analysis_role is AnalysisRole.UNKNOWN for annotation in annotations.annotations
+    )
+    return resolve_guided_workflow(
+        purpose=inventory.purpose,
+        known_work_count=known_count,
+        unknown_work_count=unknown_count,
+    )
+
+
+def _render_parameter_grid(config: ResolvedWorkflowConfigV1) -> None:
+    rows = []
+    for cell in config.cells:
+        role = text(
+            "parameters.table.reference" if cell.is_reference else "parameters.table.sensitivity"
+        )
+        rows.append(
+            f'<tr data-reference="{str(cell.is_reference).lower()}">'
+            f'<th scope="row">{cell.mfw}</th>'
+            f"<td>{cell.culling_percent}%</td>"
+            f"<td>{_html(text('parameters.distance.classic_delta'))}</td>"
+            f"<td>{_html(role)}</td></tr>"
+        )
+    label = _html(text("parameters.table.label"))
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{label}" tabindex="0">'
+        '<table class="delta-review-table delta-parameter-table">'
+        f"<caption>{label}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("parameters.table.mfw"))}</th>'
+        f'<th scope="col">{_html(text("parameters.table.culling"))}</th>'
+        f'<th scope="col">{_html(text("parameters.table.distance"))}</th>'
+        f'<th scope="col">{_html(text("parameters.table.role"))}</th>'
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_parameter_explanations() -> None:
+    with st.expander(text("parameters.learn.title"), expanded=True):
+        st.markdown(f"**{text('parameters.learn.mfw.title')}**")
+        st.caption(text("parameters.learn.mfw.body"))
+        st.markdown(f"**{text('parameters.learn.culling.title')}**")
+        st.caption(text("parameters.learn.culling.body"))
+        st.markdown(f"**{text('parameters.learn.delta.title')}**")
+        st.caption(text("parameters.learn.delta.body"))
+        st.markdown(f"**{text('parameters.learn.reference.title')}**")
+        st.caption(text("parameters.learn.reference.body"))
+
+
+def _render_parameters_stage() -> None:
+    inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
+    annotations = st.session_state.get(_FLOW_ANNOTATIONS_KEY)
+    preparation = st.session_state.get(_FLOW_PREPARATION_KEY)
+    materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
+    if (
+        not isinstance(inventory, CorpusInventory)
+        or not isinstance(annotations, CorpusAnalysisAnnotationsV1)
+        or not isinstance(preparation, PreparationOutcome)
+        or preparation.ready_receipt is None
+        or not isinstance(materialization, CorpusMaterializationReceipt)
+    ):
+        _clear_documentation_state(keep_purpose=True)
+        st.rerun()
+
+    try:
+        config = _resolve_session_workflow(inventory, annotations)
+    except (ValidationError, ValueError):
+        st.error(text("parameters.configuration_error"), icon=":material/error:")
+        if st.button(
+            text("parameters.back_prepare"),
+            icon=":material/arrow_back:",
+            key="p008_back_prepare_invalid",
+        ):
+            _set_stage(CorpusSubstage.PREPARE)
+            st.rerun()
+        return
+    st.session_state[_FLOW_WORKFLOW_CONFIG_KEY] = config
+    with st.container(border=True, key="parameters_stage"):
+        st.markdown(
+            f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
+            unsafe_allow_html=True,
+        )
+        st.header(text("parameters.title"), anchor=False)
+        st.caption(text("parameters.body"))
+
+        selected = st.segmented_control(
+            text("parameters.mode.label"),
+            options=[mode.value for mode in WorkbenchMode],
+            default=WorkbenchMode.GUIDED.value,
+            format_func=_mode_label,
+            key="p008_analysis_mode",
+            width="stretch",
+        )
+        mode = WorkbenchMode(selected or WorkbenchMode.GUIDED.value)
+        if mode is WorkbenchMode.RESEARCH:
+            st.warning(text("parameters.research_locked"), icon=":material/lock:")
+            st.caption(text("parameters.research_locked_body"))
+            if st.button(
+                text("parameters.back_prepare"),
+                icon=":material/arrow_back:",
+                key="p008_back_prepare_research",
+            ):
+                _set_stage(CorpusSubstage.PREPARE)
+                st.rerun()
+            return
+
+        st.success(text("parameters.guided_ready"), icon=":material/check_circle:")
+        metric_columns = st.columns(4)
+        metric_columns[0].metric(text("parameters.metric.cells"), config.cell_count)
+        metric_columns[1].metric(text("parameters.metric.reference"), "500 MFW")
+        metric_columns[2].metric(text("parameters.metric.culling"), "0%")
+        metric_columns[3].metric(text("parameters.metric.unit"), text("parameters.unit.whole"))
+        _render_parameter_grid(config)
+        st.caption(text("parameters.grid_caption"))
+        _render_parameter_explanations()
+        st.info(text("parameters.interpretive_boundary"), icon=":material/info:")
+        st.download_button(
+            text("parameters.download_config"),
+            data=canonical_p008_json(config),
+            file_name="delta-resolved-workflow-config-v1.json",
+            mime="application/json",
+            width="stretch",
+        )
+
+        presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
+        if presentation is not None:
+            state_id = getattr(presentation, "state_id", "")
+            title = getattr(presentation, "title", text("parameters.run_status_unknown"))
+            body = getattr(presentation, "body", text("parameters.run_status_unknown"))
+            if state_id == "succeeded":
+                st.success(title, icon=":material/check_circle:")
+            elif state_id in {"queued", "running", "finalizing", "cleaning"}:
+                st.info(title, icon=":material/progress_activity:")
+            else:
+                st.error(title, icon=":material/error:")
+            st.caption(body)
+            st.info(text("parameters.evidence_next"), icon=":material/arrow_forward:")
+            return
+
+        confirmed = st.checkbox(
+            text("parameters.confirm"),
+            help=text("parameters.confirm_help"),
+            key="p008_parameter_confirmation",
+        )
+        action_left, action_right = st.columns(2)
+        with action_left:
+            if st.button(
+                text("parameters.back_prepare"),
+                icon=":material/arrow_back:",
+                width="stretch",
+                key="p008_back_prepare",
+            ):
+                _set_stage(CorpusSubstage.PREPARE)
+                st.rerun()
+        with action_right:
+            run_clicked = st.button(
+                text("parameters.run"),
+                type="primary",
+                icon=":material/play_arrow:",
+                width="stretch",
+                disabled=not confirmed,
+                key="parameters_run_analysis",
+            )
+        if run_clicked:
+            runtime = _runtime()
+            try:
+                runtime.prepared_corpora.admit_once(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                    ready_receipt=preparation.ready_receipt,
+                    inventory=inventory,
+                    annotations=annotations,
+                    config=preparation.config,
+                    resolved_workflow_config=config,
+                )
+                runtime.analyses.run_next()
+                presentation = runtime.prepared_corpora.status(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                )
+            except (PreparedCorpusError, AnalysisOrchestratorError, WebRuntimeError) as error:
+                st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=error.code.value))
+            except (ValidationError, ValueError):
+                st.error(text("parameters.configuration_error"), icon=":material/error:")
+            else:
+                st.session_state[_FLOW_JOB_PRESENTATION_KEY] = presentation
+                st.rerun()
+
+
 def _render_setup(stage: CorpusSubstage) -> PurposeId:
     if stage is CorpusSubstage.UPLOAD:
         _render_entry_experience()
@@ -2219,8 +2461,8 @@ def main() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
     _clear_pending_upload_widgets()
     health = dict(public_health())
-    _render_header(health)
     stage = _stage()
+    _render_header(health, stage)
     purpose = _render_setup(stage)
     _render_stepper(stage)
     column_ratio = [1000, 1] if stage is CorpusSubstage.UPLOAD else [1.8, 0.8]
@@ -2234,14 +2476,16 @@ def main() -> None:
             _render_describe_stage(purpose)
         elif stage is CorpusSubstage.REVIEW:
             _render_review_stage()
-        else:
+        elif stage is CorpusSubstage.PREPARE:
             _render_prepare_stage()
+        else:
+            _render_parameters_stage()
     if stage is CorpusSubstage.UPLOAD:
         _render_boundary()
     else:
         with right:
             _render_boundary()
-    _render_sidebar(health)
+    _render_sidebar(health, stage)
     st.divider()
     footer_left, footer_right = st.columns(2)
     with footer_left:
