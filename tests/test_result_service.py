@@ -234,6 +234,7 @@ class _Environment:
     job_id: str
     request: WorkerInputV1
     result: WorkerResultV1
+    result_sha256: str
     config: ResolvedWorkflowConfigV1
     descriptors: tuple[ResultDocumentDescriptor, ...]
 
@@ -241,7 +242,7 @@ class _Environment:
         return project_result_view(
             config=self.config,
             result=self.result,
-            source_result_sha256=hashlib.sha256(canonical_worker_json(self.result)).hexdigest(),
+            source_result_sha256=self.result_sha256,
             documents=self.descriptors,
         )
 
@@ -252,7 +253,11 @@ def _private_directory(path: Path) -> Path:
     return path
 
 
-def _environment(tmp_path: Path) -> _Environment:
+def _environment(
+    tmp_path: Path,
+    *,
+    result_payload_transform: Callable[[bytes], bytes] | None = None,
+) -> _Environment:
     tmp_path.mkdir(mode=0o700, parents=True, exist_ok=True)
     os.chmod(tmp_path, 0o700)
     database_root = _private_directory(tmp_path / "database")
@@ -296,6 +301,8 @@ def _environment(tmp_path: Path) -> _Environment:
     request, result, config, descriptors = _scientific_records()
     request_payload = canonical_worker_json(request)
     result_payload = canonical_worker_json(result)
+    if result_payload_transform is not None:
+        result_payload = result_payload_transform(result_payload)
     config_payload = canonical_p008_json(config)
     request_component = hashlib.sha256(b"request-component").hexdigest()
     config_component = hashlib.sha256(b"config-component").hexdigest()
@@ -366,6 +373,7 @@ def _environment(tmp_path: Path) -> _Environment:
         job_id=fixed_job_id.to_urlsafe(),
         request=request,
         result=result,
+        result_sha256=hashlib.sha256(result_payload).hexdigest(),
         config=config,
         descriptors=descriptors,
     )
@@ -466,6 +474,35 @@ def test_verified_result_view_lifecycle_is_capability_bound_and_idempotent(
         ),
     ):
         _expect_error(ResultPackageErrorCode.NOT_AVAILABLE, operation)
+
+
+def test_scientific_readback_accepts_valid_r_numeric_lexemes(tmp_path: Path) -> None:
+    def r_numeric_lexeme(payload: bytes) -> bytes:
+        transformed = payload.replace(b'"values":[[0.0,', b'"values":[[0,', 1)
+        assert transformed != payload
+        return transformed
+
+    environment = _environment(
+        tmp_path,
+        result_payload_transform=r_numeric_lexeme,
+    )
+    retained = (environment.layout.result / RESULT_COMPONENT).read_bytes()
+    assert retained != canonical_worker_json(environment.result)
+
+    verified = environment.service.read_scientific_result(
+        job_id=environment.job_id,
+        capability=environment.capability,
+    )
+
+    assert verified.result == environment.result
+    assert verified.sha256 == hashlib.sha256(retained).hexdigest()
+    view = environment.view()
+    receipt = environment.service.publish_view(
+        job_id=environment.job_id,
+        capability=environment.capability,
+        view=view,
+    )
+    assert receipt.source_result_sha256 == verified.sha256
 
 
 def test_result_publication_rejects_matrix_config_and_source_drift(tmp_path: Path) -> None:

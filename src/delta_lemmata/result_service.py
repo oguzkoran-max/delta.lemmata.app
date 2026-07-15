@@ -257,8 +257,7 @@ class ResultPackageService:
                 raise ValueError
             result = validate_worker_result(request, parse_worker_result(payload))
             if (
-                canonical_worker_json(result) != payload
-                or result.worker_version != receipt.worker_version
+                result.worker_version != receipt.worker_version
                 or result.schema_version != receipt.result_schema_version
                 or result.outcome.value != receipt.analysis_outcome
             ):
