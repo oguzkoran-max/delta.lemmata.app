@@ -202,6 +202,18 @@ def test_gateway_requires_every_nginx_temp_directory_in_bounded_tmpfs() -> None:
         VALIDATOR._validate_compose(compose)
 
 
+def test_gateway_separates_static_boot_assets_from_dynamic_rate_budget() -> None:
+    nginx = (ROOT / "deploy" / "public-alpha" / "nginx.conf").read_text(encoding="utf-8")
+    assert "map $uri $delta_dynamic_rate_key" in nginx
+    assert "map $uri $delta_static_rate_key" in nginx
+    assert '~^/static/ "";' in nginx
+    assert "~^/static/ $binary_remote_addr;" in nginx
+    assert "zone=delta_dynamic_requests:1m rate=120r/m" in nginx
+    assert "zone=delta_static_requests:1m rate=600r/m" in nginx
+    assert "zone=delta_dynamic_requests burst=60 nodelay" in nginx
+    assert "zone=delta_static_requests burst=120 nodelay" in nginx
+
+
 def test_gateway_rejects_writable_nginx_cache_mount() -> None:
     compose = copy.deepcopy(
         VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")

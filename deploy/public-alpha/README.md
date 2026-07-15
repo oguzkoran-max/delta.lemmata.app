@@ -171,9 +171,10 @@ curl --fail --silent --show-error https://delta.lemmata.app/_stcore/health
 curl --fail --silent --show-error https://lda.lemmata.app/_stcore/health
 ```
 
-Wrong Host, body-size, security-header, WebSocket, XSRF/CORS, and rate-limit
-checks must pass through the public URL. The complete owner walkthrough then runs
-through this same route.
+Wrong Host, body-size, security-header, WebSocket, XSRF/CORS, and separate
+bounded rate-limit checks for static interface assets and dynamic requests must
+pass through the public URL. The complete owner walkthrough then runs through
+this same route.
 
 ## Phase 4: Coexistence and Load Gate
 

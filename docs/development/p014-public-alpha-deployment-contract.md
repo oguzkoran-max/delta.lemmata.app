@@ -36,7 +36,8 @@ the application never joins the edge bridge.
 |---|---|---|
 | Gateway | Host | exact `delta.lemmata.app` only |
 | Gateway | request body | `26 MiB` |
-| Gateway | request rate | bounded per client with a small burst |
+| Gateway | dynamic request rate | 120 requests/minute per client with burst 60 |
+| Gateway | static interface asset rate | 600 requests/minute per client with burst 120 |
 | Gateway | concurrent connections | bounded per client |
 | Gateway | upstream connect/read/send | explicit finite timeouts |
 | Application | public bind | none; private network only |

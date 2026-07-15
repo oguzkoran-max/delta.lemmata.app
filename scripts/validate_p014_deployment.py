@@ -262,7 +262,12 @@ def _validate_text_contracts() -> None:
         "server_name delta.lemmata.app;",
         "return 421;",
         "client_max_body_size 26m;",
-        "limit_req_zone $binary_remote_addr",
+        "map $uri $delta_dynamic_rate_key",
+        "map $uri $delta_static_rate_key",
+        "limit_req_zone $delta_dynamic_rate_key zone=delta_dynamic_requests:1m rate=120r/m;",
+        "limit_req_zone $delta_static_rate_key zone=delta_static_requests:1m rate=600r/m;",
+        "limit_req zone=delta_dynamic_requests burst=60 nodelay;",
+        "limit_req zone=delta_static_requests burst=120 nodelay;",
         "limit_conn_zone $binary_remote_addr",
         "proxy_connect_timeout 5s;",
         "proxy_read_timeout 75s;",
@@ -277,6 +282,10 @@ def _validate_text_contracts() -> None:
         "scgi_temp_path /tmp/scgi_temp 1 2;",
     )
     _require(all(item in nginx for item in required_nginx), "P014_GATEWAY_POLICY_INCOMPLETE")
+    _require(
+        '~^/static/ "";' in nginx and "~^/static/ $binary_remote_addr;" in nginx,
+        "P014_GATEWAY_RATE_CLASSIFICATION_INCOMPLETE",
+    )
     _require("/var/cache/nginx" not in nginx, "P014_GATEWAY_CACHE_PATH_FORBIDDEN")
 
     caddy = (DEPLOYMENT / "Caddyfile.delta.example").read_text(encoding="utf-8")
