@@ -89,6 +89,11 @@ def test_public_alpha_image_has_fixed_non_root_runtime_and_real_command() -> Non
     dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
     assert "groupadd --gid 10001 delta" in dockerfile
     assert "useradd --uid 10001 --gid 10001" in dockerfile
+    assert (
+        dockerfile.index("useradd --uid 10001 --gid 10001")
+        < dockerfile.index("ENV HOME=/home/delta")
+        < dockerfile.index("USER delta")
+    )
     assert "USER delta" in dockerfile
     assert "COPY .streamlit ./.streamlit" in dockerfile
     assert "HEALTHCHECK" in dockerfile

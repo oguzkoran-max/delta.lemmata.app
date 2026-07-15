@@ -14,7 +14,6 @@ ENV DEBIAN_FRONTEND=noninteractive \
     RENV_PATHS_CACHE=/opt/renv/cache \
     UV_PYTHON_INSTALL_DIR=/opt/uv/python \
     UV_PROJECT_ENVIRONMENT=/opt/delta/.venv \
-    HOME=/home/delta \
     TMPDIR=/tmp \
     PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
@@ -60,6 +59,8 @@ RUN Rscript --vanilla scripts/bootstrap_renv.R \
 RUN groupadd --gid 10001 delta \
     && useradd --uid 10001 --gid 10001 --create-home --shell /usr/sbin/nologin delta \
     && chown -R delta:delta /opt/delta
+
+ENV HOME=/home/delta
 
 USER delta
 

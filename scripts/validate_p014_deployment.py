@@ -174,6 +174,12 @@ def _validate_text_contracts() -> None:
     dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
     _require("groupadd --gid 10001 delta" in dockerfile, "P014_DOCKER_GID_MISSING")
     _require("useradd --uid 10001 --gid 10001" in dockerfile, "P014_DOCKER_UID_MISSING")
+    _require(
+        dockerfile.index("useradd --uid 10001 --gid 10001")
+        < dockerfile.index("ENV HOME=/home/delta")
+        < dockerfile.index("USER delta"),
+        "P014_RUNTIME_HOME_ORDER_INVALID",
+    )
     _require("COPY .streamlit ./.streamlit" in dockerfile, "P014_STREAMLIT_CONFIG_NOT_COPIED")
     _require("HEALTHCHECK" in dockerfile, "P014_IMAGE_HEALTHCHECK_MISSING")
     _require("ARG DELTA_BUILD_ID=development" in dockerfile, "P014_IMAGE_BUILD_ID_MISSING")
