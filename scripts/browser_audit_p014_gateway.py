@@ -146,6 +146,17 @@ def _geometry(page) -> dict[str, int]:
     return {key: int(value) for key, value in measured.items()}
 
 
+def _console_error_kind(message: str) -> str:
+    lowered = message.casefold()
+    if "websocket" in lowered:
+        return "websocket"
+    if "content security policy" in lowered:
+        return "content_security_policy"
+    if "failed to load resource" in lowered:
+        return "resource_load"
+    return "other"
+
+
 def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
     _validate_browser_url(url)
 
@@ -266,6 +277,9 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
         "websocket_pass": websocket_pass,
         "websocket_count": len(websockets),
         "console_error_count": len(console_errors),
+        "console_error_kinds": dict(
+            sorted(Counter(_console_error_kind(message) for message in console_errors).items())
+        ),
         "page_error_count": len(page_errors),
         "request_failure_count": len(request_failures),
         "response_status_counts": {

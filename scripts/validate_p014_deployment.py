@@ -271,6 +271,9 @@ def _validate_text_contracts() -> None:
         "limit_conn_zone $binary_remote_addr",
         "proxy_connect_timeout 5s;",
         "proxy_read_timeout 75s;",
+        "proxy_set_header Host $http_host;",
+        "proxy_set_header X-Forwarded-Host $http_host;",
+        "proxy_set_header X-Forwarded-Proto https;",
         "proxy_set_header Upgrade $http_upgrade;",
         "proxy_set_header Connection $connection_upgrade;",
         'add_header X-Frame-Options "DENY" always;',
@@ -286,6 +289,7 @@ def _validate_text_contracts() -> None:
         '~^/static/ "";' in nginx and "~^/static/ $binary_remote_addr;" in nginx,
         "P014_GATEWAY_RATE_CLASSIFICATION_INCOMPLETE",
     )
+    _require("$delta_forwarded_proto" not in nginx, "P014_GATEWAY_SCHEME_NOT_PINNED")
     _require("/var/cache/nginx" not in nginx, "P014_GATEWAY_CACHE_PATH_FORBIDDEN")
 
     caddy = (DEPLOYMENT / "Caddyfile.delta.example").read_text(encoding="utf-8")

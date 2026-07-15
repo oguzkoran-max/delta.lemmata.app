@@ -11,6 +11,9 @@ is not used to work around it.
 - Runs Streamlit only on a private internal network with no default-route egress.
 - Uses a separate gateway-only edge bridge to publish host loopback `8502`; the
   application never joins that bridge.
+- Preserves the validated public Host authority for Streamlit WebSockets and
+  pins the external scheme to HTTPS because the gateway is reachable only
+  through the host TLS route.
 - Gives Delta separate containers, environment files, secrets, runtime storage,
   labels, health checks, resource limits, and rollback controls.
 - Leaves the existing Lemmata application, service, environment, volume, secret,

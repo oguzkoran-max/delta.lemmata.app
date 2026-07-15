@@ -148,6 +148,21 @@ def test_browser_audit_uses_concurrent_tls_handshakes_and_bounded_cold_start() -
     assert "timeout=60_000" in source
 
 
+@pytest.mark.parametrize(
+    ("message", "expected"),
+    [
+        ("WebSocket connection failed", "websocket"),
+        ("Content Security Policy blocked a request", "content_security_policy"),
+        ("Failed to load resource", "resource_load"),
+        ("Unclassified browser error", "other"),
+    ],
+)
+def test_browser_audit_classifies_diagnostics_without_retaining_messages(
+    message: str, expected: str
+) -> None:
+    assert BROWSER_AUDIT._console_error_kind(message) == expected
+
+
 def test_runtime_gate_creates_ephemeral_tls_without_printing_private_key() -> None:
     gate = (ROOT / "scripts" / "run_p014_runtime_gate.sh").read_text(encoding="utf-8")
     assert "openssl req -x509" in gate
@@ -212,6 +227,14 @@ def test_gateway_separates_static_boot_assets_from_dynamic_rate_budget() -> None
     assert "zone=delta_static_requests:1m rate=600r/m" in nginx
     assert "zone=delta_dynamic_requests burst=60 nodelay" in nginx
     assert "zone=delta_static_requests burst=120 nodelay" in nginx
+
+
+def test_gateway_preserves_public_authority_and_pins_external_https() -> None:
+    nginx = (ROOT / "deploy" / "public-alpha" / "nginx.conf").read_text(encoding="utf-8")
+    assert "proxy_set_header Host $http_host;" in nginx
+    assert "proxy_set_header X-Forwarded-Host $http_host;" in nginx
+    assert "proxy_set_header X-Forwarded-Proto https;" in nginx
+    assert "$delta_forwarded_proto" not in nginx
 
 
 def test_gateway_rejects_writable_nginx_cache_mount() -> None:

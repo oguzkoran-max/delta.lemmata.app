@@ -38,6 +38,7 @@ the application never joins the edge bridge.
 | Gateway | request body | `26 MiB` |
 | Gateway | dynamic request rate | 120 requests/minute per client with burst 60 |
 | Gateway | static interface asset rate | 600 requests/minute per client with burst 120 |
+| Gateway | upstream authority | preserve the validated public Host authority and pin external HTTPS |
 | Gateway | concurrent connections | bounded per client |
 | Gateway | upstream connect/read/send | explicit finite timeouts |
 | Application | public bind | none; private network only |
