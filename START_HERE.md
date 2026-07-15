@@ -25,9 +25,15 @@ publication artık tamamlandı: PR #4 normal merge ile `8579e4e` olarak `main`e
 alındı, main CI `29426588836` geçti ve `RUN-20260715-0006` exact source image'ını
 private GHCR'da immutable manifest
 `sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`
-olarak bağladı. VPS kurulumu, Caddy/DNS değişikliği veya public activation henüz
-yapılmadı. `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir
-başarısız kapıyı geçersiz kılmaz.
+olarak bağladı. Kanıt PR #5 ile normal merge commit `cc44132` üzerinden `main`e
+alındı ve main CI `29429031944` yeşil geçti. `RUN-20260715-0007` ikinci read-only
+gözlemde cgroup v2 controller'larını, boş firewall baseline'ını, sıfır Lemmata
+restart'ını ve sıfır memory pressure'ı doğruladı. ADR-0018 mevcut VPS + official
+Docker + yeni swap oluşturmama yolunu ve fail-closed memory/network/latency
+kapılarını önerir; Oğuz henüz bu live-host adayını kabul veya reddetmedi. VPS
+kurulumu, Caddy/DNS değişikliği veya public activation yapılmadı.
+`HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
+geçersiz kılmaz.
 
 ## 1. Her Oturumda Oku
 

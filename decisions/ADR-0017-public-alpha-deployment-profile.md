@@ -1,7 +1,7 @@
 # ADR-0017: Public-Alpha Deployment Profile
 
 **Status:** Proposed; local implementation authorized by `HD-20260714-0002`,
-real-host cutover requires the P014 owner gate
+real-host cutover requires acceptance of ADR-0018 and the P014 owner gate
 
 **Date:** 2026-07-15
 
@@ -66,7 +66,9 @@ from measured evidence:
 
 These are candidate deployment limits, not proven capacity. Real load evidence
 must show that Delta stays inside them and that Lemmata does not restart, error,
-or exceed the predeclared latency budget.
+or exceed the predeclared latency budget. ADR-0018 proposes the exact shared-host
+runtime, no-new-swap policy, memory thresholds, network side-effect checks, and
+fail-closed fallback; it remains ineffective until explicit owner approval.
 
 ## Activation Sequence
 
@@ -132,6 +134,7 @@ Rejected because both applications still share one VPS kernel and host resources
 ## Related Records
 
 - `decisions/ADR-0015-accelerated-public-alpha.md`
+- `decisions/ADR-0018-shared-vps-runtime-capacity.md`
 - `docs/development/p014-public-alpha-deployment-contract.md`
 - `docs/security/threat-model.md`
 - `docs/research/claim-evidence-matrix.md`

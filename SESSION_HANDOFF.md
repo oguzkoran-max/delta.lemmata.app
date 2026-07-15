@@ -13,7 +13,9 @@ coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
 İlk read-only host preflight'i Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat
 hostta container runtime olmadığı için kurulumdan önce fail-closed durdu. Exact
 green main image'ı private GHCR'da immutable digest ile yayımlandı; canlı VPS
-henüz değiştirilmedi.
+henüz değiştirilmedi. İkinci read-only gözlem Docker'ın host networking etkisi ve
+dar memory margin'i doğruladı; ADR-0018 aynı VPS, official Docker ve yeni swap
+oluşturmama adayını owner onayına sundu.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -42,11 +44,13 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Canlı hostta hiçbir işlem yapmadan önce container-runtime ve capacity seçimini
-kaydet. Exact green main image'ı private GHCR'da immutable digest ile hazırdır.
-Tekrarlanan inventory geçerse sıra Delta-only install, public TLS gate,
-coexistence/load, restart-cleanup, rollback ve Oğuz owner walkthrough'udur. DNS,
-Caddy veya public activation bu kapılardan önce yapılmaz.
+Oğuz ADR-0018'deki same-VPS + official Docker + no-new-swap adayını açıkça kabul
+veya reddeder. Kabul yalnız ordered host preparation ve measurement kapılarını
+yetkilendirir. Exact green main image'ı private GHCR'da immutable digest ile
+hazırdır. Tekrarlanan inventory geçerse sıra Docker sonrası Lemmata gate,
+Delta-only install, public TLS gate, coexistence/load, restart-cleanup, rollback
+ve Oğuz owner walkthrough'udur. DNS, Caddy veya public activation bu kapılardan
+önce yapılmaz.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
@@ -90,6 +94,19 @@ private deployment reference
 `latest` etiketi yayımlanmadı. Kayıt: `RUN-20260715-0006` ve
 `provenance/evidence/P014/immutable-image-publication.md`. Bu image publication
 canlı host readiness veya activation kanıtı değildir.
+
+**P014 runtime/capacity checkpoint'i:** Immutable publication kanıtı PR #5 ile
+normal merge commit `cc44132b524ae31e052a3af69ad4c416c88a223c` üzerinden
+`main`e alındı; main CI `29429031944` verify ve hardened-container işlerinde
+yeşildir. `RUN-20260715-0007` read-only gözleminde Ubuntu 26.04 x86_64, cgroup v2
+`cpu`/`memory`/`pids`, 2.357 MiB available RAM, sıfır swap, sıfır firewall rule,
+disabled forwarding, sıfır memory pressure, healthy zero-restart Lemmata ve boş
+`8502` doğrulandı. Hiçbir host değişikliği yapılmadı. ADR-0018 mevcut VPS üzerinde
+official Docker, yeni disk swap'i oluşturmama, Delta swap denial'ını koruma,
+Lemmata p95 artışı için frozen yüzde 20 budget ve açık memory/OOM/network stop
+kapıları önerir. Status `Proposed`; Oğuz'un açık kararı olmadan package install
+yasaktır. Kanıt:
+`provenance/evidence/P014/target-host-runtime-capacity-observation.md`.
 
 **P009 minimum-alpha checkpoint'i:** Exact implementation commit'i
 `c5e39b07bb65a11613684a10269b186c987ef980`; run kaydı

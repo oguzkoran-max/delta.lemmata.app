@@ -1,0 +1,152 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260715-0007",
+  "run_type": "security",
+  "status": "passed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-15T15:54:34Z",
+  "ended_at_utc": "2026-07-15T15:54:34Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "cc44132b524ae31e052a3af69ad4c416c88a223c",
+  "environment": {
+    "operator": {
+      "role": "authorized read-only SSH observer",
+      "retained_credential_material": false,
+      "timezone": "UTC for retained timestamps"
+    },
+    "target_host": {
+      "role": "shared Lemmata VPS intended for bounded Delta public alpha",
+      "os": "Ubuntu 26.04",
+      "architecture": "x86_64",
+      "virtualization": "kvm",
+      "cpu_count": 2,
+      "memory_total_mib": 3814,
+      "memory_available_mib": 2357,
+      "swap_total_mib": 0,
+      "root_disk_available_mib": 32621,
+      "root_filesystem": "ext4",
+      "cgroup": {
+        "version": 2,
+        "cpu_controller": true,
+        "memory_controller": true,
+        "pids_controller": true
+      },
+      "firewall_baseline": {
+        "ufw_service": "active",
+        "ufw_policy": "inactive",
+        "firewalld": "inactive",
+        "iptables_backend": "nf_tables",
+        "nft_ruleset_lines": 0,
+        "iptables_rule_lines": 0,
+        "ip6tables_rule_lines": 0,
+        "ipv4_forwarding": false,
+        "ipv6_forwarding": false
+      },
+      "docker_prerequisites": {
+        "conflicting_package_count": 0,
+        "existing_docker_source_file_count": 0,
+        "existing_docker_key_file_count": 0
+      },
+      "services": {
+        "caddy": "active",
+        "lemmata": "active",
+        "lemmata_health": "ok",
+        "lemmata_restart_count": 0,
+        "lemmata_memory_bytes": 1118232576
+      },
+      "ports": {
+        "lemmata_8501": "listening",
+        "delta_8502": "free"
+      },
+      "memory_pressure": {
+        "some_avg10": 0.0,
+        "some_avg60": 0.0,
+        "some_avg300": 0.0,
+        "full_avg10": 0.0,
+        "full_avg60": 0.0,
+        "full_avg300": 0.0
+      }
+    },
+    "documentation_verification": {
+      "retrieved_at": "2026-07-15",
+      "docker_ubuntu_2604_x86_64_supported": true,
+      "docker_bridge_firewall_side_effect_documented": true,
+      "equal_memory_and_memswap_denies_container_swap": true,
+      "private_ghcr_pull_requires_read_packages_classic_token": true
+    },
+    "gate": {
+      "result": "observation_complete_owner_decision_pending",
+      "host_modifications": 0,
+      "live_service_reloads_or_restarts": 0,
+      "p014_ac_08_closed": false
+    }
+  },
+  "command": "Read-only P014 target-host SSH inventory of cgroup, memory, pressure, firewall, forwarding, package-conflict, service, health, and socket facts; full content-free transcript retained in provenance/evidence/P014/target-host-runtime-capacity-observation.md",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "1d1161534abff65850b8bb221137d90299befe7126ef9bda82995d400a2baa0c"
+    },
+    {
+      "path": "docs/development/p014-public-alpha-deployment-contract.md",
+      "sha256": "3947a33e354ee2fae0d3bb53d4e4ab1652a4a640433feb1274b7f1f208f4fb96"
+    },
+    {
+      "path": "decisions/ADR-0017-public-alpha-deployment-profile.md",
+      "sha256": "d17bcd958f555aa26552627c8b1adcdfad37a3e63f978eab85ef565a0a030e98"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Mutable target host observed through an authorized read-only SSH session",
+    "command": "Read-only P014 target-host SSH inventory of cgroup, memory, pressure, firewall, forwarding, package-conflict, service, health, and socket facts; full content-free transcript retained in provenance/evidence/P014/target-host-runtime-capacity-observation.md",
+    "limitations": [
+      "The target host is mutable, so later observations may differ even when the same command set is used.",
+      "The SSH destination, credential, and local credential path are deliberately not retained; replay requires separately authorized host access.",
+      "The observation recorded counts, versions, selected service properties, and health rather than firewall contents, environment values, process command lines, credentials, or uploaded text.",
+      "Official documentation availability and package versions may change; exact install-time package versions and repository hashes remain to be recorded.",
+      "The observation did not install Docker, create swap, pull an image, install Delta, modify Caddy or DNS, exercise load or rollback, or obtain owner acceptance."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "1d1161534abff65850b8bb221137d90299befe7126ef9bda82995d400a2baa0c"
+    },
+    {
+      "path": "docs/development/p014-public-alpha-deployment-contract.md",
+      "sha256": "3947a33e354ee2fae0d3bb53d4e4ab1652a4a640433feb1274b7f1f208f4fb96"
+    },
+    {
+      "path": "decisions/ADR-0017-public-alpha-deployment-profile.md",
+      "sha256": "d17bcd958f555aa26552627c8b1adcdfad37a3e63f978eab85ef565a0a030e98"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "provenance/evidence/P014/target-host-read-only-preflight.md",
+      "sha256": "41a9dcbbc53b6684a20efd367aa2c1567f2906802fa602f72caedbda741a5432"
+    },
+    {
+      "path": "provenance/evidence/P014/immutable-image-publication.md",
+      "sha256": "68ea1d00f0114ae17f1729e0244208e596a9241cef30a3c831435c47b5244c0c"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/target-host-runtime-capacity-observation.md",
+      "sha256": "ffa0b2b4cffd4013cccc931990c4754026473abc375243e561d7e3660f4e25af"
+    }
+  ],
+  "notes": "The read-only observation confirmed supported cgroup controllers, an empty pre-Docker firewall baseline, no conflicting packages, healthy zero-restart Lemmata, and no current memory pressure. It does not establish capacity or authorize host modification. ADR-0018 proposes same-VPS official Docker with no new swap and fail-closed memory, network, latency, and rollback gates; explicit owner approval remains required."
+}
