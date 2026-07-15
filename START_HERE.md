@@ -10,10 +10,15 @@ Linux browser, remote clean-clone ve canonical CI kapılarından geçti. P009 ka
 kaydı `RUN-20260715-0003`; kanıt-link commit'i `567d154` ve CI `29404000108`
 yeşildir. P008 tam üç amaç ve ilgili known/unknown matris, P009 ise dendrogram,
 Style Over Time tarih haritası ve geniş glossary için `in-progress` kalır;
-Research Mode kilitlidir. Public-alpha öncesi açık kritik kapılar Oğuz'un tek
-bütünleşik owner walkthrough'u ve minimum P014 deployment güvenlik dilimidir.
-`HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
-geçersiz kılmaz.
+Research Mode kilitlidir. Minimum P014 deployment paketi exact commit
+`7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile Linux source,
+gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-request,
+runtime-inspection, denied-egress ve cleanup kapılarından geçti. P014-AC-01 ile
+P014-AC-07 passed; P014-AC-08 ile P014-AC-10 gerçek host inventory, Lemmata ile
+eşzamanlı load, restart/rollback ve Oğuz owner acceptance için pending'dir.
+Registry image publication, VPS kurulumu, Caddy/DNS değişikliği veya public
+activation henüz yapılmadı. `HD-20260714-0002` ve ADR-0015 hedefi kabul eder;
+tarih hiçbir başarısız kapıyı geçersiz kılmaz.
 
 ## 1. Her Oturumda Oku
 
@@ -156,6 +161,13 @@ browser akışı bağlıdır. P009 minimum sonuç yüzeyi exact commit `c5e39b0`
 deterministic MDS haritası, semantic table parity, claim lint ve raw-text-free
 result export bağlıdır. Kanıt commit'i `567d154`, CI `29404000108` içinde yeniden
 geçti. Tam P008 AC-09 ve tam P009 görsel genişletmeleri Public alpha'yı engellemez.
-Sıradaki iş canlı sunucuya dokunmadan owner walkthrough hazırlığını tamamlamak,
-ardından minimum P014 ayrı servis, sınır, sağlık, rollback ve Lemmata smoke
-kapılarını uygulamaktır.
+P014 minimum package exact implementation commit'i
+`7f26dbe82437e7f9757e7c35b10b7666a3078578`, run kaydı
+`RUN-20260715-0004` ve canonical CI `29420509541` ile doğrulandı. Kanıt:
+`provenance/evidence/P014/canonical-alpha-stack-validation.md`. Sıradaki iş,
+kanıt-link commit'inin CI sonucunu geçmek ve sonra canlı durumu değiştirmeyen
+read-only VPS inventory'sini çalıştırmaktır. Inventory geçerse exact green
+commit private GHCR'a digest ile yayımlanır; ardından Delta-only kurulum, public
+TLS, Lemmata coexistence/load, restart-cleanup, rollback ve owner walkthrough
+sırasıyla uygulanır. Bu kapılar geçmeden DNS, Caddy veya public activation
+yapılmaz.

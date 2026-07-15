@@ -7,9 +7,9 @@ owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu
 P009'un export-backed sonuç/yorum sınırı yüzeyi gerçek R/stylo worker,
 desktop/mobile/reflow browser, remote clean-clone ve canonical Linux CI
 kapılarından geçti. P008 tam üç amaç ve ilgili known/unknown browser matrisi,
-P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Public-alpha
-kritik yolunda açık işler owner walkthrough hazırlığı ve minimum P014 deployment
-güvenlik dilimidir.
+P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Minimum P014
+deployment paketi canonical Linux CI'da geçti; gerçek host inventory,
+coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -27,21 +27,40 @@ P008'de kapalı Guided parameter resolution, review-before-run, one-time READY
 admission ve gerçek P006 analysis orchestration bağlıdır. P009'da dört hücreli
 sonuç görünümü, sabit 500-MFW reading reference, distance heatmap, exact-tie
 nearest-neighbor tablosu, deterministic MDS haritası, semantic table parity,
-claim lint ve raw-text-free result export bağlıdır. Benchmark, calibrated
-stability, tam FAIR run package, Pinokyo çalışması ve deployment hâlâ yok.
+claim lint ve raw-text-free result export bağlıdır. P014'te versioned,
+loopback-only, egress-denied ve hardened public-alpha stack paketi vardır; canlı
+VPS kurulumu veya public route yoktur. Benchmark, calibrated stability, tam FAIR
+run package ve Pinokyo çalışması hâlâ yok.
 
 **Son tam kapanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif implementation ticket:** `provenance/tickets/P009.json` (`in-progress`,
-minimum Public-alpha acceptance criteria passed; full extensions deferred)
+**Aktif implementation ticket:** `provenance/tickets/P014.json` (`in-progress`,
+AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-`docs/development/public-alpha-owner-walkthrough.md` hazırlık paketini bitir ve
-Oğuz'un insan kabulünü otomatik test gibi sunmadan ayrı kaydet. Ardından minimum
-P014'ü ayrı Delta identity, container/service, loopback port, environment,
-runtime volume, secret, kaynak sınırı, strict Host/TLS/header, health, rollback ve
-Lemmata smoke testleriyle aç. Gerçek VPS veya `lda.lemmata.app` üzerinde kanıtsız
-değişiklik yapma.
+Kanıt-link commit'inin canonical CI sonucunu geçir. Sonra P014 runbook Phase 1'i
+yalnız read-only komutlarla çalıştır; canlı durumu değiştirme ve secret/env/process
+command line yazdırma. Inventory'de Lemmata sağlıklı, `8502` boş ve kaynak payı
+yeterliyse exact green source commit'i private GHCR'a immutable digest ile
+yayımla. Sonraki sıra Delta-only install, public TLS gate, coexistence/load,
+restart-cleanup, rollback ve Oğuz owner walkthrough'udur. DNS, Caddy veya public
+activation bu kapılardan önce yapılmaz.
+
+**P014 canonical package checkpoint'i:** Exact implementation commit'i
+`7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
+`RUN-20260715-0004`; canonical Linux CI `29420509541` içinde verify job
+`87369452370` ve container job `87369452318` yeşildir. CI'da 1.564 test, 11.382
+statement, 2.964 branch ve yüzde 100 measured coverage; gerçek R/stylo browser
+akışı; SBOM/dependency/secret; canonical image; hardened stack; TLS, strict Host,
+tek başarılı WebSocket; desktop/mobile/320px reflow; denied egress; hostile
+requests; runtime inspection ve cleanup geçti. App image ID
+`sha256:f96fbd196c1e71b86a3dde8254f70fca3c2ff3d69306a4f6e02be73cb69a9934`;
+pinned gateway manifest digest
+`sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81`.
+On iki başarısız veya superseded CI outcome nedenleriyle korunur. Kanıt:
+`provenance/evidence/P014/canonical-alpha-stack-validation.md`. Registry manifest
+digest, host inventory, live TLS, Lemmata load, restart/rollback ve owner kabulü
+henüz yoktur; public activation yasaktır.
 
 **P009 minimum-alpha checkpoint'i:** Exact implementation commit'i
 `c5e39b07bb65a11613684a10269b186c987ef980`; run kaydı

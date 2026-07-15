@@ -531,6 +531,13 @@ volume ve secret sınırı; TLS/strict Host; request/rate/resource/concurrency l
 worker egress policy; health check; rollback ve Lemmata smoke testini zorunlu kılar.
 Tam P014 ve CE-14/CE-15 iddiaları P012 dahil normal bağımlılıklarını korur.
 
+**2026-07-15 minimum-alpha checkpoint'i:** Versioned deployment package exact
+commit `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile geçti.
+P014-AC-01 ile P014-AC-07 CI sınırında passed'dir. Image publication, read-only
+target-host inventory, canlı TLS, Delta-Lemmata coexistence/load, restart
+cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
+P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.
+
 **Deliverable'lar:**
 
 - Ayrı Delta container, Unix/service identity, network, volume, environment, port ve secret seti.
