@@ -607,6 +607,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "prepare.table.work_id": "Work ID",
     "prepare.table.tokens": "Prepared tokens",
     "prepare.table.unique": "Unique surface words",
+    "table.yes": "Yes",
+    "table.no": "No",
     "prepare.panel.boundary_label": "What this does not establish",
     "prepare.length_boundary": (
         "Similar text lengths do not make the works comparable or make a later result valid."

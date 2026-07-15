@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
@@ -1885,6 +1886,74 @@ def _overlap_measure(item: OverlapDatum) -> str:
     return " · ".join(values) or text("prepare.overlap.no_measure")
 
 
+def _table_value(value: object) -> str:
+    if isinstance(value, bool):
+        return text("table.yes" if value else "table.no")
+    return str(value)
+
+
+def _render_record_table(
+    rows: Sequence[Mapping[str, object]],
+    *,
+    label: str,
+) -> None:
+    headers = tuple(rows[0])
+    body = []
+    for row in rows:
+        body.append(
+            "<tr>"
+            + "".join(
+                (
+                    f'<th scope="row">{_html(_table_value(row[header]))}</th>'
+                    if index == 0
+                    else f"<td>{_html(_table_value(row[header]))}</td>"
+                )
+                for index, header in enumerate(headers)
+            )
+            + "</tr>"
+        )
+    safe_label = _html(label)
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{safe_label}" tabindex="0">'
+        '<table class="delta-review-table">'
+        f"<caption>{safe_label}</caption><thead><tr>"
+        + "".join(f'<th scope="col">{_html(header)}</th>' for header in headers)
+        + "</tr></thead><tbody>"
+        + "".join(body)
+        + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_evidence_bars(
+    rows: Sequence[tuple[str, Sequence[tuple[str, int]]]],
+) -> None:
+    maximum = max(value for _label, series in rows for _name, value in series) or 1
+    rendered_rows = []
+    for label, series in rows:
+        rendered_series = []
+        for index, (name, value) in enumerate(series):
+            share = 100 * value / maximum
+            rendered_series.append(
+                f'<div class="delta-evidence-bar-item" data-series="{index}">'
+                f"<span>{_html(name)}</span>"
+                '<span class="delta-evidence-bar-track">'
+                f'<span class="delta-evidence-bar-fill" style="--delta-share: {share:.4f}%">'
+                "</span></span>"
+                f'<span class="delta-evidence-bar-value">{value}</span></div>'
+            )
+        rendered_rows.append(
+            '<div class="delta-evidence-bar-row">'
+            f'<span class="delta-evidence-bar-label">{_html(label)}</span>'
+            '<div class="delta-evidence-bar-series">' + "".join(rendered_series) + "</div></div>"
+        )
+    st.markdown(
+        '<div class="delta-evidence-bars" aria-hidden="true">' + "".join(rendered_rows) + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
 def _render_preparation_outcome(
     inventory: CorpusInventory,
     annotations: CorpusAnalysisAnnotationsV1,
@@ -1929,13 +1998,16 @@ def _render_preparation_outcome(
     ]
     st.subheader(text("prepare.length_title"), anchor=False)
     st.caption(text("prepare.length_body"))
-    st.bar_chart(
-        length_rows,
-        x=text("prepare.table.work"),
-        y=text("prepare.table.tokens"),
-        color="#0f6e56",
+    _render_evidence_bars(
+        tuple(
+            (
+                item.display_label,
+                ((text("prepare.table.tokens"), item.token_count),),
+            )
+            for item in projection.work_preparation
+        )
     )
-    st.dataframe(length_rows, hide_index=True, width="stretch")
+    _render_record_table(length_rows, label=text("prepare.length_title"))
     _render_panel_boundary("prepare.length_boundary")
 
     transformation_rows = [
@@ -1952,17 +2024,20 @@ def _render_preparation_outcome(
     ]
     st.subheader(text("prepare.transform_title"), anchor=False)
     st.caption(text("prepare.transform_body"))
-    st.bar_chart(
-        transformation_rows,
-        x=text("prepare.table.work"),
-        y=[
-            text("prepare.transform.lowercase"),
-            text("prepare.transform.separators"),
-            text("prepare.transform.newlines"),
-        ],
-        color=["#0f6e56", "#c5842f", "#5e6f86"],
+    _render_evidence_bars(
+        tuple(
+            (
+                item.display_label,
+                (
+                    (text("prepare.transform.lowercase"), item.lowercase_source_count),
+                    (text("prepare.transform.separators"), item.separator_source_count),
+                    (text("prepare.transform.newlines"), item.newline_replacement_count),
+                ),
+            )
+            for item in projection.work_preparation
+        )
     )
-    st.dataframe(transformation_rows, hide_index=True, width="stretch")
+    _render_record_table(transformation_rows, label=text("prepare.transform_title"))
     _render_panel_boundary("prepare.transform_boundary")
     st.download_button(
         text("prepare.download_work_csv"),
@@ -1995,7 +2070,7 @@ def _render_preparation_outcome(
     ]
     st.subheader(text("prepare.confound_title"), anchor=False)
     st.caption(text("prepare.confound_body"))
-    st.dataframe(confound_rows, hide_index=True, width="stretch")
+    _render_record_table(confound_rows, label=text("prepare.confound_title"))
     _render_panel_boundary("prepare.confound_boundary")
     st.download_button(
         text("prepare.download_confound_csv"),
@@ -2030,7 +2105,7 @@ def _render_preparation_outcome(
     st.subheader(text("prepare.overlap_title"), anchor=False)
     st.caption(text("prepare.overlap_body"))
     st.markdown(f"**{text('prepare.overlap.matrix_title')}**")
-    st.dataframe(matrix_rows, hide_index=True, width="stretch")
+    _render_record_table(matrix_rows, label=text("prepare.overlap.matrix_title"))
     st.markdown(f"**{text('prepare.overlap.pairs_title')}**")
     if projection.overlaps:
         overlap_rows = [
@@ -2042,7 +2117,7 @@ def _render_preparation_outcome(
             }
             for item in projection.overlaps
         ]
-        st.dataframe(overlap_rows, hide_index=True, width="stretch")
+        _render_record_table(overlap_rows, label=text("prepare.overlap.pairs_title"))
     else:
         st.info(text("prepare.overlap.none"), icon=":material/rule:")
     _render_panel_boundary("prepare.overlap_boundary")
@@ -2079,7 +2154,7 @@ def _render_preparation_outcome(
                 text("prepare.mfw.status"): text(status_key),
             }
         )
-    st.dataframe(capacity_rows, hide_index=True, width="stretch")
+    _render_record_table(capacity_rows, label=text("prepare.mfw_title"))
     _render_panel_boundary("prepare.mfw_boundary")
     st.download_button(
         text("prepare.download_capacity_csv"),
