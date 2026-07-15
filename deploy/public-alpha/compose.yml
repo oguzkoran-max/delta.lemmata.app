@@ -80,6 +80,7 @@ services:
       - "127.0.0.1:8502:8080"
     networks:
       - delta_internal
+      - delta_edge
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
     tmpfs:
@@ -121,3 +122,8 @@ networks:
     attachable: false
     labels:
       app.delta-lemmata.boundary: private-no-default-egress
+  delta_edge:
+    internal: false
+    attachable: false
+    labels:
+      app.delta-lemmata.boundary: loopback-publication-only

@@ -133,12 +133,20 @@ def _validate_tmpfs(
         _require(values == expected_values, "P014_RUNTIME_TMPFS_OPTIONS_INVALID")
 
 
-def _validate_network(record: Mapping[str, Any]) -> None:
+def _validate_network(record: Mapping[str, Any], expected: set[str]) -> None:
     network_settings = _mapping(record.get("NetworkSettings"), "P014_RUNTIME_NETWORK_INVALID")
     networks = _mapping(network_settings.get("Networks"), "P014_RUNTIME_NETWORK_INVALID")
-    _require(len(networks) == 1, "P014_RUNTIME_NETWORK_COUNT_INVALID")
-    name = next(iter(networks))
-    _require(name.endswith("_delta_internal"), "P014_RUNTIME_NETWORK_NAME_INVALID")
+    _require(set(networks) == expected, "P014_RUNTIME_NETWORK_SET_INVALID")
+
+
+def _validate_published_gateway_port(record: Mapping[str, Any]) -> None:
+    network_settings = _mapping(record.get("NetworkSettings"), "P014_RUNTIME_NETWORK_INVALID")
+    ports = _mapping(network_settings.get("Ports"), "P014_RUNTIME_PORTS_INVALID")
+    _require(set(ports) == {"8080/tcp"}, "P014_RUNTIME_PORT_SET_INVALID")
+    _require(
+        ports["8080/tcp"] == [{"HostIp": "127.0.0.1", "HostPort": "8502"}],
+        "P014_GATEWAY_PORT_NOT_PUBLISHED",
+    )
 
 
 def validate_runtime_records(
@@ -149,8 +157,15 @@ def validate_runtime_records(
 
     _validate_common(app, user="10001:10001", pids=128, nano_cpus=1_500_000_000, memory=APP_MEMORY)
     _validate_common(gateway, user="101:101", pids=64, nano_cpus=250_000_000, memory=GATEWAY_MEMORY)
-    _validate_network(app)
-    _validate_network(gateway)
+    _validate_network(app, {"delta-public-alpha_delta_internal"})
+    _validate_network(
+        gateway,
+        {
+            "delta-public-alpha_delta_internal",
+            "delta-public-alpha_delta_edge",
+        },
+    )
+    _validate_published_gateway_port(gateway)
 
     app_config = _mapping(app.get("Config"), "P014_RUNTIME_CONFIG_INVALID")
     gateway_config = _mapping(gateway.get("Config"), "P014_RUNTIME_CONFIG_INVALID")

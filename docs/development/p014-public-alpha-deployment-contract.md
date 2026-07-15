@@ -17,8 +17,8 @@ alone closes full P014, CE-14, or CE-15.
 ```text
 Internet
   -> existing host Caddy (TLS; strict delta.lemmata.app route)
-  -> 127.0.0.1:8502 (Delta-only unprivileged gateway)
-  -> private Delta network
+  -> 127.0.0.1:8502 (Delta-only edge bridge and unprivileged gateway)
+  -> private Delta backend network
   -> Delta Streamlit application:8501
   -> local R stylo worker process under existing bounded worker controls
 ```
@@ -26,6 +26,9 @@ Internet
 The deployment must not reference the Lemmata application path, systemd unit,
 environment, volume, secret, network, or internal port. The only shared runtime
 components are the VPS kernel, host resources, and existing public TLS proxy.
+The application joins only the internal backend network. The gateway joins that
+network and a separate edge bridge so Docker can publish the host-loopback port;
+the application never joins the edge bridge.
 
 ## Fixed Public-Alpha Limits
 

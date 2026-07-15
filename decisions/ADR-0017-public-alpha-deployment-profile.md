@@ -35,11 +35,13 @@ The minimum public-alpha profile uses three layers:
    no-new-privileges, private tmpfs runtime, no host project bind mount, three
    distinct secrets, and explicit CPU/RAM/PID/concurrency limits.
 
-The gateway and application use a Delta-only internal network. The application
-has no default-route egress in the production profile. The gateway has only the
-network access required to receive loopback traffic and reach the application.
-No Lemmata directory, socket, environment, volume, network, secret, or service is
-mounted or referenced.
+The application uses only a Delta-only internal network and therefore has no
+default-route egress in the production profile. The gateway joins that private
+backend network plus a separate Delta-only edge bridge required for Docker to
+publish `127.0.0.1:8502` to the host. The edge bridge is never attached to the
+application, and the gateway is hardened and configured to proxy only to the
+application. No Lemmata directory, socket, environment, volume, network, secret,
+or service is mounted or referenced.
 
 The production application retains Streamlit XSRF and CORS protections. Public
 traffic cannot bind directly to Streamlit. Runtime state is temporary and lives

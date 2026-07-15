@@ -142,7 +142,10 @@ def _validate_compose(compose: Mapping[str, Any]) -> None:
         gateway.get("ports") == ["127.0.0.1:8502:8080"],
         "P014_GATEWAY_BIND_INVALID",
     )
-    _require(gateway.get("networks") == ["delta_internal"], "P014_GATEWAY_NETWORK_INVALID")
+    _require(
+        gateway.get("networks") == ["delta_internal", "delta_edge"],
+        "P014_GATEWAY_NETWORK_INVALID",
+    )
     _require(
         _has_hardening(gateway, pids=64, cpus="0.25", memory="128m"),
         "P014_GATEWAY_HARDENING_INVALID",
@@ -170,10 +173,13 @@ def _validate_compose(compose: Mapping[str, Any]) -> None:
     _require("healthcheck" in gateway, "P014_GATEWAY_HEALTHCHECK_MISSING")
 
     networks = _mapping(compose.get("networks"), "P014_NETWORKS_INVALID")
-    _require(set(networks) == {"delta_internal"}, "P014_NETWORK_SET_INVALID")
+    _require(set(networks) == {"delta_internal", "delta_edge"}, "P014_NETWORK_SET_INVALID")
     internal = _mapping(networks["delta_internal"], "P014_INTERNAL_NETWORK_INVALID")
     _require(internal.get("internal") is True, "P014_INTERNAL_NETWORK_NOT_ISOLATED")
     _require(internal.get("attachable") is False, "P014_INTERNAL_NETWORK_ATTACHABLE")
+    edge = _mapping(networks["delta_edge"], "P014_EDGE_NETWORK_INVALID")
+    _require(edge.get("internal") is False, "P014_EDGE_NETWORK_INTERNAL")
+    _require(edge.get("attachable") is False, "P014_EDGE_NETWORK_ATTACHABLE")
 
 
 def _validate_gateway_lock() -> None:

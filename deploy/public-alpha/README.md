@@ -8,7 +8,9 @@ is not used to work around it.
 
 - Keeps the existing host Caddy service as the public TLS boundary.
 - Binds the Delta-only gateway to `127.0.0.1:8502`.
-- Runs Streamlit only on a private container network.
+- Runs Streamlit only on a private internal network with no default-route egress.
+- Uses a separate gateway-only edge bridge to publish host loopback `8502`; the
+  application never joins that bridge.
 - Gives Delta separate containers, environment files, secrets, runtime storage,
   labels, health checks, resource limits, and rollback controls.
 - Leaves the existing Lemmata application, service, environment, volume, secret,

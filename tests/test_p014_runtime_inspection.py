@@ -42,7 +42,10 @@ def _common(
             "Tmpfs": {},
         },
         "State": {"Running": True, "Health": {"Status": "healthy"}},
-        "NetworkSettings": {"Networks": {"delta-public-alpha_delta_internal": {}}},
+        "NetworkSettings": {
+            "Networks": {"delta-public-alpha_delta_internal": {}},
+            "Ports": {},
+        },
         "Image": image_id,
     }
 
@@ -108,6 +111,13 @@ def _records() -> tuple[dict[str, Any], dict[str, Any]]:
     gateway["HostConfig"]["PortBindings"] = {
         "8080/tcp": [{"HostIp": "127.0.0.1", "HostPort": "8502"}]
     }
+    gateway["NetworkSettings"] = {
+        "Networks": {
+            "delta-public-alpha_delta_internal": {},
+            "delta-public-alpha_delta_edge": {},
+        },
+        "Ports": {"8080/tcp": [{"HostIp": "127.0.0.1", "HostPort": "8502"}]},
+    }
     gateway["HostConfig"]["Tmpfs"] = {
         destination: "rw,nosuid,nodev,noexec,"
         + ",".join(f"{name}={value}" for name, value in options.items())
@@ -148,6 +158,21 @@ def test_runtime_inspection_accepts_engine_that_reports_short_tmpfs_only_in_host
             ("Config", "Labels", "org.opencontainers.image.revision"),
             "d" * 40,
             "P014_APP_REVISION_LABEL_INVALID",
+        ),
+        (
+            "app",
+            ("NetworkSettings", "Networks"),
+            {
+                "delta-public-alpha_delta_internal": {},
+                "delta-public-alpha_delta_edge": {},
+            },
+            "P014_RUNTIME_NETWORK_SET_INVALID",
+        ),
+        (
+            "gateway",
+            ("NetworkSettings", "Ports", "8080/tcp"),
+            None,
+            "P014_GATEWAY_PORT_NOT_PUBLISHED",
         ),
     ],
 )

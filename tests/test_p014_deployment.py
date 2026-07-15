@@ -140,6 +140,27 @@ def test_compose_tampering_is_rejected() -> None:
         VALIDATOR._validate_compose(copied)
 
 
+def test_application_cannot_join_the_loopback_publication_network() -> None:
+    compose = copy.deepcopy(
+        VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")
+    )
+    compose["services"]["app"]["networks"].append("delta_edge")
+    with pytest.raises(VALIDATOR.DeploymentValidationError, match="P014_APP_NETWORK_INVALID"):
+        VALIDATOR._validate_compose(compose)
+
+
+def test_gateway_requires_the_loopback_publication_network() -> None:
+    compose = copy.deepcopy(
+        VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")
+    )
+    compose["services"]["gateway"]["networks"] = ["delta_internal"]
+    with pytest.raises(
+        VALIDATOR.DeploymentValidationError,
+        match="P014_GATEWAY_NETWORK_INVALID",
+    ):
+        VALIDATOR._validate_compose(compose)
+
+
 def test_gateway_requires_every_nginx_temp_directory_in_bounded_tmpfs() -> None:
     compose = copy.deepcopy(
         VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")
