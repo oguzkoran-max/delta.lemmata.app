@@ -31,11 +31,27 @@ jobs:
           r-version: "4.5.2"
           use-public-rspm: true
 
+      - name: Prepare fixed R worker cache
+        run: sudo install -d -m 0755 -o "$(id -u)" -g "$(id -g)" /opt/renv/cache
+
       - name: Restore locked environments
+        env:
+          RENV_PATHS_CACHE: /opt/renv/cache
         run: ./scripts/bootstrap.sh
 
       - name: Verify source, metadata, schemas, and records
         run: ./scripts/verify.sh
+
+      - name: Install Chromium for the real-workflow browser gate
+        run: uv run playwright install --with-deps chromium
+
+      - name: Run upload-to-real-stylo browser gate
+        run: >-
+          uv run python scripts/browser_audit_p008.py
+          --output /tmp/delta-p008-browser-audit
+
+      - name: Print browser-gate evidence
+        run: python -m json.tool /tmp/delta-p008-browser-audit/browser-audit.json
 
       - name: Generate and validate SBOM and audit evidence
         run: ./scripts/generate_evidence.sh

@@ -2486,6 +2486,7 @@ def _render_parameters_stage() -> None:
                     resolved_workflow_config=config,
                 )
                 runtime.analyses.run_next()
+                runtime.maintain()
                 presentation = runtime.prepared_corpora.status(
                     owner_key=_owner_key(),
                     materialization_receipt=materialization,

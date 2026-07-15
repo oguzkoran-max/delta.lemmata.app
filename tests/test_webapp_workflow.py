@@ -638,10 +638,20 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
 
     prepared = RecordingPreparedCorpora()
     analyses = RecordingAnalyses()
+    maintenance_calls = 0
+
+    def maintain() -> None:
+        nonlocal maintenance_calls
+        maintenance_calls += 1
+
     monkeypatch.setattr(
         webapp_module,
         "_runtime",
-        lambda: SimpleNamespace(prepared_corpora=prepared, analyses=analyses),
+        lambda: SimpleNamespace(
+            prepared_corpora=prepared,
+            analyses=analyses,
+            maintain=maintain,
+        ),
     )
 
     app.checkbox(key="p008_parameter_confirmation").check().run()
@@ -650,6 +660,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     app.run()
 
     assert analyses.run_calls == 1
+    assert maintenance_calls == 1
     assert prepared.status_calls == 1
     assert prepared.admitted is not None
     config = prepared.admitted["resolved_workflow_config"]
