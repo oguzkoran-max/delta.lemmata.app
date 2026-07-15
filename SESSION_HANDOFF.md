@@ -43,7 +43,10 @@ kalıcı tüketmesi engellenir. Final local `./scripts/verify.sh`: 1.379 passed,
 documented Linux-only macOS skip, 9.758 statement, 2.570 branch ve yüzde 100
 coverage. Gerçek browser kontrolünde desktop ve 390 px mobile yatay taşma vermedi,
 araştırma yolu seçimi çalıştı ve console error/warning kaydı boştu. Exact-commit CI
-kanıtı bu checkpointte henüz tamamlanmadı.
+run `29378757244` içinde verify job `87237608831` ile 1.380 Linux testi ve container
+job `87237608822` ile canonical Linux amd64 image build geçti. Exact implementation
+commit'i `9b5790f3c75170f9c4241fad11d51f2a26495857`; kanıt:
+`provenance/evidence/P007/web-preparation-validation.md`.
 
 **Yeni insan kararları:** `HD-20260714-0001` P007 yöntem paketini kabul etti ve
 ADR-0014 Accepted oldu. `HD-20260714-0002` ile ADR-0015, bütün minimum kapılar
