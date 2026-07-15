@@ -18,6 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 VALIDATOR_PATH = ROOT / "scripts" / "validate_p014_deployment.py"
 GENERATOR_PATH = ROOT / "scripts" / "generate_p014_secrets.py"
 SMOKE_PATH = ROOT / "scripts" / "smoke_p014_stack.sh"
+BROWSER_AUDIT_PATH = ROOT / "scripts" / "browser_audit_p014_gateway.py"
 
 
 def _load_script(name: str, path: Path):
@@ -30,6 +31,7 @@ def _load_script(name: str, path: Path):
 
 VALIDATOR = _load_script("validate_p014_deployment", VALIDATOR_PATH)
 GENERATOR = _load_script("generate_p014_secrets", GENERATOR_PATH)
+BROWSER_AUDIT = _load_script("browser_audit_p014_gateway", BROWSER_AUDIT_PATH)
 
 
 def test_public_alpha_deployment_package_is_fail_closed() -> None:
@@ -130,6 +132,21 @@ def test_stack_smoke_fails_closed_after_bounded_readiness_attempts() -> None:
     assert completed.returncode == 1
     assert completed.stdout == ""
     assert "p014-smoke-published-gateway-unavailable" in completed.stderr
+
+
+def test_browser_audit_routes_loopback_transport_with_exact_public_host() -> None:
+    BROWSER_AUDIT._validate_browser_url("https://delta.lemmata.app:9443")
+    with pytest.raises(ValueError, match="P014_BROWSER_URL_INVALID"):
+        BROWSER_AUDIT._validate_browser_url("http://delta.lemmata.app:8502")
+
+
+def test_runtime_gate_creates_ephemeral_tls_without_printing_private_key() -> None:
+    gate = (ROOT / "scripts" / "run_p014_runtime_gate.sh").read_text(encoding="utf-8")
+    assert "openssl req -x509" in gate
+    assert "subjectAltName=DNS:delta.lemmata.app" in gate
+    assert '--tls-cert "$TLS_CERTIFICATE"' in gate
+    assert '--tls-key "$TLS_PRIVATE_KEY"' in gate
+    assert 'cat "$TLS_PRIVATE_KEY"' not in gate
 
 
 def test_compose_tampering_is_rejected() -> None:

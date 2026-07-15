@@ -21,6 +21,9 @@ fi
 RATE_RESULTS=$(mktemp)
 OVERSIZED_BODY=$(mktemp)
 BROWSER_RECORD=$(mktemp)
+TLS_DIRECTORY=$(mktemp -d)
+TLS_CERTIFICATE=$TLS_DIRECTORY/certificate.pem
+TLS_PRIVATE_KEY=$TLS_DIRECTORY/private-key.pem
 STACK_STARTED=0
 
 cleanup() {
@@ -28,7 +31,13 @@ cleanup() {
     docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" down \
       --remove-orphans --timeout 75 >/dev/null 2>&1 || true
   fi
-  rm -f "$RATE_RESULTS" "$OVERSIZED_BODY" "$BROWSER_RECORD"
+  rm -f \
+    "$RATE_RESULTS" \
+    "$OVERSIZED_BODY" \
+    "$BROWSER_RECORD" \
+    "$TLS_CERTIFICATE" \
+    "$TLS_PRIVATE_KEY"
+  rmdir "$TLS_DIRECTORY" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT HUP INT TERM
 
@@ -84,7 +93,15 @@ if docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" exec 
 fi
 
 if [ "${DELTA_P014_BROWSER_AUDIT:-0}" = "1" ]; then
+  openssl req -x509 -newkey rsa:2048 -sha256 -nodes -days 1 \
+    -subj '/CN=delta.lemmata.app' \
+    -addext 'subjectAltName=DNS:delta.lemmata.app' \
+    -keyout "$TLS_PRIVATE_KEY" \
+    -out "$TLS_CERTIFICATE" >/dev/null 2>&1
+  chmod 0600 "$TLS_PRIVATE_KEY"
   "$UV_BIN" run python "$ROOT/scripts/browser_audit_p014_gateway.py" \
+    --tls-cert "$TLS_CERTIFICATE" \
+    --tls-key "$TLS_PRIVATE_KEY" \
     --output "$BROWSER_RECORD"
 fi
 
