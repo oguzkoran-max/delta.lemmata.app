@@ -38,7 +38,7 @@ def test_public_alpha_deployment_package_is_fail_closed() -> None:
     VALIDATOR.validate()
 
 
-def test_runtime_gate_cleans_failed_start_and_logs_only_the_pre_public_gateway() -> None:
+def test_runtime_gate_cleans_failed_start_and_logs_only_the_gateway() -> None:
     gate = (ROOT / "scripts" / "run_p014_runtime_gate.sh").read_text(encoding="utf-8")
     marker = "STACK_STARTED=1\nif ! docker compose"
     assert marker in gate
@@ -47,7 +47,7 @@ def test_runtime_gate_cleans_failed_start_and_logs_only_the_pre_public_gateway()
     assert "--no-color --tail 100 app" not in gate
     assert "p014-runtime-stack-start-failed" in gate
     assert "p014-runtime-published-gateway-failed" in gate
-    assert gate.count("gateway_start_diagnostics") == 3
+    assert gate.count("gateway_start_diagnostics") == 4
 
 
 def test_stack_smoke_waits_for_delayed_published_gateway() -> None:
@@ -140,6 +140,14 @@ def test_browser_audit_routes_loopback_transport_with_exact_public_host() -> Non
         BROWSER_AUDIT._validate_browser_url("http://delta.lemmata.app:8502")
 
 
+def test_browser_audit_uses_concurrent_tls_handshakes_and_bounded_cold_start() -> None:
+    source = BROWSER_AUDIT_PATH.read_text(encoding="utf-8")
+    assert "do_handshake_on_connect=False" in source
+    assert "self.request.do_handshake()" in source
+    assert "source.pending() > 0" in source
+    assert "timeout=60_000" in source
+
+
 def test_runtime_gate_creates_ephemeral_tls_without_printing_private_key() -> None:
     gate = (ROOT / "scripts" / "run_p014_runtime_gate.sh").read_text(encoding="utf-8")
     assert "openssl req -x509" in gate
@@ -147,6 +155,7 @@ def test_runtime_gate_creates_ephemeral_tls_without_printing_private_key() -> No
     assert '--tls-cert "$TLS_CERTIFICATE"' in gate
     assert '--tls-key "$TLS_PRIVATE_KEY"' in gate
     assert 'cat "$TLS_PRIVATE_KEY"' not in gate
+    assert "p014-runtime-browser-audit-failed" in gate
 
 
 def test_compose_tampering_is_rejected() -> None:

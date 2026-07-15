@@ -10,12 +10,14 @@ import socket
 import socketserver
 import ssl
 import threading
+from collections import Counter
 from collections.abc import Sequence
 from pathlib import Path
 from types import TracebackType
 from typing import Self
 from urllib.parse import urlparse
 
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 from playwright.sync_api import sync_playwright
 
 VIEWPORTS = (
@@ -39,14 +41,56 @@ class _TLSProxyServer(socketserver.ThreadingTCPServer):
     allow_reuse_address = True
     daemon_threads = True
 
+    def __init__(self, tls: ssl.SSLContext) -> None:
+        self.tls = tls
+        self._metrics = Counter[str]({"tls_connections": 0, "upstream_connections": 0})
+        self._metrics_lock = threading.Lock()
+        super().__init__((UPSTREAM_HOST, PUBLIC_PORT), _TLSProxyHandler)
+
+    def get_request(self) -> tuple[ssl.SSLSocket, tuple[str, int]]:
+        request, address = super().get_request()
+        try:
+            wrapped = self.tls.wrap_socket(
+                request,
+                server_side=True,
+                do_handshake_on_connect=False,
+            )
+        except OSError:
+            request.close()
+            raise
+        return wrapped, address
+
+    def count(self, key: str) -> None:
+        with self._metrics_lock:
+            self._metrics[key] += 1
+
+    def metrics(self) -> dict[str, int]:
+        with self._metrics_lock:
+            return dict(sorted(self._metrics.items()))
+
 
 class _TLSProxyHandler(socketserver.BaseRequestHandler):
     def handle(self) -> None:
+        server = self.server
+        assert isinstance(server, _TLSProxyServer)
+        assert isinstance(self.request, ssl.SSLSocket)
         try:
+            self.request.settimeout(10)
+            self.request.do_handshake()
+            self.request.settimeout(None)
+            server.count("tls_connections")
             with socket.create_connection((UPSTREAM_HOST, UPSTREAM_PORT), timeout=5) as upstream:
+                server.count("upstream_connections")
                 peers = {self.request: upstream, upstream: self.request}
                 while True:
-                    readable, _, _ = select.select(tuple(peers), (), (), 30)
+                    pending = [
+                        source
+                        for source in peers
+                        if isinstance(source, ssl.SSLSocket) and source.pending() > 0
+                    ]
+                    readable = pending
+                    if not readable:
+                        readable, _, _ = select.select(tuple(peers), (), (), 30)
                     if not readable:
                         continue
                     for source in readable:
@@ -64,8 +108,7 @@ class _TLSForwarder:
             raise ValueError("P014_BROWSER_TLS_FILE_INVALID")
         tls = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
         tls.load_cert_chain(certificate, private_key)
-        self._server = _TLSProxyServer((UPSTREAM_HOST, PUBLIC_PORT), _TLSProxyHandler)
-        self._server.socket = tls.wrap_socket(self._server.socket, server_side=True)
+        self._server = _TLSProxyServer(tls)
         self._thread = threading.Thread(target=self._server.serve_forever, daemon=True)
 
     def __enter__(self) -> Self:
@@ -82,6 +125,9 @@ class _TLSForwarder:
         self._server.shutdown()
         self._server.server_close()
         self._thread.join(timeout=5)
+
+    def metrics(self) -> dict[str, int]:
+        return self._server.metrics()
 
 
 def _geometry(page) -> dict[str, int]:
@@ -108,8 +154,14 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
     websockets: list[str] = []
     console_errors: list[str] = []
     page_errors: list[str] = []
+    request_failures: list[str] = []
+    response_statuses: Counter[int] = Counter()
     viewport_records: list[dict[str, object]] = []
-    with _TLSForwarder(certificate, private_key), sync_playwright() as playwright:
+    entry_status: int | None = None
+    entry_rendered = False
+    ready_state = "unavailable"
+    body_text_length = 0
+    with _TLSForwarder(certificate, private_key) as forwarder, sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             headless=True,
             args=[f"--host-resolver-rules=MAP {PUBLIC_HOST} {UPSTREAM_HOST}"],
@@ -141,39 +193,54 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
             ),
         )
         page.on("pageerror", lambda error: page_errors.append(str(error)))
+        page.on(
+            "requestfailed",
+            lambda request: request_failures.append(request.failure or "unknown"),
+        )
+        page.on("response", lambda response: response_statuses.update([response.status]))
         response = page.goto(url, wait_until="domcontentloaded", timeout=30_000)
-        if response is None or response.status != 200:
-            raise RuntimeError("P014_BROWSER_ENTRY_FAILED")
-        page.get_by_text("Discover patterns in writing style.", exact=True).wait_for(timeout=30_000)
-        page.get_by_text("Public alpha", exact=True).wait_for(timeout=10_000)
-        page.get_by_text("Experimental", exact=True).wait_for(timeout=10_000)
-        page.get_by_role("region", name="Corpus texts (.txt)").wait_for(timeout=10_000)
-        page.wait_for_timeout(500)
+        entry_status = response.status if response is not None else None
+        if entry_status == 200:
+            try:
+                page.get_by_text("Discover patterns in writing style.", exact=True).wait_for(
+                    timeout=60_000
+                )
+                page.get_by_text("Public alpha", exact=True).wait_for(timeout=10_000)
+                page.get_by_text("Experimental", exact=True).wait_for(timeout=10_000)
+                page.get_by_role("region", name="Corpus texts (.txt)").wait_for(timeout=10_000)
+                entry_rendered = True
+            except PlaywrightTimeoutError:
+                entry_rendered = False
+        ready_state = str(page.evaluate("document.readyState"))
+        body_text_length = int(page.locator("body").evaluate("element => element.innerText.length"))
 
-        for name, width, height in VIEWPORTS:
-            page.set_viewport_size({"width": width, "height": height})
-            page.wait_for_timeout(250)
-            alpha_visible = page.get_by_text("Public alpha", exact=True).is_visible()
-            experimental_visible = page.get_by_text("Experimental", exact=True).is_visible()
-            geometry = _geometry(page)
-            viewport_records.append(
-                {
-                    "name": name,
-                    "width": width,
-                    "height": height,
-                    "alpha_visible": alpha_visible,
-                    "experimental_visible": experimental_visible,
-                    "horizontal_overflow": geometry["scrollWidth"] > geometry["clientWidth"],
-                    "release_inside_viewport": (
-                        geometry["releaseLeft"] >= 0 and geometry["releaseRight"] <= width
-                    ),
-                }
-            )
+        if entry_rendered:
+            page.wait_for_timeout(500)
+            for name, width, height in VIEWPORTS:
+                page.set_viewport_size({"width": width, "height": height})
+                page.wait_for_timeout(250)
+                alpha_visible = page.get_by_text("Public alpha", exact=True).is_visible()
+                experimental_visible = page.get_by_text("Experimental", exact=True).is_visible()
+                geometry = _geometry(page)
+                viewport_records.append(
+                    {
+                        "name": name,
+                        "width": width,
+                        "height": height,
+                        "alpha_visible": alpha_visible,
+                        "experimental_visible": experimental_visible,
+                        "horizontal_overflow": geometry["scrollWidth"] > geometry["clientWidth"],
+                        "release_inside_viewport": (
+                            geometry["releaseLeft"] >= 0 and geometry["releaseRight"] <= width
+                        ),
+                    }
+                )
         context.close()
         browser.close()
+        proxy_metrics = forwarder.metrics()
 
     websocket_pass = any("/_stcore/stream" in value for value in websockets)
-    viewport_pass = all(
+    viewport_pass = len(viewport_records) == len(VIEWPORTS) and all(
         item["alpha_visible"]
         and item["experimental_visible"]
         and not item["horizontal_overflow"]
@@ -188,6 +255,10 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
     return {
         "schema_version": "p014-gateway-browser-audit-v1",
         "url": url,
+        "entry_status": entry_status,
+        "entry_rendered": entry_rendered,
+        "document_ready_state": ready_state,
+        "body_text_length": body_text_length,
         "strict_expected_host_only": strict_host_pass,
         "observed_hosts": hosts,
         "websocket_hosts": websocket_hosts,
@@ -196,10 +267,17 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
         "websocket_count": len(websockets),
         "console_error_count": len(console_errors),
         "page_error_count": len(page_errors),
+        "request_failure_count": len(request_failures),
+        "response_status_counts": {
+            str(status): count for status, count in sorted(response_statuses.items())
+        },
+        "proxy_metrics": proxy_metrics,
         "viewports": viewport_records,
         "result": (
             "passed"
-            if strict_host_pass
+            if entry_status == 200
+            and entry_rendered
+            and strict_host_pass
             and websocket_pass
             and not console_errors
             and not page_errors

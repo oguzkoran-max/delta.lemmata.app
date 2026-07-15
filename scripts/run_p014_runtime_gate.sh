@@ -43,7 +43,7 @@ trap cleanup EXIT HUP INT TERM
 
 gateway_start_diagnostics() {
   docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" ps --all >&2 || true
-  # No public request or corpus upload has occurred when this helper is called.
+  # Gateway access logging is disabled; this never emits application or corpus content.
   docker compose --project-name delta-public-alpha --file "$COMPOSE_FILE" logs \
     --no-color --tail 100 gateway >&2 || true
 }
@@ -99,10 +99,14 @@ if [ "${DELTA_P014_BROWSER_AUDIT:-0}" = "1" ]; then
     -keyout "$TLS_PRIVATE_KEY" \
     -out "$TLS_CERTIFICATE" >/dev/null 2>&1
   chmod 0600 "$TLS_PRIVATE_KEY"
-  "$UV_BIN" run python "$ROOT/scripts/browser_audit_p014_gateway.py" \
+  if ! "$UV_BIN" run python "$ROOT/scripts/browser_audit_p014_gateway.py" \
     --tls-cert "$TLS_CERTIFICATE" \
     --tls-key "$TLS_PRIVATE_KEY" \
-    --output "$BROWSER_RECORD"
+    --output "$BROWSER_RECORD"; then
+    gateway_start_diagnostics
+    printf '%s\n' "p014-runtime-browser-audit-failed" >&2
+    exit 1
+  fi
 fi
 
 dd if=/dev/zero of="$OVERSIZED_BODY" bs=1048576 count=27 2>/dev/null
