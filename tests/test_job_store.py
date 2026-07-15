@@ -21,9 +21,11 @@ from delta_lemmata.job_models import (
     CleanupState,
     ExecutionState,
     JobRecord,
+    ResultViewReceipt,
     ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    commit_result_view,
     publish_export,
     request_cancellation,
     transition_artifact,
@@ -74,6 +76,18 @@ def scientific_receipt() -> ScientificResultReceipt:
         artifact_component="053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b",
         byte_size=4096,
         sha256="3" * 64,
+    )
+
+
+def result_view_receipt() -> ResultViewReceipt:
+    return ResultViewReceipt(
+        schema_version="result-view-receipt-v1",
+        source_result_sha256="3" * 64,
+        workflow_config_sha256="4" * 64,
+        view_schema_version="result-view-v1",
+        artifact_component="5a6b1a66f34ffa5cb516349bc4f2fe62083a8c4803fa23b2793f57a5ece0621a",
+        byte_size=2048,
+        sha256="5" * 64,
     )
 
 
@@ -1305,6 +1319,28 @@ def test_scientific_success_cas_round_trip_and_terminal_proof_require_exact_rece
     )
     assert confirmed.scientific_result_confirmed is True
     assert store.get_job(job_id=confirmed.job_id, capability=owner) == confirmed
+    forged_result_view = confirmed.model_copy(
+        update={
+            "version": confirmed.version + 1,
+            "operations": (
+                *confirmed.operations,
+                AppliedOperation(
+                    operation_id=operation(88),
+                    action="result_view:staged:" + "f" * 64,
+                ),
+            ),
+        }
+    )
+    expect_store_error(
+        JobStoreErrorCode.INVALID_UPDATE,
+        lambda: store.compare_and_swap(
+            job_id=confirmed.job_id,
+            capability=owner,
+            expected_version=confirmed.version,
+            updated=forged_result_view,
+            at_utc=terminal_at + timedelta(microseconds=3),
+        ),
+    )
     assert (
         store.confirm_scientific_result_after_guardian(
             job_id=saved.job_id,
@@ -1345,6 +1381,22 @@ def test_scientific_success_cas_round_trip_and_terminal_proof_require_exact_rece
             JobStoreErrorCode.INVALID_UPDATE,
             lambda arguments=arguments: store.confirm_scientific_result_after_guardian(**arguments),
         )
+
+    view_update = commit_result_view(
+        confirmed,
+        receipt=result_view_receipt(),
+        at_utc=terminal_at + timedelta(microseconds=5),
+        expected_version=confirmed.version,
+        operation_id=operation(89),
+    )
+    stored_view = store.compare_and_swap(
+        job_id=confirmed.job_id,
+        capability=owner,
+        expected_version=confirmed.version,
+        updated=view_update,
+        at_utc=terminal_at + timedelta(microseconds=5),
+    )
+    assert stored_view.result_view == result_view_receipt()
 
 
 def test_terminal_transition_proof_binds_version_outcome_and_running_operation(

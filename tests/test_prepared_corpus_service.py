@@ -303,6 +303,85 @@ def _expect_error(action, code: PreparedCorpusErrorCode) -> None:
     assert captured.value.__cause__ is None
 
 
+def test_result_facade_forwards_owned_materialization_and_maps_unavailability(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _environment(tmp_path)
+    scientific = object()
+    published = object()
+    public_view = object()
+    supplied_view = object()
+
+    monkeypatch.setattr(
+        environment.materializations,
+        "scientific_result",
+        lambda **_kwargs: scientific,
+    )
+    monkeypatch.setattr(
+        environment.materializations,
+        "publish_result_view",
+        lambda **kwargs: published if kwargs["view"] is supplied_view else None,
+    )
+    monkeypatch.setattr(
+        environment.materializations,
+        "result_view",
+        lambda **_kwargs: public_view,
+    )
+    assert (
+        environment.service.scientific_result(
+            owner_key="browser-session",
+            materialization_receipt=environment.materialization_receipt,
+        )
+        is scientific
+    )
+    assert (
+        environment.service.publish_result_view(
+            owner_key="browser-session",
+            materialization_receipt=environment.materialization_receipt,
+            view=supplied_view,  # type: ignore[arg-type]
+        )
+        is published
+    )
+    assert (
+        environment.service.result_view(
+            owner_key="browser-session",
+            materialization_receipt=environment.materialization_receipt,
+        )
+        is public_view
+    )
+
+    def unavailable(**_kwargs):
+        raise CorpusMaterializationError(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE)
+
+    for method_name, action in (
+        (
+            "scientific_result",
+            lambda: environment.service.scientific_result(
+                owner_key="browser-session",
+                materialization_receipt=environment.materialization_receipt,
+            ),
+        ),
+        (
+            "publish_result_view",
+            lambda: environment.service.publish_result_view(
+                owner_key="browser-session",
+                materialization_receipt=environment.materialization_receipt,
+                view=supplied_view,  # type: ignore[arg-type]
+            ),
+        ),
+        (
+            "result_view",
+            lambda: environment.service.result_view(
+                owner_key="browser-session",
+                materialization_receipt=environment.materialization_receipt,
+            ),
+        ),
+    ):
+        monkeypatch.setattr(environment.materializations, method_name, unavailable)
+        _expect_error(action, PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
+
+
 def test_prepare_and_admit_keep_private_text_inside_the_owned_workspace(
     tmp_path: Path,
 ) -> None:

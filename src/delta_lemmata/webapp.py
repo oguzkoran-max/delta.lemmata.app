@@ -98,6 +98,17 @@ from delta_lemmata.preprocessing_models import (
     canonical_p007_json,
 )
 from delta_lemmata.provenance import canonical_json_bytes
+from delta_lemmata.result_view import (
+    ResultCellStatus,
+    ResultCellV1,
+    ResultDocumentDescriptor,
+    ResultViewV1,
+    canonical_result_view,
+    classical_mds,
+    nearest_neighbours,
+    project_result_view,
+)
+from delta_lemmata.stylo_contracts import DocumentRole
 from delta_lemmata.ui_theme import APP_CSS
 from delta_lemmata.web_runtime import WebRuntime, WebRuntimeError, build_web_runtime
 from delta_lemmata.workbench import (
@@ -2359,6 +2370,377 @@ def _render_parameter_explanations() -> None:
         st.caption(text("parameters.learn.reference.body"))
 
 
+def _result_descriptors(
+    inventory: CorpusInventory,
+    preparation: PreparationOutcome,
+) -> tuple[ResultDocumentDescriptor, ...]:
+    receipt = preparation.ready_receipt
+    if receipt is None:
+        raise ValueError("result descriptors require a READY receipt")
+    titles = {work.work_id: work.title_original for work in inventory.works}
+    try:
+        return tuple(
+            ResultDocumentDescriptor(
+                document_id=binding.document_id,
+                title=titles[binding.work_id],
+                role=DocumentRole(binding.analysis_role.value),
+            )
+            for binding in receipt.ordered_documents
+        )
+    except (KeyError, ValueError):
+        raise ValueError("result descriptor binding failed") from None
+
+
+def _result_status_label(cell: ResultCellV1) -> str:
+    return text(f"results.cell.{cell.status.value}")
+
+
+def _distance_label(value: int | float) -> str:
+    return f"{float(value):.6f}"
+
+
+def _render_result_status(view: ResultViewV1) -> None:
+    cards = []
+    rows = []
+    for cell in view.cells:
+        evidence_role = text(
+            "results.cell.reference" if cell.is_reference else "results.cell.sensitivity"
+        )
+        output = text(
+            "results.cell.available"
+            if cell.status is ResultCellStatus.COMPLETE
+            else "results.cell.unavailable"
+        )
+        cards.append(
+            f'<article class="delta-result-cell delta-result-cell-{cell.status.value}" '
+            f'data-mfw="{cell.mfw}" data-status="{cell.status.value}">'
+            f'<span class="delta-result-cell-mfw">{cell.mfw} MFW</span>'
+            f"<strong>{_html(_result_status_label(cell))}</strong>"
+            f"<small>{_html(evidence_role)}</small></article>"
+        )
+        rows.append(
+            f'<tr data-mfw="{cell.mfw}" data-status="{cell.status.value}">'
+            f'<th scope="row">{cell.mfw}</th><td>{_html(evidence_role)}</td>'
+            f"<td>{_html(_result_status_label(cell))}</td><td>{_html(output)}</td></tr>"
+        )
+    label = _html(text("results.cell_grid.label"))
+    st.markdown(
+        f'<div class="delta-result-cell-grid" role="list" aria-label="{label}">'
+        + "".join(cards)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.status.table"))}" tabindex="0">'
+        '<table class="delta-review-table delta-result-status-table">'
+        f"<caption>{_html(text('results.status.table'))}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("results.status.mfw"))}</th>'
+        f'<th scope="col">{_html(text("results.status.role"))}</th>'
+        f'<th scope="col">{_html(text("results.status.state"))}</th>'
+        f'<th scope="col">{_html(text("results.status.output"))}</th>'
+        "</tr></thead><tbody>" + "".join(rows) + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_result_boundary() -> None:
+    st.markdown(
+        '<section class="delta-result-boundary">'
+        f"<div><strong>{_html(text('results.boundary.shows'))}</strong>"
+        f"<p>{_html(text('results.boundary.shows.body'))}</p></div>"
+        f"<div><strong>{_html(text('results.boundary.not'))}</strong>"
+        f"<p>{_html(text('results.boundary.not.body'))}</p></div></section>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
+    matrix = cell.matrix
+    if matrix is None:
+        raise ValueError("distance matrix is unavailable")
+    titles = {document.key: document.title for document in view.documents}
+    header = "".join(
+        f'<th scope="col" title="{_html(titles[key])}">{_html(key)}</th>'
+        for key in matrix.document_keys
+    )
+    rows = []
+    for key, values in zip(matrix.document_keys, matrix.values, strict=True):
+        cells = "".join(f"<td>{_distance_label(value)}</td>" for value in values)
+        rows.append(
+            f'<tr><th scope="row" title="{_html(titles[key])}">{_html(key)}</th>' + cells + "</tr>"
+        )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.matrix.label"))}" tabindex="0">'
+        '<table class="delta-review-table delta-result-matrix">'
+        f"<caption>{_html(text('results.matrix.label'))}</caption>"
+        f'<thead><tr><th scope="col"></th>{header}</tr></thead><tbody>'
+        + "".join(rows)
+        + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
+    matrix = cell.matrix
+    if matrix is None:
+        raise ValueError("distance matrix is unavailable")
+    titles = {document.key: document.title for document in view.documents}
+    values = [
+        {
+            "reference": row_key,
+            "reference_title": titles[row_key],
+            "compared": column_key,
+            "compared_title": titles[column_key],
+            "distance": float(distance),
+            "distance_label": _distance_label(distance),
+        }
+        for row_key, row in zip(matrix.document_keys, matrix.values, strict=True)
+        for column_key, distance in zip(matrix.document_keys, row, strict=True)
+    ]
+    order = list(matrix.document_keys)
+    spec = {
+        "data": {"values": values},
+        "layer": [
+            {
+                "mark": {"type": "rect", "cornerRadius": 3},
+                "encoding": {
+                    "x": {
+                        "field": "compared",
+                        "type": "ordinal",
+                        "sort": order,
+                        "title": text("results.heatmap.x"),
+                    },
+                    "y": {
+                        "field": "reference",
+                        "type": "ordinal",
+                        "sort": order,
+                        "title": text("results.heatmap.y"),
+                    },
+                    "color": {
+                        "field": "distance",
+                        "type": "quantitative",
+                        "scale": {"range": ["#eef8f4", "#c5e8dc", "#f4c7b8", "#d85a30"]},
+                        "legend": {"title": "Classic Delta", "orient": "bottom"},
+                    },
+                    "tooltip": [
+                        {"field": "reference_title", "type": "nominal", "title": "Text"},
+                        {
+                            "field": "compared_title",
+                            "type": "nominal",
+                            "title": "Compared with",
+                        },
+                        {
+                            "field": "distance_label",
+                            "type": "nominal",
+                            "title": "Distance",
+                        },
+                    ],
+                },
+            },
+            {
+                "mark": {"type": "text", "fontSize": 12, "color": "#1a1a1a"},
+                "encoding": {
+                    "x": {"field": "compared", "type": "ordinal", "sort": order},
+                    "y": {"field": "reference", "type": "ordinal", "sort": order},
+                    "text": {"field": "distance_label", "type": "nominal"},
+                },
+            },
+        ],
+        "config": {
+            "background": "#ffffff",
+            "view": {"stroke": None},
+            "axis": {"labelColor": "#31333f", "titleColor": "#31333f"},
+        },
+    }
+    st.vega_lite_chart(
+        spec=spec,
+        width="stretch",
+        height=360,
+        theme=None,
+        key=f"p009_heatmap_{cell.mfw}",
+    )
+
+
+def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
+    titles = {document.key: document.title for document in view.documents}
+    rows = "".join(
+        f'<tr><th scope="row">{_html(titles[item.document_key])}</th>'
+        f"<td>{_html(titles[item.neighbour_key])}</td>"
+        f"<td>{_distance_label(item.distance)}</td><td>{item.tie_count}</td></tr>"
+        for item in nearest_neighbours(cell)
+    )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.neighbour.label"))}" tabindex="0">'
+        '<table class="delta-review-table delta-neighbour-table">'
+        f"<caption>{_html(text('results.neighbour.label'))}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("results.neighbour.document"))}</th>'
+        f'<th scope="col">{_html(text("results.neighbour.neighbour"))}</th>'
+        f'<th scope="col">{_html(text("results.neighbour.distance"))}</th>'
+        f'<th scope="col">{_html(text("results.neighbour.ties"))}</th>'
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
+    points = classical_mds(cell)
+    documents = {document.key: document for document in view.documents}
+    values = [
+        {
+            "key": point.document_key,
+            "title": documents[point.document_key].title,
+            "role": documents[point.document_key].role.value,
+            "x": point.x,
+            "y": point.y,
+        }
+        for point in points
+    ]
+    spec = {
+        "data": {"values": values},
+        "layer": [
+            {
+                "mark": {
+                    "type": "circle",
+                    "size": 260,
+                    "opacity": 0.9,
+                    "stroke": "#ffffff",
+                    "strokeWidth": 2,
+                },
+                "encoding": {
+                    "x": {
+                        "field": "x",
+                        "type": "quantitative",
+                        "title": text("results.mds.x"),
+                        "scale": {"zero": False},
+                    },
+                    "y": {
+                        "field": "y",
+                        "type": "quantitative",
+                        "title": text("results.mds.y"),
+                        "scale": {"zero": False},
+                    },
+                    "color": {
+                        "field": "role",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": ["known", "unknown"],
+                            "range": ["#0f6e56", "#d85a30"],
+                        },
+                        "legend": {"title": text("results.mds.role"), "orient": "bottom"},
+                    },
+                    "tooltip": [
+                        {"field": "title", "type": "nominal", "title": "Text"},
+                        {"field": "role", "type": "nominal", "title": "Role"},
+                        {"field": "x", "type": "quantitative", "format": ".6f"},
+                        {"field": "y", "type": "quantitative", "format": ".6f"},
+                    ],
+                },
+            },
+            {
+                "mark": {"type": "text", "dy": -16, "fontSize": 12, "color": "#1a1a1a"},
+                "encoding": {
+                    "x": {"field": "x", "type": "quantitative", "scale": {"zero": False}},
+                    "y": {"field": "y", "type": "quantitative", "scale": {"zero": False}},
+                    "text": {"field": "key", "type": "nominal"},
+                },
+            },
+        ],
+        "config": {
+            "background": "#ffffff",
+            "view": {"stroke": "#e2e5e4"},
+            "axis": {"gridColor": "#eef0ef", "labelColor": "#31333f"},
+        },
+    }
+    st.vega_lite_chart(
+        spec=spec,
+        width="stretch",
+        height=360,
+        theme=None,
+        key=f"p009_mds_{cell.mfw}",
+    )
+    rows = "".join(
+        f'<tr><th scope="row">{_html(documents[point.document_key].title)}</th>'
+        f"<td>{_html(documents[point.document_key].role.value)}</td>"
+        f"<td>{_distance_label(point.x)}</td><td>{_distance_label(point.y)}</td></tr>"
+        for point in points
+    )
+    st.markdown(
+        '<div class="delta-table-scroll" role="region" '
+        f'aria-label="{_html(text("results.mds.coordinates"))}" tabindex="0">'
+        '<table class="delta-review-table delta-mds-table">'
+        f"<caption>{_html(text('results.mds.coordinates'))}</caption><thead><tr>"
+        f'<th scope="col">{_html(text("results.mds.document"))}</th>'
+        f'<th scope="col">{_html(text("results.mds.role"))}</th>'
+        f'<th scope="col">{_html(text("results.mds.x"))}</th>'
+        f'<th scope="col">{_html(text("results.mds.y"))}</th>'
+        "</tr></thead><tbody>" + rows + "</tbody></table></div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_result_view(view: ResultViewV1) -> None:
+    st.divider()
+    st.markdown(
+        f'<div class="delta-eyebrow">{_html(text("results.eyebrow"))}</div>',
+        unsafe_allow_html=True,
+    )
+    st.header(text("results.title"), anchor=False)
+    st.caption(text("results.body"))
+    _render_result_status(view)
+    if view.source_result_outcome == "partial":
+        st.warning(text("results.partial"), icon=":material/warning:")
+    completed = tuple(cell for cell in view.cells if cell.status is ResultCellStatus.COMPLETE)
+    default_index = next(
+        (index for index, cell in enumerate(completed) if cell.mfw == view.reference_mfw),
+        0,
+    )
+    selected_mfw = st.selectbox(
+        text("results.selector"),
+        options=[cell.mfw for cell in completed],
+        index=default_index,
+        format_func=lambda mfw: text(
+            "results.selector.option",
+            mfw=mfw,
+            reference=(
+                text("results.selector.reference_suffix") if mfw == view.reference_mfw else ""
+            ),
+        ),
+        key="p009_result_cell_selector",
+    )
+    selected = next(cell for cell in completed if cell.mfw == selected_mfw)
+    st.info(text("results.reference_note"), icon=":material/push_pin:")
+
+    st.subheader(text("results.heatmap.title"), anchor=False)
+    st.caption(text("results.heatmap.body"))
+    _render_heatmap(selected, view)
+    st.subheader(text("results.matrix.title"), anchor=False)
+    st.caption(text("results.matrix.body"))
+    _render_distance_matrix(selected, view)
+    _render_result_boundary()
+
+    st.subheader(text("results.neighbour.title"), anchor=False)
+    st.caption(text("results.neighbour.body"))
+    _render_nearest_neighbours(selected, view)
+    _render_result_boundary()
+
+    st.subheader(text("results.mds.title"), anchor=False)
+    st.caption(text("results.mds.body"))
+    _render_mds(selected, view)
+    _render_result_boundary()
+    st.download_button(
+        text("results.download"),
+        data=canonical_result_view(view),
+        file_name="delta-result-view-v1.json",
+        mime="application/json",
+        help=text("results.download.help"),
+        width="stretch",
+        key="p009_download_result",
+    )
+
+
 def _render_parameters_stage() -> None:
     inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
     annotations = st.session_state.get(_FLOW_ANNOTATIONS_KEY)
@@ -2446,7 +2828,16 @@ def _render_parameters_stage() -> None:
             else:
                 st.error(title, icon=":material/error:")
             st.caption(body)
-            st.info(text("parameters.evidence_next"), icon=":material/arrow_forward:")
+            if state_id == "succeeded":
+                try:
+                    result_view = _runtime().prepared_corpora.result_view(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+                except (PreparedCorpusError, WebRuntimeError):
+                    st.error(text("results.unavailable"), icon=":material/gpp_bad:")
+                else:
+                    _render_result_view(result_view)
             return
 
         confirmed = st.checkbox(
@@ -2486,6 +2877,21 @@ def _render_parameters_stage() -> None:
                     resolved_workflow_config=config,
                 )
                 runtime.analyses.run_next()
+                verified = runtime.prepared_corpora.scientific_result(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                )
+                result_view = project_result_view(
+                    config=config,
+                    result=verified.result,
+                    source_result_sha256=verified.sha256,
+                    documents=_result_descriptors(inventory, preparation),
+                )
+                runtime.prepared_corpora.publish_result_view(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                    view=result_view,
+                )
                 runtime.maintain()
                 presentation = runtime.prepared_corpora.status(
                     owner_key=_owner_key(),

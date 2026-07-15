@@ -21,6 +21,7 @@ from delta_lemmata.job_store import SQLiteJobStore
 from delta_lemmata.job_workspace import WorkspaceManager
 from delta_lemmata.prepared_corpus_service import PreparedCorpusService
 from delta_lemmata.recovery_receipt import RecoveryReceiptStore
+from delta_lemmata.result_service import ResultPackageService
 from delta_lemmata.session_identity import MINIMUM_OWNER_SECRET_BYTES
 from delta_lemmata.stylo_job_runner import StyloJobRunner
 
@@ -204,6 +205,7 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
             signing_secret=recovery_receipt_secret,
         )
         jobs = JobService(store=store, workspaces=workspaces, clock=clock)
+        results = ResultPackageService(store=store, workspaces=workspaces, clock=clock)
         janitor = JobJanitor(
             store=store,
             workspaces=workspaces,
@@ -216,6 +218,7 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
             workspaces=workspaces,
             clock=clock,
             lease_id_factory=lambda: secrets.token_hex(32),
+            results=results,
         )
         prepared_corpora = PreparedCorpusService(
             materializations=materializations,

@@ -11,6 +11,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import StrEnum
 from functools import wraps
+from typing import TYPE_CHECKING
 
 from delta_lemmata.clock import Clock, require_utc
 from delta_lemmata.ingestion import IntakeReceipt, IntakeRole, ValidatedCorpusPayload
@@ -29,6 +30,11 @@ from delta_lemmata.job_workspace import (
     WorkspaceManager,
 )
 from delta_lemmata.session_identity import JobId, SessionCapability, workspace_component
+
+if TYPE_CHECKING:
+    from delta_lemmata.job_models import ResultViewReceipt
+    from delta_lemmata.result_service import ResultPackageService, VerifiedScientificResult
+    from delta_lemmata.result_view import ResultViewV1
 
 LeaseIdFactory = Callable[[], str]
 CapabilityFactory = Callable[[], SessionCapability]
@@ -51,6 +57,7 @@ class CorpusMaterializationErrorCode(StrEnum):
     READY_CONFLICT = "P007_MATERIALIZATION_READY_CONFLICT"
     READY_REJECTED = "P007_MATERIALIZATION_READY_REJECTED"
     READY_REUSED = "P007_MATERIALIZATION_READY_REUSED"
+    RESULT_NOT_AVAILABLE = "P009_MATERIALIZATION_RESULT_NOT_AVAILABLE"
     OPERATION_FAILED = "P007_MATERIALIZATION_OPERATION_FAILED"
 
 
@@ -159,6 +166,7 @@ class CorpusMaterializationService:
         clock: Clock,
         lease_id_factory: LeaseIdFactory,
         capability_factory: CapabilityFactory = SessionCapability.generate,
+        results: ResultPackageService | None = None,
     ) -> None:
         if (
             not isinstance(jobs, JobService)
@@ -166,6 +174,13 @@ class CorpusMaterializationService:
             or not hasattr(clock, "now")
             or not callable(lease_id_factory)
             or not callable(capability_factory)
+            or (
+                results is not None
+                and not all(
+                    callable(getattr(results, method, None))
+                    for method in ("read_scientific_result", "publish_view", "read_view")
+                )
+            )
         ):
             raise _error(CorpusMaterializationErrorCode.INVALID_CONFIGURATION)
         self._jobs = jobs
@@ -173,6 +188,7 @@ class CorpusMaterializationService:
         self._clock = clock
         self._lease_id_factory = lease_id_factory
         self._capability_factory = capability_factory
+        self._results = results
         self._capabilities: dict[str, SessionCapability] = {}
         self._capability_claims: dict[str, int] = {}
         self._leases: dict[str, _LeaseState] = {}
@@ -624,6 +640,77 @@ class CorpusMaterializationService:
         finally:
             self._finish_visit(state)
         return presentation
+
+    @_content_free
+    def scientific_result(
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+    ) -> VerifiedScientificResult:
+        """Read one verified result without releasing its private capability."""
+
+        owner_reference = _owner_reference(owner_key)
+        if not isinstance(receipt, CorpusMaterializationReceipt) or self._results is None:
+            raise _error(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
+        try:
+            return self._results.read_scientific_result(
+                job_id=receipt.job_id,
+                capability=state.capability,
+            )
+        except Exception:
+            raise _error(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE) from None
+        finally:
+            self._finish_visit(state)
+
+    @_content_free
+    def publish_result_view(
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+        view: ResultViewV1,
+    ) -> ResultViewReceipt:
+        """Publish one verified public result view through the private capability."""
+
+        owner_reference = _owner_reference(owner_key)
+        if not isinstance(receipt, CorpusMaterializationReceipt) or self._results is None:
+            raise _error(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
+        try:
+            return self._results.publish_view(
+                job_id=receipt.job_id,
+                capability=state.capability,
+                view=view,
+            )
+        except Exception:
+            raise _error(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE) from None
+        finally:
+            self._finish_visit(state)
+
+    @_content_free
+    def result_view(
+        self,
+        *,
+        owner_key: str,
+        receipt: CorpusMaterializationReceipt,
+    ) -> ResultViewV1:
+        """Read one published view without releasing its private capability."""
+
+        owner_reference = _owner_reference(owner_key)
+        if not isinstance(receipt, CorpusMaterializationReceipt) or self._results is None:
+            raise _error(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE)
+        state = self._begin_visit(owner_reference, receipt, allow_consumed=True)
+        try:
+            return self._results.read_view(
+                job_id=receipt.job_id,
+                capability=state.capability,
+            )
+        except Exception:
+            raise _error(CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE) from None
+        finally:
+            self._finish_visit(state)
 
     @_content_free
     def cleanup(

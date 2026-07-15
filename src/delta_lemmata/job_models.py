@@ -202,6 +202,18 @@ class ScientificResultReceipt(FrozenModel):
     sha256: Sha256Digest
 
 
+class ResultViewReceipt(FrozenModel):
+    """Content-free commitment to one bounded P009 public result view."""
+
+    schema_version: Literal["result-view-receipt-v1"]
+    source_result_sha256: Sha256Digest
+    workflow_config_sha256: Sha256Digest
+    view_schema_version: Literal["result-view-v1"]
+    artifact_component: Literal["5a6b1a66f34ffa5cb516349bc4f2fe62083a8c4803fa23b2793f57a5ece0621a"]
+    byte_size: int = Field(strict=True, ge=1, le=4 * 1024 * 1024)
+    sha256: Sha256Digest
+
+
 def _scientific_result_commitment(receipt: ScientificResultReceipt) -> str:
     fields = (
         receipt.schema_version,
@@ -225,6 +237,23 @@ def _scientific_confirmation_action(receipt: ScientificResultReceipt) -> str:
     return f"scientific:guardian:confirmed:{_scientific_result_commitment(receipt)}"
 
 
+def _result_view_commitment(receipt: ResultViewReceipt) -> str:
+    fields = (
+        receipt.schema_version,
+        receipt.source_result_sha256,
+        receipt.workflow_config_sha256,
+        receipt.view_schema_version,
+        receipt.artifact_component,
+        str(receipt.byte_size),
+        receipt.sha256,
+    )
+    return hashlib.sha256("\0".join(fields).encode("ascii")).hexdigest()
+
+
+def _result_view_action(receipt: ResultViewReceipt) -> str:
+    return f"result_view:staged:{_result_view_commitment(receipt)}"
+
+
 class JobRecord(FrozenModel):
     job_id: JobIdText
     owner_digest: OwnerDigest
@@ -235,6 +264,7 @@ class JobRecord(FrozenModel):
     artifacts: ArtifactLifecycle
     scientific_result: ScientificResultReceipt | None = None
     scientific_result_confirmed: bool = Field(default=False, strict=True)
+    result_view: ResultViewReceipt | None = None
     export_available: bool = False
     event_expires_at_utc: datetime
     tombstone_expires_at_utc: datetime | None = None
@@ -343,6 +373,23 @@ class JobRecord(FrozenModel):
             raise ValueError("scientific transition requires a result receipt")
         elif self.scientific_result_confirmed or confirmation_actions:
             raise ValueError("scientific confirmation requires a result receipt")
+        result_view_actions = tuple(
+            operation.action
+            for operation in self.operations
+            if operation.action.startswith("result_view:staged:")
+        )
+        if self.result_view is not None:
+            if (
+                self.scientific_result is None
+                or not self.scientific_result_confirmed
+                or self.result_view.source_result_sha256 != self.scientific_result.sha256
+                or result_view_actions != (_result_view_action(self.result_view),)
+                or self.outcome is None
+                or self.outcome.kind is not TerminalOutcome.SUCCEEDED
+            ):
+                raise ValueError("result view requires one confirmed scientific source")
+        elif result_view_actions:
+            raise ValueError("result view transition requires a result view receipt")
         execution_deadline_cap = {
             ExecutionState.STAGED: self.execution.entered_at_utc
             + timedelta(seconds=policy.staged_ttl_seconds),
@@ -382,7 +429,10 @@ class JobRecord(FrozenModel):
             and self.artifacts.input.state is CleanupState.VERIFIED_ABSENT
             and self.artifacts.work.state is CleanupState.VERIFIED_ABSENT
             and self.artifacts.export.state is CleanupState.PRESENT
-            and (self.scientific_result is None or self.scientific_result_confirmed)
+            and (
+                self.scientific_result is None
+                or (self.scientific_result_confirmed and self.result_view is not None)
+            )
         )
 
 
@@ -739,6 +789,55 @@ def confirm_scientific_result(
     )
 
 
+def commit_result_view(
+    job: JobRecord,
+    *,
+    receipt: ResultViewReceipt,
+    at_utc: datetime,
+    expected_version: int,
+    operation_id: str,
+) -> JobRecord:
+    """Atomically bind one public view receipt and its export lifecycle."""
+
+    if not isinstance(receipt, ResultViewReceipt):
+        raise IllegalTransitionError
+    action = _result_view_action(receipt)
+    if _check_operation(job, operation_id, action):
+        return job
+    _check_version(job, expected_version)
+    at_utc = require_utc(at_utc, field_name="at_utc")
+    export_deadline = _artifact_deadline_cap(job, ArtifactKind.EXPORT)
+    if (
+        job.execution.state is not ExecutionState.TERMINAL
+        or job.outcome is None
+        or job.outcome.kind is not TerminalOutcome.SUCCEEDED
+        or job.scientific_result is None
+        or not job.scientific_result_confirmed
+        or receipt.source_result_sha256 != job.scientific_result.sha256
+        or job.result_view is not None
+        or job.export_available
+        or job.artifacts.result.state is not CleanupState.PRESENT
+        or job.artifacts.export.state is not CleanupState.NOT_CREATED
+        or at_utc < job.execution.entered_at_utc
+        or at_utc >= export_deadline
+    ):
+        raise IllegalTransitionError
+    artifact_payload = job.artifacts.model_dump(mode="python")
+    artifact_payload[ArtifactKind.EXPORT.value] = ArtifactStatus(
+        state=CleanupState.PRESENT,
+        delete_by_utc=export_deadline,
+    )
+    return _updated(
+        job,
+        operation_id=operation_id,
+        action=action,
+        updates={
+            "artifacts": ArtifactLifecycle.model_validate(artifact_payload),
+            "result_view": receipt,
+        },
+    )
+
+
 def request_cancellation(
     job: JobRecord,
     *,
@@ -981,9 +1080,11 @@ __all__ = [
     "JobRecord",
     "OperationConflictError",
     "Outcome",
+    "ResultViewReceipt",
     "ScientificResultReceipt",
     "TerminalOutcome",
     "VersionConflictError",
+    "commit_result_view",
     "confirm_scientific_result",
     "new_staged_job",
     "publish_export",

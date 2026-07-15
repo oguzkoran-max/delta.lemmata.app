@@ -180,6 +180,89 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.evidence_next": (
         "The calculation finished. Evidence review and result visualizations are the next step."
     ),
+    "results.eyebrow": "EVIDENCE · ALL GUIDED COMPARISONS",
+    "results.title": "Explore the relative distances",
+    "results.body": (
+        "Every Guided Mode comparison remains visible. Choose a completed parameter cell to "
+        "inspect its matrix and derived views; this changes the display only and never reruns "
+        "the analysis."
+    ),
+    "results.partial": (
+        "At least one comparison could not be completed. Delta keeps that cell visible instead "
+        "of substituting or hiding it."
+    ),
+    "results.cell_grid.label": "Status of all Guided Mode comparisons",
+    "results.cell.reference": "Display reference",
+    "results.cell.sensitivity": "Sensitivity check",
+    "results.cell.complete": "Complete",
+    "results.cell.not_enough_features": "Not enough eligible features",
+    "results.cell.failed": "Calculation unavailable",
+    "results.cell.available": "Distance matrix available",
+    "results.cell.unavailable": "No matrix is shown for this cell",
+    "results.status.table": "Complete Guided Mode result grid",
+    "results.status.mfw": "Most frequent words",
+    "results.status.role": "Evidence role",
+    "results.status.state": "Status",
+    "results.status.output": "Visible output",
+    "results.selector": "View one completed comparison",
+    "results.selector.option": "{mfw} MFW{reference}",
+    "results.selector.reference_suffix": " · display reference",
+    "results.reference_note": (
+        "500 MFW opens first as a pre-registered visual reference. It is not selected as the "
+        "best or most convincing result."
+    ),
+    "results.heatmap.title": "Distance heatmap",
+    "results.heatmap.body": (
+        "Each square reports the Classic Delta distance between two documented texts. Lighter "
+        "values are smaller within this selected matrix."
+    ),
+    "results.heatmap.x": "Compared text",
+    "results.heatmap.y": "Reference text",
+    "results.matrix.title": "Exact distance matrix",
+    "results.matrix.body": (
+        "The table is the accessible numerical counterpart of the heatmap. Distances are "
+        "symmetric and each text has distance zero from itself."
+    ),
+    "results.matrix.label": "Exact Classic Delta distance matrix",
+    "results.neighbour.title": "Nearest neighbours, including ties",
+    "results.neighbour.body": (
+        "For each text, Delta lists every text tied at the smallest distance in this selected "
+        "matrix. Equal minima are never broken arbitrarily."
+    ),
+    "results.neighbour.label": "Nearest-neighbour table with exact ties",
+    "results.neighbour.document": "Text",
+    "results.neighbour.neighbour": "Nearest text",
+    "results.neighbour.distance": "Distance",
+    "results.neighbour.ties": "Tied minima",
+    "results.mds.title": "Two-dimensional proximity map",
+    "results.mds.body": (
+        "Classical multidimensional scaling places texts so that their spacing approximates the "
+        "selected distance matrix in two dimensions."
+    ),
+    "results.mds.x": "MDS axis 1",
+    "results.mds.y": "MDS axis 2",
+    "results.mds.coordinates": "Exact MDS coordinate table",
+    "results.mds.document": "Text",
+    "results.mds.role": "Analysis role",
+    "results.boundary.shows": "What this shows",
+    "results.boundary.shows.body": (
+        "Relative stylistic proximity among these documented texts under this exact parameter cell."
+    ),
+    "results.boundary.not": "What this does not show",
+    "results.boundary.not.body": (
+        "Authorship, authenticity, influence, intention, chronology, causation, or a probability "
+        "that one interpretation is correct."
+    ),
+    "results.download": "Download canonical result record",
+    "results.download.help": (
+        "This bounded JSON record contains public document labels, the four cell states, distance "
+        "matrices, method identifiers, and interpretation limits. It excludes uploaded text, "
+        "tokens, feature words, fitted vectors, paths, and private capabilities."
+    ),
+    "results.unavailable": (
+        "The verified result view is not available. Delta will not display an unbound or altered "
+        "result."
+    ),
     "purpose.guidance": "Understand this research path",
     "purpose.label": "What do you want to investigate?",
     "purpose.badge": "Selected purpose",

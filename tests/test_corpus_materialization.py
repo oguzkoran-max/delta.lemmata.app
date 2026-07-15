@@ -52,6 +52,27 @@ class LeaseIds:
         return f"{self.value:064x}"
 
 
+class ResultStub:
+    def __init__(self, *, fail: bool = False) -> None:
+        self.fail = fail
+        self.calls: list[tuple[str, dict[str, object]]] = []
+
+    def _record(self, name: str, kwargs: dict[str, object]) -> object:
+        self.calls.append((name, kwargs))
+        if self.fail:
+            raise RuntimeError("private result detail")
+        return name
+
+    def read_scientific_result(self, **kwargs) -> object:
+        return self._record("scientific", kwargs)
+
+    def publish_view(self, **kwargs) -> object:
+        return self._record("publish", kwargs)
+
+    def read_view(self, **kwargs) -> object:
+        return self._record("view", kwargs)
+
+
 def _source(index: int, content: bytes) -> ValidatedCorpusPayload:
     digest = hashlib.sha256(content).hexdigest()
     receipt = IntakeReceipt(
@@ -69,7 +90,13 @@ def _source(index: int, content: bytes) -> ValidatedCorpusPayload:
     return ValidatedCorpusPayload(receipt=receipt, content=content)
 
 
-def _environment(tmp_path: Path, *, lease_ids=None, capability_factory=None):
+def _environment(
+    tmp_path: Path,
+    *,
+    lease_ids=None,
+    capability_factory=None,
+    results=None,
+):
     database = tmp_path / "database"
     workspaces_root = tmp_path / "workspaces"
     database.mkdir(mode=0o700, parents=True)
@@ -93,6 +120,7 @@ def _environment(tmp_path: Path, *, lease_ids=None, capability_factory=None):
         clock=clock,
         lease_id_factory=lease_ids or LeaseIds(),
         capability_factory=make_capability,
+        results=results,
     )
     return service, workspaces, clock
 
@@ -912,3 +940,80 @@ def test_status_invalid_clock_cleans_unconsumed_materialization(
         CorpusMaterializationErrorCode.INVALID_CONFIGURATION,
     )
     assert workspaces.list_layouts() == ()
+
+
+def test_result_facade_reuses_private_capability_without_exposing_it(tmp_path: Path) -> None:
+    results = ResultStub()
+    service, _workspaces, _clock = _environment(tmp_path, results=results)
+    receipt = service.materialize(
+        owner_key="owner-a",
+        payloads=(_source(1, b"private result corpus"),),
+    )
+    view = object()
+
+    assert service.scientific_result(owner_key="owner-a", receipt=receipt) == "scientific"
+    assert (
+        service.publish_result_view(owner_key="owner-a", receipt=receipt, view=view)  # type: ignore[arg-type]
+        == "publish"
+    )
+    assert service.result_view(owner_key="owner-a", receipt=receipt) == "view"
+    assert tuple(name for name, _kwargs in results.calls) == ("scientific", "publish", "view")
+    capabilities = tuple(kwargs["capability"] for _name, kwargs in results.calls)
+    assert capabilities[0] is capabilities[1] is capabilities[2]
+    assert all(kwargs["job_id"] == receipt.job_id for _name, kwargs in results.calls)
+    assert results.calls[1][1]["view"] is view
+    assert service._leases[receipt.lease_id].visiting is False
+
+
+def test_result_facade_rejects_missing_service_invalid_receipts_and_downstream_failures(
+    tmp_path: Path,
+) -> None:
+    source = _source(1, b"private unavailable result corpus")
+    unavailable, _workspaces, _clock = _environment(tmp_path / "unavailable")
+    receipt = unavailable.materialize(owner_key="owner-a", payloads=(source,))
+    for action in (
+        lambda: unavailable.scientific_result(owner_key="owner-a", receipt=receipt),
+        lambda: unavailable.publish_result_view(
+            owner_key="owner-a",
+            receipt=receipt,
+            view=object(),  # type: ignore[arg-type]
+        ),
+        lambda: unavailable.result_view(owner_key="owner-a", receipt=receipt),
+        lambda: unavailable.scientific_result(
+            owner_key="owner-a",
+            receipt=object(),  # type: ignore[arg-type]
+        ),
+    ):
+        _expect_error(action, CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE)
+
+    failing_results = ResultStub(fail=True)
+    failing, _failed_workspaces, _ = _environment(
+        tmp_path / "failing",
+        results=failing_results,
+    )
+    failing_receipt = failing.materialize(owner_key="owner-a", payloads=(source,))
+    for action in (
+        lambda: failing.scientific_result(owner_key="owner-a", receipt=failing_receipt),
+        lambda: failing.publish_result_view(
+            owner_key="owner-a",
+            receipt=failing_receipt,
+            view=object(),  # type: ignore[arg-type]
+        ),
+        lambda: failing.result_view(owner_key="owner-a", receipt=failing_receipt),
+    ):
+        _expect_error(action, CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE)
+        assert failing._leases[failing_receipt.lease_id].visiting is False
+
+
+def test_materialization_rejects_incomplete_result_service_configuration(tmp_path: Path) -> None:
+    service, workspaces, clock = _environment(tmp_path)
+    _expect_error(
+        lambda: CorpusMaterializationService(
+            jobs=service._jobs,
+            workspaces=workspaces,
+            clock=clock,
+            lease_id_factory=LeaseIds(),
+            results=object(),  # type: ignore[arg-type]
+        ),
+        CorpusMaterializationErrorCode.INVALID_CONFIGURATION,
+    )

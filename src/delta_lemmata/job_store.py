@@ -30,6 +30,7 @@ from delta_lemmata.job_models import (
     ScientificResultReceipt,
     TerminalOutcome,
     VersionConflictError,
+    commit_result_view,
     confirm_scientific_result,
     new_staged_job,
     publish_export,
@@ -727,6 +728,16 @@ class SQLiteJobStore:
             elif action.startswith("scientific:guardian:confirmed:"):
                 expected = confirm_scientific_result(
                     previous,
+                    expected_version=previous.version,
+                    operation_id=operation.operation_id,
+                )
+            elif action.startswith("result_view:staged:"):
+                if updated.result_view is None:
+                    _invalid_update()
+                expected = commit_result_view(
+                    previous,
+                    receipt=updated.result_view,
+                    at_utc=previous.execution.entered_at_utc,
                     expected_version=previous.version,
                     operation_id=operation.operation_id,
                 )

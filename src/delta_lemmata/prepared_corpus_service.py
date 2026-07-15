@@ -12,7 +12,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from enum import StrEnum
 from functools import wraps
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
@@ -62,6 +62,11 @@ from delta_lemmata.workflow_models import (
     workflow_config_sha256,
 )
 
+if TYPE_CHECKING:
+    from delta_lemmata.job_models import ResultViewReceipt
+    from delta_lemmata.result_service import VerifiedScientificResult
+    from delta_lemmata.result_view import ResultViewV1
+
 ReceiptIdFactory = Callable[[], str]
 EntropyFactory = Callable[[int], bytes]
 
@@ -91,6 +96,7 @@ class PreparedCorpusErrorCode(StrEnum):
     ADMISSION_REUSED = "P007_PREPARED_CORPUS_ADMISSION_REUSED"
     INTEGRITY = "P007_PREPARED_CORPUS_INTEGRITY"
     CLEANUP_FAILED = "P007_PREPARED_CORPUS_CLEANUP_FAILED"
+    RESULT_NOT_AVAILABLE = "P009_PREPARED_CORPUS_RESULT_NOT_AVAILABLE"
     OPERATION_FAILED = "P007_PREPARED_CORPUS_OPERATION_FAILED"
 
 
@@ -455,6 +461,8 @@ class PreparedCorpusService:
             return _error(PreparedCorpusErrorCode.ALREADY_READY)
         if error.code is CorpusMaterializationErrorCode.READY_REJECTED:
             return _error(PreparedCorpusErrorCode.ADMISSION_REJECTED)
+        if error.code is CorpusMaterializationErrorCode.RESULT_NOT_AVAILABLE:
+            return _error(PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
         return _error(PreparedCorpusErrorCode.INTEGRITY)
 
     @_content_free
@@ -892,6 +900,59 @@ class PreparedCorpusService:
 
         try:
             return self._materializations.status(
+                owner_key=owner_key,
+                receipt=materialization_receipt,
+            )
+        except CorpusMaterializationError as error:
+            raise self._map_materialization_error(error) from None
+
+    @_content_free
+    def scientific_result(
+        self,
+        *,
+        owner_key: str,
+        materialization_receipt: CorpusMaterializationReceipt,
+    ) -> VerifiedScientificResult:
+        """Return one private, verified result to trusted presentation code."""
+
+        try:
+            return self._materializations.scientific_result(
+                owner_key=owner_key,
+                receipt=materialization_receipt,
+            )
+        except CorpusMaterializationError as error:
+            raise self._map_materialization_error(error) from None
+
+    @_content_free
+    def publish_result_view(
+        self,
+        *,
+        owner_key: str,
+        materialization_receipt: CorpusMaterializationReceipt,
+        view: ResultViewV1,
+    ) -> ResultViewReceipt:
+        """Bind one public projection to the exact verified scientific result."""
+
+        try:
+            return self._materializations.publish_result_view(
+                owner_key=owner_key,
+                receipt=materialization_receipt,
+                view=view,
+            )
+        except CorpusMaterializationError as error:
+            raise self._map_materialization_error(error) from None
+
+    @_content_free
+    def result_view(
+        self,
+        *,
+        owner_key: str,
+        materialization_receipt: CorpusMaterializationReceipt,
+    ) -> ResultViewV1:
+        """Return one published, receipt-verified public result projection."""
+
+        try:
+            return self._materializations.result_view(
                 owner_key=owner_key,
                 receipt=materialization_receipt,
             )

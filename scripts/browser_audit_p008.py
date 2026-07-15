@@ -109,17 +109,22 @@ def _wait_until_enabled(page: Page, locator: Locator, *, timeout: float = 15.0) 
 
 def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
     option_locator = page.get_by_role("option", name=option, exact=True)
-    for _ in range(3):
-        locator.click()
-        deadline = time.monotonic() + 3
-        while time.monotonic() < deadline:
-            if option_locator.count() == 1:
-                option_locator.click()
-                return
-            page.wait_for_timeout(100)
+    last_error = "no option interaction attempted"
+    for _ in range(5):
+        try:
+            locator.click(force=True, timeout=2_500)
+            locator.fill(option, timeout=2_500)
+            option_locator.wait_for(state="visible", timeout=2_500)
+            locator.press("Enter", timeout=2_500)
+            page.wait_for_timeout(250)
+            return
+        except PlaywrightTimeoutError as error:
+            last_error = str(error).splitlines()[0]
         page.keyboard.press("Escape")
-        page.wait_for_timeout(100)
-    raise RuntimeError(f"Selectbox option did not become available: {option}")
+        page.wait_for_timeout(150)
+    raise RuntimeError(
+        f"Selectbox option did not become available: {option}; last_error={last_error}"
+    )
 
 
 def _geometry(page: Page) -> dict[str, Any]:
@@ -192,17 +197,32 @@ def _document_corpus(
     page.get_by_role("button", name="Continue to describe the corpus", exact=True).click()
     page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
 
+    def document_field(group_label: str, label: str, *, role: str | None = None) -> Locator:
+        group = page.get_by_role("group").filter(has=page.get_by_text(group_label, exact=True))
+        field = (
+            group.get_by_role(role, name=label, exact=True)
+            if role is not None
+            else group.get_by_label(label, exact=True)
+        )
+        if not field.is_visible():
+            page.get_by_text(group_label, exact=True).click()
+            field.wait_for(state="visible")
+        return field
+
     for index, (name, _payload) in enumerate(documents):
-        if index:
-            page.get_by_text(f"{index + 1}. {name}", exact=True).click()
-        authors = page.get_by_label("Primary author name", exact=True)
-        authors.nth(index).fill("Delta Synthetic Author")
-        citations = page.get_by_label("Bibliographic citation", exact=True)
-        citations.nth(index).fill(f"Synthetic P008 browser-audit source record for {name}.")
-        rights = page.get_by_label("Documented rights state", exact=True)
+        group_label = f"{index + 1}. {name}"
+        document_field(group_label, "Primary author name").fill("Delta Synthetic Author")
+        document_field(group_label, "Bibliographic citation").fill(
+            f"Synthetic P008 browser-audit source record for {name}."
+        )
+        rights = document_field(
+            group_label,
+            "Documented rights state",
+            role="combobox",
+        )
         _choose_selectbox(
             page,
-            rights.nth(index),
+            rights,
             "Analysis only · permit upload and analysis, prohibit text export",
         )
 

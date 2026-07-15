@@ -51,6 +51,16 @@ from delta_lemmata.preprocessing_models import (
     OcrStatus,
     ParatextStatus,
 )
+from delta_lemmata.result_view import (
+    BOUNDARIES,
+    ResultCellStatus,
+    ResultCellV1,
+    ResultDocumentV1,
+    ResultMatrixV1,
+    ResultViewV1,
+)
+from delta_lemmata.stylo_contracts import DistanceMeasure, DocumentRole
+from delta_lemmata.workflow_models import AnalysisScope
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / "app.py"
@@ -76,6 +86,44 @@ def _zip_payload(entries: list[tuple[str, bytes]]) -> bytes:
         for name, payload in entries:
             archive.writestr(name, payload)
     return output.getvalue()
+
+
+def _public_result_view() -> ResultViewV1:
+    documents = (
+        ResultDocumentV1(key="D01", title="Early work", role=DocumentRole.KNOWN),
+        ResultDocumentV1(key="D02", title="Late work", role=DocumentRole.KNOWN),
+    )
+    cells = tuple(
+        ResultCellV1(
+            mfw=mfw,
+            culling_percent=0,
+            distance=DistanceMeasure.CLASSIC_DELTA,
+            is_reference=mfw == 500,
+            status=ResultCellStatus.COMPLETE,
+            error_code=None,
+            matrix=ResultMatrixV1(
+                document_keys=("D01", "D02"),
+                values=((0.0, float(index)), (float(index), 0.0)),
+            ),
+        )
+        for index, mfw in enumerate((100, 300, 500, 1000), start=1)
+    )
+    return ResultViewV1(
+        schema_version="result-view-v1",
+        purpose=PurposeId.TEXT_PROXIMITY,
+        analysis_scope=AnalysisScope.TRANSDUCTIVE_EXPLORATORY,
+        parameter_profile="guided-grid-v1",
+        workflow_config_sha256="a" * 64,
+        source_result_sha256="b" * 64,
+        source_result_outcome="complete",
+        analysis_unit="whole_text",
+        distance_measure=DistanceMeasure.CLASSIC_DELTA,
+        reference_mfw=500,
+        visualization_method="classical-mds-v1",
+        documents=documents,
+        cells=cells,
+        interpretation=BOUNDARIES,
+    )
 
 
 def _advance_to_describe(app: AppTest, payload: bytes = b"one text") -> AppTest:
@@ -543,6 +591,168 @@ def test_guided_parameter_review_explains_the_complete_fixed_grid() -> None:
     assert "alpha beta gamma" not in repr(app.session_state.filtered_state)
 
 
+def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    result_view = _public_result_view()
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: result_view)
+        ),
+    )
+    app.run()
+
+    assert len(app.exception) == 0
+    assert "Explore the relative distances" in [heading.value for heading in app.header]
+    assert [heading.value for heading in app.subheader][-4:] == [
+        "Distance heatmap",
+        "Exact distance matrix",
+        "Nearest neighbours, including ties",
+        "Two-dimensional proximity map",
+    ]
+    selector = _by_label(app.selectbox, "View one completed comparison")
+    assert selector.value == 500
+    assert selector.options == [
+        "100 MFW",
+        "300 MFW",
+        "500 MFW · display reference",
+        "1000 MFW",
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert rendered.count('class="delta-result-cell delta-result-cell-complete"') == 4
+    assert all(f'data-mfw="{mfw}"' in rendered for mfw in (100, 300, 500, 1000))
+    assert "Exact Classic Delta distance matrix" in rendered
+    assert "Nearest-neighbour table with exact ties" in rendered
+    assert "Exact MDS coordinate table" in rendered
+    assert rendered.count("What this does not show") == 3
+    assert len(app.get("vega_lite_chart")) == 2
+    assert [button.label for button in app.download_button][-1] == (
+        "Download canonical result record"
+    )
+    state = repr(app.session_state.filtered_state)
+    assert "ResultViewV1" not in state
+    assert "feature-" not in state
+
+
+def test_partial_result_marks_unavailable_cell_without_hiding_completed_evidence(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    complete = _public_result_view()
+    unavailable = complete.cells[-1].model_copy(
+        update={
+            "status": ResultCellStatus.FAILED,
+            "error_code": "fit_unavailable",
+            "matrix": None,
+        }
+    )
+    partial = ResultViewV1.model_validate(
+        {
+            **complete.model_dump(mode="python"),
+            "source_result_outcome": "partial",
+            "cells": (*complete.cells[:-1], unavailable),
+        }
+    )
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: partial)
+        ),
+    )
+    app.run()
+
+    assert len(app.exception) == 0
+    assert "At least one comparison could not be completed" in "\n".join(
+        message.value for message in app.warning
+    )
+    selector = _by_label(app.selectbox, "View one completed comparison")
+    assert selector.options == [
+        "100 MFW",
+        "300 MFW",
+        "500 MFW · display reference",
+    ]
+
+
+def test_succeeded_result_readback_failure_is_visible_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+
+    def unavailable(**_kwargs: object) -> object:
+        raise PreparedCorpusError(PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(prepared_corpora=SimpleNamespace(result_view=unavailable)),
+    )
+    app.run()
+
+    assert len(app.exception) == 0
+    assert "The verified result view is not available." in "\n".join(
+        message.value for message in app.error
+    )
+
+
+def test_result_helpers_reject_missing_ready_bindings_and_unavailable_matrices() -> None:
+    inventory = _fixture_inventory()
+    with pytest.raises(ValueError, match="READY receipt"):
+        webapp_module._result_descriptors(
+            inventory,
+            SimpleNamespace(ready_receipt=None),  # type: ignore[arg-type]
+        )
+    missing_work = SimpleNamespace(
+        ready_receipt=SimpleNamespace(
+            ordered_documents=(
+                SimpleNamespace(
+                    document_id="doc_" + "a" * 64,
+                    work_id="work_" + "f" * 64,
+                    analysis_role=AnalysisRole.KNOWN,
+                ),
+            )
+        )
+    )
+    with pytest.raises(ValueError, match="descriptor binding failed"):
+        webapp_module._result_descriptors(
+            inventory,
+            missing_work,  # type: ignore[arg-type]
+        )
+
+    unavailable = ResultCellV1(
+        mfw=100,
+        culling_percent=0,
+        distance=DistanceMeasure.CLASSIC_DELTA,
+        is_reference=False,
+        status=ResultCellStatus.FAILED,
+        error_code="fit_unavailable",
+        matrix=None,
+    )
+    view = _public_result_view()
+    with pytest.raises(ValueError, match="distance matrix is unavailable"):
+        webapp_module._render_distance_matrix(unavailable, view)
+    with pytest.raises(ValueError, match="distance matrix is unavailable"):
+        webapp_module._render_heatmap(unavailable, view)
+
+
 def test_research_parameter_mode_is_visibly_locked() -> None:
     app = _open_guided_parameters()
     _by_label(app.segmented_control, "Parameter mode").set_value("research").run()
@@ -617,10 +827,21 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
 
     class RecordingPreparedCorpora:
         admitted: dict[str, object] | None = None
+        published: object | None = None
         status_calls = 0
 
         def admit_once(self, **kwargs: object) -> None:
             self.admitted = dict(kwargs)
+
+        @staticmethod
+        def scientific_result(**_kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(result=object(), sha256="a" * 64)
+
+        def publish_result_view(self, **kwargs: object) -> None:
+            self.published = kwargs["view"]
+
+        def result_view(self, **_kwargs: object) -> object:
+            return self.published
 
         def status(self, **_kwargs: object) -> SimpleNamespace:
             self.status_calls += 1
@@ -639,6 +860,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     prepared = RecordingPreparedCorpora()
     analyses = RecordingAnalyses()
     maintenance_calls = 0
+    rendered: list[object] = []
 
     def maintain() -> None:
         nonlocal maintenance_calls
@@ -653,6 +875,12 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
             maintain=maintain,
         ),
     )
+    monkeypatch.setattr(
+        webapp_module,
+        "project_result_view",
+        lambda **_kwargs: "verified-public-view",
+    )
+    monkeypatch.setattr(webapp_module, "_render_result_view", rendered.append)
 
     app.checkbox(key="p008_parameter_confirmation").check().run()
     assert app.button(key="parameters_run_analysis").disabled is False
@@ -662,13 +890,14 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     assert analyses.run_calls == 1
     assert maintenance_calls == 1
     assert prepared.status_calls == 1
+    assert prepared.published == "verified-public-view"
+    assert rendered and set(rendered) == {"verified-public-view"}
     assert prepared.admitted is not None
     config = prepared.admitted["resolved_workflow_config"]
     assert config.known_work_count == 2
     assert config.unknown_work_count == 0
     assert [cell.mfw for cell in config.cells] == [100, 300, 500, 1000]
     assert [message.value for message in app.success][-1] == "Analysis complete"
-    assert any("Evidence review" in message.value for message in app.info)
     state = repr(app.session_state.filtered_state)
     assert "alpha beta gamma" not in state
     assert "SessionCapability" not in state

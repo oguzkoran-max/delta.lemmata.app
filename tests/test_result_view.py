@@ -29,6 +29,8 @@ from delta_lemmata.result_view import (
 from delta_lemmata.stylo_contracts import (
     AnalysisOutcome,
     CellComplete,
+    CellErrorCode,
+    CellFailed,
     CellNotEnoughFeatures,
     DistanceMatrix,
     DistanceMeasure,
@@ -381,3 +383,228 @@ def test_result_model_rejects_non_finite_matrix_values() -> None:
     payload["cells"][0]["matrix"]["values"][0][1] = math.inf
     with pytest.raises(ValidationError):
         ResultViewV1.model_validate(payload)
+
+
+@pytest.mark.parametrize(
+    "mutation",
+    [
+        "unsafe-title",
+        "non-row-values",
+        "duplicate-keys",
+        "row-count",
+        "non-square",
+        "negative",
+        "diagonal",
+        "asymmetric",
+        "complete-with-error",
+        "failed-with-matrix",
+        "wrong-reference",
+        "non-sequential-documents",
+        "cell-order",
+        "culling",
+        "matrix-order",
+    ],
+)
+def test_closed_result_view_rejects_structural_drift(mutation: str) -> None:
+    payload = _view().model_dump(mode="json")
+    matrix = payload["cells"][0]["matrix"]
+    if mutation == "unsafe-title":
+        payload["documents"][0]["title"] = " Early work"
+    elif mutation == "non-row-values":
+        matrix["values"] = "not-a-matrix"
+    elif mutation == "duplicate-keys":
+        matrix["document_keys"] = ("D01", "D01", "D03")
+    elif mutation == "row-count":
+        matrix["values"] = matrix["values"][:-1]
+    elif mutation == "non-square":
+        matrix["values"][0] = matrix["values"][0][:-1]
+    elif mutation == "negative":
+        matrix["values"][0][1] = -1.0
+        matrix["values"][1][0] = -1.0
+    elif mutation == "diagonal":
+        matrix["values"][0][0] = 1.0
+    elif mutation == "asymmetric":
+        matrix["values"][0][1] = 2.0
+    elif mutation == "complete-with-error":
+        payload["cells"][0]["error_code"] = "fit_unavailable"
+    elif mutation == "failed-with-matrix":
+        payload["cells"][0]["status"] = "failed"
+        payload["cells"][0]["error_code"] = "fit_unavailable"
+    elif mutation == "wrong-reference":
+        payload["cells"][2]["is_reference"] = False
+    elif mutation == "non-sequential-documents":
+        payload["documents"][0]["key"] = "D02"
+    elif mutation == "cell-order":
+        payload["cells"][0], payload["cells"][1] = (
+            payload["cells"][1],
+            payload["cells"][0],
+        )
+    elif mutation == "culling":
+        payload["cells"][0]["culling_percent"] = 10
+    elif mutation == "matrix-order":
+        matrix["document_keys"] = tuple(reversed(matrix["document_keys"]))
+    with pytest.raises(ValidationError):
+        ResultViewV1.model_validate(payload)
+
+
+def test_view_level_redundant_invariants_fail_closed() -> None:
+    view = _view()
+    no_reference = view.model_copy(
+        update={
+            "cells": tuple(cell.model_copy(update={"is_reference": False}) for cell in view.cells)
+        }
+    )
+    with pytest.raises(ValueError, match="one fixed reference"):
+        no_reference.require_closed_guided_view()
+
+    no_complete = view.model_copy(
+        update={
+            "source_result_outcome": "partial",
+            "cells": tuple(
+                cell.model_copy(
+                    update={
+                        "status": ResultCellStatus.FAILED,
+                        "matrix": None,
+                        "error_code": "fit_unavailable",
+                    }
+                )
+                for cell in view.cells
+            ),
+        }
+    )
+    with pytest.raises(ValueError, match="visible cell completeness"):
+        no_complete.require_closed_guided_view()
+
+
+def test_projection_rejects_invalid_types_outcomes_descriptors_and_cell_counts() -> None:
+    config = resolve_guided_workflow(
+        purpose=PurposeId.TEXT_PROXIMITY,
+        known_work_count=3,
+        unknown_work_count=0,
+    )
+    _expect_error(
+        P009ContractErrorCode.INVALID_REQUEST,
+        lambda: project_result_view(
+            config=object(),  # type: ignore[arg-type]
+            result=_result(),
+            source_result_sha256="a" * 64,
+            documents=DESCRIPTORS,
+        ),
+    )
+    failed = _result().model_copy(update={"outcome": AnalysisOutcome.FAILED})
+    _expect_error(
+        P009ContractErrorCode.BINDING_MISMATCH,
+        lambda: project_result_view(
+            config=config,
+            result=failed,
+            source_result_sha256="a" * 64,
+            documents=DESCRIPTORS,
+        ),
+    )
+    invalid_descriptors = (DESCRIPTORS[0], DESCRIPTORS[1], object())
+    _expect_error(
+        P009ContractErrorCode.BINDING_MISMATCH,
+        lambda: project_result_view(
+            config=config,
+            result=_result(),
+            source_result_sha256="a" * 64,
+            documents=invalid_descriptors,  # type: ignore[arg-type]
+        ),
+    )
+    unsafe_title = (
+        DESCRIPTORS[0],
+        DESCRIPTORS[1],
+        ResultDocumentDescriptor(
+            document_id=DESCRIPTORS[2].document_id,
+            title=" Late work",
+            role=DocumentRole.KNOWN,
+        ),
+    )
+    _expect_error(
+        P009ContractErrorCode.BINDING_MISMATCH,
+        lambda: project_result_view(
+            config=config,
+            result=_result(),
+            source_result_sha256="a" * 64,
+            documents=unsafe_title,
+        ),
+    )
+    short_result = _result().model_copy(update={"cells": _result().cells[:-1]})
+    _expect_error(
+        P009ContractErrorCode.BINDING_MISMATCH,
+        lambda: project_result_view(
+            config=config,
+            result=short_result,
+            source_result_sha256="a" * 64,
+            documents=DESCRIPTORS,
+        ),
+    )
+
+
+def test_projection_maps_public_failure_and_rejects_matrix_document_order() -> None:
+    config = resolve_guided_workflow(
+        purpose=PurposeId.TEXT_PROXIMITY,
+        known_work_count=3,
+        unknown_work_count=0,
+    )
+    base = _result()
+    failed_cell = CellFailed(
+        cell_id=base.cells[-1].cell_id,
+        fit_id=base.cells[-1].fit_id,
+        distance=DistanceMeasure.CLASSIC_DELTA,
+        status="failed",
+        error_code=CellErrorCode.FIT_UNAVAILABLE,
+    )
+    partial = base.model_copy(
+        update={"outcome": AnalysisOutcome.PARTIAL, "cells": (*base.cells[:-1], failed_cell)}
+    )
+    view = project_result_view(
+        config=config,
+        result=partial,
+        source_result_sha256="a" * 64,
+        documents=DESCRIPTORS,
+    )
+    assert view.cells[-1].status is ResultCellStatus.FAILED
+    assert view.cells[-1].error_code == "fit_unavailable"
+
+    complete = base.cells[0]
+    assert isinstance(complete, CellComplete)
+    reversed_matrix = complete.matrix.model_copy(
+        update={"document_ids": tuple(reversed(complete.matrix.document_ids))}
+    )
+    drifted = base.model_copy(
+        update={
+            "cells": (
+                complete.model_copy(update={"matrix": reversed_matrix}),
+                *base.cells[1:],
+            )
+        }
+    )
+    _expect_error(
+        P009ContractErrorCode.BINDING_MISMATCH,
+        lambda: project_result_view(
+            config=config,
+            result=drifted,
+            source_result_sha256="a" * 64,
+            documents=DESCRIPTORS,
+        ),
+    )
+
+
+def test_classical_mds_handles_one_axis_and_zero_distance_geometry() -> None:
+    view = _view()
+    payload = view.model_dump(mode="python")
+    payload["documents"] = payload["documents"][:2]
+    for cell in payload["cells"]:
+        cell["matrix"]["document_keys"] = ("D01", "D02")
+        cell["matrix"]["values"] = ((0.0, 1.0), (1.0, 0.0))
+    two_point = ResultViewV1.model_validate(payload)
+    points = classical_mds(two_point.cells[0])
+    assert len(points) == 2
+    assert all(point.y == 0.0 for point in points)
+
+    zero_payload = two_point.model_dump(mode="python")
+    for cell in zero_payload["cells"]:
+        cell["matrix"]["values"] = ((0.0, 0.0), (0.0, 0.0))
+    zero_view = ResultViewV1.model_validate(zero_payload)
+    assert {(point.x, point.y) for point in classical_mds(zero_view.cells[0])} == {(0.0, 0.0)}

@@ -46,6 +46,9 @@ from delta_lemmata.workflow_models import (
 )
 
 MAX_RESULT_VIEW_BYTES = 4 * 1024 * 1024
+RESULT_VIEW_COMPONENT: Literal[
+    "5a6b1a66f34ffa5cb516349bc4f2fe62083a8c4803fa23b2793f57a5ece0621a"
+] = "5a6b1a66f34ffa5cb516349bc4f2fe62083a8c4803fa23b2793f57a5ece0621a"
 RESULT_VIEW_PROFILE: Literal["relative-proximity-guardrails-v1"] = (
     "relative-proximity-guardrails-v1"
 )
@@ -424,6 +427,8 @@ def project_result_view(
         raise _error(P009ContractErrorCode.INVALID_REQUEST)
     if result.outcome not in {AnalysisOutcome.COMPLETE, AnalysisOutcome.PARTIAL}:
         raise _error(P009ContractErrorCode.BINDING_MISMATCH)
+    if any(not isinstance(document, ResultDocumentDescriptor) for document in documents):
+        raise _error(P009ContractErrorCode.BINDING_MISMATCH)
     fits = {fit.fit_id: fit for fit in result.fits}
     descriptor_ids = tuple(document.document_id for document in documents)
     if (
@@ -439,8 +444,6 @@ def project_result_view(
     descriptor_rejection: P009ContractError | None = None
     try:
         for index, descriptor in enumerate(documents, start=1):
-            if not isinstance(descriptor, ResultDocumentDescriptor):
-                raise ValueError
             public_documents.append(
                 ResultDocumentV1(
                     key=f"D{index:02d}",
@@ -619,6 +622,7 @@ __all__ = [
     "NearestNeighbourRow",
     "P009ContractError",
     "P009ContractErrorCode",
+    "RESULT_VIEW_COMPONENT",
     "RESULT_VIEW_PROFILE",
     "ResultCellStatus",
     "ResultCellV1",
