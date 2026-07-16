@@ -485,8 +485,16 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
     semantic_before = {label: _semantic_table_evidence(page, label) for label in semantic_labels}
 
     viewports = _result_viewports(page, output)
-    selector.get_by_role("radio", name="1000 MFW", exact=True).click()
+    target_option = selector.locator(
+        'label[data-testid="stRadioOption"]',
+        has_text="1000 MFW",
+    )
+    if target_option.count() != 1:
+        raise RuntimeError("Expected exactly one visible 1000 MFW result card")
+    target_option.click()
     _wait_for_streamlit_idle(page)
+    if not selector.get_by_role("radio", name="1000 MFW", exact=True).is_checked():
+        raise RuntimeError("The visible 1000 MFW result card did not become selected")
     page.get_by_role("heading", name="Distance heatmap", level=3, exact=True).wait_for()
     changed_chart_evidence = tuple(
         _pixel_evidence(
