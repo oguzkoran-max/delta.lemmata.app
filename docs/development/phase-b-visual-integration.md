@@ -4,6 +4,7 @@
 **Branch:** `codex/p014-visual-phase-b`
 **Exact base:** `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa`
 **Exact implementation:** `3a554e0e76522672efaf547b1d03e12cb4f3531b`
+**Evidence commit:** `d40b14d3e202556d910955670a3c0b60087d8d71`
 **Draft pull request:** [#8](https://github.com/oguzkoran-max/delta.lemmata.app/pull/8)
 **Design source:** Claude Code Phase A5.1 review package at
 `~/Desktop/Delta-Phase-A51-Review/`, manifest verified 24/24; report at

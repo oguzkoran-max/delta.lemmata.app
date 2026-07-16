@@ -8,6 +8,7 @@
   `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa`.
 - Exact implementation: `3a554e0e76522672efaf547b1d03e12cb4f3531b`;
   draft PR #8.
+- FAIR evidence commit: `d40b14d3e202556d910955670a3c0b60087d8d71`.
 - Integrated: Entry, Review, Results, shared responsive tokens, native radio
   cards, local Inter, semantic tables, evidence-first charts, accessibility
   landmarks, and 44 px target sizing.

@@ -15,7 +15,8 @@ CI `29541222417` içindeki iki verify ve iki container işi de yeşildir. Push C
 nonblank grafik, 320/375/390/1280/1440 responsive kapıları, yerel Inter wheel
 kaynakları, supply-chain ve hardened-container kapılarını geçti. Kayıt:
 `RUN-20260717-0001` ve
-`provenance/evidence/P014/phase-b-visual-integration-validation.md`.
+`provenance/evidence/P014/phase-b-visual-integration-validation.md`; evidence
+commit'i `d40b14d3e202556d910955670a3c0b60087d8d71`'dir.
 Bilimsel-yöntem, erişilebilirlik ve release için üç ayrı local/agent review GO
 verdi; bunlar GitHub review'u, katılımcı testi veya owner activation kabulü
 değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
@@ -107,6 +108,16 @@ de Claude Code ile incelemek. Bulgu varsa aynı dalda kapatıp exact-head CI'yı
 yeniden yeşile getirmek. Bulgu yoksa yalnız Oğuz'un açık kararıyla normal merge
 düşünülür. Deployment ayrı bir sonraki karar alanıdır; bu dalda VPS, Caddy, DNS,
 image publication veya public route işi yapılmaz.
+
+**Claude Code kesin devam noktası:** Önce `START_HERE.md`, sonra bu dosya,
+`docs/development/phase-b-visual-integration.md`,
+`provenance/evidence/P014/phase-b-visual-integration-validation.md` ve draft PR
+#8 okunur. Tasarım kaynağı `~/Desktop/Delta-Phase-A51-Review/`, özgün Claude
+raporu
+`~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`;
+manifest 24/24 geçmiştir. Implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`,
+evidence `d40b14d3e202556d910955670a3c0b60087d8d71`'dir. Bu zinciri geriye almadan
+yalnız yeni bulgu veya açık owner kararı üzerinden devam edilir.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı

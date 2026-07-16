@@ -8,7 +8,8 @@ Exact implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`, draft PR
 #8'dir. Yerel full verify 1.669 pass, bir Linux-only skip, 11.507 statement +
 3.002 branch ve yüzde 100 measured coverage ile geçti. Canonical push CI
 `29541220413` ve PR CI `29541222417` içindeki iki verify ve iki container işi
-yeşildir; `RUN-20260717-0001` kanıtı bağlar. Üç ayrı local/agent
+yeşildir; `RUN-20260717-0001` ve evidence commit
+`d40b14d3e202556d910955670a3c0b60087d8d71` kanıtı bağlar. Üç ayrı local/agent
 bilimsel-yöntem, erişilebilirlik ve release denetimi GO verdi, fakat bunlar owner
 veya katılımcı kabulü değildir. Merge/deploy yetkisi yoktur. Önce
 `docs/development/phase-b-visual-integration.md`, sonra `SESSION_HANDOFF.md`
