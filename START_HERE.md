@@ -54,10 +54,15 @@ kapıları geçti. Working tree, Streamlit'in bağlı ve iki kez kararlı-idle o
 doğrulamadan indirmeye basmayan, tekrar deneyip gerçek hatayı gizlemeyen düzeltmeyi
 içerir. Bu düzeltmenin `268c525` commit'inde PR CI `29486381721` tamamen geçti;
 push CI `29486378477` ise sonuç seçicisini açarken eski zorla-tıkla/`fill` fallback
-yolunda takıldı. Working tree seçiciyi erişilebilir `combobox` ve `option`
-rolleriyle normal kullanıcı gibi işletir; yalnız liste açılmazsa `ArrowDown`
-yardımı kullanır. Local full verify yeşildir, replacement exact-head CI çifti
-beklenir. Caddy/DNS veya public activation yetkisi verilmedi.
+yolunda takıldı. `5d57f14` seçiciyi erişilebilir `combobox` ve `option` rolleriyle
+normal kullanıcı gibi işletir; yalnız liste açılmazsa `ArrowDown` yardımı
+kullanır. Bu exact head için push CI `29487643303` tamamen geçti. Paralel PR CI
+`29487646240` container ve gerçek bilimsel sonuç akışını geçti, fakat browser
+harness kapasite tablosunu dört satır oluşmadan okuduğu için iki hazırlık oracle'ı
+false kaldı. Working tree artık dört satırı bekler, iki kararlı tablo snapshot'ı
+ister ve gözlenen satırları kanıta yazar. Yedi helper, 159 ilgili test ve 1.658
+testlik full local verify yüzde 100 measured coverage ile yeşildir; replacement
+exact-head CI çifti beklenir. Caddy/DNS veya public activation yetkisi verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 

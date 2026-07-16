@@ -18,6 +18,7 @@ BROWSER_AUDIT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BROWSER_AUDIT)
 _download_json = BROWSER_AUDIT._download_json
 _choose_selectbox = BROWSER_AUDIT._choose_selectbox
+_wait_for_capacity_records = BROWSER_AUDIT._wait_for_capacity_records
 _wait_for_streamlit_idle = BROWSER_AUDIT._wait_for_streamlit_idle
 
 
@@ -132,6 +133,46 @@ class _SelectPage(_Page):
         return self.option
 
 
+class _CapacityRow:
+    def __init__(self, cells: tuple[str, ...]) -> None:
+        self._cells = cells
+
+    def locator(self, selector: str) -> _CapacityRow:
+        assert selector == "th, td"
+        return self
+
+    def all_inner_texts(self) -> list[str]:
+        return list(self._cells)
+
+
+class _CapacityRows:
+    def __init__(self, snapshots: list[tuple[tuple[str, ...], ...]]) -> None:
+        self._snapshots = snapshots
+        self._index = 0
+
+    def all(self) -> list[_CapacityRow]:
+        snapshot = self._snapshots[min(self._index, len(self._snapshots) - 1)]
+        self._index += 1
+        return [_CapacityRow(cells) for cells in snapshot]
+
+
+class _CapacityTable:
+    def __init__(self, rows: _CapacityRows) -> None:
+        self.rows = rows
+
+    def locator(self, selector: str) -> _CapacityRows:
+        assert selector == "tbody tr"
+        return self.rows
+
+
+class _CapacityExpectation:
+    def __init__(self, calls: list[tuple[str, Any]]) -> None:
+        self._calls = calls
+
+    def to_have_count(self, count: int, *, timeout: float) -> None:
+        self._calls.append(("to_have_count", (count, timeout)))
+
+
 def test_streamlit_idle_wait_requires_two_connected_not_running_observations() -> None:
     page = _Page(_Download(path=None, failure=None))
 
@@ -204,3 +245,42 @@ def test_choose_selectbox_uses_arrow_key_only_when_pointer_does_not_open_list() 
     assert ("locator_press", ("ArrowDown", 2_000)) in page.calls
     assert [name for name, _value in page.calls].count("option_wait") == 2
     assert ("option_click", 5_000) in page.calls
+
+
+def test_capacity_records_wait_for_four_rows_and_two_stable_snapshots(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    records = tuple((str(mfw), "1100", "Available") for mfw in (100, 300, 500, 1000))
+    rows = _CapacityRows([records, records])
+    table = _CapacityTable(rows)
+    page = _Page(_Download(path=None, failure=None))
+    monkeypatch.setattr(
+        BROWSER_AUDIT,
+        "expect",
+        lambda _rows: _CapacityExpectation(page.calls),
+    )
+
+    observed = _wait_for_capacity_records(cast(Page, page), cast(Locator, table))
+
+    assert observed == records
+    assert ("to_have_count", (4, 15_000)) in page.calls
+    assert [name for name, _value in page.calls].count("wait_for_function") == 2
+    assert [name for name, _value in page.calls].count("wait_for_timeout") == 2
+
+
+def test_capacity_records_reject_changed_or_incomplete_rows(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    first = tuple((str(mfw), "1100", "Available") for mfw in (100, 300, 500, 1000))
+    second = (*first[:-1], ("1000", "1100"))
+    rows = _CapacityRows([first, second])
+    table = _CapacityTable(rows)
+    page = _Page(_Download(path=None, failure=None))
+    monkeypatch.setattr(
+        BROWSER_AUDIT,
+        "expect",
+        lambda _rows: _CapacityExpectation(page.calls),
+    )
+
+    with pytest.raises(RuntimeError, match="MFW capacity table did not settle"):
+        _wait_for_capacity_records(cast(Page, page), cast(Locator, table))

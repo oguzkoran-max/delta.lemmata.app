@@ -40,8 +40,14 @@ yalnız browser adımında kırmızıdır. Kaynak/test ve container kapıları g
 push CI `29486378477` bilimsel sonuç hazır olduktan sonra eski zorla-tıkla/`fill`
 selectbox yolunda takıldı. Working tree indirme öncesinde bağlı ve kararlı-idle
 Streamlit durumunu iki kez doğrular, gerçek download failure için retry yapmaz ve
-sonuç seçicisini erişilebilir `combobox`/`option` rolleriyle işletir. Yerel full
-gate yeşildir.
+sonuç seçicisini erişilebilir `combobox`/`option` rolleriyle işletir. Bu düzeltmenin
+`5d57f14` exact head push CI `29487643303` koşumu tamamen geçti. Paralel PR CI
+`29487646240` hardened container, gerçek R/`stylo`, sonuç yüzeyi, grafik ve export
+kapılarını geçti; yalnız kapasite tablosunu dört satırı görünmeden okuyan harness
+iki preparation oracle'ını false kaydetti. Working tree dört satırı bekler, iki
+kararlı snapshot şartı koyar ve satırları kanıta ekler. Yedi helper, 159 ilgili
+test ve full verify'da 1.658 pass, bir canonical Linux skip ve yüzde 100 measured
+coverage geçti. Replacement exact-head CI çifti beklenir.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -70,7 +76,7 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Draft PR #7'deki semantik selectbox düzeltmesi commit edilip push edilir ve hem
+Draft PR #7'deki capacity-table settle düzeltmesi commit edilip push edilir ve hem
 push hem PR exact-head CI yeşil doğrulanır. Ardından aday Oğuz'un seçtiği Claude
 Code son bağımsız denetimine verilir; varsa bulgular aynı dalda kapatılır. Sonra
 normal merge ve green main CI sonrası exact main commit için immutable image

@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from playwright.sync_api import Browser, Locator, Page, sync_playwright
+from playwright.sync_api import Browser, Locator, Page, expect, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
@@ -118,6 +118,30 @@ def _wait_for_streamlit_idle(page: Page, *, timeout_ms: float = 15_000) -> None:
     page.wait_for_function(condition, timeout=timeout_ms)
     page.wait_for_timeout(_STREAMLIT_SETTLE_MS)
     page.wait_for_function(condition, timeout=timeout_ms)
+
+
+def _wait_for_capacity_records(page: Page, table: Locator) -> tuple[tuple[str, ...], ...]:
+    """Read the complete capacity table only after its rendered rows settle."""
+
+    rows = table.locator("tbody tr")
+    expect(rows).to_have_count(len(GUIDED_MFW), timeout=15_000)
+    _wait_for_streamlit_idle(page)
+
+    def snapshot() -> tuple[tuple[str, ...], ...]:
+        return tuple(
+            tuple(cell.strip() for cell in row.locator("th, td").all_inner_texts())
+            for row in rows.all()
+        )
+
+    first = snapshot()
+    page.wait_for_timeout(_STREAMLIT_SETTLE_MS)
+    second = snapshot()
+    if first != second or any(len(row) < 3 for row in second):
+        raise RuntimeError(
+            "MFW capacity table did not settle with complete rows: "
+            f"first={first!r}; second={second!r}"
+        )
+    return second
 
 
 def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
@@ -366,10 +390,7 @@ def _confirm_and_prepare(page: Page, output: Path) -> dict[str, Any]:
     capacity = page.get_by_role(
         "table", name="Which MFW settings can this corpus support?", exact=True
     )
-    capacity_records = tuple(
-        tuple(cell.strip() for cell in row.locator("th, td").all_inner_texts())
-        for row in capacity.locator("tbody tr").all()
-    )
+    capacity_records = _wait_for_capacity_records(page, capacity)
     requested_mfw = tuple(int(re.sub(r"\D", "", row[0])) for row in capacity_records if row)
     available_features = tuple(
         int(re.sub(r"\D", "", row[1])) for row in capacity_records if len(row) >= 2
@@ -385,6 +406,7 @@ def _confirm_and_prepare(page: Page, output: Path) -> dict[str, Any]:
         "candidate_feature_count_pass": available_features == (FEATURE_COUNT,) * len(GUIDED_MFW),
         "all_mfw_available_pass": requested_mfw == GUIDED_MFW
         and all(len(row) >= 3 and row[2] == "Available" for row in capacity_records),
+        "capacity_records": capacity_records,
     }
     page.get_by_role("button", name="Continue to parameter review", exact=False).click()
     page.get_by_role("heading", name="Review what Delta will calculate", level=2).wait_for()

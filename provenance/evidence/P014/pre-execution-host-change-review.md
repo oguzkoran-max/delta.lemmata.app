@@ -69,7 +69,13 @@ They are advisory checks, not owner acceptance. Together they identified:
     push run exposed a second harness weakness. The result selectbox helper used
     forced clicks and attempted `fill` on a non-editable Streamlit combobox when
     its list did not open. The scientific job, result view, and export were all
-    present; only the display-only selector interaction failed.
+    present; only the display-only selector interaction failed;
+19. the semantic-selectbox correction passed its exact-head push run. Its
+    parallel PR run passed the hardened container and completed the real
+    R/`stylo`, result, chart, and export path, but the harness read the MFW
+    capacity table immediately after the preflight message appeared. The four
+    rendered rows were not yet available, so two preparation booleans were false
+    even though every downstream scientific and result assertion passed.
 
 A later 30,000-token implementation worker exhausted its budget after review and
 made no edit. That failed delegation did not contribute code or approval.
@@ -129,6 +135,11 @@ agent resumed that bounded file scope directly.
   longer force-clicks or fills a non-editable control. A bounded `ArrowDown`
   fallback only opens a list that did not respond to the pointer action, and the
   exact selected value is still verified after a stable Streamlit rerun.
+- The capacity-table helper now waits for exactly four rendered MFW rows, requires
+  two identical snapshots across the settle interval, rejects incomplete rows,
+  and includes the observed records in browser evidence. It does not wait for a
+  scientifically preferred value, so a stable but genuinely insufficient corpus
+  still fails the existing candidate-feature and availability assertions.
 
 ## Targeted Verification
 
@@ -222,6 +233,20 @@ verification passed 1,656 tests, one documented canonical-Linux skip on macOS,
 11,382 statements, 2,964 branches, 100% measured coverage,
 `records-ok count=109`, and `verify-ok`. A new exact-head push/PR pair remains
 required before Claude Code review.
+
+Commit `5d57f14454e0b05aed4080615afe0ebaae10f834` then passed exact-head push
+run `29487643303`: verify job `87585835907` and hardened-container job
+`87585835764` were green. Parallel pull-request run `29487646240` passed container
+job `87585845546`; verify job `87585845575` completed the real scientific worker,
+four result cells, two non-blank charts, semantic tables, canonical export, and
+responsive geometry, but recorded false preparation booleans because the
+capacity-table rows were read before rendering completed. The failed run and its
+full printed evidence remain retained. The correction waits for four rows and
+two stable snapshots and records the observed rows. Seven helper tests and 159
+combined P008/P014/browser tests passed. Full local verification passed 1,658
+tests, one documented canonical-Linux skip on macOS, 11,382 statements, 2,964
+branches, 100% measured coverage, `records-ok count=109`, and `verify-ok`. A new
+exact-head push/PR pair remains required before Claude Code review.
 
 These are working-tree checks. They do not replace an independent focused
 re-review, normal pull-request CI, green main CI, or an immutable image rebuilt

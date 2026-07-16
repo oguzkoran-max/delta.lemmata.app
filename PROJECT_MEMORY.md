@@ -18,9 +18,13 @@ değiştirilmez. Draft PR #7'nin `11a440b` düzeltme commit'i için push ve PR
 verify/container kapıları yeşildir. Sonraki `5c1b083` push CI yeşilken PR CI'nin
 yalnız ikinci export download adımı geçici `canceled` verdi. Bunu kapatan
 `268c525` için PR CI `29486381721` tamamen geçti; push CI `29486378477` eski
-zorla-tıkla/`fill` selectbox fallback'inde takıldı. Working tree Streamlit
-kararlılık kontrolüne ek olarak semantik `combobox`/`option` etkileşimini kullanır
-ve replacement exact-head CI çifti beklenir
+zorla-tıkla/`fill` selectbox fallback'inde takıldı. `5d57f14` semantik
+`combobox`/`option` etkileşimini ekledi; push CI `29487643303` tamamen geçti.
+Paralel PR CI `29487646240` bilimsel sonuç, grafik ve export kapılarını geçti,
+ancak kapasite tablosunu satırlar oluşmadan okuyan harness iki preparation
+oracle'ını false kaydetti. Working tree dört satırı ve iki kararlı snapshot'ı
+bekler. Yedi helper, 159 ilgili test ve 1.658-test full verify yüzde 100 measured
+coverage ile geçti; replacement exact-head CI çifti beklenir
 
 **P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
 `devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
