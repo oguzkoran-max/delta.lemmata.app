@@ -1,6 +1,6 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-15
+**Güncellendi:** 2026-07-16
 
 **Aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
@@ -14,8 +14,40 @@ coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
 hostta container runtime olmadığı için kurulumdan önce fail-closed durdu. Exact
 green main image'ı private GHCR'da immutable digest ile yayımlandı; canlı VPS
 henüz değiştirilmedi. İkinci read-only gözlem Docker'ın host networking etkisi ve
-dar memory margin'i doğruladı; ADR-0018 aynı VPS, official Docker ve yeni swap
-oluşturmama adayını owner onayına sundu.
+dar memory margin'i doğruladı. Oğuz `HD-20260715-0002` ile ADR-0018'in aynı VPS,
+official Docker ve yeni swap oluşturmama profilini ordered host preparation ve
+measurement için kabul etti. İlk pre-execution audit faz sırası, runtime-absent
+inventory, exact install/rollback ve ayrı pre-Caddy gate açıklarını buldu. Bunları
+kapatan deterministic host/load gate, Docker installer/rollback ve runbook değişikliği
+`codex/p014-live-host-acceptance` dalında önce hedefli 42 testten ve full local
+verify kapısından geçti.
+Sonraki iki focused adversarial review optimized-assert, mutate-before-current-
+validation, rollback-stop, first-release cleanup, image revision, exact candidate
+origin ve closed real-analysis load açıkları nedeniyle yeniden `NO-GO` verdi.
+Birleşik remediation schema `1.3.0` pre-mutation/origin/key, erken cleanup,
+partial-install rollback, image revision ve sustained real R/`stylo` load
+kapılarını tamamladı. Güncel host paketi 109 focused testten geçti. Son browser
+harness düzeltmesiyle ilgili paket 121 testten ve full verify'da 1.656 pass, bir
+canonical Linux skip ve yüzde 100 measured coverage kapısından geçti.
+Karar üretmeden bütçesini tüketen ajan turları approval sayılmadı. Canlı VPS
+değiştirilmedi. Draft PR #7'de ilk iki Linux run'ı hermetik olmayan absent-Docker
+testini buldu; düzeltme commit'i `11a440b` için push CI `29484009945` ve PR CI
+`29484013488` verify/container işlerinde yeşildir. Kanıt commit'i `5c1b083` için
+push CI `29484671596` yeşil, PR CI `29484673782` ise ikinci result export
+indirmesi Streamlit rerun'ıyla çakışıp `Download.path: canceled` verdiği için
+yalnız browser adımında kırmızıdır. Kaynak/test ve container kapıları geçti.
+`268c525` bu indirme düzeltmesini taşıdı. PR CI `29486381721` tamamen geçti; eş
+push CI `29486378477` bilimsel sonuç hazır olduktan sonra eski zorla-tıkla/`fill`
+selectbox yolunda takıldı. Working tree indirme öncesinde bağlı ve kararlı-idle
+Streamlit durumunu iki kez doğrular, gerçek download failure için retry yapmaz ve
+sonuç seçicisini erişilebilir `combobox`/`option` rolleriyle işletir. Bu düzeltmenin
+`5d57f14` exact head push CI `29487643303` koşumu tamamen geçti. Paralel PR CI
+`29487646240` hardened container, gerçek R/`stylo`, sonuç yüzeyi, grafik ve export
+kapılarını geçti; yalnız kapasite tablosunu dört satırı görünmeden okuyan harness
+iki preparation oracle'ını false kaydetti. Working tree dört satırı bekler, iki
+kararlı snapshot şartı koyar ve satırları kanıta ekler. Yedi helper, 159 ilgili
+test ve full verify'da 1.658 pass, bir canonical Linux skip ve yüzde 100 measured
+coverage geçti. Replacement exact-head CI çifti beklenir.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -44,13 +76,14 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Oğuz ADR-0018'deki same-VPS + official Docker + no-new-swap adayını açıkça kabul
-veya reddeder. Kabul yalnız ordered host preparation ve measurement kapılarını
-yetkilendirir. Exact green main image'ı private GHCR'da immutable digest ile
-hazırdır. Tekrarlanan inventory geçerse sıra Docker sonrası Lemmata gate,
-Delta-only install, public TLS gate, coexistence/load, restart-cleanup, rollback
-ve Oğuz owner walkthrough'udur. DNS, Caddy veya public activation bu kapılardan
-önce yapılmaz.
+Draft PR #7'deki capacity-table settle düzeltmesi commit edilip push edilir ve hem
+push hem PR exact-head CI yeşil doğrulanır. Ardından aday Oğuz'un seçtiği Claude
+Code son bağımsız denetimine verilir; varsa bulgular aynı dalda kapatılır. Sonra
+normal merge ve green main CI sonrası exact main commit için immutable image
+yeniden yayımlanır. Yalnız bu
+kapılardan sonra exact pre-Docker inventory, Docker sonrası Lemmata comparison
+ve yalnız `127.0.0.1:8502` Delta install uygulanır. Oğuz ayrı bir karar vermeden
+DNS, Caddy veya public route açılmaz.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
@@ -104,8 +137,9 @@ disabled forwarding, sıfır memory pressure, healthy zero-restart Lemmata ve bo
 `8502` doğrulandı. Hiçbir host değişikliği yapılmadı. ADR-0018 mevcut VPS üzerinde
 official Docker, yeni disk swap'i oluşturmama, Delta swap denial'ını koruma,
 Lemmata p95 artışı için frozen yüzde 20 budget ve açık memory/OOM/network stop
-kapıları önerir. Status `Proposed`; Oğuz'un açık kararı olmadan package install
-yasaktır. Kanıt:
+kapılarını tanımlar. Oğuz `HD-20260715-0002` ile yalnız ordered host preparation
+ve measurement kapsamını kabul etti; deterministic host-command review ve
+separate pre-Caddy owner gate zorunludur. Kanıt:
 `provenance/evidence/P014/target-host-runtime-capacity-observation.md`.
 
 **P009 minimum-alpha checkpoint'i:** Exact implementation commit'i

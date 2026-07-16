@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlparse
 
-from playwright.sync_api import Browser, Locator, Page, sync_playwright
+from playwright.sync_api import Browser, Locator, Page, expect, sync_playwright
 from playwright.sync_api import Error as PlaywrightError
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
@@ -29,6 +29,7 @@ VIEWPORTS = (
 )
 GUIDED_MFW = (100, 300, 500, 1000)
 FEATURE_COUNT = 1_100
+_STREAMLIT_SETTLE_MS = 250
 
 
 def _free_port() -> int:
@@ -108,44 +109,78 @@ def _wait_until_enabled(page: Page, locator: Locator, *, timeout: float = 15.0) 
     return locator.is_enabled()
 
 
+def _wait_for_streamlit_idle(page: Page, *, timeout_ms: float = 15_000) -> None:
+    condition = """() => {
+      const app = document.querySelector('[data-testid="stApp"]');
+      return app?.getAttribute('data-test-script-state') === 'notRunning'
+        && app?.getAttribute('data-test-connection-state') === 'CONNECTED';
+    }"""
+    page.wait_for_function(condition, timeout=timeout_ms)
+    page.wait_for_timeout(_STREAMLIT_SETTLE_MS)
+    page.wait_for_function(condition, timeout=timeout_ms)
+
+
+def _wait_for_capacity_records(page: Page, table: Locator) -> tuple[tuple[str, ...], ...]:
+    """Read the complete capacity table only after its rendered rows settle."""
+
+    rows = table.locator("tbody tr")
+    expect(rows).to_have_count(len(GUIDED_MFW), timeout=15_000)
+    _wait_for_streamlit_idle(page)
+
+    def snapshot() -> tuple[tuple[str, ...], ...]:
+        return tuple(
+            tuple(cell.strip() for cell in row.locator("th, td").all_inner_texts())
+            for row in rows.all()
+        )
+
+    first = snapshot()
+    page.wait_for_timeout(_STREAMLIT_SETTLE_MS)
+    second = snapshot()
+    if first != second or any(len(row) < 3 for row in second):
+        raise RuntimeError(
+            "MFW capacity table did not settle with complete rows: "
+            f"first={first!r}; second={second!r}"
+        )
+    return second
+
+
 def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
     option_locator = page.get_by_role("option", name=option, exact=True)
     last_error = "no option interaction attempted"
-    for _ in range(6):
+    for _ in range(3):
         try:
+            _wait_for_streamlit_idle(page)
             locator.wait_for(state="visible", timeout=5_000)
             locator.scroll_into_view_if_needed(timeout=5_000)
-            locator.click(force=True, timeout=5_000)
-            page.wait_for_timeout(150)
-            if not option_locator.is_visible():
-                locator.fill(option, timeout=5_000)
+            locator.click(timeout=5_000)
+            try:
+                option_locator.wait_for(state="visible", timeout=2_000)
+            except PlaywrightTimeoutError:
+                locator.press("ArrowDown", timeout=2_000)
                 option_locator.wait_for(state="visible", timeout=5_000)
-            option_locator.click(force=True, timeout=5_000)
-            deadline = time.monotonic() + 5
-            while time.monotonic() < deadline:
-                rendered = locator.evaluate(
-                    """element => {
-                      let current = element;
-                      for (let depth = 0; depth < 8 && current; depth += 1) {
-                        const text = (current.textContent || '').trim();
-                        if (text.includes('Analysis only') || text.includes('MFW')) {
-                          return text;
-                        }
-                        current = current.parentElement;
-                      }
-                      return (element.value || '').trim();
-                    }"""
-                )
-                if option in str(rendered):
-                    return
-                page.wait_for_timeout(100)
+            option_locator.click(timeout=5_000)
+            _wait_for_streamlit_idle(page)
+            rendered = locator.evaluate(
+                """element => {
+                  let current = element;
+                  for (let depth = 0; depth < 8 && current; depth += 1) {
+                    const text = (current.textContent || '').trim();
+                    if (text.includes('Analysis only') || text.includes('MFW')) {
+                      return text;
+                    }
+                    current = current.parentElement;
+                  }
+                  return (element.value || '').trim();
+                }"""
+            )
+            if option in str(rendered):
+                return
             last_error = "selected option was not retained after the Streamlit rerun"
         except PlaywrightTimeoutError as error:
             last_error = str(error).splitlines()[0]
         except Exception as error:
             last_error = f"{type(error).__name__}: {error}"
         page.keyboard.press("Escape")
-        page.wait_for_timeout(500)
     raise RuntimeError(
         f"Selectbox option did not become available: {option}; last_error={last_error}"
     )
@@ -198,9 +233,13 @@ def _geometry(page: Page) -> dict[str, Any]:
 
 
 def _download_json(page: Page, button_name: str) -> tuple[str, dict[str, Any]]:
+    _wait_for_streamlit_idle(page)
     with page.expect_download() as download_info:
         page.get_by_role("button", name=button_name, exact=False).click()
     download = download_info.value
+    failure = download.failure()
+    if failure is not None:
+        raise RuntimeError(f"Browser download failed: {failure}")
     path = download.path()
     if path is None:
         raise RuntimeError("Browser download has no local path")
@@ -351,10 +390,7 @@ def _confirm_and_prepare(page: Page, output: Path) -> dict[str, Any]:
     capacity = page.get_by_role(
         "table", name="Which MFW settings can this corpus support?", exact=True
     )
-    capacity_records = tuple(
-        tuple(cell.strip() for cell in row.locator("th, td").all_inner_texts())
-        for row in capacity.locator("tbody tr").all()
-    )
+    capacity_records = _wait_for_capacity_records(page, capacity)
     requested_mfw = tuple(int(re.sub(r"\D", "", row[0])) for row in capacity_records if row)
     available_features = tuple(
         int(re.sub(r"\D", "", row[1])) for row in capacity_records if len(row) >= 2
@@ -370,6 +406,7 @@ def _confirm_and_prepare(page: Page, output: Path) -> dict[str, Any]:
         "candidate_feature_count_pass": available_features == (FEATURE_COUNT,) * len(GUIDED_MFW),
         "all_mfw_available_pass": requested_mfw == GUIDED_MFW
         and all(len(row) >= 3 and row[2] == "Available" for row in capacity_records),
+        "capacity_records": capacity_records,
     }
     page.get_by_role("button", name="Continue to parameter review", exact=False).click()
     page.get_by_role("heading", name="Review what Delta will calculate", level=2).wait_for()

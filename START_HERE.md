@@ -28,10 +28,41 @@ private GHCR'da immutable manifest
 olarak bağladı. Kanıt PR #5 ile normal merge commit `cc44132` üzerinden `main`e
 alındı ve main CI `29429031944` yeşil geçti. `RUN-20260715-0007` ikinci read-only
 gözlemde cgroup v2 controller'larını, boş firewall baseline'ını, sıfır Lemmata
-restart'ını ve sıfır memory pressure'ı doğruladı. ADR-0018 mevcut VPS + official
-Docker + yeni swap oluşturmama yolunu ve fail-closed memory/network/latency
-kapılarını önerir; Oğuz henüz bu live-host adayını kabul veya reddetmedi. VPS
-kurulumu, Caddy/DNS değişikliği veya public activation yapılmadı.
+restart'ını ve sıfır memory pressure'ı doğruladı. Oğuz
+`HD-20260715-0002` ile ADR-0018'in mevcut VPS + official Docker + yeni swap
+oluşturmama yolunu yalnız ordered host preparation ve measurement için kabul
+etti. İlk adversarial pre-execution review çelişkili faz sırası, runtime-absent
+preflight, kesin olmayan Docker/release komutları, ilk-release rollback ve ayrı
+pre-Caddy owner gate açıklarını buldu. `codex/p014-live-host-acceptance` dalında
+deterministic content-free host gate, official-Docker installer, Docker-only
+rollback, duration-based coexistence gate ve sıralı runbook uygulanıyor. Hedefli
+109 test, Ruff, Docker shell syntax ve diff-check kapılarından geçti. Sonraki
+browser-harness düzeltmesiyle ilgili paket 121 testten geçti. Yeni full local
+verify 1.656 pass, bir canonical Linux skip ve yüzde 100 measured coverage
+ile yeşildir. Son adversarial bulgular; schema `1.3.0` pre-mutation/origin/key,
+erken first-release cleanup, partial Docker install rollback, immutable image
+revision ve gerçek R/`stylo` handoff'unu bütün ölçüm süresi boyunca yineleyen
+closed load gate ile kapatıldı. Bütçe sınırına takılıp karar üretmeyen ajan
+denemeleri approval sayılmadı. Oğuz'un seçtiği son Claude Code denetimi, normal
+PR/main CI ve yeni exact-main image publication geçmeden VPS değiştirilmez. Draft
+PR #7 düzeltme commit'i `11a440b` için push CI `29484009945` ve PR CI
+`29484013488` verify/container işlerinde yeşildir; önceki iki Linux failure
+değiştirilmeden kanıtta tutulur. Sonraki kanıt commit'i `5c1b083` için push CI
+`29484671596` tamamen geçti; eş PR CI `29484673782` yalnız ikinci browser export
+indirmesinde `Download.path: canceled` ile düştü. Kaynak/test ve container
+kapıları geçti. Working tree, Streamlit'in bağlı ve iki kez kararlı-idle olduğunu
+doğrulamadan indirmeye basmayan, tekrar deneyip gerçek hatayı gizlemeyen düzeltmeyi
+içerir. Bu düzeltmenin `268c525` commit'inde PR CI `29486381721` tamamen geçti;
+push CI `29486378477` ise sonuç seçicisini açarken eski zorla-tıkla/`fill` fallback
+yolunda takıldı. `5d57f14` seçiciyi erişilebilir `combobox` ve `option` rolleriyle
+normal kullanıcı gibi işletir; yalnız liste açılmazsa `ArrowDown` yardımı
+kullanır. Bu exact head için push CI `29487643303` tamamen geçti. Paralel PR CI
+`29487646240` container ve gerçek bilimsel sonuç akışını geçti, fakat browser
+harness kapasite tablosunu dört satır oluşmadan okuduğu için iki hazırlık oracle'ı
+false kaldı. Working tree artık dört satırı bekler, iki kararlı tablo snapshot'ı
+ister ve gözlenen satırları kanıta yazar. Yedi helper, 159 ilgili test ve 1.658
+testlik full local verify yüzde 100 measured coverage ile yeşildir; replacement
+exact-head CI çifti beklenir. Caddy/DNS veya public activation yetkisi verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 

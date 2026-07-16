@@ -294,7 +294,11 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         )
         for index in range(2)
     )
-    selector = page.get_by_label("View one completed comparison", exact=True)
+    selector = page.get_by_role(
+        "combobox",
+        name="View one completed comparison",
+        exact=True,
+    )
     default_reference = "500 MFW" in _selectbox_text(selector)
     filename, exported = _download_json(page, "Download canonical result record")
     export_checks = _validate_export(filename, exported, canary)

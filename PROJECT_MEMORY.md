@@ -1,19 +1,30 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-14
+**Son güncelleme:** 2026-07-16
 
-**Durum:** P001-P006 tamamlandı; P007 Deterministic Preprocessing and Corpus Health
-aktif, `HD-20260714-0001` ile yöntem kabul edildi ve implementation başladı
+**Durum:** P001-P006 tamamlandı. P007 teknik minimum-alpha kapılarından geçti;
+P008-P009 minimum gerçek upload-to-R/stylo-to-result akışı kanıtlandı. P014'ün
+hosta bağlı public-alpha hazırlığı aktiftir; Caddy/DNS/public activation yapılmadı
 
-**Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
-foundation var: ayrı session/job identity, payload-free SQLite queue, private
-workspace, guardian-managed POSIX process control, durable terminal ACK,
-execution-bound recovery receipt ve conservative lifecycle projection var. P006
-fixed R worker, shell-free Python adapter, strict contracts, scientific finalizer,
-known-only fitting, checksum-frozen direct-`stylo` referansları, retained Linux
-worker evidence ve crash-safe scientific-result handoff ekledi. P007 preprocessing
-ve corpus-health kodu henüz uygulanmamıştır; public analiz, benchmark ve stability
-katmanları da henüz yoktur
+**Kod:** English-only workbench'te P004 guided corpus documentation, P005
+lifecycle, P006 fixed R/`stylo` worker, P007 deterministic preprocessing/corpus
+health ve P008-P009 minimum Guided run/result akışı vardır. P014 canonical
+container paketi CI'da kanıtlandı. Canlı host için closed-schema ölçüm, guarded
+official-Docker install/rollback ve duration-based coexistence gate dalda
+hazırlandı; host paketi 109 focused testten geçti. Browser-harness düzeltmesiyle
+ilgili paket 121 test ve 1.656-test full verify kapısından geçti. Son Claude Code
+denetimi, normal merge/main CI ve exact-main image publication tamamlanmadan VPS
+değiştirilmez. Draft PR #7'nin `11a440b` düzeltme commit'i için push ve PR
+verify/container kapıları yeşildir. Sonraki `5c1b083` push CI yeşilken PR CI'nin
+yalnız ikinci export download adımı geçici `canceled` verdi. Bunu kapatan
+`268c525` için PR CI `29486381721` tamamen geçti; push CI `29486378477` eski
+zorla-tıkla/`fill` selectbox fallback'inde takıldı. `5d57f14` semantik
+`combobox`/`option` etkileşimini ekledi; push CI `29487643303` tamamen geçti.
+Paralel PR CI `29487646240` bilimsel sonuç, grafik ve export kapılarını geçti,
+ancak kapasite tablosunu satırlar oluşmadan okuyan harness iki preparation
+oracle'ını false kaydetti. Working tree dört satırı ve iki kararlı snapshot'ı
+bekler. Yedi helper, 159 ilgili test ve 1.658-test full verify yüzde 100 measured
+coverage ile geçti; replacement exact-head CI çifti beklenir
 
 **P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
 `devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
@@ -23,6 +34,62 @@ P008 gerçek run, P009 result guardrail ve P014 isolation/limit/rollback/Lemmata
 smoke kapıları geçerse 2026-07-17 Public-alpha hedefini kabul eder. Ağustos 2026
 tam makale taslağı hedefidir; yalnız o tarihe kadar tamamlanan kanıtlar claim
 olabilir. Alpha, bilimsel release veya FAIR certification değildir.
+
+## P014 Host Hazırlık Kabulü ve NO-GO Düzeltmesi (2026-07-15)
+
+- Oğuz `HD-20260715-0002` ve `PE-20260715-0005` ile ADR-0018'in aynı VPS,
+  official Docker ve no-new-swap profilini yalnız ordered host preparation ve
+  measurement için kabul etti. Caddy, DNS ve activation ayrı owner gate'tir.
+- İki bağımsız read-only denetçi, fixture kanıt kanalı, eksik listener/profile
+  kontrolleri, sahte tek-snapshot load semantiği, yarım APT/rollback işlemleri,
+  registry credential cleanup ve first-release rollback açıkları nedeniyle full
+  CI öncesinde `NO-GO` verdi. Canlı hostta değişiklik yapılmadı.
+- Closed-schema live-only host gate, rollback-armed/disarmed official-Docker
+  transaction, exact firewall/forwarding restore, temporary `DOCKER_CONFIG`,
+  immutable-release anchoring ve gerçek süreli coexistence observer uygulandı.
+- Hedefli P014 paketi Ruff, bash syntax, 42 test ve diff-check kapılarından geçti.
+  Bu tarihsel ilk turdan sonraki birleşik remediation paketi 109 focused testi
+  geçmektedir.
+- Sonraki iki focused adversarial review yine `NO-GO` verdi: optimized Python'da
+  kaybolan `assert` guard'ları, mutation öncesi current-state doğrulaması, Docker
+  stop/rollback kanıtı, first-release cleanup, source-image revision bağı,
+  candidate origin, closed load schema, exact listener/CPU sınırı ve gerçek
+  analysis workload açık kaldı. Canlı host yine değiştirilmedi.
+- Birleşik remediation host schema `1.3.0` ile live `pre-mutation` gate, yalnız
+  exact Docker source'a bağlı candidate, bütün primary signing fingerprint'leri,
+  erken first-release cleanup, CLI-less veya inactive partial-install rollback,
+  immutable image revision ve en az istenen süre boyunca tekrarlanan gerçek
+  P006 R/`stylo` handoff'unu ekledi. Full local verify 1.651 pass, bir canonical
+  Linux skip, 11.382 statement, 2.964 branch ve yüzde 100 measured coverage ile
+  geçti. Üç re-review continuation zorunlu bağlamı okurken bütçesini tüketip
+  karar üretmedi; approval sayılmadı. Sırada Oğuz'un seçtiği Claude Code son
+  denetimi, normal merge/main CI ve yeni exact-main immutable image vardır.
+- Draft PR #7'de ilk `8faef46` Linux turları, testin `/usr/bin` içinde Docker
+  bulunmadığını varsayması nedeniyle fail oldu; hata korunup test hermetik hale
+  getirildi. Düzeltme commit'i `11a440bf1f1cfafd025a05582e4b16e98a3f261b`
+  için push run `29484009945` ve PR run `29484013488` hem verify hem hardened
+  container işlerinde geçti. Bu, Claude Code son denetimi veya main CI yerine
+  geçmez.
+- Kanıt commit'i `5c1b0839af4684296b582ebedad2732605ea651e` için push run
+  `29484671596` tamamen geçti. Eş PR run `29484673782` kaynak/test ve container
+  kapılarını geçti, fakat ikinci canonical result indirmesi sırasında Playwright
+  `Download.path: canceled` verdi. Bu aynı source'un push run'ında geçmesiyle
+  birlikte aralıklı UI-rerun timing açığı olarak sınıflandırıldı. Browser harness
+  artık tıklamadan önce Streamlit'in `CONNECTED` ve `notRunning` durumunu 250 ms
+  arayla iki kez kanıtlar; indirme hatasını retry ile gizlemez. Üç helper testi,
+  119 ilgili test ve full local verify 1.654 pass, bir documented skip ve yüzde
+  100 measured coverage ile geçti. Replacement PR CI beklenir.
+- Düzeltme commit'i `268c525446c5885ddc0248755420aaad683a9540` için PR run
+  `29486381721` hem verify hem hardened container kapılarında geçti. Eş push run
+  `29486378477` container kapısını ve tüm source/testleri geçti; P009 browser
+  akışı yalnız `1000 MFW` seçicisini açarken eski `force=True` ve düzenlenemeyen
+  combobox üzerinde `fill` fallback yolunda durdu. Bilimsel iş başarılı, result
+  view ve export hazırdı. Working tree normal `combobox` tıklaması, semantik
+  `option` seçimi ve yalnız açılma başarısızsa klavye fallback'i kullanır. Beş
+  helper testi, 121 ilgili test ve full local verify 1.656 pass, bir documented
+  skip ve yüzde 100 measured coverage ile geçti. Yeni exact-head CI çifti beklenir.
+- Ayrıntılı kayıt:
+  `provenance/evidence/P014/pre-execution-host-change-review.md`.
 
 **P007 açılış checkpoint'i:** P006 main merge `5fab67c` ve main CI
 `29354208853` sonrası `codex/p007-preprocessing` dalı açıldı. Pre-edit full gate

@@ -38,6 +38,17 @@ def test_public_alpha_deployment_package_is_fail_closed() -> None:
     VALIDATOR.validate()
 
 
+def test_first_release_cleanup_is_armed_before_unit_mutation() -> None:
+    runbook = (ROOT / "deploy" / "public-alpha" / "README.md").read_text(encoding="utf-8")
+    trap = "trap cleanup_failed_first_release EXIT"
+    stage_write = 'sed "s|^$TEMPLATE_WORKDIR$|$RELEASE_WORKDIR|"'
+    unit_install = 'mv -f "$UNIT_STAGE" "$UNIT_PATH"'
+
+    assert runbook.index(trap) < runbook.index(stage_write) < runbook.index(unit_install)
+    cleanup = runbook[runbook.index("cleanup_failed_first_release() {") : runbook.index(trap)]
+    assert 'rm -f -- "$UNIT_STAGE" "$UNIT_PATH"' in cleanup
+
+
 def test_runtime_gate_cleans_failed_start_and_logs_only_the_gateway() -> None:
     gate = (ROOT / "scripts" / "run_p014_runtime_gate.sh").read_text(encoding="utf-8")
     marker = "STACK_STARTED=1\nif ! docker compose"
