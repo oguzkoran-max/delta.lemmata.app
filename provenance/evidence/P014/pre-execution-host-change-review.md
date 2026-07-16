@@ -168,7 +168,13 @@ hermetic command directory containing only the required `bash` and `dirname`
 commands, so the absent-CLI branch is independent of the host runner. The failed
 runs remain evidence. After the correction, all 109 focused P014 tests and the
 full local gate passed again with 1,651 tests, one documented macOS skip, and
-100% measured coverage. Replacement Linux CI must pass before review or merge.
+100% measured coverage. Replacement push run `29484009945` and pull-request run
+`29484013488` for correction commit
+`11a440bf1f1cfafd025a05582e4b16e98a3f261b` then passed. Their verify jobs
+`87574066735` and `87574078192` and hardened-container jobs `87574066685` and
+`87574078145` were all green. This clears the replacement PR CI gate for the
+correction commit; Claude Code final review, normal merge/main CI, and a new
+exact-main immutable image remain pending.
 
 These are working-tree checks. They do not replace an independent focused
 re-review, normal pull-request CI, green main CI, or an immutable image rebuilt

@@ -43,8 +43,11 @@ erken first-release cleanup, partial Docker install rollback, immutable image
 revision ve gerçek R/`stylo` handoff'unu bütün ölçüm süresi boyunca yineleyen
 closed load gate ile kapatıldı. Bütçe sınırına takılıp karar üretmeyen ajan
 denemeleri approval sayılmadı. Oğuz'un seçtiği son Claude Code denetimi, normal
-PR/main CI ve yeni exact-main image publication geçmeden VPS değiştirilmez.
-Caddy/DNS veya public activation yetkisi verilmedi.
+PR/main CI ve yeni exact-main image publication geçmeden VPS değiştirilmez. Draft
+PR #7 düzeltme commit'i `11a440b` için push CI `29484009945` ve PR CI
+`29484013488` verify/container işlerinde yeşildir; önceki iki Linux failure
+değiştirilmeden kanıtta tutulur. Caddy/DNS veya public activation yetkisi
+verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 

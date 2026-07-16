@@ -29,7 +29,9 @@ partial-install rollback, image revision ve sustained real R/`stylo` load
 kapılarını tamamladı. Güncel paket 109 focused testten ve full verify'da 1.651
 pass, bir canonical Linux skip ve yüzde 100 measured coverage kapısından geçti.
 Karar üretmeden bütçesini tüketen ajan turları approval sayılmadı. Canlı VPS
-değiştirilmedi.
+değiştirilmedi. Draft PR #7'de ilk iki Linux run'ı hermetik olmayan absent-Docker
+testini buldu; düzeltme commit'i `11a440b` için push CI `29484009945` ve PR CI
+`29484013488` verify/container işlerinde yeşildir.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -58,10 +60,9 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Güncel FAIR kayıtları doğrulanır, branch normal pull request olarak açılır ve CI
-yeşili alınır. Oğuz'un seçtiği Claude Code son bağımsız denetimi PR dalını
-inceler; varsa bulgular aynı dalda kapatılır. Ardından normal merge ve green main
-CI sonrası exact main commit için immutable image yeniden yayımlanır. Yalnız bu
+Draft PR #7'nin yeşil `11a440b` adayı Oğuz'un seçtiği Claude Code son bağımsız
+denetimine verilir; varsa bulgular aynı dalda kapatılır. Ardından normal merge ve
+green main CI sonrası exact main commit için immutable image yeniden yayımlanır. Yalnız bu
 kapılardan sonra exact pre-Docker inventory, Docker sonrası Lemmata comparison
 ve yalnız `127.0.0.1:8502` Delta install uygulanır. Oğuz ayrı bir karar vermeden
 DNS, Caddy veya public route açılmaz.

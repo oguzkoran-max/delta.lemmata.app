@@ -12,8 +12,9 @@ health ve P008-P009 minimum Guided run/result akışı vardır. P014 canonical
 container paketi CI'da kanıtlandı. Canlı host için closed-schema ölçüm, guarded
 official-Docker install/rollback ve duration-based coexistence gate dalda
 hazırlandı; 109 focused test ve 1.651-test full verify geçti. Son Claude Code
-denetimi, normal PR/main CI ve exact-main image publication tamamlanmadan VPS
-değiştirilmez
+denetimi, normal merge/main CI ve exact-main image publication tamamlanmadan VPS
+değiştirilmez. Draft PR #7'nin `11a440b` düzeltme commit'i için push ve PR
+verify/container kapıları yeşildir
 
 **P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
 `devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
@@ -52,7 +53,13 @@ olabilir. Alpha, bilimsel release veya FAIR certification değildir.
   Linux skip, 11.382 statement, 2.964 branch ve yüzde 100 measured coverage ile
   geçti. Üç re-review continuation zorunlu bağlamı okurken bütçesini tüketip
   karar üretmedi; approval sayılmadı. Sırada Oğuz'un seçtiği Claude Code son
-  denetimi, normal PR/main CI ve yeni exact-main immutable image vardır.
+  denetimi, normal merge/main CI ve yeni exact-main immutable image vardır.
+- Draft PR #7'de ilk `8faef46` Linux turları, testin `/usr/bin` içinde Docker
+  bulunmadığını varsayması nedeniyle fail oldu; hata korunup test hermetik hale
+  getirildi. Düzeltme commit'i `11a440bf1f1cfafd025a05582e4b16e98a3f261b`
+  için push run `29484009945` ve PR run `29484013488` hem verify hem hardened
+  container işlerinde geçti. Bu, Claude Code son denetimi veya main CI yerine
+  geçmez.
 - Ayrıntılı kayıt:
   `provenance/evidence/P014/pre-execution-host-change-review.md`.
 
