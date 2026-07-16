@@ -22,8 +22,10 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "header.stage.upload": "Secure intake",
     "header.stage.corpus": "Corpus setup",
     "header.stage.parameters": "Guided parameters",
+    "header.stage.evidence": "Evidence · Results",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
+    "accessibility.skip_to_main": "Skip to main content",
     "sidebar.progress": "Experiment map · 2 of 4",
     "sidebar.progress_accessible": "Experiment map progress: step 2 of 4",
     "sidebar.step.purpose": "Purpose",
@@ -141,9 +143,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.learn.title": "Understand these settings",
     "parameters.learn.mfw.title": "Most frequent words (MFW)",
     "parameters.learn.mfw.body": (
-        "MFW is the number of common word features compared across the corpus. A larger "
-        "number includes more vocabulary; it is not automatically more accurate. Delta "
-        "tests 100, 300, 500, and 1,000 so sensitivity stays visible."
+        "MFW is the number of common word features included. When an unknown holdout is "
+        "present, Delta ranks these features on the documented known reference texts before "
+        "projecting the unknown text. A larger number includes more vocabulary; it is not "
+        "automatically more accurate. Delta tests 100, 300, 500, and 1,000 so sensitivity "
+        "stays visible."
     ),
     "parameters.learn.culling.title": "Culling",
     "parameters.learn.culling.body": (
@@ -152,9 +156,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "parameters.learn.delta.title": "Classic Delta",
     "parameters.learn.delta.body": (
-        "Classic Delta standardizes word frequencies and measures the average distance "
-        "between texts. A smaller distance means relatively greater stylistic proximity "
-        "inside this corpus; it does not prove authorship."
+        "Classic Delta standardizes the selected word-frequency profiles against the frozen "
+        "fitting basis, which contains only known reference texts when an unknown holdout is "
+        "present. It then computes the mean absolute difference between each pair of profiles. "
+        "A smaller distance means relatively greater stylistic proximity inside this corpus; "
+        "it does not prove authorship."
     ),
     "parameters.learn.reference.title": "Why 500 MFW is the display reference",
     "parameters.learn.reference.body": (
@@ -190,6 +196,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "inspect its matrix and derived views; this changes the display only and never reruns "
         "the analysis."
     ),
+    "results.run_details": (
+        "Run finished · {complete} of {total} comparisons produced matrices · run details"
+    ),
     "results.partial": (
         "At least one comparison could not be completed. Delta keeps that cell visible instead "
         "of substituting or hiding it."
@@ -209,44 +218,88 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "results.status.output": "Visible output",
     "results.selector": "View one completed comparison",
     "results.selector.option": "{mfw} MFW{reference}",
-    "results.selector.reference_suffix": " · display reference",
+    # Keep every selector card the same height; the reference role is explained below.
+    "results.selector.reference_suffix": "",
     "results.reference_note": (
         "500 MFW opens first as a pre-registered visual reference. It is not selected as the "
         "best or most convincing result."
     ),
     "results.heatmap.title": "Distance heatmap",
     "results.heatmap.body": (
-        "Each square reports the Classic Delta distance between two documented texts. Lighter "
-        "values are smaller within this selected matrix."
+        "Each square reports the Classic Delta distance between two documented texts. The "
+        "white diagonal is each text compared with itself. Colours are scaled inside this "
+        "selected matrix only, so compare runs and parameter cells by their numbers rather "
+        "than by colour alone."
     ),
     "results.heatmap.x": "Compared text",
     "results.heatmap.y": "Reference text",
-    "results.matrix.title": "Exact distance matrix",
+    "results.method.title": "Method key",
+    "results.method.mfw.term": "Most frequent words (MFW)",
+    "results.method.mfw.definition": (
+        "The number of frequent-word features ranked from the known reference texts in the "
+        "frozen fitting basis; an unknown holdout does not alter that ranking."
+    ),
+    "results.method.delta.term": "Classic Delta",
+    "results.method.delta.definition": (
+        "The mean absolute difference between word-frequency profiles standardized with means "
+        "and standard deviations estimated from the known reference texts in the frozen fitting "
+        "basis; an unknown holdout is projected only after fitting."
+    ),
+    "results.method.smaller.term": "Smaller distance",
+    "results.method.smaller.definition": (
+        "Relatively greater proximity within this corpus and parameter cell."
+    ),
+    "results.method.threshold.term": "No universal threshold",
+    "results.method.threshold.definition": (
+        "A distance is not a general cut-off for sameness, difference, or authorship."
+    ),
+    "results.method.cell.term": "Selected comparison",
+    "results.method.cell.definition": (
+        "Changing MFW changes the displayed evidence; it does not rerun the analysis."
+    ),
+    "results.matrix.title": "Distance matrix",
     "results.matrix.body": (
         "The table is the accessible numerical counterpart of the heatmap. Distances are "
-        "symmetric and each text has distance zero from itself."
+        "symmetric and each text has distance zero from itself. Values are displayed to six "
+        "decimal places; the downloadable canonical record retains the stored numerical "
+        "values without this display rounding."
     ),
-    "results.matrix.label": "Exact Classic Delta distance matrix",
+    "results.matrix.label": "Classic Delta distance matrix",
     "results.neighbour.title": "Nearest neighbours, including ties",
     "results.neighbour.body": (
-        "For each text, Delta lists every text tied at the smallest distance in this selected "
-        "matrix. Equal minima are never broken arbitrarily."
+        "For each text, Delta lists the smallest distance in this selected matrix. Distances "
+        "differing by no more than 1e-12 are treated as tied and every tied neighbour remains "
+        "visible. Nearness need not be mutual: one text's nearest neighbour may itself be "
+        "nearest to another text."
     ),
-    "results.neighbour.label": "Nearest-neighbour table with exact ties",
+    "results.neighbour.label": "Nearest-neighbour table with tolerance-aware ties",
     "results.neighbour.document": "Text",
     "results.neighbour.neighbour": "Nearest text",
     "results.neighbour.distance": "Distance",
-    "results.neighbour.ties": "Tied minima",
+    "results.neighbour.ties": "Texts tied at this minimum",
+    "results.neighbour.no_tie": "1 text (no tie)",
+    "results.neighbour.tie_count": "{count} texts",
     "results.mds.title": "Two-dimensional proximity map",
     "results.mds.body": (
-        "Classical multidimensional scaling places texts so that their spacing approximates the "
-        "selected distance matrix in two dimensions."
+        "Classical multidimensional scaling places texts so their spacing approximates the "
+        "selected distance matrix in two dimensions. The matrix remains the authoritative "
+        "evidence: apparent clusters can be projection artefacts and must be checked against "
+        "the numerical distances."
     ),
     "results.mds.x": "MDS axis 1",
     "results.mds.y": "MDS axis 2",
-    "results.mds.coordinates": "Exact MDS coordinate table",
+    "results.mds.coordinates": "MDS coordinate table",
     "results.mds.document": "Text",
     "results.mds.role": "Analysis role",
+    "results.mds.guide.title": "How to read this map",
+    "results.mds.guide.body": (
+        "Use the map to locate patterns worth checking, then verify them in the distance "
+        "matrix. Axis direction and rotation have no literary meaning."
+    ),
+    "results.mds.guide.legend": "Analysis role legend",
+    "results.mds.guide.known": "Known reference text",
+    "results.mds.guide.unknown": "Unknown holdout",
+    "results.table_scroll": "Wide table: scroll sideways if columns are cut off.",
     "results.boundary.shows": "What this shows",
     "results.boundary.shows.body": (
         "Relative stylistic proximity among these documented texts under this exact parameter cell."
@@ -490,6 +543,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Inspect blockers, chronology, rights, and the exact exportable inventory before "
         "any parameter configuration is allowed."
     ),
+    "review.selected_purpose": "Selected purpose: {purpose}",
+    "review.ready_for_purpose": "Ready for {purpose}: no blockers for this purpose.",
     "review.ready": (
         "Corpus documentation has no blockers. Confirm this inventory to continue to "
         "computational preflight and parameter review."
@@ -538,7 +593,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "review.rights_body": (
         "These states reproduce the researcher's documentation; they are not legal approval."
     ),
+    "review.table_scroll": "Wide table: scroll sideways if columns are cut off.",
+    "review.technical_details": "Technical details",
     "review.issues_title": "Actionable corpus checks",
+    "review.issue_count": "{count} affected record(s)",
+    "review.issue_affected": "Affected",
     "review.issue_why": "Why it matters",
     "review.issue_fix": "How to correct it",
     "review.no_issues": "No corpus-documentation issues were reported.",

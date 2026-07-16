@@ -38,7 +38,7 @@ def _by_label(elements: Iterable[Any], label: str) -> Any:
 def _advance_to_describe(app: AppTest, payload: bytes = b"one text") -> AppTest:
     app.file_uploader[0].upload("one.txt", payload, "text/plain").run()
     app.button(key="corpus_continue").click().run()
-    return app
+    return app.run()
 
 
 def test_owner_key_is_stable_and_replaces_malformed_state(
@@ -81,7 +81,7 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     app = run_app()
     assert len(app.exception) == 0
     assert [title.value for title in app.title] == []
-    assert [control.label for control in app.segmented_control] == [
+    assert [control.label for control in app.radio] == [
         "What do you want to investigate?",
         "Corpus input format",
     ]
@@ -143,8 +143,9 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
 
 def test_purpose_control_updates_guidance_before_upload() -> None:
     app = run_app()
-    app.segmented_control[0].set_value("style_over_time").run()
-    assert app.segmented_control[0].value == "style_over_time"
+    purpose = _by_label(app.radio, "What do you want to investigate?")
+    purpose.set_value("style_over_time").run()
+    assert _by_label(app.radio, "What do you want to investigate?").value == "style_over_time"
     rendered = unescape("\n".join(element.value for element in app.markdown))
     assert "How does one writer's stylistic position vary" in rendered
     assert "Chronology alone does not establish" in rendered
@@ -154,7 +155,10 @@ def test_purpose_control_updates_guidance_before_upload() -> None:
 def test_v01_upload_shell_has_no_locale_selector() -> None:
     app = run_app()
     assert len(app.selectbox) == 0
-    assert len(app.radio) == 0
+    assert [control.label for control in app.radio] == [
+        "What do you want to investigate?",
+        "Corpus input format",
+    ]
 
 
 def test_text_and_metadata_uploads_are_validated_and_continue_is_enabled() -> None:
@@ -225,7 +229,7 @@ def test_metadata_only_is_safe_but_does_not_open_describe() -> None:
 
 def test_archive_member_catalog_opens_payload_free_guided_documentation() -> None:
     app = run_app()
-    app.segmented_control[1].set_value("zip_archive").run()
+    _by_label(app.radio, "Corpus input format").set_value("zip_archive").run()
     assert [uploader.label for uploader in app.file_uploader] == [
         "Corpus archive (.zip)",
         "Optional metadata table (.csv)",
@@ -253,7 +257,8 @@ def test_archive_member_catalog_opens_payload_free_guided_documentation() -> Non
 
     app.button(key="corpus_continue").click().run()
 
-    assert [heading.value for heading in app.header][0] == "Describe what each text represents"
+    app.run()
+    assert [heading.value for heading in app.title] == ["Describe what each text represents"]
     assert [expander.label for expander in app.expander if expander.label[:1].isdigit()] == [
         "1. folder/two.txt",
         "2. one.txt",
@@ -268,10 +273,8 @@ def test_archive_member_catalog_opens_payload_free_guided_documentation() -> Non
 def test_continue_opens_describe_and_clears_every_raw_upload_value() -> None:
     app = _advance_to_describe(run_app(), b"SECRET_TRANSIENT_TEXT")
     assert len(app.exception) == 0
-    assert [heading.value for heading in app.header] == [
-        "Describe what each text represents",
-        "Method boundary",
-    ]
+    assert [heading.value for heading in app.title] == ["Describe what each text represents"]
+    assert [heading.value for heading in app.header] == ["Method boundary"]
     assert [control.label for control in app.segmented_control] == ["Analysis mode"]
     assert len(app.file_uploader) == 0
     assert [button.label for button in app.button] == [
@@ -295,21 +298,19 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
     _by_label(app.selectbox, "Documented rights state").set_value("analysis_only").run()
     app.button(key="guided_build_review").click().run()
     assert len(app.exception) == 0
-    assert [heading.value for heading in app.header] == [
-        "Review the documented corpus",
-        "Method boundary",
-    ]
-    assert [message.value for message in app.success] == [
-        "Corpus documentation has no blockers. Confirm this inventory to continue to "
-        "computational preflight and parameter review."
-    ]
+    assert [heading.value for heading in app.title] == ["Review the documented corpus"]
+    assert [heading.value for heading in app.header] == ["Method boundary"]
+    assert any(
+        message.value == "Ready for Compare Texts: no blockers for this purpose."
+        for message in app.success
+    )
     rendered = unescape("\n".join(element.value for element in app.markdown))
     assert [heading.value for heading in app.subheader] == [
-        "Corpus composition",
+        "Actionable corpus checks",
         "Metadata completeness matrix",
         "Work timeline",
+        "Corpus composition",
         "Rights action matrix",
-        "Actionable corpus checks",
         "Final corpus confirmation",
         "Download the documentation package",
     ]
@@ -339,4 +340,4 @@ def test_guided_editor_reports_fields_without_echoing_submitted_values() -> None
     assert len(app.error) == 1
     assert "primary_author_name" in app.error[0].value
     assert "source URL" not in app.error[0].value
-    assert [heading.value for heading in app.header][0] == "Describe what each text represents"
+    assert [heading.value for heading in app.title] == ["Describe what each text represents"]

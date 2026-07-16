@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import json
 import zipfile
 from collections.abc import Iterable
 from pathlib import Path
@@ -81,6 +82,12 @@ def _all_by_label(elements: Iterable[Any], label: str) -> list[Any]:
     return [element for element in elements if element.label == label]
 
 
+def _page_title(app: AppTest) -> str:
+    if app.title:
+        return app.title[0].value
+    return app.header[0].value
+
+
 def _zip_payload(entries: list[tuple[str, bytes]]) -> bytes:
     output = io.BytesIO()
     with zipfile.ZipFile(output, mode="w", compression=zipfile.ZIP_DEFLATED) as archive:
@@ -130,7 +137,7 @@ def _public_result_view() -> ResultViewV1:
 def _advance_to_describe(app: AppTest, payload: bytes = b"one text") -> AppTest:
     app.file_uploader[0].upload("one.txt", payload, "text/plain").run()
     app.button(key="corpus_continue").click().run()
-    return app
+    return app.run()
 
 
 def _fixture_inventory() -> CorpusInventory:
@@ -185,7 +192,7 @@ def _open_guided_review() -> AppTest:
 
 def _open_two_work_prepare() -> AppTest:
     app = run_app()
-    app.segmented_control[1].set_value("zip_archive").run()
+    _by_label(app.radio, "Corpus input format").set_value("zip_archive").run()
     app.file_uploader[0].upload(
         "corpus.zip",
         _zip_payload(
@@ -197,6 +204,7 @@ def _open_two_work_prepare() -> AppTest:
         "application/zip",
     ).run()
     app.button(key="corpus_continue").click().run()
+    app.run()
     for author in _all_by_label(app.text_input, "Primary author name"):
         author.input("Carlo Collodi")
     for source in _all_by_label(app.text_input, "Source URL"):
@@ -325,7 +333,9 @@ def test_describe_can_return_to_upload_without_retaining_draft_state() -> None:
 
 def test_group_dates_and_verified_open_rights_reveal_only_relevant_fields() -> None:
     app = run_app()
-    app.segmented_control[0].set_value(PurposeId.GROUP_COMPARISON.value).run()
+    _by_label(app.radio, "What do you want to investigate?").set_value(
+        PurposeId.GROUP_COMPARISON.value
+    ).run()
     app = _advance_to_describe(app)
     assert _by_label(app.text_input, "Group label") is not None
 
@@ -401,7 +411,7 @@ def test_uploaded_metadata_semantics_are_reviewed_after_secure_intake(metadata_k
 
 def test_imported_metadata_purpose_mismatch_stays_in_describe() -> None:
     app = _inject_imported_describe(run_app(), PurposeId.STYLE_OVER_TIME)
-    assert [heading.value for heading in app.header][0] == "Describe what each text represents"
+    assert _page_title(app) == "Describe what each text represents"
     assert [message.value for message in app.warning] == [
         "The CSV passed file-safety checks but cannot yet produce a complete inventory."
     ]
@@ -412,15 +422,16 @@ def test_valid_import_opens_review_and_supports_edit_and_full_reset() -> None:
     app = _inject_imported_describe(run_app(), PurposeId.TEXT_PROXIMITY)
     app.session_state["review_confirmation_stale"] = True
     _by_label(app.button, "Review imported metadata").click().run()
-    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+    assert _page_title(app) == "Review the documented corpus"
     assert "review_confirmation_stale" not in app.session_state.filtered_state
     assert [message.value for message in app.success][-1] == (
         "No corpus-documentation issues were reported."
     )
 
     _by_label(app.button, "Edit metadata").click().run()
-    assert [heading.value for heading in app.header][0] == "Describe what each text represents"
+    assert _page_title(app) == "Describe what each text represents"
 
+    app = _inject_imported_describe(run_app(), PurposeId.TEXT_PROXIMITY)
     _by_label(app.button, "Review imported metadata").click().run()
     _by_label(app.button, "Start over").click().run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
@@ -433,7 +444,7 @@ def test_unknown_rights_produce_a_blocked_review() -> None:
     _by_label(app.text_input, "Source URL").input("https://www.liberliber.it/").run()
     app.button(key="guided_build_review").click().run()
     assert len(app.exception) == 0
-    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+    assert _page_title(app) == "Review the documented corpus"
     assert [message.value for message in app.error] == [
         "Corpus documentation contains blockers. Return to Describe and correct them; no "
         "analysis state has been created.",
@@ -448,7 +459,7 @@ def test_unknown_rights_produce_a_blocked_review() -> None:
 
 def test_guided_zip_members_build_two_work_review_without_payload_retention() -> None:
     app = run_app()
-    app.segmented_control[1].set_value("zip_archive").run()
+    _by_label(app.radio, "Corpus input format").set_value("zip_archive").run()
     app.file_uploader[0].upload(
         "collodi.zip",
         _zip_payload(
@@ -460,6 +471,11 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
         "application/zip",
     ).run()
     app.button(key="corpus_continue").click().run()
+    app.run()
+
+    persisted_mode = _by_label(app.radio, "Corpus input format")
+    assert persisted_mode.value == "zip_archive"
+    assert persisted_mode.disabled is True
 
     authors = _all_by_label(app.text_input, "Primary author name")
     sources = _all_by_label(app.text_input, "Source URL")
@@ -477,7 +493,7 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
     app.run()
     app.button(key="guided_build_review").click().run()
 
-    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+    assert _page_title(app) == "Review the documented corpus"
     metrics = {metric.label: metric.value for metric in app.metric}
     assert metrics["Independent works"] == "2"
     assert len(_by_label(app.radio, "Select a documented work on the chronology").options) == 2
@@ -491,10 +507,8 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
 
 def test_confirmed_corpus_opens_beginner_facing_preparation_decisions() -> None:
     app = _open_two_work_prepare()
-    assert [heading.value for heading in app.header] == [
-        "Prepare and check the corpus",
-        "Method boundary",
-    ]
+    assert _page_title(app) == "Prepare and check the corpus"
+    assert [heading.value for heading in app.header] == ["Method boundary"]
     assert len(_all_by_label(app.selectbox, "Analysis role")) == 2
     assert len(_all_by_label(app.selectbox, "OCR status")) == 2
     assert len(_all_by_label(app.selectbox, "Paratext status")) == 2
@@ -560,10 +574,8 @@ def test_preparation_runs_real_health_checks_and_exports_payload_free_evidence()
 def test_guided_parameter_review_explains_the_complete_fixed_grid() -> None:
     app = _open_guided_parameters()
     assert len(app.exception) == 0
-    assert [heading.value for heading in app.header] == [
-        "Review what Delta will calculate",
-        "Method boundary",
-    ]
+    assert _page_title(app) == "Review what Delta will calculate"
+    assert [heading.value for heading in app.header] == ["Method boundary"]
     assert [
         (control.label, control.options, control.value) for control in app.segmented_control
     ] == [("Parameter mode", ["Guided", "Research"], "guided")]
@@ -612,29 +624,50 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
     app.run(timeout=40)
 
     assert len(app.exception) == 0
-    assert "Explore the relative distances" in [heading.value for heading in app.header]
+    assert _page_title(app) == "Explore the relative distances"
     assert [heading.value for heading in app.subheader][-4:] == [
         "Distance heatmap",
-        "Exact distance matrix",
+        "Distance matrix",
         "Nearest neighbours, including ties",
         "Two-dimensional proximity map",
     ]
-    selector = _by_label(app.selectbox, "View one completed comparison")
+    selector = _by_label(app.radio, "View one completed comparison")
     assert selector.value == 500
     assert selector.options == [
         "100 MFW",
         "300 MFW",
-        "500 MFW · display reference",
+        "500 MFW",
         "1000 MFW",
     ]
     rendered = "\n".join(item.value for item in app.markdown)
     assert rendered.count('class="delta-result-cell delta-result-cell-complete"') == 4
     assert all(f'data-mfw="{mfw}"' in rendered for mfw in (100, 300, 500, 1000))
-    assert "Exact Classic Delta distance matrix" in rendered
-    assert "Nearest-neighbour table with exact ties" in rendered
-    assert "Exact MDS coordinate table" in rendered
-    assert rendered.count("What this does not show") == 3
-    assert len(app.get("vega_lite_chart")) == 2
+    assert "Classic Delta distance matrix" in rendered
+    assert "Nearest-neighbour table with tolerance-aware ties" in rendered
+    assert "MDS coordinate table" in rendered
+    assert "Method key" in rendered
+    assert "How to read this map" in rendered
+    assert rendered.count("What this does not show") == 1
+    charts = app.get("vega_lite_chart")
+    assert len(charts) == 2
+    heatmap = json.loads(charts[0].proto.spec)
+    heatmap_color = heatmap["layer"][0]["encoding"]["color"]
+    assert heatmap_color["condition"] == {
+        "test": "datum.reference === datum.compared",
+        "value": "#ffffff",
+    }
+    assert heatmap_color["value"] == "#a9dcc7"
+    assert "scale" not in heatmap_color
+    mds = json.loads(charts[1].proto.spec)
+    point_encoding = mds["layer"][0]["encoding"]
+    assert point_encoding["x"]["scale"]["domain"] == point_encoding["y"]["scale"]["domain"]
+    assert point_encoding["color"]["field"] == "role"
+    assert point_encoding["color"]["legend"] is None
+    assert point_encoding["shape"]["field"] == "role"
+    assert point_encoding["shape"]["scale"]["range"] == ["circle", "diamond"]
+    assert mds["width"] == mds["height"] == 360
+    assert "Known reference text" in rendered
+    assert "Unknown holdout" in rendered
     assert [button.label for button in app.download_button][-1] == (
         "Download canonical result record"
     )
@@ -680,11 +713,18 @@ def test_partial_result_marks_unavailable_cell_without_hiding_completed_evidence
     assert "At least one comparison could not be completed" in "\n".join(
         message.value for message in app.warning
     )
-    selector = _by_label(app.selectbox, "View one completed comparison")
+    selector = _by_label(app.radio, "View one completed comparison")
     assert selector.options == [
         "100 MFW",
         "300 MFW",
-        "500 MFW · display reference",
+        "500 MFW",
+    ]
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert rendered.count('class="delta-result-cell ') == 4
+    assert 'class="delta-result-cell delta-result-cell-failed"' in rendered
+    assert 'data-mfw="1000" data-status="failed"' in rendered
+    assert [expander.label for expander in app.expander if "run details" in expander.label] == [
+        "Run finished · 3 of 4 comparisons produced matrices · run details"
     ]
 
 
@@ -784,6 +824,174 @@ def test_result_charts_bypass_pandas_string_inference(
     assert tables[1].column_names == ["key", "title", "role", "x", "y"]
 
 
+def test_review_labels_cover_nested_fields_and_all_issue_entity_types() -> None:
+    assert webapp_module._field_label("") == ""
+    assert webapp_module._field_label("works[0].date.start_year") == "Date: Start Year"
+
+    inventory = _fixture_inventory()
+    author = inventory.authors[0]
+    work = inventory.works[0]
+    edition = inventory.editions[0]
+    source = inventory.sources[0]
+    asset = inventory.assets[0]
+
+    def issue(entity_type: object, entity_id: str | None) -> SimpleNamespace:
+        return SimpleNamespace(entity_type=entity_type, entity_id=entity_id)
+
+    assert webapp_module._issue_affected_label(issue("work", None), inventory) == "Work"
+    assert (
+        webapp_module._issue_affected_label(
+            issue(SimpleNamespace(value="author"), author.author_id), inventory
+        )
+        == author.display_name
+    )
+    assert webapp_module._issue_affected_label(issue("author", "missing"), inventory) == ("missing")
+    assert webapp_module._issue_affected_label(issue("work", work.work_id), inventory) == (
+        work.title_original
+    )
+    assert webapp_module._issue_affected_label(issue("work", "missing"), inventory) == ("missing")
+    assert (
+        webapp_module._issue_affected_label(issue("edition", edition.edition_id), inventory)
+        == f"{work.title_original} · {edition.edition_label}"
+    )
+    assert webapp_module._issue_affected_label(issue("edition", "missing"), inventory) == (
+        "missing"
+    )
+    assert webapp_module._issue_affected_label(issue("source", source.source_id), inventory) == (
+        source.title
+    )
+    assert webapp_module._issue_affected_label(issue("source", "missing"), inventory) == ("missing")
+    assert webapp_module._issue_affected_label(issue("asset", asset.asset_id), inventory) == (
+        asset.file_label
+    )
+    assert webapp_module._issue_affected_label(issue("rights", "missing"), inventory) == ("missing")
+    assert webapp_module._issue_affected_label(issue("field", "custom"), inventory) == "custom"
+
+    orphan_inventory = SimpleNamespace(
+        authors=(),
+        works=(),
+        editions=(
+            SimpleNamespace(
+                edition_id="orphan-edition",
+                work_id="orphan-work",
+                edition_label="Unknown edition",
+            ),
+        ),
+        sources=(),
+        assets=(),
+    )
+    assert (
+        webapp_module._issue_affected_label(issue("edition", "orphan-edition"), orphan_inventory)
+        == "orphan-work · Unknown edition"
+    )
+
+
+def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    charts: list[dict[str, object]] = []
+    markup: list[str] = []
+    monkeypatch.setattr(
+        webapp_module.st,
+        "vega_lite_chart",
+        lambda **kwargs: charts.append(kwargs),
+    )
+    monkeypatch.setattr(
+        webapp_module.st,
+        "markdown",
+        lambda value, *_args, **_kwargs: markup.append(value),
+    )
+    documents = (
+        ResultDocumentV1(key="D01", title="First", role=DocumentRole.KNOWN),
+        ResultDocumentV1(key="D02", title="Second", role=DocumentRole.KNOWN),
+        ResultDocumentV1(key="D03", title="Third", role=DocumentRole.UNKNOWN),
+    )
+    varied = ResultCellV1(
+        mfw=100,
+        culling_percent=0,
+        distance=DistanceMeasure.CLASSIC_DELTA,
+        is_reference=False,
+        status=ResultCellStatus.COMPLETE,
+        error_code=None,
+        matrix=ResultMatrixV1(
+            document_keys=("D01", "D02", "D03"),
+            values=((0.0, 1.0, 1.0), (1.0, 0.0, 2.0), (1.0, 2.0, 0.0)),
+        ),
+    )
+    view = SimpleNamespace(documents=documents)
+    webapp_module._render_heatmap(varied, view)
+    webapp_module._render_nearest_neighbours(varied, view)
+
+    heatmap = charts[0]["spec"]
+    heatmap_color = heatmap["layer"][0]["encoding"]["color"]
+    assert heatmap_color["scale"]["domain"] == [1.0, 2.0]
+    assert heatmap_color["scale"]["range"] == [
+        "#f4faf7",
+        "#d7efe5",
+        "#a9dcc7",
+        "#6fbf9f",
+        "#297658",
+        "#0a5443",
+    ]
+    assert "<td>2 texts</td>" in "\n".join(markup)
+
+    diagonal_residue = varied.model_copy(
+        update={
+            "matrix": ResultMatrixV1(
+                document_keys=("D01", "D02", "D03"),
+                values=(
+                    (5e-13, 0.0, 2.0),
+                    (0.0, 0.0, 1.0),
+                    (2.0, 1.0, 0.0),
+                ),
+            )
+        }
+    )
+    webapp_module._render_heatmap(diagonal_residue, view)
+    residue_color = charts[-1]["spec"]["layer"][0]["encoding"]["color"]
+    assert residue_color["scale"]["domain"] == [0.0, 2.0]
+
+    constant_distances = varied.model_copy(
+        update={
+            "matrix": ResultMatrixV1(
+                document_keys=("D01", "D02", "D03"),
+                values=((0.0, 1.0, 1.0), (1.0, 0.0, 1.0), (1.0, 1.0, 0.0)),
+            )
+        }
+    )
+    webapp_module._render_heatmap(constant_distances, view)
+    constant_color = charts[-1]["spec"]["layer"][0]["encoding"]["color"]
+    assert constant_color == {
+        "condition": {
+            "test": "datum.reference === datum.compared",
+            "value": "#ffffff",
+        },
+        "value": "#a9dcc7",
+    }
+    assert charts[-1]["spec"]["layer"][1]["encoding"]["color"]["condition"][1] == {
+        "test": "false",
+        "value": "#ffffff",
+    }
+
+    zero_extent = ResultCellV1(
+        mfw=100,
+        culling_percent=0,
+        distance=DistanceMeasure.CLASSIC_DELTA,
+        is_reference=False,
+        status=ResultCellStatus.COMPLETE,
+        error_code=None,
+        matrix=ResultMatrixV1(
+            document_keys=("D01", "D02"),
+            values=((0.0, 0.0), (0.0, 0.0)),
+        ),
+    )
+    webapp_module._render_mds(zero_extent, SimpleNamespace(documents=documents[:2]))
+    mds = charts[-1]["spec"]
+    x_domain = mds["layer"][0]["encoding"]["x"]["scale"]["domain"]
+    y_domain = mds["layer"][0]["encoding"]["y"]["scale"]["domain"]
+    assert x_domain == y_domain == [-1.08, 1.08]
+
+
 def test_research_parameter_mode_is_visibly_locked() -> None:
     app = _open_guided_parameters()
     _by_label(app.segmented_control, "Parameter mode").set_value("research").run()
@@ -794,14 +1002,14 @@ def test_research_parameter_mode_is_visibly_locked() -> None:
     assert [button.label for button in app.button] == ["Back to corpus preparation"]
     app.button(key="p008_back_prepare_research").click().run()
     app.run()
-    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+    assert _page_title(app) == "Prepare and check the corpus"
 
 
 def test_guided_parameter_review_can_return_to_preparation() -> None:
     app = _open_guided_parameters()
     app.button(key="p008_back_prepare").click().run()
     app.run()
-    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+    assert _page_title(app) == "Prepare and check the corpus"
 
 
 def test_invalid_parameter_binding_fails_closed_and_returns_to_preparation() -> None:
@@ -821,9 +1029,10 @@ def test_invalid_parameter_binding_fails_closed_and_returns_to_preparation() -> 
         "The resolved parameter record no longer matches this documented corpus. Return to "
         "preparation and try again."
     ]
+    assert [title.value for title in app.title] == ["Review what Delta will calculate"]
     app.button(key="p008_back_prepare_invalid").click().run()
     app.run()
-    assert [heading.value for heading in app.header][0] == "Prepare and check the corpus"
+    assert _page_title(app) == "Prepare and check the corpus"
 
 
 @pytest.mark.parametrize(
@@ -916,7 +1125,6 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     app.checkbox(key="p008_parameter_confirmation").check().run()
     assert app.button(key="parameters_run_analysis").disabled is False
     app.button(key="parameters_run_analysis").click().run()
-    app.run()
 
     assert analyses.run_calls == 1
     assert maintenance_calls == 1
@@ -928,7 +1136,10 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     assert config.known_work_count == 2
     assert config.unknown_work_count == 0
     assert [cell.mfw for cell in config.cells] == [100, 300, 500, 1000]
-    assert [message.value for message in app.success][-1] == "Analysis complete"
+    assert app.session_state[webapp_module._FLOW_STAGE_KEY] == (
+        webapp_module.CorpusSubstage.PARAMETERS.value
+    )
+    assert app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY].state_id == "succeeded"
     state = repr(app.session_state.filtered_state)
     assert "alpha beta gamma" not in state
     assert "SessionCapability" not in state
@@ -1019,11 +1230,11 @@ def test_preparation_confirmation_and_back_navigation_fail_closed() -> None:
         "current inventory before preparation."
     ]
     _by_label(app.button, "Back to corpus review").click().run()
-    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+    assert _page_title(app) == "Review the documented corpus"
 
     app = _open_two_work_prepare()
     _by_label(app.button, "Back to corpus review").click().run()
-    assert [heading.value for heading in app.header][0] == "Review the documented corpus"
+    assert _page_title(app) == "Review the documented corpus"
 
 
 def test_review_explains_when_the_private_temporary_corpus_is_missing() -> None:
@@ -1307,8 +1518,8 @@ def test_guided_correction_shortcut_returns_to_the_exact_work_section() -> None:
     assert isinstance(target, webapp_module.CorrectionTarget)
     assert target.group.value == "chronology"
     assert target.field_path.endswith("first_publication")
-    assert [heading.value for heading in app.header][0] == "Describe what each text represents"
-    assert any(target.field_path in message.value for message in app.info)
+    assert _page_title(app) == "Describe what each text represents"
+    assert any("First Publication" in message.value for message in app.info)
     assert _by_label(app.text_input, "Primary author name").value == "Carlo Collodi"
 
 
@@ -1346,13 +1557,13 @@ def test_csv_correction_shortcut_names_the_source_field_without_false_editing() 
     assert isinstance(target, webapp_module.CorrectionTarget)
     assert target.field_path.endswith("genre")
     assert any(
-        target.field_path in message.value and target.work_id in message.value
-        for message in app.warning
+        "Genre" in message.value and target.work_id in message.value for message in app.warning
     )
+    assert all(target.field_path not in message.value for message in app.warning)
     assert not any(button.label == "Build corpus review" for button in app.button)
 
 
-def test_final_confirmation_is_bound_to_inventory_hash_and_rebuild_invalidates_it() -> None:
+def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it() -> None:
     app = _open_guided_review()
     confirmation = _by_label(
         app.checkbox,
@@ -1382,13 +1593,7 @@ def test_final_confirmation_is_bound_to_inventory_hash_and_rebuild_invalidates_i
     ).check().run()
 
     _by_label(app.button, "Edit metadata").click().run()
-    app.button(key="guided_build_review").click().run()
-
-    rebuilt_confirmation = _by_label(
-        app.checkbox,
-        "I reviewed the file-to-work mappings and the documented rights records.",
-    )
-    assert rebuilt_confirmation.value is False
+    assert _page_title(app) == "Describe what each text represents"
     assert webapp_module._FLOW_CONFIRMATION_HASH_KEY not in app.session_state.filtered_state
 
 

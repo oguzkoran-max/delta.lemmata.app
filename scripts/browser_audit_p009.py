@@ -22,7 +22,6 @@ from browser_audit_p008 import (
     GUIDED_MFW,
     VIEWPORTS,
     _audit_parameters,
-    _choose_selectbox,
     _confirm_and_prepare,
     _display_path,
     _document_corpus,
@@ -32,6 +31,7 @@ from browser_audit_p008 import (
     _observe_console,
     _synthetic_corpus,
     _wait_for_health,
+    _wait_for_streamlit_idle,
     _wait_until_enabled,
     _word,
 )
@@ -56,6 +56,11 @@ _ALLOWED_TRANSIENT_VEGA_WARNINGS = frozenset(
     }
 )
 _MAX_ALLOWED_TRANSIENT_VEGA_WARNINGS = 12
+PHASE_B_VIEWPORTS = (
+    ("desktop-1440x1000", 1440, 1000),
+    *VIEWPORTS,
+    ("mobile-375x844", 375, 844),
+)
 
 
 def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
@@ -135,6 +140,7 @@ def _pixel_evidence(locator: Locator, screenshot: Path) -> dict[str, Any]:
         "height": image.height,
         "non_blank_fraction": round(fraction, 6),
         "sampled_color_count": sampled_colors,
+        "sha256": hashlib.sha256(payload).hexdigest(),
         "pass": (
             image.width >= 200 and image.height >= 120 and fraction >= 0.01 and sampled_colors >= 8
         ),
@@ -142,20 +148,54 @@ def _pixel_evidence(locator: Locator, screenshot: Path) -> dict[str, Any]:
     }
 
 
-def _selectbox_text(locator: Locator) -> str:
-    return str(
-        locator.evaluate(
-            """element => {
-              let current = element;
-              for (let depth = 0; depth < 6 && current; depth += 1) {
-                const text = (current.textContent || '').trim();
-                if (text.includes('MFW')) return text;
-                current = current.parentElement;
-              }
-              return element.value || '';
-            }"""
+def _visible_count(locator: Locator) -> int:
+    return int(
+        locator.evaluate_all(
+            "elements => elements.filter(element => { "
+            "const style = getComputedStyle(element); "
+            "const box = element.getBoundingClientRect(); "
+            "return style.display !== 'none' && style.visibility !== 'hidden' "
+            "&& box.width > 0 && box.height > 0; }).length"
         )
     )
+
+
+def _semantic_table_evidence(page: Page, label: str) -> dict[str, Any]:
+    table = page.get_by_role("table", name=label, exact=True)
+    payload = table.inner_text().encode("utf-8")
+    return {
+        "sha256": hashlib.sha256(payload).hexdigest(),
+        "row_count": table.locator("tbody tr").count(),
+    }
+
+
+def _skip_link_evidence(page: Page) -> dict[str, bool]:
+    skip_link = page.locator(".delta-skip-link")
+    skip_link.focus()
+    target_pass = skip_link.get_attribute("href") == "#delta-content-start" and page.evaluate(
+        "() => document.activeElement?.classList.contains('delta-skip-link')"
+    )
+    skip_link.press("Enter")
+    page.wait_for_timeout(100)
+    activation_pass = page.evaluate("() => document.activeElement?.id === 'delta-content-start'")
+    bypass_pass = page.evaluate(
+        """() => {
+          const link = document.querySelector('.delta-skip-link');
+          const target = document.querySelector('#delta-content-start');
+          const header = document.querySelector('.delta-header');
+          if (!link || !target || !header) return false;
+          const relation = header.compareDocumentPosition(target);
+          return !target.contains(link)
+            && Boolean(relation & Node.DOCUMENT_POSITION_FOLLOWING)
+            && target.getBoundingClientRect().top >= header.getBoundingClientRect().bottom - 1;
+        }"""
+    )
+    page.evaluate("() => { document.activeElement?.blur(); window.scrollTo(0, 0); }")
+    return {
+        "target_pass": bool(target_pass),
+        "activation_pass": bool(activation_pass),
+        "bypass_pass": bool(bypass_pass),
+    }
 
 
 def _matrix_values_are_finite(matrix: Any) -> bool:
@@ -215,12 +255,121 @@ def _partition_console_messages(
     return allowed, unexpected
 
 
-def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
+def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
     results = []
-    for target, width, height in VIEWPORTS:
+    for target, width, height in PHASE_B_VIEWPORTS:
         page.set_viewport_size({"width": width, "height": height})
         page.wait_for_timeout(300)
         geometry = _geometry(page)
+        upload = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+        teaching = page.get_by_role("heading", name="How stylometry works", exact=True)
+        skip = _skip_link_evidence(page)
+        screenshot = output / "screenshots" / f"entry-{target}.png"
+        page.screenshot(path=str(screenshot), full_page=True)
+        results.append(
+            {
+                "target": target,
+                "viewport": {"width": width, "height": height},
+                "horizontal_overflow": geometry["scrollWidth"] > geometry["clientWidth"],
+                "main_horizontal_overflow": (
+                    geometry["mainScrollWidth"] > geometry["mainClientWidth"]
+                ),
+                "overflowing_controls": geometry["overflowingControls"],
+                "small_targets": geometry["smallTargets"],
+                "unscrollable_table_regions": geometry["unscrollableTableRegions"],
+                "visible_h1_count": geometry["visibleH1Count"],
+                "main_landmark_count": geometry["mainLandmarkCount"],
+                "footer_count": geometry["visibleFooterCount"],
+                "inter_font_loaded": geometry["interFontLoaded"],
+                "upload_before_teaching": (
+                    upload.bounding_box()["y"] < teaching.bounding_box()["y"]
+                ),
+                "skip_target_pass": skip["target_pass"],
+                "skip_activation_pass": skip["activation_pass"],
+                "skip_bypass_pass": skip["bypass_pass"],
+                "screenshot": _display_path(screenshot),
+            }
+        )
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.wait_for_timeout(300)
+    return tuple(results)
+
+
+def _review_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
+    results = []
+    for target, width, height in PHASE_B_VIEWPORTS:
+        page.set_viewport_size({"width": width, "height": height})
+        page.wait_for_timeout(300)
+        geometry = _geometry(page)
+        skip = _skip_link_evidence(page)
+        correction_selector = page.get_by_role(
+            "combobox", name="Metadata field to correct", exact=True
+        )
+        selector_count = correction_selector.count()
+        selector_box = correction_selector.bounding_box() if selector_count == 1 else None
+        screenshot = output / "screenshots" / f"review-{target}.png"
+        page.screenshot(path=str(screenshot), full_page=True)
+        results.append(
+            {
+                "target": target,
+                "viewport": {"width": width, "height": height},
+                "horizontal_overflow": geometry["scrollWidth"] > geometry["clientWidth"],
+                "main_horizontal_overflow": (
+                    geometry["mainScrollWidth"] > geometry["mainClientWidth"]
+                ),
+                "overflowing_controls": geometry["overflowingControls"],
+                "small_targets": geometry["smallTargets"],
+                "unscrollable_table_regions": geometry["unscrollableTableRegions"],
+                "visible_h1_count": geometry["visibleH1Count"],
+                "main_landmark_count": geometry["mainLandmarkCount"],
+                "footer_count": geometry["visibleFooterCount"],
+                "inter_font_loaded": geometry["interFontLoaded"],
+                "correction_selector_count": selector_count,
+                "correction_selector_pass": (
+                    selector_count == 1
+                    and selector_box is not None
+                    and selector_box["height"] >= 44
+                ),
+                "skip_target_pass": skip["target_pass"],
+                "skip_activation_pass": skip["activation_pass"],
+                "skip_bypass_pass": skip["bypass_pass"],
+                "screenshot": _display_path(screenshot),
+            }
+        )
+    page.set_viewport_size({"width": 1280, "height": 900})
+    page.wait_for_timeout(300)
+    return tuple(results)
+
+
+def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
+    results = []
+    for target, width, height in PHASE_B_VIEWPORTS:
+        page.set_viewport_size({"width": width, "height": height})
+        page.wait_for_timeout(300)
+        geometry = _geometry(page)
+        chart_locator = page.locator('[data-testid="stVegaLiteChart"]')
+        chart_pixels = tuple(
+            _pixel_evidence(
+                chart_locator.nth(index),
+                output / "screenshots" / f"results-{target}-chart-{index + 1}.png",
+            )
+            for index in range(2)
+        )
+        mds_plot_box = (
+            chart_locator.nth(1).locator("svg .role-frame .background").first.bounding_box()
+        )
+        radio_boxes = (
+            page.get_by_role("radiogroup", name="View one completed comparison", exact=True)
+            .locator('label[data-testid="stRadioOption"]')
+            .evaluate_all(
+                "elements => elements.map(element => { "
+                "const box = element.getBoundingClientRect(); "
+                "return {x: Math.round(box.x), y: Math.round(box.y), width: Math.round(box.width), "
+                "height: Math.round(box.height)}; })"
+            )
+        )
+        radio_rows = len({box["y"] for box in radio_boxes})
+        visible_result_cells = _visible_count(page.locator(".delta-result-cell"))
         screenshot = output / "screenshots" / f"results-{target}.png"
         page.screenshot(path=str(screenshot), full_page=True)
         results.append(
@@ -232,7 +381,23 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                     geometry["mainScrollWidth"] > geometry["mainClientWidth"]
                 ),
                 "overflowing_controls": geometry["overflowingControls"],
+                "small_targets": geometry["smallTargets"],
                 "misframed_table_scroll_regions": geometry["misframedTableScrollRegions"],
+                "unscrollable_table_regions": geometry["unscrollableTableRegions"],
+                "visible_h1_count": geometry["visibleH1Count"],
+                "main_landmark_count": geometry["mainLandmarkCount"],
+                "footer_count": geometry["visibleFooterCount"],
+                "inter_font_loaded": geometry["interFontLoaded"],
+                "mfw_radio_rows": radio_rows,
+                "mfw_radio_layout_pass": (radio_rows == 1 if width > 760 else radio_rows == 2),
+                "visible_result_cell_count": visible_result_cells,
+                "all_result_cells_visible_pass": visible_result_cells == 4,
+                "mds_metric_aspect_pass": (
+                    mds_plot_box is not None
+                    and abs(mds_plot_box["width"] - mds_plot_box["height"]) <= 2
+                ),
+                "mds_plot_box": mds_plot_box,
+                "chart_pixels": chart_pixels,
                 "screenshot": _display_path(screenshot),
             }
         )
@@ -258,7 +423,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
     result_heading = page.get_by_role(
         "heading",
         name="Explore the relative distances",
-        level=2,
+        level=1,
         exact=True,
     )
     error_reference = page.get_by_text("Rejection reference:", exact=False)
@@ -295,51 +460,89 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         for index in range(2)
     )
     selector = page.get_by_role(
-        "combobox",
+        "radiogroup",
         name="View one completed comparison",
         exact=True,
     )
-    default_reference = "500 MFW" in _selectbox_text(selector)
+    reference_radio = selector.get_by_role("radio", name="500 MFW", exact=True)
+    default_reference = reference_radio.is_checked()
     filename, exported = _download_json(page, "Download canonical result record")
     export_checks = _validate_export(filename, exported, canary)
     export_digest = hashlib.sha256(
         json.dumps(exported, sort_keys=True, separators=(",", ":")).encode("utf-8")
     ).hexdigest()
+    run_details = page.locator('[data-testid="stExpander"]').filter(has_text="run details")
+    run_details.locator("summary").click()
+    page.get_by_role(
+        "table",
+        name="Complete Guided Mode result grid",
+        exact=True,
+    ).wait_for()
+    semantic_labels = (
+        "Classic Delta distance matrix",
+        "MDS coordinate table",
+    )
+    semantic_before = {label: _semantic_table_evidence(page, label) for label in semantic_labels}
 
     viewports = _result_viewports(page, output)
-    _choose_selectbox(page, selector, "1000 MFW")
+    selector.get_by_role("radio", name="1000 MFW", exact=True).click()
+    _wait_for_streamlit_idle(page)
     page.get_by_role("heading", name="Distance heatmap", level=3, exact=True).wait_for()
+    changed_chart_evidence = tuple(
+        _pixel_evidence(
+            chart_locator.nth(index),
+            output / "screenshots" / f"result-chart-{index + 1}-1000-mfw.png",
+        )
+        for index in range(2)
+    )
+    semantic_after = {label: _semantic_table_evidence(page, label) for label in semantic_labels}
+    semantic_change = all(
+        semantic_before[label]["sha256"] != semantic_after[label]["sha256"]
+        for label in semantic_labels
+    )
     filename_after, exported_after = _download_json(page, "Download canonical result record")
+    result_cells = page.locator(".delta-result-cell")
+    complete_result_cells = page.locator(".delta-result-cell-complete")
     display_only = (
-        "1000 MFW" in _selectbox_text(selector)
+        selector.get_by_role("radio", name="1000 MFW", exact=True).is_checked()
         and filename_after == filename
         and exported_after == exported
-        and page.locator(".delta-result-cell").count() == 4
+        and _visible_count(result_cells) == 4
     )
     body = page.locator("body").inner_text()
     return {
         "run_enabled_after_confirmation_pass": enabled,
-        "analysis_complete_pass": page.get_by_text("Analysis complete", exact=True).count() == 1,
-        "all_four_cells_visible_pass": page.locator(".delta-result-cell").count() == 4,
-        "all_four_cells_complete_pass": page.locator(".delta-result-cell-complete").count() == 4,
+        "analysis_complete_pass": page.get_by_text("Analysis complete", exact=False).count() >= 1,
+        "all_four_cells_visible_pass": _visible_count(result_cells) == 4,
+        "all_four_cells_complete_pass": _visible_count(complete_result_cells) == 4,
         "default_reference_500_pass": default_reference,
         "display_only_selector_pass": display_only,
         "semantic_tables_pass": all(
             page.get_by_role("table", name=label, exact=True).count() == 1
             for label in (
                 "Complete Guided Mode result grid",
-                "Exact Classic Delta distance matrix",
-                "Nearest-neighbour table with exact ties",
-                "Exact MDS coordinate table",
+                "Classic Delta distance matrix",
+                "Nearest-neighbour table with tolerance-aware ties",
+                "MDS coordinate table",
             )
         ),
         "interpretation_boundaries_pass": page.get_by_text(
             "What this does not show", exact=True
         ).count()
-        == 3,
+        == 1,
         "two_visualizations_pass": chart_locator.count() == 2
         and all(item["pass"] for item in chart_evidence),
+        "visualizations_change_with_mfw_pass": all(item["pass"] for item in changed_chart_evidence)
+        and semantic_change
+        and all(
+            before["sha256"] != after["sha256"]
+            for before, after in zip(chart_evidence, changed_chart_evidence, strict=True)
+        ),
+        "semantic_table_change_pass": semantic_change,
+        "semantic_table_evidence_before": semantic_before,
+        "semantic_table_evidence_after": semantic_after,
         "chart_pixel_evidence": chart_evidence,
+        "changed_chart_pixel_evidence": changed_chart_evidence,
         "canonical_export_sha256": export_digest,
         **export_checks,
         "payload_absent_from_page_pass": canary not in body,
@@ -347,7 +550,17 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
             not item["horizontal_overflow"]
             and not item["main_horizontal_overflow"]
             and not item["overflowing_controls"]
+            and not item["small_targets"]
             and not item["misframed_table_scroll_regions"]
+            and not item["unscrollable_table_regions"]
+            and item["visible_h1_count"] == 1
+            and item["main_landmark_count"] == 1
+            and item["footer_count"] == 1
+            and item["inter_font_loaded"]
+            and item["mfw_radio_layout_pass"]
+            and item["all_result_cells_visible_pass"]
+            and item["mds_metric_aspect_pass"]
+            and all(chart["pass"] for chart in item["chart_pixels"])
             for item in viewports
         ),
         "viewports": viewports,
@@ -368,12 +581,58 @@ def _audit_flow(
     _observe_console(page, console_messages)
     page.goto(url, wait_until="networkidle")
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
+    entry_viewports = _entry_viewports(page, output)
     _document_corpus(page, documents, output)
+    review_viewports = _review_viewports(page, output)
     preparation = _confirm_and_prepare(page, output)
     parameters = _audit_parameters(page, output)
     results = _run_and_audit_results(page, output, _word(0))
     context.close()
-    return {"preparation": preparation, "parameters": parameters, "results": results}
+    entry = {
+        "viewport_pass": all(
+            not item["horizontal_overflow"]
+            and not item["main_horizontal_overflow"]
+            and not item["overflowing_controls"]
+            and not item["small_targets"]
+            and not item["unscrollable_table_regions"]
+            and item["visible_h1_count"] == 1
+            and item["main_landmark_count"] == 1
+            and item["footer_count"] == 1
+            and item["inter_font_loaded"]
+            and item["upload_before_teaching"]
+            and item["skip_target_pass"]
+            and item["skip_activation_pass"]
+            and item["skip_bypass_pass"]
+            for item in entry_viewports
+        ),
+        "viewports": entry_viewports,
+    }
+    review = {
+        "viewport_pass": all(
+            not item["horizontal_overflow"]
+            and not item["main_horizontal_overflow"]
+            and not item["overflowing_controls"]
+            and not item["small_targets"]
+            and not item["unscrollable_table_regions"]
+            and item["visible_h1_count"] == 1
+            and item["main_landmark_count"] == 1
+            and item["footer_count"] == 1
+            and item["inter_font_loaded"]
+            and item["correction_selector_pass"]
+            and item["skip_target_pass"]
+            and item["skip_activation_pass"]
+            and item["skip_bypass_pass"]
+            for item in review_viewports
+        ),
+        "viewports": review_viewports,
+    }
+    return {
+        "entry": entry,
+        "review": review,
+        "preparation": preparation,
+        "parameters": parameters,
+        "results": results,
+    }
 
 
 def main() -> int:

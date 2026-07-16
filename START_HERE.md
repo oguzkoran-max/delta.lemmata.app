@@ -2,6 +2,15 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
+**2026-07-17 visual checkpoint:** Onaylı Claude A5.1 sistemi
+`codex/p014-visual-phase-b` dalında gerçek Streamlit yüzeyine entegre edildi.
+Yerel full verify 1.666 pass, bir Linux-only skip, 11.507 statement + 3.002
+branch ve yüzde 100 measured coverage ile geçti. Bilimsel-yöntem,
+erişilebilirlik ve release denetimleri GO verdi; exact commit için canonical
+Linux CI beklenir;
+merge/deploy yetkisi yoktur. Önce
+`docs/development/phase-b-visual-integration.md`, sonra `SESSION_HANDOFF.md`
+okunur.
 **Güncel aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
 Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
 P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum

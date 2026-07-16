@@ -1,6 +1,26 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-16
+**Güncellendi:** 2026-07-17
+
+**En yeni checkpoint: Phase B visual integration.** Claude Code'un onaylı A5.1
+prototip sistemi `codex/p014-visual-phase-b` dalında exact base
+`26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` üzerine gerçek Streamlit Entry,
+Review ve Results yüzeylerine aktarıldı. Inter yerel ve lisans/SHA kayıtlıdır;
+native radio kartları, tek H1, skip/main/footer, 44 px hedefler, responsive
+tablolar, evidence-first Results, matrix-local heatmap ve eş-domain MDS bağlıdır.
+Bilimsel P006-P009 davranışı korunur; P011 sensitivity ve P012 FAIR paketi
+uydurulmadı. Son yerel `./scripts/verify.sh`: 1.666 passed, bir canonical-Linux
+skip, 11.507 statement + 3.002 branch ve yüzde 100 coverage. Dört viewportta
+üretim ResultView renderer görsel/DOM denetimi geçti; dört karşılaştırma durumu
+kapalı ayrıntıdan bağımsız görünür, skip link header sonrasındaki odaklanabilir
+içerik başlangıcına gider, tek gerçek main landmark korunur, gerçek MDS plot
+karesi 2 px tolerans içindedir ve wheel font/lisans/provenans dosyalarını taşır.
+Bilimsel-yöntem, erişilebilirlik ve release bağımsız denetimleri GO verdi. Tam yerel P009 browser
+koşusu kapalı worker'ın canonical `/opt/renv/cache` beklentisi nedeniyle
+`P009_PREPARED_CORPUS_RESULT_NOT_AVAILABLE` ile güvenli durdu; kısmi sonuç
+sunulmadı. Exact Phase B commit'i için Linux CI, gerçek R/`stylo` browser kapısı
+tamamlanmadan merge/deploy yapılmaz. Ayrıntı:
+`docs/development/phase-b-visual-integration.md`.
 
 **Aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
