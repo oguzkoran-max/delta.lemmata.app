@@ -37,8 +37,8 @@ pre-Caddy owner gate açıklarını buldu. `codex/p014-live-host-acceptance` dal
 deterministic content-free host gate, official-Docker installer, Docker-only
 rollback, duration-based coexistence gate ve sıralı runbook uygulanıyor. Hedefli
 109 test, Ruff, Docker shell syntax ve diff-check kapılarından geçti. Sonraki
-browser-harness düzeltmesiyle ilgili paket 119 testten geçti. Yeni full local
-verify 1.654 pass, bir canonical Linux skip ve yüzde 100 measured coverage
+browser-harness düzeltmesiyle ilgili paket 121 testten geçti. Yeni full local
+verify 1.656 pass, bir canonical Linux skip ve yüzde 100 measured coverage
 ile yeşildir. Son adversarial bulgular; schema `1.3.0` pre-mutation/origin/key,
 erken first-release cleanup, partial Docker install rollback, immutable image
 revision ve gerçek R/`stylo` handoff'unu bütün ölçüm süresi boyunca yineleyen
@@ -52,8 +52,12 @@ değiştirilmeden kanıtta tutulur. Sonraki kanıt commit'i `5c1b083` için push
 indirmesinde `Download.path: canceled` ile düştü. Kaynak/test ve container
 kapıları geçti. Working tree, Streamlit'in bağlı ve iki kez kararlı-idle olduğunu
 doğrulamadan indirmeye basmayan, tekrar deneyip gerçek hatayı gizlemeyen düzeltmeyi
-içerir; local full verify yeşildir, replacement PR CI beklenir. Caddy/DNS veya
-public activation yetkisi verilmedi.
+içerir. Bu düzeltmenin `268c525` commit'inde PR CI `29486381721` tamamen geçti;
+push CI `29486378477` ise sonuç seçicisini açarken eski zorla-tıkla/`fill` fallback
+yolunda takıldı. Working tree seçiciyi erişilebilir `combobox` ve `option`
+rolleriyle normal kullanıcı gibi işletir; yalnız liste açılmazsa `ArrowDown`
+yardımı kullanır. Local full verify yeşildir, replacement exact-head CI çifti
+beklenir. Caddy/DNS veya public activation yetkisi verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 

@@ -123,42 +123,40 @@ def _wait_for_streamlit_idle(page: Page, *, timeout_ms: float = 15_000) -> None:
 def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
     option_locator = page.get_by_role("option", name=option, exact=True)
     last_error = "no option interaction attempted"
-    for _ in range(6):
+    for _ in range(3):
         try:
+            _wait_for_streamlit_idle(page)
             locator.wait_for(state="visible", timeout=5_000)
             locator.scroll_into_view_if_needed(timeout=5_000)
-            locator.click(force=True, timeout=5_000)
-            page.wait_for_timeout(150)
-            if not option_locator.is_visible():
-                locator.fill(option, timeout=5_000)
+            locator.click(timeout=5_000)
+            try:
+                option_locator.wait_for(state="visible", timeout=2_000)
+            except PlaywrightTimeoutError:
+                locator.press("ArrowDown", timeout=2_000)
                 option_locator.wait_for(state="visible", timeout=5_000)
-            option_locator.click(force=True, timeout=5_000)
-            deadline = time.monotonic() + 5
-            while time.monotonic() < deadline:
-                rendered = locator.evaluate(
-                    """element => {
-                      let current = element;
-                      for (let depth = 0; depth < 8 && current; depth += 1) {
-                        const text = (current.textContent || '').trim();
-                        if (text.includes('Analysis only') || text.includes('MFW')) {
-                          return text;
-                        }
-                        current = current.parentElement;
-                      }
-                      return (element.value || '').trim();
-                    }"""
-                )
-                if option in str(rendered):
-                    _wait_for_streamlit_idle(page)
-                    return
-                page.wait_for_timeout(100)
+            option_locator.click(timeout=5_000)
+            _wait_for_streamlit_idle(page)
+            rendered = locator.evaluate(
+                """element => {
+                  let current = element;
+                  for (let depth = 0; depth < 8 && current; depth += 1) {
+                    const text = (current.textContent || '').trim();
+                    if (text.includes('Analysis only') || text.includes('MFW')) {
+                      return text;
+                    }
+                    current = current.parentElement;
+                  }
+                  return (element.value || '').trim();
+                }"""
+            )
+            if option in str(rendered):
+                return
             last_error = "selected option was not retained after the Streamlit rerun"
         except PlaywrightTimeoutError as error:
             last_error = str(error).splitlines()[0]
         except Exception as error:
             last_error = f"{type(error).__name__}: {error}"
         page.keyboard.press("Escape")
-        page.wait_for_timeout(500)
     raise RuntimeError(
         f"Selectbox option did not become available: {option}; last_error={last_error}"
     )

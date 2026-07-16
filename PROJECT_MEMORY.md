@@ -12,13 +12,15 @@ health ve P008-P009 minimum Guided run/result akışı vardır. P014 canonical
 container paketi CI'da kanıtlandı. Canlı host için closed-schema ölçüm, guarded
 official-Docker install/rollback ve duration-based coexistence gate dalda
 hazırlandı; host paketi 109 focused testten geçti. Browser-harness düzeltmesiyle
-ilgili paket 119 test ve 1.654-test full verify kapısından geçti. Son Claude Code
+ilgili paket 121 test ve 1.656-test full verify kapısından geçti. Son Claude Code
 denetimi, normal merge/main CI ve exact-main image publication tamamlanmadan VPS
 değiştirilmez. Draft PR #7'nin `11a440b` düzeltme commit'i için push ve PR
 verify/container kapıları yeşildir. Sonraki `5c1b083` push CI yeşilken PR CI'nin
-yalnız ikinci export download adımı geçici `canceled` verdi; working tree
-Streamlit kararlılık kontrolüyle bu timing açığını kapatır ve replacement CI
-beklenir
+yalnız ikinci export download adımı geçici `canceled` verdi. Bunu kapatan
+`268c525` için PR CI `29486381721` tamamen geçti; push CI `29486378477` eski
+zorla-tıkla/`fill` selectbox fallback'inde takıldı. Working tree Streamlit
+kararlılık kontrolüne ek olarak semantik `combobox`/`option` etkileşimini kullanır
+ve replacement exact-head CI çifti beklenir
 
 **P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
 `devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
@@ -73,6 +75,15 @@ olabilir. Alpha, bilimsel release veya FAIR certification değildir.
   arayla iki kez kanıtlar; indirme hatasını retry ile gizlemez. Üç helper testi,
   119 ilgili test ve full local verify 1.654 pass, bir documented skip ve yüzde
   100 measured coverage ile geçti. Replacement PR CI beklenir.
+- Düzeltme commit'i `268c525446c5885ddc0248755420aaad683a9540` için PR run
+  `29486381721` hem verify hem hardened container kapılarında geçti. Eş push run
+  `29486378477` container kapısını ve tüm source/testleri geçti; P009 browser
+  akışı yalnız `1000 MFW` seçicisini açarken eski `force=True` ve düzenlenemeyen
+  combobox üzerinde `fill` fallback yolunda durdu. Bilimsel iş başarılı, result
+  view ve export hazırdı. Working tree normal `combobox` tıklaması, semantik
+  `option` seçimi ve yalnız açılma başarısızsa klavye fallback'i kullanır. Beş
+  helper testi, 121 ilgili test ve full local verify 1.656 pass, bir documented
+  skip ve yüzde 100 measured coverage ile geçti. Yeni exact-head CI çifti beklenir.
 - Ayrıntılı kayıt:
   `provenance/evidence/P014/pre-execution-host-change-review.md`.
 

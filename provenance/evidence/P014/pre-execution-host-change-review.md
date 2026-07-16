@@ -64,7 +64,12 @@ They are advisory checks, not owner acceptance. Together they identified:
     the result display selector triggered a Streamlit rerun, the second canonical
     result download could be clicked before the rerun was stably idle and ended
     as `Download.path: canceled`. The same source's push run passed, and source,
-    unit, and hardened-container gates remained green.
+    unit, and hardened-container gates remained green;
+18. the first idle-state correction passed its exact-head PR run, but the parallel
+    push run exposed a second harness weakness. The result selectbox helper used
+    forced clicks and attempted `fill` on a non-editable Streamlit combobox when
+    its list did not open. The scientific job, result view, and export were all
+    present; only the display-only selector interaction failed.
 
 A later 30,000-token implementation worker exhausted its budget after review and
 made no edit. That failed delegation did not contribute code or approval.
@@ -119,6 +124,11 @@ agent resumed that bounded file scope directly.
   `CONNECTED` and `notRunning` twice across a 250 ms settle window before JSON
   downloads and after selectbox reruns. A canceled download remains a hard error;
   the harness does not retry and conceal a persistent user-visible failure.
+- The shared selectbox helper now follows the component's accessible contract:
+  a normal `combobox` interaction followed by an exact `option` selection. It no
+  longer force-clicks or fills a non-editable control. A bounded `ArrowDown`
+  fallback only opens a list that did not respond to the pointer action, and the
+  exact selected value is still verified after a stable Streamlit rerun.
 
 ## Targeted Verification
 
@@ -197,6 +207,21 @@ run then passed with 1,654 tests, one documented canonical-Linux skip on macOS,
 11,382 statements, 2,964 branches, 100% measured coverage, `records-ok count=109`,
 and `verify-ok`. Replacement exact-head CI remains required before independent
 Claude Code review.
+
+Commit `268c525446c5885ddc0248755420aaad683a9540` then passed pull-request
+run `29486381721`: verify job `87581749672` and hardened-container job
+`87581749699` were green, including the P009 result download. Parallel push run
+`29486378477` passed container job `87581739918`, source verification, and the
+real scientific worker, but verify job `87581739923` stopped while opening the
+display-only `1000 MFW` result selector. The retained failure record confirms a
+terminal successful job, confirmed scientific result, present result view, and
+available export. The harness correction replaces forced click plus invalid
+`fill` fallback with semantic `combobox`/`option` interaction and a bounded
+keyboard-open fallback. Five helper tests and 121 related tests passed. Full local
+verification passed 1,656 tests, one documented canonical-Linux skip on macOS,
+11,382 statements, 2,964 branches, 100% measured coverage,
+`records-ok count=109`, and `verify-ok`. A new exact-head push/PR pair remains
+required before Claude Code review.
 
 These are working-tree checks. They do not replace an independent focused
 re-review, normal pull-request CI, green main CI, or an immutable image rebuilt
