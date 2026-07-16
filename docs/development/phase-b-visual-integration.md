@@ -3,7 +3,11 @@
 **Date:** 2026-07-16
 **Branch:** `codex/p014-visual-phase-b`
 **Exact base:** `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa`
-**Design source:** Claude Code Phase A5.1 review package, manifest verified 24/24
+**Exact implementation:** `3a554e0e76522672efaf547b1d03e12cb4f3531b`
+**Draft pull request:** [#8](https://github.com/oguzkoran-max/delta.lemmata.app/pull/8)
+**Design source:** Claude Code Phase A5.1 review package at
+`~/Desktop/Delta-Phase-A51-Review/`, manifest verified 24/24; report at
+`~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`
 
 ## Scope
 
@@ -63,10 +67,10 @@ The integrated surfaces are:
 
 ## Verification
 
-The final local source gate on macOS passed:
+The final implementation source gate on macOS passed:
 
 - `./scripts/verify.sh`
-- 1,666 passed, one documented canonical-Linux-only skip;
+- 1,669 passed, one documented canonical-Linux-only skip;
 - 11,507 statements and 3,002 branches at 100% measured coverage;
 - formatting, Ruff, mypy, generated schemas, frozen P006 oracle records,
   metadata, 109 provenance records, repository scan, and locked R versions.
@@ -83,11 +87,11 @@ browser gate now requires both visual pixel evidence and changed matrix/MDS
 table digests, so a repaint alone cannot satisfy the MFW-change check.
 
 The MDS browser contract measures the actual Vega root plot frame rather than
-the outer component. At 320, 375, 390, and 1440 px viewports, the absolute
-width-height difference was respectively 0.33, 0.75, 1.50, and 1.80 px, within
-the 2 px square tolerance, with no document overflow. The role legend remains
-available as accessible HTML outside the chart so it does not distort the data
-area.
+the outer component. At 320, 375, 390, 1280, and 1440 px viewports, the absolute
+width-height difference was respectively 0.390625, 0.78125, 1.125, 0.515625,
+and 1.046875 px, within the 2 px square tolerance, with no document overflow.
+The role legend remains available as accessible HTML outside the chart so it
+does not distort the data area.
 
 A local wheel build also confirmed that `InterVariable.woff2`, its OFL licence,
 and `VENDORED.md` are present in the distribution artifact. The font bytes in
@@ -101,12 +105,23 @@ documented noncanonical-host limitation: the closed worker environment requires
 that system path. No partial scientific result was shown. This local failure is
 not a passing worker claim and must not be converted into one.
 
-The authoritative upload-to-R/`stylo`-to-results browser gate therefore remains
-the canonical Linux GitHub Actions run for the exact Phase B commit.
+The authoritative upload-to-R/`stylo`-to-results browser gate is canonical
+Linux push run `29541220413` at the exact Phase B commit. Verify job
+`87763699921` and container job `87763699936` passed. It recorded 1,670 tests,
+11,507 statements, 3,002 branches, 100% measured coverage, four complete and
+visible Guided result cells, two nonblank charts, no unexpected console message,
+and no external browser host. Parallel PR run `29541222417` also passed verify
+job `87763705842` and container job `87763705851`.
 
 Independent scientific-method, accessibility, and release reviews returned GO
-after their remediation checks. The exact branch must still pass canonical
-Linux CI before merge or deployment.
+after their remediation checks. These are local/agent reviews, not GitHub or
+participant reviews. The exact branch is CI-green and review-ready in draft PR
+#8; merge and deployment still require separate owner decisions.
+
+The retained CI sequence is documented in
+`provenance/evidence/P014/phase-b-visual-integration-validation.md`. Earlier
+failed verify runs remain visible with their causes; no scientific parameter or
+result value was changed to obtain the passing run.
 
 ## Deliberately Deferred
 
@@ -121,6 +136,8 @@ Linux CI before merge or deployment.
 
 ## Release Gate
 
-Phase B may be proposed for review after the exact commit passes both GitHub CI
-jobs and an independent diff review. It must not be merged, deployed, or routed
-publicly on the strength of this local record alone.
+Phase B is proposed for review in draft PR #8 after the exact implementation
+commit passed both push and pull-request verify/container jobs and three
+independent local/agent review passes. It must not be merged, deployed, or
+routed publicly without Oğuz Koran's separate decision. Live-host, Caddy, DNS,
+and public-activation work remain outside this branch.

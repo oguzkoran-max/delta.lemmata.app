@@ -3,26 +3,30 @@
 **Güncellendi:** 2026-07-17
 
 **En yeni checkpoint: Phase B visual integration.** Claude Code'un onaylı A5.1
-prototip sistemi `codex/p014-visual-phase-b` dalında exact base
-`26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` üzerine gerçek Streamlit Entry,
-Review ve Results yüzeylerine aktarıldı. Inter yerel ve lisans/SHA kayıtlıdır;
-native radio kartları, tek H1, skip/main/footer, 44 px hedefler, responsive
-tablolar, evidence-first Results, matrix-local heatmap ve eş-domain MDS bağlıdır.
-Bilimsel P006-P009 davranışı korunur; P011 sensitivity ve P012 FAIR paketi
-uydurulmadı. Son yerel `./scripts/verify.sh`: 1.666 passed, bir canonical-Linux
-skip, 11.507 statement + 3.002 branch ve yüzde 100 coverage. Dört viewportta
-üretim ResultView renderer görsel/DOM denetimi geçti; dört karşılaştırma durumu
-kapalı ayrıntıdan bağımsız görünür, skip link header sonrasındaki odaklanabilir
-içerik başlangıcına gider, tek gerçek main landmark korunur, gerçek MDS plot
-karesi 2 px tolerans içindedir ve wheel font/lisans/provenans dosyalarını taşır.
-Bilimsel-yöntem, erişilebilirlik ve release bağımsız denetimleri GO verdi. Tam yerel P009 browser
-koşusu kapalı worker'ın canonical `/opt/renv/cache` beklentisi nedeniyle
-`P009_PREPARED_CORPUS_RESULT_NOT_AVAILABLE` ile güvenli durdu; kısmi sonuç
-sunulmadı. Exact Phase B commit'i için Linux CI, gerçek R/`stylo` browser kapısı
-tamamlanmadan merge/deploy yapılmaz. Ayrıntı:
-`docs/development/phase-b-visual-integration.md`.
+prototip sistemi exact base
+`26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` üzerinden
+`codex/p014-visual-phase-b` dalındaki gerçek Streamlit Entry, Review,
+Parameters ve Results yüzeylerine aktarıldı. Exact implementation commit'i
+`3a554e0e76522672efaf547b1d03e12cb4f3531b`; draft PR #8'dir. Yerel kapı
+1.669 pass, bir canonical-Linux-only skip, 11.507 statement, 3.002 branch ve
+yüzde 100 measured coverage ile geçti. Exact-head push CI `29541220413` ve PR
+CI `29541222417` içindeki iki verify ve iki container işi de yeşildir. Push CI
+1.670 test, gerçek R/`stylo` browser akışı, dört görünür sonuç hücresi, iki
+nonblank grafik, 320/375/390/1280/1440 responsive kapıları, yerel Inter wheel
+kaynakları, supply-chain ve hardened-container kapılarını geçti. Kayıt:
+`RUN-20260717-0001` ve
+`provenance/evidence/P014/phase-b-visual-integration-validation.md`.
+Bilimsel-yöntem, erişilebilirlik ve release için üç ayrı local/agent review GO
+verdi; bunlar GitHub review'u, katılımcı testi veya owner activation kabulü
+değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
+usability ve public deployment hâlâ açık sınırdır.
 
-**Aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
+**Güncel operasyon kararı:** PR #8 taslak ve review-ready kalır. Claude Code
+limit yenilendiğinde A5.1 kaynak paketi, bu dosya, Phase B belgesi ve PR #8
+üzerinden doğrudan devam edebilir. Oğuz ayrıca karar vermeden merge, yeni image
+publication, VPS, Caddy, DNS veya public activation yapılmaz.
+
+**Tarihsel ve genel aşama özeti:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
 P009'un export-backed sonuç/yorum sınırı yüzeyi gerçek R/stylo worker,
 desktop/mobile/reflow browser, remote clean-clone ve canonical Linux CI
@@ -67,7 +71,9 @@ kapılarını geçti; yalnız kapasite tablosunu dört satırı görünmeden oku
 iki preparation oracle'ını false kaydetti. Working tree dört satırı bekler, iki
 kararlı snapshot şartı koyar ve satırları kanıta ekler. Yedi helper, 159 ilgili
 test ve full verify'da 1.658 pass, bir canonical Linux skip ve yüzde 100 measured
-coverage geçti. Replacement exact-head CI çifti beklenir.
+coverage geçti. Bu tarihsel bekleme PR #7'nin normal merge commit'i
+`26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` ile tamamlandı; canlı host
+değiştirilmedi.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -96,14 +102,11 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Draft PR #7'deki capacity-table settle düzeltmesi commit edilip push edilir ve hem
-push hem PR exact-head CI yeşil doğrulanır. Ardından aday Oğuz'un seçtiği Claude
-Code son bağımsız denetimine verilir; varsa bulgular aynı dalda kapatılır. Sonra
-normal merge ve green main CI sonrası exact main commit için immutable image
-yeniden yayımlanır. Yalnız bu
-kapılardan sonra exact pre-Docker inventory, Docker sonrası Lemmata comparison
-ve yalnız `127.0.0.1:8502` Delta install uygulanır. Oğuz ayrı bir karar vermeden
-DNS, Caddy veya public route açılmaz.
+Draft PR #8'i bu handoff ve Phase B kanıtı üzerinden Oğuz ile, limit yenilendiğinde
+de Claude Code ile incelemek. Bulgu varsa aynı dalda kapatıp exact-head CI'yı
+yeniden yeşile getirmek. Bulgu yoksa yalnız Oğuz'un açık kararıyla normal merge
+düşünülür. Deployment ayrı bir sonraki karar alanıdır; bu dalda VPS, Caddy, DNS,
+image publication veya public route işi yapılmaz.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
@@ -610,12 +613,16 @@ clone ve commit'ler Codex'in son denetimine bırakılacak.
 
 ## Doğrulanmamış Sınırlar
 
-- P003 application intake uygulanmıştır; production retention ve proxy/host buffering P005/P014'te açıktır.
-- Asset metadata, corpus inventory ve rights kararları P004'tür.
-- Gerçek `stylo` execution/parity P006'dır.
-- Upload-to-export no-code E2E henüz kurulmadı.
+- P003 application intake uygulanmıştır; lifecycle ve retention P005'te bağlıdır.
+  Canlı proxy/host buffering gözlemi ve son P014 host kabulü açıktır.
+- Asset metadata, corpus inventory, rights kararları ve correction akışı P004'te
+  uygulanmıştır; farklı gerçek corpuslarda genel yeterlilik iddia edilmez.
+- Gerçek R/`stylo` execution P006'da ve sentetik upload-to-export browser E2E
+  P008/P009'da kanonik Linux üzerinde geçmiştir; benchmark accuracy, calibration
+  ve edebî bulgu doğrulanmamıştır.
 - Screen-reader ve tam WCAG conformance değerlendirmesi yapılmadı.
-- Proxy/TLS/Host/CORS/CSRF/header ve shared-VPS isolation P014'tür.
+- Proxy/TLS/Host/CORS/CSRF/header paketi P014 CI'da test edilmiştir; canlı
+  shared-VPS readiness, coexistence, rollback ve tam isolation iddiası yoktur.
 - General usability veya ease claim'i yoktur.
 - `lemmata.app` üzerinde `Launch Stylometry` bağlantısı eklenmedi; ayrı sonraki ticket'tır.
 
@@ -672,8 +679,10 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Kanonik yerel çalışma kopyası `~/Developer/delta.lemmata_app` yolundadır.
 - `origin`, özel `https://github.com/oguzkoran-max/delta.lemmata.app`
   repository'sidir; bu henüz public release değildir.
-- Varsayılan uzak dal `main`; P001-P006 main'e alınmıştır. Aktif geliştirme
-  dalı `codex/p007-preprocessing` dalıdır.
+- Varsayılan uzak dal `main`; P001-P009 minimum akışları ve PR #7'ye kadar P014
+  altyapısı main'e alınmıştır. Aktif geliştirme dalı
+  `codex/p014-visual-phase-b`; draft PR #8'in exact implementation commit'i
+  `3a554e0e76522672efaf547b1d03e12cb4f3531b`'dir.
 - Google Drive artık Delta repository'si veya geliştirme ortamı için kaynak
   değildir. `.venv`, `.tools` ve cache dosyaları yeniden üretilir, eşitlenmez.
 - Parent akademik-asistan repository'si Delta dosyalarını izlemez; yalnız proje
@@ -681,7 +690,7 @@ native transcript gibi sunulmaz ve `FAIR-certified` dili kullanılmaz.
 - Repository taşıması P003 acceptance kanıtı değildir; P003'ün ayrı insan kabulü
   `HD-20260711-0008` ve `RUN-20260711-0004` ile tamamlanmıştır.
 
-## Aktif P004 Tasarım Checkpoint (2026-07-12)
+## Tarihsel P004 Tasarım Checkpoint (2026-07-12)
 
 - Exact sibling palette ve Language Weave implementation localde tamamlandı.
 - Passing browser evidence:
