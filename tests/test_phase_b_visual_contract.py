@@ -36,9 +36,11 @@ def test_phase_b_theme_uses_the_approved_a51_tokens_and_dimensions() -> None:
         ".delta-footer {",
         '.st-key-p009_mds_square [data-testid="stVegaLiteChart"] {',
         "height: auto !important;",
-        "aspect-ratio: 60 / 61;",
+        "aspect-ratio: 60 / 61.25;",
+        "aspect-ratio: 60 / 61.6;",
         ".delta-mds-legend {",
         ".delta-mds-unknown {",
+        '[data-testid="stVegaLiteChart"] details > summary',
         'button[data-testid="stBaseButton-elementToolbar"]',
     }
     assert required <= set(APP_CSS.splitlines()) | {item for item in required if item in APP_CSS}
