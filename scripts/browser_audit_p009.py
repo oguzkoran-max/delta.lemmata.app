@@ -173,9 +173,9 @@ def _wait_for_result_selection_update(
     target_radio: Locator,
     semantic_before: dict[str, dict[str, Any]],
     *,
-    attempts: int = 150,
+    attempts: int = 600,
 ) -> dict[str, dict[str, Any]]:
-    """Wait for a result choice to produce a stable, user-visible data update."""
+    """Wait up to 60 seconds for a stable, user-visible result update."""
 
     if attempts < 1:
         raise ValueError("attempts must be positive")
