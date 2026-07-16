@@ -203,6 +203,14 @@ def _geometry(page: Page) -> dict[str, Any]:
             + '[data-testid="stMainBlockContainer"] input:not([type="file"]), '
             + '[data-testid="stMainBlockContainer"] [role="radiogroup"]'
           )].filter(visible);
+          const controlOverflows = element => {
+            const box = element.getBoundingClientRect();
+            if (box.left < -1 || box.right > root.clientWidth + 1) return true;
+            // Text inputs scroll their value internally by design. Treat that as
+            // overflow only when the input box itself leaves the viewport.
+            return element.tagName !== 'INPUT'
+              && element.scrollWidth > element.clientWidth + 1;
+          };
           const tableScrollRegions = [...document.querySelectorAll(
             '[data-testid="stMainBlockContainer"] .delta-table-scroll'
           )].filter(visible);
@@ -232,9 +240,7 @@ def _geometry(page: Page) -> dict[str, Any]:
             clientWidth: root.clientWidth,
             mainScrollWidth: main?.scrollWidth || 0,
             mainClientWidth: main?.clientWidth || 0,
-            overflowingControls: controls.filter(
-              element => element.scrollWidth > element.clientWidth + 1
-            ).map(element => ({
+            overflowingControls: controls.filter(controlOverflows).map(element => ({
               tag: element.tagName,
               text: (element.textContent || element.getAttribute('aria-label') || '')
                 .trim().slice(0, 80),

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 from typing import Any, cast
 
@@ -16,10 +17,20 @@ SPEC = importlib.util.spec_from_file_location(
 assert SPEC is not None and SPEC.loader is not None
 BROWSER_AUDIT = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(BROWSER_AUDIT)
+sys.modules.setdefault("browser_audit_p008", BROWSER_AUDIT)
+P009_SPEC = importlib.util.spec_from_file_location(
+    "browser_audit_p009",
+    ROOT / "scripts" / "browser_audit_p009.py",
+)
+assert P009_SPEC is not None and P009_SPEC.loader is not None
+P009_BROWSER_AUDIT = importlib.util.module_from_spec(P009_SPEC)
+P009_SPEC.loader.exec_module(P009_BROWSER_AUDIT)
 _download_json = BROWSER_AUDIT._download_json
 _choose_selectbox = BROWSER_AUDIT._choose_selectbox
 _wait_for_capacity_records = BROWSER_AUDIT._wait_for_capacity_records
 _wait_for_streamlit_idle = BROWSER_AUDIT._wait_for_streamlit_idle
+_geometry = BROWSER_AUDIT._geometry
+_wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
 
 
 class _Download:
@@ -173,6 +184,26 @@ class _CapacityExpectation:
         self._calls.append(("to_have_count", (count, timeout)))
 
 
+class _CheckedRadio:
+    def __init__(self, states: list[bool]) -> None:
+        self._states = states
+        self._index = 0
+
+    def is_checked(self) -> bool:
+        state = self._states[min(self._index, len(self._states) - 1)]
+        self._index += 1
+        return state
+
+
+class _GeometryPage:
+    def __init__(self) -> None:
+        self.expression = ""
+
+    def evaluate(self, expression: str) -> dict[str, object]:
+        self.expression = expression
+        return {}
+
+
 def test_streamlit_idle_wait_requires_two_connected_not_running_observations() -> None:
     page = _Page(_Download(path=None, failure=None))
 
@@ -191,6 +222,16 @@ def test_streamlit_idle_wait_requires_two_connected_not_running_observations() -
     assert first_timeout == 15_000
     assert page.calls[1][1] == 250
     assert page.calls[2][1] == page.calls[0][1]
+
+
+def test_geometry_distinguishes_internal_input_text_scroll_from_box_overflow() -> None:
+    page = _GeometryPage()
+
+    _geometry(cast(Page, page))
+
+    assert "box.left < -1 || box.right > root.clientWidth + 1" in page.expression
+    assert "element.tagName !== 'INPUT'" in page.expression
+    assert "controls.filter(controlOverflows)" in page.expression
 
 
 def test_download_json_waits_for_idle_and_rejects_canceled_download() -> None:
@@ -284,3 +325,66 @@ def test_capacity_records_reject_changed_or_incomplete_rows(
 
     with pytest.raises(RuntimeError, match="MFW capacity table did not settle"):
         _wait_for_capacity_records(cast(Page, page), cast(Locator, table))
+
+
+def test_result_selection_waits_for_changed_stable_semantic_tables(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    before = {
+        "Classic Delta distance matrix": {"sha256": "old-matrix", "row_count": 3},
+        "MDS coordinate table": {"sha256": "old-mds", "row_count": 3},
+    }
+    observations = iter(
+        (
+            {"sha256": "old-matrix", "row_count": 3},
+            {"sha256": "old-mds", "row_count": 3},
+            {"sha256": "new-matrix", "row_count": 3},
+            {"sha256": "new-mds", "row_count": 3},
+            {"sha256": "new-matrix", "row_count": 3},
+            {"sha256": "new-mds", "row_count": 3},
+        )
+    )
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_semantic_table_evidence",
+        lambda _page, _label: next(observations),
+    )
+    page = _Page(_Download(path=None, failure=None))
+    radio = _CheckedRadio([False, True, True])
+
+    observed = _wait_for_result_selection_update(
+        cast(Page, page),
+        cast(Locator, radio),
+        before,
+        attempts=3,
+    )
+
+    assert observed == {
+        "Classic Delta distance matrix": {"sha256": "new-matrix", "row_count": 3},
+        "MDS coordinate table": {"sha256": "new-mds", "row_count": 3},
+    }
+    assert ("wait_for_timeout", 250) in page.calls
+
+
+def test_result_selection_rejects_unchanged_semantic_tables(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    before = {
+        "Classic Delta distance matrix": {"sha256": "old-matrix", "row_count": 3},
+        "MDS coordinate table": {"sha256": "old-mds", "row_count": 3},
+    }
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_semantic_table_evidence",
+        lambda _page, label: before[label],
+    )
+    page = _Page(_Download(path=None, failure=None))
+    radio = _CheckedRadio([True])
+
+    with pytest.raises(RuntimeError, match="stable semantic-table update"):
+        _wait_for_result_selection_update(
+            cast(Page, page),
+            cast(Locator, radio),
+            before,
+            attempts=2,
+        )

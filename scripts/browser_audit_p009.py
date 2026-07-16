@@ -31,7 +31,6 @@ from browser_audit_p008 import (
     _observe_console,
     _synthetic_corpus,
     _wait_for_health,
-    _wait_for_streamlit_idle,
     _wait_until_enabled,
     _word,
 )
@@ -167,6 +166,38 @@ def _semantic_table_evidence(page: Page, label: str) -> dict[str, Any]:
         "sha256": hashlib.sha256(payload).hexdigest(),
         "row_count": table.locator("tbody tr").count(),
     }
+
+
+def _wait_for_result_selection_update(
+    page: Page,
+    target_radio: Locator,
+    semantic_before: dict[str, dict[str, Any]],
+    *,
+    attempts: int = 150,
+) -> dict[str, dict[str, Any]]:
+    """Wait for a result choice to produce a stable, user-visible data update."""
+
+    if attempts < 1:
+        raise ValueError("attempts must be positive")
+    labels = tuple(semantic_before)
+    latest = semantic_before
+    for _ in range(attempts):
+        if target_radio.is_checked():
+            latest = {label: _semantic_table_evidence(page, label) for label in labels}
+            changed = all(
+                semantic_before[label]["sha256"] != latest[label]["sha256"] for label in labels
+            )
+            if changed:
+                page.wait_for_timeout(250)
+                confirmed = {label: _semantic_table_evidence(page, label) for label in labels}
+                if confirmed == latest:
+                    return confirmed
+        page.wait_for_timeout(100)
+    raise RuntimeError(
+        "Result selection did not produce a stable semantic-table update: "
+        f"checked={target_radio.is_checked()!r}; before={semantic_before!r}; "
+        f"latest={latest!r}"
+    )
 
 
 def _skip_link_evidence(page: Page) -> dict[str, bool]:
@@ -491,10 +522,13 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
     )
     if target_option.count() != 1:
         raise RuntimeError("Expected exactly one visible 1000 MFW result card")
+    target_radio = selector.get_by_role("radio", name="1000 MFW", exact=True)
     target_option.click()
-    _wait_for_streamlit_idle(page)
-    if not selector.get_by_role("radio", name="1000 MFW", exact=True).is_checked():
-        raise RuntimeError("The visible 1000 MFW result card did not become selected")
+    semantic_after = _wait_for_result_selection_update(
+        page,
+        target_radio,
+        semantic_before,
+    )
     page.get_by_role("heading", name="Distance heatmap", level=3, exact=True).wait_for()
     changed_chart_evidence = tuple(
         _pixel_evidence(
@@ -503,7 +537,6 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         )
         for index in range(2)
     )
-    semantic_after = {label: _semantic_table_evidence(page, label) for label in semantic_labels}
     semantic_change = all(
         semantic_before[label]["sha256"] != semantic_after[label]["sha256"]
         for label in semantic_labels
@@ -520,7 +553,8 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
     body = page.locator("body").inner_text()
     return {
         "run_enabled_after_confirmation_pass": enabled,
-        "analysis_complete_pass": page.get_by_text("Analysis complete", exact=False).count() >= 1,
+        "analysis_complete_pass": result_heading.is_visible()
+        and _visible_count(complete_result_cells) == 4,
         "all_four_cells_visible_pass": _visible_count(result_cells) == 4,
         "all_four_cells_complete_pass": _visible_count(complete_result_cells) == 4,
         "default_reference_500_pass": default_reference,
