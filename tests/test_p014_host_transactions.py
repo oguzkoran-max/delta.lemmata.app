@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import stat
 import subprocess
 from pathlib import Path
@@ -16,6 +17,13 @@ EXPECTED_FINGERPRINT = "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
 def _write_executable(path: Path, payload: str) -> None:
     path.write_text(payload, encoding="utf-8")
     path.chmod(path.stat().st_mode | stat.S_IXUSR)
+
+
+def _link_command(directory: Path, name: str) -> None:
+    target = shutil.which(name)
+    if target is None:
+        raise RuntimeError(f"required test command is unavailable: {name}")
+    (directory / name).symlink_to(target)
 
 
 def _run_sourced(
@@ -158,14 +166,18 @@ def test_failed_docker_container_inspection_cannot_look_empty(tmp_path: Path) ->
 
 
 def test_partial_install_without_docker_cli_can_continue_owned_cleanup(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
     evidence = tmp_path / "evidence"
+    fake_bin.mkdir()
     evidence.mkdir()
+    _link_command(fake_bin, "bash")
+    _link_command(fake_bin, "dirname")
 
     completed = _run_sourced(
         ROLLBACK,
         'inspect_owned_runtime_before_cleanup "$1"',
         evidence,
-        env={"PATH": "/usr/bin:/bin"},
+        env={"PATH": str(fake_bin)},
     )
 
     assert completed.returncode == 0, completed.stderr

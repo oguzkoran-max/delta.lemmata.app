@@ -156,6 +156,20 @@ new full `scripts/verify.sh` run on 2026-07-16:
   supply-chain, secret, and R-lock checks passed;
 - final results: `verify-ok` and `records-ok count=109`.
 
+The first GitHub push run `29483237852` and pull-request run `29483279276` for
+commit `8faef460d34b461100edad11310dc7ed542efd8b` then exposed one Linux-only
+test-isolation defect. Both verify jobs reached 100% measured
+coverage but failed
+`test_partial_install_without_docker_cli_can_continue_owned_cleanup`: the test
+used `PATH=/usr/bin:/bin` to represent an absent Docker CLI, while GitHub's Ubuntu
+runner legitimately provides Docker in `/usr/bin` and retained CI images. The
+production rollback guard was not weakened. The correction gives that test a
+hermetic command directory containing only the required `bash` and `dirname`
+commands, so the absent-CLI branch is independent of the host runner. The failed
+runs remain evidence. After the correction, all 109 focused P014 tests and the
+full local gate passed again with 1,651 tests, one documented macOS skip, and
+100% measured coverage. Replacement Linux CI must pass before review or merge.
+
 These are working-tree checks. They do not replace an independent focused
 re-review, normal pull-request CI, green main CI, or an immutable image rebuilt
 from the resulting main commit.
