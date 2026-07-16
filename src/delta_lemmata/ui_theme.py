@@ -1129,7 +1129,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   width: 100% !important;
   max-width: 100%;
   height: auto !important;
-  aspect-ratio: 60 / 61.25;
+  aspect-ratio: 60 / 61;
 }
 
 .st-key-p009_mds_square [data-testid="stVegaLiteChart"] > div,
@@ -1141,7 +1141,13 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 @media (min-width: 761px) and (max-width: 1320px) {
   .st-key-p009_mds_square [data-testid="stVegaLiteChart"] {
-    aspect-ratio: 60 / 61.6;
+    aspect-ratio: 60 / 61.3;
+  }
+}
+
+@media (max-width: 340px) {
+  .st-key-p009_mds_square [data-testid="stVegaLiteChart"] {
+    aspect-ratio: 60 / 61.18;
   }
 }
 
