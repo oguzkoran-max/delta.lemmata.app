@@ -59,7 +59,12 @@ They are advisory checks, not owner acceptance. Together they identified:
     only, so the gate did not prove sustained analysis coexistence;
 16. parent review found that an interrupted APT transaction could install
     `containerd.io` before the Docker CLI existed, while rollback incorrectly
-    required that CLI before cleaning transaction-owned runtime state.
+    required that CLI before cleaning transaction-owned runtime state;
+17. exact-head PR CI later exposed an intermittent browser-harness race: after
+    the result display selector triggered a Streamlit rerun, the second canonical
+    result download could be clicked before the rerun was stably idle and ended
+    as `Download.path: canceled`. The same source's push run passed, and source,
+    unit, and hardened-container gates remained green.
 
 A later 30,000-token implementation worker exhausted its budget after review and
 made no edit. That failed delegation did not contribute code or approval.
@@ -110,6 +115,10 @@ agent resumed that bounded file scope directly.
   inspection, atomic Caddy staging, a first-release cleanup trap armed before
   unit staging, separate pre-Caddy owner authorization, and the duration-based
   coexistence gate.
+- `scripts/browser_audit_p008.py` now requires Streamlit's app root to report
+  `CONNECTED` and `notRunning` twice across a 250 ms settle window before JSON
+  downloads and after selectbox reruns. A canceled download remains a hard error;
+  the harness does not retry and conceal a persistent user-visible failure.
 
 ## Targeted Verification
 
@@ -175,6 +184,19 @@ full local gate passed again with 1,651 tests, one documented macOS skip, and
 `87574078145` were all green. This clears the replacement PR CI gate for the
 correction commit; Claude Code final review, normal merge/main CI, and a new
 exact-main immutable image remain pending.
+
+Evidence-only commit `5c1b0839af4684296b582ebedad2732605ea651e` then produced
+green push run `29484671596`. Its parallel pull-request run `29484673782` passed
+the source/test step and hardened-container job `87576200609`, but verify job
+`87576200574` stopped in the P009 browser gate when the second canonical result
+download returned `Download.path: canceled`. The failed run remains retained.
+The correction waits for two connected/idle Streamlit observations instead of
+adding a blind sleep or download retry. Three focused helper tests passed; the
+combined related suite passed 119 tests. A fresh full local `scripts/verify.sh`
+run then passed with 1,654 tests, one documented canonical-Linux skip on macOS,
+11,382 statements, 2,964 branches, 100% measured coverage, `records-ok count=109`,
+and `verify-ok`. Replacement exact-head CI remains required before independent
+Claude Code review.
 
 These are working-tree checks. They do not replace an independent focused
 re-review, normal pull-request CI, green main CI, or an immutable image rebuilt

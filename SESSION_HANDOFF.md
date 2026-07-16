@@ -26,12 +26,18 @@ validation, rollback-stop, first-release cleanup, image revision, exact candidat
 origin ve closed real-analysis load açıkları nedeniyle yeniden `NO-GO` verdi.
 Birleşik remediation schema `1.3.0` pre-mutation/origin/key, erken cleanup,
 partial-install rollback, image revision ve sustained real R/`stylo` load
-kapılarını tamamladı. Güncel paket 109 focused testten ve full verify'da 1.651
-pass, bir canonical Linux skip ve yüzde 100 measured coverage kapısından geçti.
+kapılarını tamamladı. Güncel host paketi 109 focused testten geçti. Son browser
+harness düzeltmesiyle ilgili paket 119 testten ve full verify'da 1.654 pass, bir
+canonical Linux skip ve yüzde 100 measured coverage kapısından geçti.
 Karar üretmeden bütçesini tüketen ajan turları approval sayılmadı. Canlı VPS
 değiştirilmedi. Draft PR #7'de ilk iki Linux run'ı hermetik olmayan absent-Docker
 testini buldu; düzeltme commit'i `11a440b` için push CI `29484009945` ve PR CI
-`29484013488` verify/container işlerinde yeşildir.
+`29484013488` verify/container işlerinde yeşildir. Kanıt commit'i `5c1b083` için
+push CI `29484671596` yeşil, PR CI `29484673782` ise ikinci result export
+indirmesi Streamlit rerun'ıyla çakışıp `Download.path: canceled` verdiği için
+yalnız browser adımında kırmızıdır. Kaynak/test ve container kapıları geçti.
+Working tree indirme öncesinde bağlı ve kararlı-idle Streamlit durumunu iki kez
+doğrular; gerçek download failure için retry yapmaz. Yerel full gate yeşildir.
 
 **Kod durumu:** P004 guided corpus akışına ek olarak P005'te versioned lifecycle,
 256-bit session/job identity, payload-free atomic SQLite queue, private workspace,
@@ -60,8 +66,9 @@ run package ve Pinokyo çalışması hâlâ yok.
 AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Draft PR #7'nin yeşil `11a440b` adayı Oğuz'un seçtiği Claude Code son bağımsız
-denetimine verilir; varsa bulgular aynı dalda kapatılır. Ardından normal merge ve
+Draft PR #7'deki browser-harness düzeltmesi commit edilip push edilir ve exact-head
+PR CI yeşil doğrulanır. Ardından aday Oğuz'un seçtiği Claude Code son bağımsız
+denetimine verilir; varsa bulgular aynı dalda kapatılır. Sonra normal merge ve
 green main CI sonrası exact main commit için immutable image yeniden yayımlanır. Yalnız bu
 kapılardan sonra exact pre-Docker inventory, Docker sonrası Lemmata comparison
 ve yalnız `127.0.0.1:8502` Delta install uygulanır. Oğuz ayrı bir karar vermeden

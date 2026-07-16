@@ -36,8 +36,9 @@ preflight, kesin olmayan Docker/release komutları, ilk-release rollback ve ayr�
 pre-Caddy owner gate açıklarını buldu. `codex/p014-live-host-acceptance` dalında
 deterministic content-free host gate, official-Docker installer, Docker-only
 rollback, duration-based coexistence gate ve sıralı runbook uygulanıyor. Hedefli
-109 test, Ruff, Docker shell syntax ve diff-check kapılarından geçti. Yeni full
-local verify 1.651 pass, bir canonical Linux skip ve yüzde 100 measured coverage
+109 test, Ruff, Docker shell syntax ve diff-check kapılarından geçti. Sonraki
+browser-harness düzeltmesiyle ilgili paket 119 testten geçti. Yeni full local
+verify 1.654 pass, bir canonical Linux skip ve yüzde 100 measured coverage
 ile yeşildir. Son adversarial bulgular; schema `1.3.0` pre-mutation/origin/key,
 erken first-release cleanup, partial Docker install rollback, immutable image
 revision ve gerçek R/`stylo` handoff'unu bütün ölçüm süresi boyunca yineleyen
@@ -46,8 +47,13 @@ denemeleri approval sayılmadı. Oğuz'un seçtiği son Claude Code denetimi, no
 PR/main CI ve yeni exact-main image publication geçmeden VPS değiştirilmez. Draft
 PR #7 düzeltme commit'i `11a440b` için push CI `29484009945` ve PR CI
 `29484013488` verify/container işlerinde yeşildir; önceki iki Linux failure
-değiştirilmeden kanıtta tutulur. Caddy/DNS veya public activation yetkisi
-verilmedi.
+değiştirilmeden kanıtta tutulur. Sonraki kanıt commit'i `5c1b083` için push CI
+`29484671596` tamamen geçti; eş PR CI `29484673782` yalnız ikinci browser export
+indirmesinde `Download.path: canceled` ile düştü. Kaynak/test ve container
+kapıları geçti. Working tree, Streamlit'in bağlı ve iki kez kararlı-idle olduğunu
+doğrulamadan indirmeye basmayan, tekrar deneyip gerçek hatayı gizlemeyen düzeltmeyi
+içerir; local full verify yeşildir, replacement PR CI beklenir. Caddy/DNS veya
+public activation yetkisi verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 

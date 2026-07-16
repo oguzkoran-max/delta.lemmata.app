@@ -11,10 +11,14 @@ lifecycle, P006 fixed R/`stylo` worker, P007 deterministic preprocessing/corpus
 health ve P008-P009 minimum Guided run/result akışı vardır. P014 canonical
 container paketi CI'da kanıtlandı. Canlı host için closed-schema ölçüm, guarded
 official-Docker install/rollback ve duration-based coexistence gate dalda
-hazırlandı; 109 focused test ve 1.651-test full verify geçti. Son Claude Code
+hazırlandı; host paketi 109 focused testten geçti. Browser-harness düzeltmesiyle
+ilgili paket 119 test ve 1.654-test full verify kapısından geçti. Son Claude Code
 denetimi, normal merge/main CI ve exact-main image publication tamamlanmadan VPS
 değiştirilmez. Draft PR #7'nin `11a440b` düzeltme commit'i için push ve PR
-verify/container kapıları yeşildir
+verify/container kapıları yeşildir. Sonraki `5c1b083` push CI yeşilken PR CI'nin
+yalnız ikinci export download adımı geçici `canceled` verdi; working tree
+Streamlit kararlılık kontrolüyle bu timing açığını kapatır ve replacement CI
+beklenir
 
 **P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
 `devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
@@ -60,6 +64,15 @@ olabilir. Alpha, bilimsel release veya FAIR certification değildir.
   için push run `29484009945` ve PR run `29484013488` hem verify hem hardened
   container işlerinde geçti. Bu, Claude Code son denetimi veya main CI yerine
   geçmez.
+- Kanıt commit'i `5c1b0839af4684296b582ebedad2732605ea651e` için push run
+  `29484671596` tamamen geçti. Eş PR run `29484673782` kaynak/test ve container
+  kapılarını geçti, fakat ikinci canonical result indirmesi sırasında Playwright
+  `Download.path: canceled` verdi. Bu aynı source'un push run'ında geçmesiyle
+  birlikte aralıklı UI-rerun timing açığı olarak sınıflandırıldı. Browser harness
+  artık tıklamadan önce Streamlit'in `CONNECTED` ve `notRunning` durumunu 250 ms
+  arayla iki kez kanıtlar; indirme hatasını retry ile gizlemez. Üç helper testi,
+  119 ilgili test ve full local verify 1.654 pass, bir documented skip ve yüzde
+  100 measured coverage ile geçti. Replacement PR CI beklenir.
 - Ayrıntılı kayıt:
   `provenance/evidence/P014/pre-execution-host-change-review.md`.
 

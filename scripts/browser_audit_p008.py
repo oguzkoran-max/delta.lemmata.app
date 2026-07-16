@@ -29,6 +29,7 @@ VIEWPORTS = (
 )
 GUIDED_MFW = (100, 300, 500, 1000)
 FEATURE_COUNT = 1_100
+_STREAMLIT_SETTLE_MS = 250
 
 
 def _free_port() -> int:
@@ -108,6 +109,17 @@ def _wait_until_enabled(page: Page, locator: Locator, *, timeout: float = 15.0) 
     return locator.is_enabled()
 
 
+def _wait_for_streamlit_idle(page: Page, *, timeout_ms: float = 15_000) -> None:
+    condition = """() => {
+      const app = document.querySelector('[data-testid="stApp"]');
+      return app?.getAttribute('data-test-script-state') === 'notRunning'
+        && app?.getAttribute('data-test-connection-state') === 'CONNECTED';
+    }"""
+    page.wait_for_function(condition, timeout=timeout_ms)
+    page.wait_for_timeout(_STREAMLIT_SETTLE_MS)
+    page.wait_for_function(condition, timeout=timeout_ms)
+
+
 def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
     option_locator = page.get_by_role("option", name=option, exact=True)
     last_error = "no option interaction attempted"
@@ -137,6 +149,7 @@ def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
                     }"""
                 )
                 if option in str(rendered):
+                    _wait_for_streamlit_idle(page)
                     return
                 page.wait_for_timeout(100)
             last_error = "selected option was not retained after the Streamlit rerun"
@@ -198,9 +211,13 @@ def _geometry(page: Page) -> dict[str, Any]:
 
 
 def _download_json(page: Page, button_name: str) -> tuple[str, dict[str, Any]]:
+    _wait_for_streamlit_idle(page)
     with page.expect_download() as download_info:
         page.get_by_role("button", name=button_name, exact=False).click()
     download = download_info.value
+    failure = download.failure()
+    if failure is not None:
+        raise RuntimeError(f"Browser download failed: {failure}")
     path = download.path()
     if path is None:
         raise RuntimeError("Browser download has no local path")
