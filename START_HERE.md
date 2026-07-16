@@ -28,10 +28,23 @@ private GHCR'da immutable manifest
 olarak bağladı. Kanıt PR #5 ile normal merge commit `cc44132` üzerinden `main`e
 alındı ve main CI `29429031944` yeşil geçti. `RUN-20260715-0007` ikinci read-only
 gözlemde cgroup v2 controller'larını, boş firewall baseline'ını, sıfır Lemmata
-restart'ını ve sıfır memory pressure'ı doğruladı. ADR-0018 mevcut VPS + official
-Docker + yeni swap oluşturmama yolunu ve fail-closed memory/network/latency
-kapılarını önerir; Oğuz henüz bu live-host adayını kabul veya reddetmedi. VPS
-kurulumu, Caddy/DNS değişikliği veya public activation yapılmadı.
+restart'ını ve sıfır memory pressure'ı doğruladı. Oğuz
+`HD-20260715-0002` ile ADR-0018'in mevcut VPS + official Docker + yeni swap
+oluşturmama yolunu yalnız ordered host preparation ve measurement için kabul
+etti. İlk adversarial pre-execution review çelişkili faz sırası, runtime-absent
+preflight, kesin olmayan Docker/release komutları, ilk-release rollback ve ayrı
+pre-Caddy owner gate açıklarını buldu. `codex/p014-live-host-acceptance` dalında
+deterministic content-free host gate, official-Docker installer, Docker-only
+rollback, duration-based coexistence gate ve sıralı runbook uygulanıyor. Hedefli
+109 test, Ruff, Docker shell syntax ve diff-check kapılarından geçti. Yeni full
+local verify 1.651 pass, bir canonical Linux skip ve yüzde 100 measured coverage
+ile yeşildir. Son adversarial bulgular; schema `1.3.0` pre-mutation/origin/key,
+erken first-release cleanup, partial Docker install rollback, immutable image
+revision ve gerçek R/`stylo` handoff'unu bütün ölçüm süresi boyunca yineleyen
+closed load gate ile kapatıldı. Bütçe sınırına takılıp karar üretmeyen ajan
+denemeleri approval sayılmadı. Oğuz'un seçtiği son Claude Code denetimi, normal
+PR/main CI ve yeni exact-main image publication geçmeden VPS değiştirilmez.
+Caddy/DNS veya public activation yetkisi verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 

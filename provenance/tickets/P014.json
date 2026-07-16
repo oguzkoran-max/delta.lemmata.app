@@ -27,8 +27,8 @@
   "dependencies": ["P005", "P008", "P009"],
   "claim_ids": ["CE-14", "CE-15", "CE-18"],
   "threat_ids": ["SEC-07", "SEC-12", "SEC-13", "SEC-14", "SEC-15", "SEC-16"],
-  "decision_ids": ["HD-20260714-0002"],
-  "prompt_event_ids": ["PE-20260715-0004"],
+  "decision_ids": ["HD-20260714-0002", "HD-20260715-0002"],
+  "prompt_event_ids": ["PE-20260715-0004", "PE-20260715-0005"],
   "commit_ids": [
     "147813c7c492fe82eb4a6a78e55e80a0ea10f058",
     "444a4f7add43ff5f2ea093fcfad96d2d1a22bf8f",
@@ -65,6 +65,7 @@
     "provenance/evidence/P014/immutable-image-publication.md",
     "provenance/evidence/P014/target-host-read-only-preflight.md",
     "provenance/evidence/P014/target-host-runtime-capacity-observation.md",
+    "provenance/evidence/P014/pre-execution-host-change-review.md",
     "provenance/runs/RUN-20260715-0004.json",
     "provenance/runs/RUN-20260715-0005.json",
     "provenance/runs/RUN-20260715-0006.json",
@@ -82,7 +83,7 @@
     {"id":"P014-AC-05","criterion":"Application file/token/queue/concurrency and worker wall/CPU/RAM/process limits remain enforced under the deployment profile, and hostile, saturated, timeout, cancellation, and cleanup cases fail closed without payload leakage.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-06","criterion":"The English interface visibly and accessibly labels every stage Public alpha and experimental without prohibited scientific, FAIR, usability, publication, or isolation claims.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-07","criterion":"Canonical Linux CI builds and starts the exact stack, validates health and hostile requests, inspects runtime hardening, verifies denied egress and cleanup, records the image digest, and leaves no corpus artifact.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/immutable-image-publication.md","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260715-0006.json"]},
-    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":["provenance/evidence/P014/target-host-read-only-preflight.md","provenance/evidence/P014/target-host-runtime-capacity-observation.md","provenance/runs/RUN-20260715-0005.json","provenance/runs/RUN-20260715-0007.json"]},
+    {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":["provenance/evidence/P014/target-host-read-only-preflight.md","provenance/evidence/P014/target-host-runtime-capacity-observation.md","provenance/evidence/P014/pre-execution-host-change-review.md","provenance/runs/RUN-20260715-0005.json","provenance/runs/RUN-20260715-0007.json"]},
     {"id":"P014-AC-09","criterion":"Under the maximum accepted Delta load, Lemmata has zero restart and zero error, remains within the frozen latency budget, and both sites pass contemporaneous smoke checks.","status":"pending","evidence":[]},
     {"id":"P014-AC-10","criterion":"Restart/reboot cleanup and rollback complete without Lemmata interruption; Oğuz then passes the integrated owner walkthrough and explicitly accepts or rejects public-alpha activation.","status":"pending","evidence":[]}
   ],
@@ -91,7 +92,7 @@
     "Fail-closed package validator, runtime inspector, hostile-request smoke gate, test-only TLS browser audit, runtime gate, secret generator, and unit tests",
     "Canonical CI hardened-stack gate and exact-commit private GHCR publication workflow",
     "Public-alpha labels and claim-boundary checks across the existing workbench stages",
-    "P014 canonical CI, immutable registry publication, target-host preflight and capacity evidence, proposed runtime decision, Run records, ticket links, start card, handoff, roadmap, and checkpoint"
+    "P014 canonical CI, immutable registry publication, target-host preflight and capacity evidence, accepted runtime decision, pre-execution host-change review, Run records, ticket links, start card, handoff, roadmap, and checkpoint"
   ],
   "commands": [
     {"command":"./scripts/verify.sh at 7f26dbe before push","exit_code":0,"result":"1,563 tests passed with one documented macOS Linux-worker skip; all 11,382 statements and 2,964 branches were covered.","evidence":"provenance/runs/RUN-20260715-0004.json"},
@@ -103,11 +104,16 @@
     {"command":"GitHub Actions main CI run 29426588836 at 8579e4e","exit_code":0,"result":"Both verify and container jobs passed for the exact merge commit.","evidence":"provenance/runs/RUN-20260715-0006.json"},
     {"command":"GitHub Actions P014 publish immutable image run 29426974523 at 8579e4e","exit_code":0,"result":"The exact source was rebuilt and re-gated, then published privately at immutable manifest sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2 without a latest tag.","evidence":"provenance/evidence/P014/immutable-image-publication.md"},
     {"command":"Merge PR #5 with a normal merge commit and run main CI 29429031944","exit_code":0,"result":"Immutable publication evidence was preserved on main commit cc44132b524ae31e052a3af69ad4c416c88a223c; verify and hardened-container jobs both passed.","evidence":"provenance/evidence/P014/immutable-image-publication.md"},
-    {"command":"Read-only target-host cgroup, capacity, firewall, package-conflict, service, pressure, and socket observation","exit_code":0,"result":"Ubuntu 26.04 and required cgroup v2 controllers were present; Lemmata was healthy with zero restarts; UFW policy and firewall rules were inactive/empty; no current memory pressure was observed; no host state changed and owner runtime approval remains pending.","evidence":"provenance/evidence/P014/target-host-runtime-capacity-observation.md"}
+    {"command":"Read-only target-host cgroup, capacity, firewall, package-conflict, service, pressure, and socket observation","exit_code":0,"result":"Ubuntu 26.04 and required cgroup v2 controllers were present; Lemmata was healthy with zero restarts; UFW policy and firewall rules were inactive/empty; no current memory pressure was observed; no host state changed.","evidence":"provenance/evidence/P014/target-host-runtime-capacity-observation.md"},
+    {"command":"Targeted P014 host/load/deployment gate before full verification","exit_code":0,"result":"Ruff, bash syntax, 42 host/load/deployment tests, and git diff check passed after three independent NO-GO review rounds were addressed; no live-host command was executed.","evidence":"provenance/evidence/P014/pre-execution-host-change-review.md"},
+    {"command":"First ./scripts/verify.sh attempt for live-host acceptance working tree","exit_code":1,"result":"The gate stopped before tests because four Python files required project formatting; the failure was retained and corrected without bypass.","evidence":"provenance/evidence/P014/pre-execution-host-change-review.md"},
+    {"command":"Second ./scripts/verify.sh attempt after project formatting","exit_code":0,"result":"1,583 tests passed, one canonical Linux R-worker test skipped as designed on macOS, 11,382 statements and 2,964 branches reached 100% measured coverage, and all schema, deployment, provenance, repository, supply-chain, secret, and lock checks passed.","evidence":"provenance/evidence/P014/pre-execution-host-change-review.md"},
+    {"command":"Final targeted P014 remediation gate before pull request","exit_code":0,"result":"109 host, transaction, rollback, image-identity, deployment, and sustained real-worker load tests passed with Ruff, both Docker shell syntax checks, and git diff validation; no live-host command was executed.","evidence":"provenance/evidence/P014/pre-execution-host-change-review.md"},
+    {"command":"Combined ./scripts/verify.sh after findings 14-16 remediation","exit_code":0,"result":"1,651 tests passed, one canonical Linux R-worker test skipped as designed on macOS, all 11,382 statements and 2,964 branches reached 100% measured coverage, and all repository gates passed.","evidence":"provenance/evidence/P014/pre-execution-host-change-review.md"}
   ],
   "blockers": [
     "The first target-host inventory is retained but failed closed before installation because no supported container runtime exists; an accepted post-preparation inventory is still required.",
-    "ADR-0018 proposes same-VPS official Docker with no new swap and explicit memory/network/latency stop gates, but Oğuz Koran has not yet accepted or rejected that live-host candidate.",
+    "Oğuz Koran accepted ADR-0018's same-VPS official Docker and no-new-swap profile for ordered host preparation and measurement only; deterministic host commands now pass local gates, while Claude Code final review, normal PR/main CI, and a new exact-main immutable image remain required before the first modification.",
     "No live TLS, shared-VPS load, Lemmata coexistence, restart cleanup, rollback, or activation evidence exists yet.",
     "P007 integrated owner walkthrough remains a final activation gate even after technical deployment checks pass.",
     "Full P014 and CE-14/CE-15 require P012 and the normal scientific-release sequence; the accelerated minimum slice cannot close them."

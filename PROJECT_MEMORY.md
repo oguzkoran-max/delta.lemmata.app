@@ -1,19 +1,19 @@
 # Delta Project Memory
 
-**Son güncelleme:** 2026-07-14
+**Son güncelleme:** 2026-07-16
 
-**Durum:** P001-P006 tamamlandı; P007 Deterministic Preprocessing and Corpus Health
-aktif, `HD-20260714-0001` ile yöntem kabul edildi ve implementation başladı
+**Durum:** P001-P006 tamamlandı. P007 teknik minimum-alpha kapılarından geçti;
+P008-P009 minimum gerçek upload-to-R/stylo-to-result akışı kanıtlandı. P014'ün
+hosta bağlı public-alpha hazırlığı aktiftir; Caddy/DNS/public activation yapılmadı
 
-**Kod:** English-only workbench'te P004 guided corpus documentation ve P005 lifecycle
-foundation var: ayrı session/job identity, payload-free SQLite queue, private
-workspace, guardian-managed POSIX process control, durable terminal ACK,
-execution-bound recovery receipt ve conservative lifecycle projection var. P006
-fixed R worker, shell-free Python adapter, strict contracts, scientific finalizer,
-known-only fitting, checksum-frozen direct-`stylo` referansları, retained Linux
-worker evidence ve crash-safe scientific-result handoff ekledi. P007 preprocessing
-ve corpus-health kodu henüz uygulanmamıştır; public analiz, benchmark ve stability
-katmanları da henüz yoktur
+**Kod:** English-only workbench'te P004 guided corpus documentation, P005
+lifecycle, P006 fixed R/`stylo` worker, P007 deterministic preprocessing/corpus
+health ve P008-P009 minimum Guided run/result akışı vardır. P014 canonical
+container paketi CI'da kanıtlandı. Canlı host için closed-schema ölçüm, guarded
+official-Docker install/rollback ve duration-based coexistence gate dalda
+hazırlandı; 109 focused test ve 1.651-test full verify geçti. Son Claude Code
+denetimi, normal PR/main CI ve exact-main image publication tamamlanmadan VPS
+değiştirilmez
 
 **P007 kabul ve hızlandırılmış sıra:** Oğuz, tek açık kabul seçeneğinin ardından
 `devam edelim.` diyerek `HD-20260714-0001` içinde on maddelik P007 yöntem paketini
@@ -23,6 +23,38 @@ P008 gerçek run, P009 result guardrail ve P014 isolation/limit/rollback/Lemmata
 smoke kapıları geçerse 2026-07-17 Public-alpha hedefini kabul eder. Ağustos 2026
 tam makale taslağı hedefidir; yalnız o tarihe kadar tamamlanan kanıtlar claim
 olabilir. Alpha, bilimsel release veya FAIR certification değildir.
+
+## P014 Host Hazırlık Kabulü ve NO-GO Düzeltmesi (2026-07-15)
+
+- Oğuz `HD-20260715-0002` ve `PE-20260715-0005` ile ADR-0018'in aynı VPS,
+  official Docker ve no-new-swap profilini yalnız ordered host preparation ve
+  measurement için kabul etti. Caddy, DNS ve activation ayrı owner gate'tir.
+- İki bağımsız read-only denetçi, fixture kanıt kanalı, eksik listener/profile
+  kontrolleri, sahte tek-snapshot load semantiği, yarım APT/rollback işlemleri,
+  registry credential cleanup ve first-release rollback açıkları nedeniyle full
+  CI öncesinde `NO-GO` verdi. Canlı hostta değişiklik yapılmadı.
+- Closed-schema live-only host gate, rollback-armed/disarmed official-Docker
+  transaction, exact firewall/forwarding restore, temporary `DOCKER_CONFIG`,
+  immutable-release anchoring ve gerçek süreli coexistence observer uygulandı.
+- Hedefli P014 paketi Ruff, bash syntax, 42 test ve diff-check kapılarından geçti.
+  Bu tarihsel ilk turdan sonraki birleşik remediation paketi 109 focused testi
+  geçmektedir.
+- Sonraki iki focused adversarial review yine `NO-GO` verdi: optimized Python'da
+  kaybolan `assert` guard'ları, mutation öncesi current-state doğrulaması, Docker
+  stop/rollback kanıtı, first-release cleanup, source-image revision bağı,
+  candidate origin, closed load schema, exact listener/CPU sınırı ve gerçek
+  analysis workload açık kaldı. Canlı host yine değiştirilmedi.
+- Birleşik remediation host schema `1.3.0` ile live `pre-mutation` gate, yalnız
+  exact Docker source'a bağlı candidate, bütün primary signing fingerprint'leri,
+  erken first-release cleanup, CLI-less veya inactive partial-install rollback,
+  immutable image revision ve en az istenen süre boyunca tekrarlanan gerçek
+  P006 R/`stylo` handoff'unu ekledi. Full local verify 1.651 pass, bir canonical
+  Linux skip, 11.382 statement, 2.964 branch ve yüzde 100 measured coverage ile
+  geçti. Üç re-review continuation zorunlu bağlamı okurken bütçesini tüketip
+  karar üretmedi; approval sayılmadı. Sırada Oğuz'un seçtiği Claude Code son
+  denetimi, normal PR/main CI ve yeni exact-main immutable image vardır.
+- Ayrıntılı kayıt:
+  `provenance/evidence/P014/pre-execution-host-change-review.md`.
 
 **P007 açılış checkpoint'i:** P006 main merge `5fab67c` ve main CI
 `29354208853` sonrası `codex/p007-preprocessing` dalı açıldı. Pre-edit full gate

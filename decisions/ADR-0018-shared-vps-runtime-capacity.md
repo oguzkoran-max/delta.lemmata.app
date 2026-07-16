@@ -1,7 +1,7 @@
-# ADR-0018: Shared-VPS Runtime and Capacity Candidate
+# ADR-0018: Shared-VPS Runtime and Capacity Decision
 
-**Status:** Proposed; explicit Oğuz Koran approval is required before any host
-modification
+**Status:** Accepted by Oğuz Koran for the ordered host-preparation and
+measurement gates; public routing and activation remain separately gated
 
 **Date:** 2026-07-15
 
@@ -30,10 +30,9 @@ iptables, or ip6tables rules, UFW reports `inactive`, and both IPv4 and IPv6
 forwarding are disabled. Runtime installation therefore changes observable host
 network state even before Delta starts.
 
-## Candidate Decision
+## Decision
 
-Subject to explicit owner approval, use the current VPS for the bounded alpha
-with the following profile:
+Use the current VPS for the bounded alpha with the following profile:
 
 1. Install the stable official Docker Engine and Compose plugin from Docker's
    signed Ubuntu apt repository. Record exact package versions, repository/key
@@ -56,8 +55,8 @@ with the following profile:
    running and three queued jobs, application `1.50` CPU and `1536 MiB`, gateway
    `0.25` CPU and `128 MiB`, and the existing worker limits.
 
-This is an installation candidate, not an accepted capacity claim. The same VPS
-is accepted only if every gate below passes on the exact image.
+This is an accepted installation profile, not an accepted capacity claim. The
+same VPS is accepted only if every gate below passes on the exact image.
 
 ## Frozen Host Gates
 
@@ -166,11 +165,20 @@ replace measured capacity evidence.
 
 ## Approval Boundary
 
-This ADR remains `Proposed` until Oğuz Koran explicitly accepts or rejects the
-same-VPS, official-Docker, no-new-swap candidate. Approval authorizes only the
-ordered host-preparation and measurement gates. It does not authorize Caddy,
-DNS, public activation, or a claim that the two services are completely
-isolated.
+Oğuz Koran accepted the same-VPS, official-Docker, no-new-swap profile on
+2026-07-15 after Codex restated that Delta would first bind only to
+`127.0.0.1:8502`, that Lemmata would remain untouched, and that any failed
+memory, latency, health, network, or rollback gate would stop the rollout. The
+contextual acceptance is recorded as `HD-20260715-0002` and
+`PE-20260715-0005` from the instruction "devam edelim" after the explicit
+approval request and recommendation.
+
+This approval authorizes only the ordered host-preparation and measurement
+gates. It does not authorize Caddy, DNS, public activation, or a claim that the
+two services are completely isolated. The host commands, comparison gates, and
+Docker rollback now pass the local remediation gates. Claude Code final review,
+normal PR/main CI, a new exact-main image, and an immediate accepted pre-Docker
+gate remain mandatory before the first host modification.
 
 ## Sources
 
@@ -179,6 +187,8 @@ isolated.
 - `provenance/evidence/P014/immutable-image-publication.md`
 - `deploy/public-alpha/compose.yml`
 - `docs/research/claim-evidence-matrix.md`
+- `provenance/human-decision-ledger.jsonl` (`HD-20260715-0002`)
+- `provenance/prompt-events.jsonl` (`PE-20260715-0005`)
 - <https://docs.docker.com/engine/install/ubuntu/>
 - <https://docs.docker.com/engine/network/packet-filtering-firewalls/>
 - <https://docs.docker.com/reference/compose-file/services/#memswap_limit>

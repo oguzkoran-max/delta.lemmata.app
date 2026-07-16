@@ -15,6 +15,8 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 DEPLOYMENT = ROOT / "deploy" / "public-alpha"
 GATEWAY_LOCK = ROOT / "containers" / "gateway-images.lock.json"
+RUNBOOK = DEPLOYMENT / "README.md"
+IMAGE_VERIFIER = ROOT / "scripts" / "verify_p014_image.py"
 SECRET_NAMES = (
     "DELTA_JOB_OWNER_SECRET_HEX",
     "DELTA_PREPARATION_AUTHORITY_SECRET_HEX",
@@ -69,6 +71,160 @@ def _require(condition: bool, code: str) -> None:
 def _mapping(value: Any, code: str) -> Mapping[str, Any]:
     _require(isinstance(value, Mapping), code)
     return value
+
+
+def _require_ordered(text: str, tokens: Sequence[str], code: str) -> None:
+    cursor = -1
+    for token in tokens:
+        position = text.find(token, cursor + 1)
+        _require(position >= 0, code)
+        cursor = position
+
+
+def _slice_between(text: str, start: str, end: str, code: str) -> str:
+    start_index = text.find(start)
+    _require(start_index >= 0, code)
+    end_index = text.find(end, start_index + len(start))
+    _require(end_index >= 0, code)
+    return text[start_index:end_index]
+
+
+def _first_bash_block_after(text: str, heading: str, code: str) -> str:
+    heading_index = text.find(heading)
+    _require(heading_index >= 0, code)
+    block_start = text.find("```bash\n", heading_index)
+    _require(block_start >= 0, code)
+    content_start = block_start + len("```bash\n")
+    block_end = text.find("\n```", content_start)
+    _require(block_end >= 0, code)
+    return text[content_start:block_end]
+
+
+def _validate_runbook_contracts(runbook: str) -> None:
+    required = (
+        "p014-host-gate/1.3.0",
+        "python3 scripts/p014_host_gate.py pre-mutation",
+        "--baseline /root/p014-host-evidence/pre-docker.json",
+        "--preflight /root/p014-host-evidence/pre-mutation.json",
+        "P014_POST_DOCKER_EXTERNAL_8502_REACHABLE",
+        "cleanup_registry_auth()",
+        "trap cleanup_registry_auth EXIT",
+        'python3 "$RELEASE_ROOT/scripts/verify_p014_image.py"',
+        '--image-reference "$DELTA_IMAGE"',
+        '--source-sha "$SOURCE_SHA"',
+        "cleanup_failed_first_release()",
+        "trap cleanup_failed_first_release EXIT",
+        "PRE_CADDY_GATES_COMPLETE=1",
+        "### Pre-Caddy rollback",
+        "### Post-Caddy rollback",
+        "bounded, isolated synthetic stylo handoff",
+        "python3 scripts/p014_load_gate.py",
+    )
+    _require(all(token in runbook for token in required), "P014_RUNBOOK_CONTRACT_INCOMPLETE")
+    _require(
+        "trap cleanup_registry_auth EXIT INT TERM" not in runbook,
+        "P014_REGISTRY_TRAP_NOT_EXIT_ONLY",
+    )
+
+    _require_ordered(
+        runbook,
+        (
+            "python3 scripts/p014_host_gate.py pre-mutation",
+            "scripts/p014_install_docker_ubuntu.sh",
+            "P014_POST_DOCKER_EXTERNAL_8502_REACHABLE",
+            'docker pull "$DELTA_IMAGE"',
+            'python3 "$RELEASE_ROOT/scripts/verify_p014_image.py"',
+            "systemctl enable --now delta-public-alpha.service",
+            "scripts/smoke_p014_stack.sh",
+            "python3 scripts/inspect_p014_runtime.py",
+            "python3 scripts/p014_host_gate.py delta-idle",
+            "PRE_CADDY_GATES_COMPLETE=1",
+            "## Phase 5: Obtain Separate Pre-Caddy Owner Authorization",
+        ),
+        "P014_RUNBOOK_PHASE_ORDER_INVALID",
+    )
+    _require_ordered(
+        runbook,
+        (
+            "trap cleanup_failed_first_release EXIT",
+            'sed "s|^$TEMPLATE_WORKDIR$|$RELEASE_WORKDIR|"',
+            'mv -f "$UNIT_STAGE" "$UNIT_PATH"',
+            "systemctl enable --now delta-public-alpha.service",
+        ),
+        "P014_STARTUP_CLEANUP_ARMED_TOO_LATE",
+    )
+
+    startup = _slice_between(
+        runbook,
+        "cleanup_failed_first_release() {",
+        "trap cleanup_failed_first_release EXIT",
+        "P014_STARTUP_CLEANUP_BLOCK_INVALID",
+    )
+    startup_required = (
+        "systemctl stop delta-public-alpha.service",
+        "systemctl disable delta-public-alpha.service",
+        '"${COMPOSE[@]}" down --remove-orphans --timeout 75',
+        'remaining_containers=$("${COMPOSE[@]}" ps --quiet)',
+        "remaining_listeners=$(ss -H -ltn 'sport = :8502')",
+        'rm -f -- "$UNIT_STAGE" "$UNIT_PATH"',
+        "systemctl daemon-reload",
+        "P014_PRE_CADDY_CLEANUP_INCOMPLETE",
+    )
+    _require(
+        all(token in startup for token in startup_required),
+        "P014_STARTUP_CLEANUP_BLOCK_INVALID",
+    )
+    _require(
+        "|| true" not in startup and "2>/dev/null" not in startup,
+        "P014_CRITICAL_CLEANUP_FAILURE_SUPPRESSED",
+    )
+
+    registry = _slice_between(
+        runbook,
+        "cleanup_registry_auth() {",
+        "trap cleanup_registry_auth EXIT",
+        "P014_REGISTRY_CLEANUP_BLOCK_INVALID",
+    )
+    _require(
+        "trap - EXIT" in registry
+        and 'rm -rf -- "$DOCKER_CONFIG"' in registry
+        and "P014_REGISTRY_AUTH_CLEANUP_FAILED" in registry,
+        "P014_REGISTRY_CLEANUP_BLOCK_INVALID",
+    )
+
+    unit_required = (
+        'RELEASE_ROOT="/opt/delta-public-alpha/releases/$SOURCE_SHA"',
+        'RELEASE_WORKDIR="WorkingDirectory=$RELEASE_ROOT/deploy/public-alpha"',
+        "! grep -Fq '/opt/delta-public-alpha/current' \"$UNIT_STAGE\"",
+        'mv -f "$UNIT_STAGE" "$UNIT_PATH"',
+    )
+    _require(all(token in runbook for token in unit_required), "P014_UNIT_RELEASE_NOT_IMMUTABLE")
+
+    pre_caddy = _first_bash_block_after(
+        runbook,
+        "### Pre-Caddy rollback",
+        "P014_PRE_CADDY_ROLLBACK_INVALID",
+    )
+    _require(
+        "/etc/caddy/" not in pre_caddy
+        and "systemctl stop delta-public-alpha.service" in pre_caddy
+        and '"${COMPOSE[@]}" down --remove-orphans --timeout 75' in pre_caddy
+        and 'REMAINING_CONTAINERS=$("${COMPOSE[@]}" ps --quiet)' in pre_caddy
+        and "REMAINING_LISTENERS=$(ss -H -ltn 'sport = :8502')" in pre_caddy,
+        "P014_PRE_CADDY_ROLLBACK_INVALID",
+    )
+
+
+def _validate_image_verifier_contract() -> None:
+    source = IMAGE_VERIFIER.read_text(encoding="utf-8")
+    required = (
+        'docker_binary, "image", "inspect", image_reference',
+        'REVISION_LABEL = "org.opencontainers.image.revision"',
+        "P014_IMAGE_REFERENCE_NOT_IMMUTABLE",
+        "P014_IMAGE_DIGEST_MISMATCH",
+        "P014_IMAGE_REVISION_MISMATCH",
+    )
+    _require(all(token in source for token in required), "P014_IMAGE_VERIFIER_INCOMPLETE")
 
 
 def _load_compose(path: Path) -> Mapping[str, Any]:
@@ -332,6 +488,86 @@ def _validate_text_contracts() -> None:
     forbidden = ("/opt/lemmata", "lemmata.service", "127.0.0.1:8501:8501")
     _require(all(item not in operational for item in forbidden), "P014_LEMMATA_BOUNDARY_VIOLATION")
 
+    host_gate = (ROOT / "scripts" / "p014_host_gate.py").read_text(encoding="utf-8")
+    installer = (ROOT / "scripts" / "p014_install_docker_ubuntu.sh").read_text(encoding="utf-8")
+    rollback = (ROOT / "scripts" / "p014_rollback_docker_ubuntu.sh").read_text(encoding="utf-8")
+    load_gate = (ROOT / "scripts" / "p014_load_gate.py").read_text(encoding="utf-8")
+    _require(
+        all(
+            token in host_gate
+            for token in (
+                'SCHEMA_VERSION = "1.3.0"',
+                '"pre-docker"',
+                '"pre-mutation"',
+                '"post-docker"',
+                '"delta-idle"',
+                '"post-rollback"',
+                "P014_LEMMATA_P95_BUDGET_EXCEEDED",
+                "P014_DELTA_LISTENER_SET_INVALID",
+                "P014_CADDYFILE_CHANGED",
+                "P014_BASELINE_HOST_OR_BOOT_CHANGED",
+                "P014_DOCKER_PACKAGE_SET_INVALID",
+                "P014_DOCKER_CANDIDATE_VERSION_MISMATCH",
+                "P014_DOCKER_PACKAGE_ORIGIN_INVALID",
+                "9DC858229FC7DD38854AE2D88D81803C0EBFCD88",
+            )
+        ),
+        "P014_HOST_GATE_INCOMPLETE",
+    )
+    _require(
+        all(
+            token in load_gate
+            for token in (
+                'SCHEMA_VERSION = "1.2.0"',
+                'REQUIRED_HOST_GATE_SCHEMA_VERSION = "1.3.0"',
+                "bounded-synthetic-stylo-coexistence-v3",
+                "isolated-p006-scientific-handoff-loop-v1",
+                "P014_LOAD_BOUNDED_ANALYSIS_FAILED",
+                "P014_LOAD_LEMMATA_P95_BUDGET_EXCEEDED",
+                "P014_LOAD_HOST_CAPACITY_FAILED",
+                "P014_LOAD_LISTENER_SET_INVALID",
+                'failures.append(f"P014_LOAD_{role.upper()}_STATE_FAILED")',
+                'failures.append(f"P014_LOAD_{role.upper()}_LIMIT_FAILED")',
+            )
+        ),
+        "P014_LOAD_GATE_INCOMPLETE",
+    )
+    _require(
+        all(
+            token in installer
+            for token in (
+                "https://download.docker.com/linux/ubuntu/gpg",
+                "9DC858229FC7DD38854AE2D88D81803C0EBFCD88",
+                "--no-install-recommends",
+                'SPECS+=("$package=$candidate")',
+                "p014_rollback_docker_ubuntu.sh",
+                "rollback-armed",
+                "rollback-disarmed",
+            )
+        ),
+        "P014_DOCKER_INSTALLER_INCOMPLETE",
+    )
+    _require(
+        all(
+            token in rollback
+            for token in (
+                "PACKAGE_ALLOWLIST",
+                "post-rollback",
+                "P014_DOCKER_ROLLBACK_NOT_ARMED",
+                "iptables-restore",
+                "ip6tables-restore",
+            )
+        ),
+        "P014_DOCKER_ROLLBACK_INCOMPLETE",
+    )
+    _require(
+        all(
+            forbidden_action not in installer + rollback
+            for forbidden_action in ("systemctl restart lemmata", "systemctl stop lemmata")
+        ),
+        "P014_HOST_SCRIPT_TOUCHES_LEMMATA",
+    )
+
 
 def validate(root: Path = ROOT) -> None:
     _require(root.resolve() == ROOT.resolve(), "P014_UNSUPPORTED_ROOT")
@@ -339,6 +575,8 @@ def validate(root: Path = ROOT) -> None:
     _validate_compose(compose)
     _validate_gateway_lock()
     _validate_text_contracts()
+    _validate_runbook_contracts(RUNBOOK.read_text(encoding="utf-8"))
+    _validate_image_verifier_contract()
 
 
 def main(argv: Sequence[str] | None = None) -> int:
