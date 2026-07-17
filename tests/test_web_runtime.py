@@ -387,10 +387,12 @@ def test_analysis_run_resumes_published_context_and_rejects_job_mismatch() -> No
             events.append("materializations")
 
     class Analyses:
+        result: object = None
+
         @staticmethod
-        def run_until(*, expected_job_id: str) -> None:
+        def run_until(*, expected_job_id: str) -> object:
             events.append(f"analysis:{expected_job_id}")
-            return None
+            return Analyses.result
 
     class Janitor:
         @staticmethod
@@ -416,20 +418,22 @@ def test_analysis_run_resumes_published_context_and_rejects_job_mismatch() -> No
     )
     assert events == ["materializations", "janitor"]
 
-    events.clear()
-    with pytest.raises(WebRuntimeError) as captured:
-        runtime.run_analysis_once(
-            expected_job_id="job-a",
-            admit_analysis=lambda: events.append("admit"),
-            resume_result=lambda: False,
-            finalize_result=lambda: events.append("unexpected-finalize"),
-            present_result=lambda: events.append("unexpected-present"),
-        )
-    assert captured.value.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY
-    assert events == ["admit", "analysis:job-a", "materializations", "janitor"]
+    for result in (None, SimpleNamespace(job_id="different-job")):
+        events.clear()
+        Analyses.result = result
+        with pytest.raises(WebRuntimeError) as captured:
+            runtime.run_analysis_once(
+                expected_job_id="job-a",
+                admit_analysis=lambda: events.append("admit"),
+                resume_result=lambda: False,
+                finalize_result=lambda: events.append("unexpected-finalize"),
+                present_result=lambda: events.append("unexpected-present"),
+            )
+        assert captured.value.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY
+        assert events == ["admit", "analysis:job-a", "materializations", "janitor"]
 
 
-def test_analysis_run_drains_a_stale_fifo_predecessor_without_cross_presentation() -> None:
+def test_analysis_run_waits_after_one_stale_fifo_predecessor_without_cross_presentation() -> None:
     events: list[str] = []
 
     class Materializations:
@@ -439,9 +443,9 @@ def test_analysis_run_drains_a_stale_fifo_predecessor_without_cross_presentation
 
     class Analyses:
         @staticmethod
-        def run_until(*, expected_job_id: str) -> SimpleNamespace:
-            events.extend(("run:stale-job", f"run:{expected_job_id}"))
-            return SimpleNamespace(job_id=expected_job_id)
+        def run_until(*, expected_job_id: str) -> None:
+            events.extend(("run:stale-job", f"waiting:{expected_job_id}"))
+            return None
 
     class Janitor:
         @staticmethod
@@ -455,21 +459,19 @@ def test_analysis_run_drains_a_stale_fifo_predecessor_without_cross_presentation
         janitor=Janitor(),  # type: ignore[arg-type]
     )
 
-    assert (
+    with pytest.raises(WebRuntimeError) as captured:
         runtime.run_analysis_once(
             expected_job_id="expected-job",
             admit_analysis=lambda: events.append("admit:expected-job"),
             resume_result=lambda: False,
-            finalize_result=lambda: events.append("finalize:expected-job"),
-            present_result=lambda: "present:expected-job",
+            finalize_result=lambda: events.append("unexpected-finalize"),
+            present_result=lambda: events.append("unexpected-present"),
         )
-        == "present:expected-job"
-    )
+    assert captured.value.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY
     assert events == [
         "admit:expected-job",
         "run:stale-job",
-        "run:expected-job",
-        "finalize:expected-job",
+        "waiting:expected-job",
         "materializations",
         "janitor",
     ]

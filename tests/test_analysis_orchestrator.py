@@ -16,7 +16,12 @@ from delta_lemmata.analysis_orchestrator import (
 )
 from delta_lemmata.clock import FakeClock
 from delta_lemmata.corpus_models import PurposeId
-from delta_lemmata.job_models import ExecutionState, JobRecord, TerminalOutcome
+from delta_lemmata.job_models import (
+    ExecutionState,
+    JobRecord,
+    TerminalOutcome,
+    transition_execution,
+)
 from delta_lemmata.job_store import SQLiteJobStore
 from delta_lemmata.job_workspace import WorkspaceArea, WorkspaceLayout, WorkspaceManager
 from delta_lemmata.prepared_corpus_service import (
@@ -117,6 +122,44 @@ class FakeRunner:
 
 
 @dataclass(slots=True)
+class TerminalizingRunner:
+    store: SQLiteJobStore
+    clock: FakeClock
+    failure_job_ids: frozenset[str] = frozenset()
+    calls: list[str] = field(default_factory=list)
+
+    def run(
+        self,
+        *,
+        job: JobRecord,
+        layout: WorkspaceLayout,
+        request: WorkerInputV1,
+    ) -> JobRecord:
+        del layout, request
+        self.calls.append(job.job_id)
+        at_utc = self.clock.now()
+        failed = job.job_id in self.failure_job_ids
+        terminal = transition_execution(
+            job,
+            target=ExecutionState.TERMINAL,
+            outcome=TerminalOutcome.FAILED if failed else TerminalOutcome.SUCCEEDED,
+            at_utc=at_utc,
+            tombstone_expires_at_utc=at_utc + timedelta(days=7),
+            expected_version=job.version,
+            operation_id=_op(100 + len(self.calls)),
+        )
+        saved = self.store.maintenance_compare_and_swap(
+            job_id=job.job_id,
+            expected_version=job.version,
+            updated=terminal,
+            at_utc=at_utc,
+        )
+        if failed:
+            raise RuntimeError("private scientific runner failure")
+        return saved
+
+
+@dataclass(slots=True)
 class Environment:
     store: SQLiteJobStore
     workspaces: WorkspaceManager
@@ -205,6 +248,75 @@ def _write_bundle(
     )
 
 
+def _fifo_environment(
+    tmp_path: Path,
+    *,
+    missing_bundle_indexes: frozenset[int] = frozenset(),
+    corrupt_bundle_indexes: frozenset[int] = frozenset(),
+    failing_runner_indexes: frozenset[int] = frozenset(),
+) -> tuple[AnalysisOrchestrator, SQLiteJobStore, TerminalizingRunner, tuple[JobRecord, ...]]:
+    database_root = tmp_path / "database"
+    workspace_root = tmp_path / "workspaces"
+    database_root.mkdir(mode=0o700, parents=True)
+    workspace_root.mkdir(mode=0o700, parents=True)
+    job_ids = tuple(
+        JobId.generate(lambda size, byte=byte: bytes((byte,)) * size)
+        for byte in (ord("a"), ord("b"), ord("c"))
+    )
+    job_id_values = iter(job_ids)
+    store = SQLiteJobStore(
+        database_root / "control.sqlite3",
+        owner_secret=OWNER_SECRET,
+        job_id_factory=lambda: next(job_id_values),
+    )
+    workspaces = WorkspaceManager(workspace_root)
+    config = _workflow()
+    request = _request(config)
+    queued: list[JobRecord] = []
+    for index, job_id in enumerate(job_ids):
+        capability_byte = ord("d") + index
+        capability = SessionCapability.generate(
+            lambda size, byte=capability_byte: bytes((byte,)) * size
+        )
+        staged = store.stage_job(
+            capability=capability,
+            at_utc=NOW + timedelta(microseconds=index * 2),
+        )
+        assert staged.job_id == job_id.to_urlsafe()
+        if index not in missing_bundle_indexes:
+            layout = workspaces.create(staged.owner_digest, workspace_component(job_id))
+            bound_request = (
+                request.model_copy(update={"cells": tuple(reversed(request.cells))})
+                if index in corrupt_bundle_indexes
+                else request
+            )
+            _write_bundle(workspaces, layout, config, bound_request)
+        queued.append(
+            store.enqueue_job(
+                job_id=staged.job_id,
+                capability=capability,
+                at_utc=NOW + timedelta(microseconds=(index * 2) + 1),
+                expected_version=staged.version,
+                operation_id=_op(10 + index),
+            )
+        )
+    clock = FakeClock(NOW + timedelta(microseconds=10))
+    runner = TerminalizingRunner(
+        store=store,
+        clock=clock,
+        failure_job_ids=frozenset(queued[index].job_id for index in failing_runner_indexes),
+    )
+    operations = iter(_op(number) for number in range(20, 40))
+    orchestrator = AnalysisOrchestrator(
+        store=store,
+        workspaces=workspaces,
+        runner=runner,
+        clock=clock,
+        operation_id_factory=lambda: next(operations),
+    )
+    return orchestrator, store, runner, tuple(queued)
+
+
 def _expect_error(
     action: Callable[[], object],
     code: AnalysisOrchestratorErrorCode,
@@ -241,44 +353,101 @@ def test_orchestrator_claims_verifies_and_hands_one_bound_request_to_runner(
     assert environment.orchestrator.run_next() is None
 
 
-def test_run_until_drains_only_the_bounded_fifo_prefix_for_the_expected_job(
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    environment = _environment(tmp_path)
-    [expected] = environment.store.list_jobs_for_maintenance()
-    stale_ids = tuple(
-        JobId.generate(lambda size, byte=byte: bytes((byte,)) * size).to_urlsafe()
-        for byte in (ord("x"), ord("y"), ord("z"))
+def test_run_until_advances_one_real_sqlite_fifo_job_per_interaction(tmp_path: Path) -> None:
+    orchestrator, store, runner, queued = _fifo_environment(tmp_path)
+    expected = queued[-1]
+
+    assert orchestrator.run_until(expected_job_id=expected.job_id) is None
+    assert runner.calls == [queued[0].job_id]
+    assert orchestrator.run_until(expected_job_id=expected.job_id) is None
+    assert runner.calls == [queued[0].job_id, queued[1].job_id]
+    completed = orchestrator.run_until(expected_job_id=expected.job_id)
+
+    assert completed is not None
+    assert completed.job_id == expected.job_id
+    assert completed.execution.state is ExecutionState.TERMINAL
+    assert runner.calls == [job.job_id for job in queued]
+    assert all(
+        job.execution.state is ExecutionState.TERMINAL for job in store.list_jobs_for_maintenance()
     )
-    stale = tuple(expected.model_copy(update={"job_id": job_id}) for job_id in stale_ids)
-    prefix = iter((*stale[:2], expected))
-    calls = 0
 
-    def run_prefix() -> JobRecord:
-        nonlocal calls
-        calls += 1
-        return next(prefix)
 
-    monkeypatch.setattr(environment.orchestrator, "run_next", run_prefix)
-    assert environment.orchestrator.run_until(expected_job_id=expected.job_id) == expected
-    assert calls == 3
+def test_run_until_hides_a_distinct_owner_predecessor_bundle_failure(tmp_path: Path) -> None:
+    orchestrator, store, runner, queued = _fifo_environment(
+        tmp_path,
+        missing_bundle_indexes=frozenset({0}),
+    )
+    expected = queued[-1]
 
-    calls = 0
-    exhausted = iter(stale)
+    assert orchestrator.run_until(expected_job_id=expected.job_id) is None
+    first = next(job for job in store.list_jobs_for_maintenance() if job.job_id == queued[0].job_id)
+    assert first.execution.state is ExecutionState.TERMINAL
+    assert first.outcome is not None
+    assert first.outcome.kind is TerminalOutcome.CRASHED
+    assert runner.calls == []
 
-    def run_bounded_prefix() -> JobRecord:
-        nonlocal calls
-        calls += 1
-        return next(exhausted)
+    assert orchestrator.run_until(expected_job_id=expected.job_id) is None
+    completed = orchestrator.run_until(expected_job_id=expected.job_id)
+    assert completed is not None
+    assert completed.job_id == expected.job_id
+    assert runner.calls == [queued[1].job_id, expected.job_id]
 
-    monkeypatch.setattr(environment.orchestrator, "run_next", run_bounded_prefix)
-    missing = JobId.generate(lambda size: b"m" * size).to_urlsafe()
-    assert environment.orchestrator.run_until(expected_job_id=missing) is None
-    assert calls == 3
 
-    monkeypatch.setattr(environment.orchestrator, "run_next", lambda: None)
-    assert environment.orchestrator.run_until(expected_job_id=expected.job_id) is None
+@pytest.mark.parametrize(
+    ("environment_options", "expected_outcome"),
+    [
+        ({"corrupt_bundle_indexes": frozenset({0})}, TerminalOutcome.CRASHED),
+        ({"failing_runner_indexes": frozenset({0})}, TerminalOutcome.FAILED),
+    ],
+)
+def test_run_until_hides_distinct_owner_predecessor_failures(
+    tmp_path: Path,
+    environment_options: dict[str, frozenset[int]],
+    expected_outcome: TerminalOutcome,
+) -> None:
+    orchestrator, store, runner, queued = _fifo_environment(
+        tmp_path,
+        **environment_options,
+    )
+    expected = queued[-1]
+
+    assert orchestrator.run_until(expected_job_id=expected.job_id) is None
+    first = next(job for job in store.list_jobs_for_maintenance() if job.job_id == queued[0].job_id)
+    assert first.execution.state is ExecutionState.TERMINAL
+    assert first.outcome is not None
+    assert first.outcome.kind is expected_outcome
+
+    assert orchestrator.run_until(expected_job_id=expected.job_id) is None
+    completed = orchestrator.run_until(expected_job_id=expected.job_id)
+    assert completed is not None
+    assert completed.job_id == expected.job_id
+    assert runner.calls[-1] == expected.job_id
+
+
+def test_run_until_exposes_only_the_expected_jobs_own_bundle_failure(tmp_path: Path) -> None:
+    orchestrator, _store, runner, queued = _fifo_environment(
+        tmp_path,
+        missing_bundle_indexes=frozenset({0}),
+    )
+
+    _expect_error(
+        lambda: orchestrator.run_until(expected_job_id=queued[0].job_id),
+        AnalysisOrchestratorErrorCode.BUNDLE_NOT_AVAILABLE,
+    )
+    assert runner.calls == []
+
+
+def test_run_until_exposes_only_the_expected_jobs_own_runner_failure(tmp_path: Path) -> None:
+    orchestrator, _store, runner, queued = _fifo_environment(
+        tmp_path,
+        failing_runner_indexes=frozenset({0}),
+    )
+
+    _expect_error(
+        lambda: orchestrator.run_until(expected_job_id=queued[0].job_id),
+        AnalysisOrchestratorErrorCode.OPERATION_FAILED,
+    )
+    assert runner.calls == [queued[0].job_id]
 
 
 def test_run_until_rejects_an_invalid_expected_identity_content_free(tmp_path: Path) -> None:
@@ -286,6 +455,52 @@ def test_run_until_rejects_an_invalid_expected_identity_content_free(tmp_path: P
 
     _expect_error(
         lambda: environment.orchestrator.run_until(expected_job_id="not-a-job-id"),
+        AnalysisOrchestratorErrorCode.OPERATION_FAILED,
+    )
+
+
+def test_run_next_rejects_an_empty_internal_attempt_content_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _environment(tmp_path)
+    monkeypatch.setattr(
+        AnalysisOrchestrator,
+        "_run_next_attempt",
+        lambda _self, *, expected_job_id=None: orchestrator_module._RunAttempt(
+            job_id=expected_job_id or "empty-internal-attempt"
+        ),
+    )
+
+    _expect_error(
+        environment.orchestrator.run_next,
+        AnalysisOrchestratorErrorCode.OPERATION_FAILED,
+    )
+
+
+def test_run_until_rejects_an_empty_expected_attempt_content_free(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _environment(tmp_path)
+    expected = JobId.generate(lambda size: b"j" * size).to_urlsafe()
+
+    def empty_attempt(
+        _self: AnalysisOrchestrator,
+        *,
+        expected_job_id: str | None = None,
+    ) -> orchestrator_module._RunAttempt:
+        del expected_job_id
+        return orchestrator_module._RunAttempt(job_id=expected)
+
+    monkeypatch.setattr(
+        AnalysisOrchestrator,
+        "_run_next_attempt",
+        empty_attempt,
+    )
+
+    _expect_error(
+        lambda: environment.orchestrator.run_until(expected_job_id=expected),
         AnalysisOrchestratorErrorCode.OPERATION_FAILED,
     )
 

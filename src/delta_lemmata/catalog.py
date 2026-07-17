@@ -187,6 +187,12 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "comparisons again. Delta will continue this same job; you do not need to upload the "
         "texts again."
     ),
+    "parameters.status_reference": "Status reference: {code}",
+    "parameters.recovery.body": (
+        "This run has ended. Start over to create a new private corpus preparation and a new "
+        "analysis authority; Delta will not reuse the ended run."
+    ),
+    "parameters.recovery.start_over": "Start over with this research purpose",
     "parameters.configuration_error": (
         "The resolved parameter record no longer matches this documented corpus. Return to "
         "preparation and try again."

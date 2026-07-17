@@ -79,6 +79,13 @@ class _PreparedAnalysisBundle:
     request: WorkerInputV1 = field(repr=False)
 
 
+@dataclass(frozen=True, slots=True)
+class _RunAttempt:
+    job_id: str
+    completed: JobRecord | None = None
+    error: AnalysisOrchestratorError | None = None
+
+
 def _error(code: AnalysisOrchestratorErrorCode) -> AnalysisOrchestratorError:
     error = AnalysisOrchestratorError(code)
     error.__context__ = None
@@ -87,15 +94,25 @@ def _error(code: AnalysisOrchestratorErrorCode) -> AnalysisOrchestratorError:
     return error
 
 
+def _content_free_error(error: Exception) -> AnalysisOrchestratorError:
+    rejection = (
+        error
+        if isinstance(error, AnalysisOrchestratorError)
+        else AnalysisOrchestratorError(AnalysisOrchestratorErrorCode.OPERATION_FAILED)
+    )
+    rejection.__context__ = None
+    rejection.__cause__ = None
+    rejection.__suppress_context__ = True
+    return rejection
+
+
 def _content_free[**P, ResultT](method: Callable[P, ResultT]) -> Callable[P, ResultT]:
     @wraps(method)
     def wrapped(*args: P.args, **kwargs: P.kwargs) -> ResultT:
         try:
             return method(*args, **kwargs)
-        except AnalysisOrchestratorError as error:
-            rejection = error
-        except Exception:
-            rejection = AnalysisOrchestratorError(AnalysisOrchestratorErrorCode.OPERATION_FAILED)
+        except Exception as error:
+            rejection = _content_free_error(error)
         rejection.__context__ = None
         rejection.__cause__ = None
         rejection.__suppress_context__ = True
@@ -287,10 +304,7 @@ class AnalysisOrchestrator:
             at_utc=at_utc,
         )
 
-    @_content_free
-    def run_next(self, *, expected_job_id: str | None = None) -> JobRecord | None:
-        """Run the oldest queued job when it matches the expected server-side identity."""
-
+    def _run_next_attempt(self, *, expected_job_id: str | None = None) -> _RunAttempt | None:
         job = self._store.claim_next(
             at_utc=self._now(),
             operation_id=self._operation_id(),
@@ -298,33 +312,50 @@ class AnalysisOrchestrator:
         )
         if job is None:
             return None
-        layout = self._workspaces.load_optional(
-            job.owner_digest,
-            workspace_component(JobId.from_urlsafe(job.job_id)),
-        )
-        if layout is None:
-            self._record_preflight_failure(job)
-            raise _error(AnalysisOrchestratorErrorCode.BUNDLE_NOT_AVAILABLE)
         try:
+            layout = self._workspaces.load_optional(
+                job.owner_digest,
+                workspace_component(JobId.from_urlsafe(job.job_id)),
+            )
+            if layout is None:
+                raise _error(AnalysisOrchestratorErrorCode.BUNDLE_NOT_AVAILABLE)
             self._workspaces.verify(layout)
             bundle = self._load_bundle(layout)
-        except AnalysisOrchestratorError:
+        except Exception as error:
             self._record_preflight_failure(job)
-            raise
-        return self._runner.run(job=job, layout=layout, request=bundle.request)
+            return _RunAttempt(job_id=job.job_id, error=_content_free_error(error))
+        try:
+            completed = self._runner.run(job=job, layout=layout, request=bundle.request)
+        except Exception as error:
+            return _RunAttempt(job_id=job.job_id, error=_content_free_error(error))
+        return _RunAttempt(job_id=job.job_id, completed=completed)
+
+    @_content_free
+    def run_next(self, *, expected_job_id: str | None = None) -> JobRecord | None:
+        """Run the oldest queued job when it matches the expected server-side identity."""
+
+        attempt = self._run_next_attempt(expected_job_id=expected_job_id)
+        if attempt is None:
+            return None
+        if attempt.error is not None:
+            raise attempt.error
+        if attempt.completed is None:
+            raise _error(AnalysisOrchestratorErrorCode.OPERATION_FAILED)
+        return attempt.completed
 
     @_content_free
     def run_until(self, *, expected_job_id: str) -> JobRecord | None:
-        """Run the bounded FIFO prefix through one expected server-side job."""
+        """Advance the FIFO by one job without crossing owner-visible error boundaries."""
 
         expected = JobId.from_urlsafe(expected_job_id).to_urlsafe()
-        for _ in range(self._policy.max_queued):
-            completed = self.run_next()
-            if completed is None:
-                return None
-            if completed.job_id == expected:
-                return completed
-        return None
+        attempt = self._run_next_attempt()
+        if attempt is None or attempt.job_id != expected:
+            return None
+        if attempt.error is not None:
+            raise attempt.error
+        if attempt.completed is None:
+            raise _error(AnalysisOrchestratorErrorCode.OPERATION_FAILED)
+        return attempt.completed
 
 
 __all__ = [

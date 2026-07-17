@@ -155,6 +155,9 @@ _FLOW_ANNOTATIONS_KEY = "_p007_annotations"
 _FLOW_PREPARATION_KEY = "_p007_preparation_outcome"
 _FLOW_WORKFLOW_CONFIG_KEY = "_p008_resolved_workflow_config"
 _FLOW_JOB_PRESENTATION_KEY = "_p008_job_presentation"
+_RECOVERABLE_JOB_STATES = frozenset(
+    {"failed", "cancelled", "timed_out", "crashed", "abandoned", "expired"}
+)
 _HTTP_URL_ADAPTER = TypeAdapter(HttpUrl)
 
 
@@ -669,6 +672,50 @@ def _render_parameter_orientation() -> None:
         f'<div class="delta-parameter-grid">{items}</div>'
         "</section>",
         unsafe_allow_html=True,
+    )
+
+
+def _analysis_status_markup(
+    *,
+    title: str,
+    body: str,
+    reference: str | None,
+    alert: bool,
+) -> str:
+    role = "alert" if alert else "status"
+    live = "assertive" if alert else "polite"
+    reference_markup = (
+        ""
+        if reference is None
+        else f'<small class="delta-analysis-reference">{_html(reference)}</small>'
+    )
+    state_class = " is-alert" if alert else ""
+    return (
+        f'<section class="delta-analysis-status{state_class}" role="{role}" '
+        f'aria-live="{live}" aria-atomic="true">'
+        '<span class="delta-analysis-status-icon" aria-hidden="true">'
+        f"{'!' if alert else 'i'}</span>"
+        '<div class="delta-analysis-status-copy">'
+        f"<strong>{_html(title)}</strong>"
+        f"<p>{_html(body)}</p>"
+        f"{reference_markup}"
+        "</div></section>"
+    )
+
+
+def _terminal_presentation(
+    runtime: WebRuntime,
+    materialization: CorpusMaterializationReceipt,
+) -> object | None:
+    try:
+        presentation = runtime.prepared_corpora.status(
+            owner_key=_owner_key(),
+            materialization_receipt=materialization,
+        )
+    except (PreparedCorpusError, WebRuntimeError, AttributeError):
+        return None
+    return (
+        presentation if getattr(presentation, "state_id", "") in _RECOVERABLE_JOB_STATES else None
     )
 
 
@@ -3393,11 +3440,25 @@ def _render_parameters_stage() -> None:
             state_id = getattr(presentation, "state_id", "")
             title = getattr(presentation, "title", text("parameters.run_status_unknown"))
             body = getattr(presentation, "body", text("parameters.run_status_unknown"))
-            if state_id in {"queued", "running", "finalizing", "cleaning"}:
-                st.info(title, icon=":material/progress_activity:")
-            else:
-                st.error(title, icon=":material/error:")
-            st.caption(body)
+            recoverable = state_id in _RECOVERABLE_JOB_STATES
+            st.markdown(
+                _analysis_status_markup(
+                    title=title,
+                    body=(text("parameters.recovery.body") if recoverable else body),
+                    reference=getattr(presentation, "support_reference", None),
+                    alert=recoverable,
+                ),
+                unsafe_allow_html=True,
+            )
+            if recoverable and st.button(
+                text("parameters.recovery.start_over"),
+                icon=":material/restart_alt:",
+                type="primary",
+                width="stretch",
+                key="analysis_start_over",
+            ):
+                _clear_documentation_state(keep_purpose=True)
+                st.rerun()
             return
 
         confirmed = st.checkbox(
@@ -3498,17 +3559,29 @@ def _render_parameters_stage() -> None:
                 )
             except WebRuntimeError as error:
                 if error.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY:
-                    st.info(
-                        text("parameters.queue_wait.title"),
-                        icon=":material/hourglass_top:",
+                    st.markdown(
+                        _analysis_status_markup(
+                            title=text("parameters.queue_wait.title"),
+                            body=text("parameters.queue_wait.body"),
+                            reference=text(
+                                "parameters.status_reference",
+                                code=error.code.value,
+                            ),
+                            alert=False,
+                        ),
+                        unsafe_allow_html=True,
                     )
-                    st.caption(text("parameters.queue_wait.body"))
                 else:
                     st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
-                st.caption(text("corpus.error.reference", code=error.code.value))
+                    st.caption(text("corpus.error.reference", code=error.code.value))
             except (PreparedCorpusError, AnalysisOrchestratorError) as error:
-                st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
-                st.caption(text("corpus.error.reference", code=error.code.value))
+                terminal = _terminal_presentation(runtime, materialization)
+                if terminal is not None:
+                    st.session_state[_FLOW_JOB_PRESENTATION_KEY] = terminal
+                    st.rerun()
+                else:
+                    st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
+                    st.caption(text("corpus.error.reference", code=error.code.value))
             except (ValidationError, ValueError):
                 st.error(text("parameters.configuration_error"), icon=":material/error:")
             else:

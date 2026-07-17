@@ -12,6 +12,7 @@ import sqlite3
 import subprocess
 import sys
 from contextlib import closing
+from datetime import UTC, datetime, timedelta
 from io import BytesIO
 from pathlib import Path
 from typing import Any
@@ -36,7 +37,9 @@ from browser_audit_p008 import (
 from PIL import Image
 from playwright.sync_api import Browser, Locator, Page, sync_playwright
 
+from delta_lemmata.job_store import SQLiteJobStore
 from delta_lemmata.result_view import ResultCellV1, classical_mds
+from delta_lemmata.session_identity import JobId, SessionCapability
 
 ROOT = Path(__file__).resolve().parents[1]
 FORBIDDEN_EXPORT_KEYS = (
@@ -77,6 +80,29 @@ def _entry_primary_action_max_y(width: int, height: int) -> float:
     if width in _A51_MOBILE_PRIMARY_ACTION_WIDTHS:
         return _A51_MOBILE_PRIMARY_ACTION_MAX_Y
     return float(height)
+
+
+def _preload_missing_distinct_owner_job(runtime_root: Path) -> None:
+    runtime_root.mkdir(mode=0o700, parents=True, exist_ok=True)
+    os.chmod(runtime_root, 0o700)
+    database_root = runtime_root / "database"
+    database_root.mkdir(mode=0o700, exist_ok=True)
+    os.chmod(database_root, 0o700)
+    store = SQLiteJobStore(
+        database_root / "control.sqlite3",
+        owner_secret=b"p009-distinct-owner-secret-32-bytes",
+        job_id_factory=lambda: JobId.generate(lambda size: b"q" * size),
+    )
+    capability = SessionCapability.generate(lambda size: b"p" * size)
+    at_utc = datetime.now(UTC)
+    staged = store.stage_job(capability=capability, at_utc=at_utc)
+    store.enqueue_job(
+        job_id=staged.job_id,
+        capability=capability,
+        at_utc=at_utc + timedelta(microseconds=1),
+        expected_version=staged.version,
+        operation_id="op_" + "9" * 64,
+    )
 
 
 def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
@@ -191,6 +217,118 @@ def _visible_count(locator: Locator) -> int:
             "&& box.width > 0 && box.height > 0; }).length"
         )
     )
+
+
+def _persistent_text_evidence(page: Page) -> dict[str, Any]:
+    return page.locator('div[data-testid="stMainBlockContainer"]').evaluate(
+        r"""root => {
+          const offenders = [];
+          let checked = 0;
+          for (const element of root.querySelectorAll('*')) {
+            if (element.closest('[aria-hidden="true"], svg, script, style, template')) continue;
+            if (element.classList.contains('material-symbols-rounded')) continue;
+            const directText = Array.from(element.childNodes)
+              .filter(node => node.nodeType === Node.TEXT_NODE)
+              .map(node => node.textContent || '')
+              .join(' ')
+              .replace(/\s+/g, ' ')
+              .trim();
+            if (!directText) continue;
+            const style = getComputedStyle(element);
+            const box = element.getBoundingClientRect();
+            if (style.display === 'none' || style.visibility === 'hidden' ||
+                Number(style.opacity) === 0 || box.width <= 1 || box.height <= 1) continue;
+            checked += 1;
+            const size = Number.parseFloat(style.fontSize);
+            if (Number.isFinite(size) && size < 12) {
+              offenders.push({
+                tag: element.tagName.toLowerCase(),
+                className: String(element.className || '').slice(0, 120),
+                text: directText.slice(0, 120),
+                fontSize: size,
+              });
+            }
+          }
+          return {checked, offenders, pass: offenders.length === 0};
+        }"""
+    )
+
+
+def _table_region_accessibility(page: Page) -> dict[str, Any]:
+    regions = page.locator(".delta-table-scroll")
+    records = regions.evaluate_all(
+        """elements => elements.map((element, index) => {
+          const style = getComputedStyle(element);
+          const box = element.getBoundingClientRect();
+          const visible = style.display !== 'none' && style.visibility !== 'hidden' &&
+            box.width > 0 && box.height > 0;
+          return {
+            index,
+            visible,
+            role: element.getAttribute('role'),
+            label: (element.getAttribute('aria-label') || '').trim(),
+            tabIndex: element.getAttribute('tabindex'),
+            scrollable: element.scrollWidth > element.clientWidth + 1,
+          };
+        }).filter(record => record.visible)"""
+    )
+    contracts_pass = bool(records) and all(
+        record["role"] == "region" and bool(record["label"]) and record["tabIndex"] == "0"
+        for record in records
+    )
+    scrollable = next((record for record in records if record["scrollable"]), None)
+    focus_ring_pass = False
+    keyboard_scroll_pass = scrollable is None
+    if scrollable is not None:
+        region = regions.nth(int(scrollable["index"]))
+        region.focus()
+        focus_ring = region.evaluate(
+            """element => {
+              const style = getComputedStyle(element);
+              return {
+                active: document.activeElement === element,
+                width: Number.parseFloat(style.outlineWidth),
+                style: style.outlineStyle,
+              };
+            }"""
+        )
+        focus_ring_pass = bool(
+            focus_ring["active"]
+            and focus_ring["style"] not in {"none", "hidden"}
+            and focus_ring["width"] >= 2
+        )
+        before = int(region.evaluate("element => element.scrollLeft"))
+        for _ in range(4):
+            page.keyboard.press("ArrowRight")
+        page.wait_for_timeout(150)
+        after = int(region.evaluate("element => element.scrollLeft"))
+        keyboard_scroll_pass = after > before
+        region.evaluate("element => { element.scrollLeft = 0; }")
+    elif records:
+        region = regions.nth(int(records[0]["index"]))
+        region.focus()
+        focus_ring = region.evaluate(
+            """element => {
+              const style = getComputedStyle(element);
+              return {
+                active: document.activeElement === element,
+                width: Number.parseFloat(style.outlineWidth),
+                style: style.outlineStyle,
+              };
+            }"""
+        )
+        focus_ring_pass = bool(
+            focus_ring["active"]
+            and focus_ring["style"] not in {"none", "hidden"}
+            and focus_ring["width"] >= 2
+        )
+    return {
+        "region_count": len(records),
+        "contracts_pass": contracts_pass,
+        "focus_ring_pass": focus_ring_pass,
+        "keyboard_scroll_pass": keyboard_scroll_pass,
+        "regions": records,
+    }
 
 
 def _semantic_table_evidence(page: Page, label: str) -> dict[str, Any]:
@@ -534,6 +672,8 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
         page.set_viewport_size({"width": width, "height": height})
         page.wait_for_timeout(300)
         geometry = _geometry(page)
+        persistent_text = _persistent_text_evidence(page)
+        table_regions = _table_region_accessibility(page)
         chart_locator = page.locator('[data-testid="stVegaLiteChart"]')
         chart_pixels = tuple(
             _pixel_evidence(
@@ -577,6 +717,8 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "footer_count": geometry["visibleFooterCount"],
                 "inter_font_loaded": geometry["interFontLoaded"],
                 "source_sans_font_loaded": geometry["sourceSansFontLoaded"],
+                "persistent_text": persistent_text,
+                "table_regions": table_regions,
                 "mfw_radio_rows": radio_rows,
                 "mfw_radio_layout_pass": (radio_rows == 1 if width > 760 else radio_rows == 2),
                 "visible_result_cell_count": visible_result_cells,
@@ -610,6 +752,10 @@ def _result_viewport_pass(item: dict[str, Any]) -> bool:
         and item["footer_count"] == 1
         and item["inter_font_loaded"]
         and item["source_sans_font_loaded"]
+        and item["persistent_text"]["pass"]
+        and item["table_regions"]["contracts_pass"]
+        and item["table_regions"]["focus_ring_pass"]
+        and item["table_regions"]["keyboard_scroll_pass"]
         and item["mfw_radio_layout_pass"]
         and item["all_result_cells_visible_pass"]
         and item["mds_metric_aspect_pass"]
@@ -638,9 +784,58 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         exact=True,
     )
     error_reference = page.get_by_text("Rejection reference:", exact=False)
+    queue_status = page.locator(
+        '.delta-analysis-status[role="status"][aria-live="polite"][aria-atomic="true"]'
+    )
+    terminal_status = page.locator(
+        '.delta-analysis-status[role="alert"][aria-live="assertive"][aria-atomic="true"]'
+    )
+    queue_evidence: dict[str, Any] | None = None
     for _ in range(600):
         if result_heading.is_visible():
             break
+        if queue_evidence is None and queue_status.count() == 1 and queue_status.is_visible():
+            queue_text = queue_status.inner_text()
+            queue_evidence = {
+                "single_status_region_pass": queue_status.count() == 1,
+                "complete_instruction_pass": all(
+                    phrase in queue_text
+                    for phrase in (
+                        "Your analysis remains in the queue.",
+                        "Run the four comparisons again",
+                        "you do not need to upload the texts again",
+                        "Status reference: WEB_RUNTIME_ANALYSIS_NOT_READY",
+                    )
+                ),
+                "rejection_language_absent_pass": "Rejection reference" not in queue_text,
+            }
+            queue_screenshot = output / "screenshots" / "fifo-queue-status.png"
+            page.screenshot(path=str(queue_screenshot), full_page=True)
+            queue_evidence["screenshot"] = _evidence_path(queue_screenshot, output)
+            run_button.focus()
+            page.keyboard.press("Enter")
+            page.wait_for_timeout(500)
+            continue
+        if terminal_status.count() == 1 and terminal_status.is_visible():
+            terminal_text = terminal_status.inner_text()
+            restart = page.get_by_role(
+                "button",
+                name="Start over with this research purpose",
+                exact=False,
+            )
+            restart_available = False
+            for _ in range(25):
+                if restart.count() == 1 and restart.is_visible():
+                    restart_available = True
+                    break
+                page.wait_for_timeout(200)
+            screenshot = output / "screenshots" / "result-terminal-recovery.png"
+            page.screenshot(path=str(screenshot), full_page=True)
+            raise RuntimeError(
+                "Real worker ended safely with terminal recovery UI: "
+                f"restart_available={restart_available}; "
+                f"status={terminal_text!r}"
+            ) from None
         if error_reference.count() > 0:
             screenshot = output / "screenshots" / "result-failure.png"
             page.screenshot(path=str(screenshot), full_page=True)
@@ -739,6 +934,9 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         "run_enabled_after_confirmation_pass": enabled,
         "analysis_complete_pass": result_heading.is_visible()
         and _visible_count(complete_result_cells) == 4,
+        "fifo_queue_status_pass": queue_evidence is not None
+        and all(value for key, value in queue_evidence.items() if key.endswith("_pass")),
+        "fifo_queue_status_evidence": queue_evidence,
         "all_four_cells_visible_pass": _visible_count(result_cells) == 4,
         "all_four_cells_complete_pass": _visible_count(complete_result_cells) == 4,
         "default_reference_500_pass": default_reference,
@@ -900,6 +1098,7 @@ def main() -> int:
     environment = os.environ.copy()
     environment["DELTA_BUILD_ID"] = "p009-real-worker-browser-audit"
     environment["DELTA_RUNTIME_ROOT"] = str(output / "runtime")
+    _preload_missing_distinct_owner_job(output / "runtime")
     server_log_path = output / "streamlit-server.log"
     with server_log_path.open("w", encoding="utf-8") as server_log:
         process = subprocess.Popen(

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib.util
+import sqlite3
 import sys
 from pathlib import Path
 from typing import Any, cast
@@ -33,6 +34,7 @@ _geometry = BROWSER_AUDIT._geometry
 _choose_next_result_option = P009_BROWSER_AUDIT._choose_next_result_option
 _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
 _entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
+_preload_missing_distinct_owner_job = P009_BROWSER_AUDIT._preload_missing_distinct_owner_job
 _semantic_result_parity = P009_BROWSER_AUDIT._semantic_result_parity
 _semantic_table_rows = P009_BROWSER_AUDIT._semantic_table_rows
 _terminal_payload_cleanup_pass = P009_BROWSER_AUDIT._terminal_payload_cleanup_pass
@@ -288,6 +290,20 @@ def test_entry_primary_action_uses_the_a51_mobile_fold_budget() -> None:
     assert _entry_primary_action_max_y(1440, 1000) == 1000.0
 
 
+def test_browser_audit_preloads_one_payload_free_distinct_owner_predecessor(
+    tmp_path: Path,
+) -> None:
+    runtime_root = tmp_path / "runtime"
+
+    _preload_missing_distinct_owner_job(runtime_root)
+
+    with sqlite3.connect(runtime_root / "database" / "control.sqlite3") as connection:
+        assert connection.execute(
+            "SELECT execution_state, COUNT(*) FROM jobs GROUP BY execution_state"
+        ).fetchall() == [("queued", 1)]
+    assert not (runtime_root / "workspaces").exists()
+
+
 def test_result_viewport_contract_does_not_require_entry_uploader_evidence() -> None:
     viewport = {
         "horizontal_overflow": False,
@@ -301,6 +317,12 @@ def test_result_viewport_contract_does_not_require_entry_uploader_evidence() -> 
         "footer_count": 1,
         "inter_font_loaded": True,
         "source_sans_font_loaded": True,
+        "persistent_text": {"pass": True},
+        "table_regions": {
+            "contracts_pass": True,
+            "focus_ring_pass": True,
+            "keyboard_scroll_pass": True,
+        },
         "mfw_radio_layout_pass": True,
         "all_result_cells_visible_pass": True,
         "mds_metric_aspect_pass": True,

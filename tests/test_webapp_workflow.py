@@ -1306,16 +1306,18 @@ def test_invalid_parameter_binding_fails_closed_and_returns_to_preparation() -> 
 
 
 @pytest.mark.parametrize(
-    ("state_id", "title", "surface"),
+    ("state_id", "title", "role"),
     [
-        ("queued", "Analysis queued", "info"),
-        ("failed", "Analysis failed", "error"),
+        ("queued", "Analysis queued", "status"),
+        ("failed", "Analysis failed", "alert"),
+        ("timed_out", "Analysis timed out", "alert"),
+        ("crashed", "Analysis stopped unexpectedly", "alert"),
     ],
 )
 def test_parameter_review_presents_active_and_failed_job_states(
     state_id: str,
     title: str,
-    surface: str,
+    role: str,
 ) -> None:
     app = _open_guided_parameters()
     app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
@@ -1324,10 +1326,34 @@ def test_parameter_review_presents_active_and_failed_job_states(
         body="Content-free lifecycle detail.",
     )
     app.run()
-    messages = app.info if surface == "info" else app.error
-    assert title in [message.value for message in messages]
-    assert "Content-free lifecycle detail." in [caption.value for caption in app.caption]
+    markup = "\n".join(item.value for item in app.markdown)
+    assert title in markup
+    assert f'role="{role}"' in markup
+    assert 'aria-atomic="true"' in markup
+    if state_id in webapp_module._RECOVERABLE_JOB_STATES:
+        assert "create a new private corpus preparation" in markup
+        assert app.button(key="analysis_start_over").label == (
+            "Start over with this research purpose"
+        )
+    else:
+        assert "Content-free lifecycle detail." in markup
     assert not any(button.label == "Run the four comparisons" for button in app.button)
+
+
+def test_analysis_status_markup_escapes_content_and_binds_live_region_semantics() -> None:
+    markup = webapp_module._analysis_status_markup(
+        title="Queue <title>",
+        body="Wait & retry",
+        reference='Status "reference"',
+        alert=False,
+    )
+
+    assert 'role="status"' in markup
+    assert 'aria-live="polite"' in markup
+    assert 'aria-atomic="true"' in markup
+    assert "Queue &lt;title&gt;" in markup
+    assert "Wait &amp; retry" in markup
+    assert "Status &quot;reference&quot;" in markup
 
 
 def test_confirmed_guided_grid_is_admitted_and_run_once(
@@ -1546,10 +1572,13 @@ def test_guided_run_reuses_an_already_queued_admission(
     assert app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY].state_id == "succeeded"
 
 
-def test_guided_run_rejects_reused_admission_outside_queue_states(
+@pytest.mark.parametrize("terminal_state", ["failed", "timed_out", "crashed"])
+def test_guided_run_offers_a_clean_start_after_reused_terminal_admission(
     monkeypatch: pytest.MonkeyPatch,
+    terminal_state: str,
 ) -> None:
     app = _open_guided_parameters()
+    events: list[str] = []
 
     class FailedPreparedCorpora:
         @staticmethod
@@ -1562,27 +1591,39 @@ def test_guided_run_rejects_reused_admission_outside_queue_states(
 
         @staticmethod
         def status(**_kwargs: object) -> SimpleNamespace:
-            return SimpleNamespace(state_id="failed")
+            return SimpleNamespace(
+                state_id=terminal_state,
+                title="Analysis run ended",
+                body="The ended run cannot be reused.",
+                support_reference=None,
+            )
+
+    class Materializations:
+        @staticmethod
+        def cleanup(**_kwargs: object) -> None:
+            events.append("cleanup")
 
     def run_analysis_once(**callbacks: object) -> object:
         assert callbacks["resume_result"]() is False  # type: ignore[operator]
         return callbacks["admit_analysis"]()  # type: ignore[operator]
 
-    monkeypatch.setattr(
-        webapp_module,
-        "_runtime",
-        lambda: SimpleNamespace(
-            prepared_corpora=FailedPreparedCorpora(),
-            run_analysis_once=run_analysis_once,
-        ),
+    runtime = SimpleNamespace(
+        prepared_corpora=FailedPreparedCorpora(),
+        materializations=Materializations(),
+        run_analysis_once=run_analysis_once,
     )
+    monkeypatch.setattr(webapp_module, "_runtime", lambda: runtime)
     app.checkbox(key="p008_parameter_confirmation").check().run()
     app.button(key="parameters_run_analysis").click().run()
 
-    assert [message.value for message in app.error] == [
-        "Delta could not complete this bounded analysis safely. No partial result is presented."
-    ]
-    assert "P007_PREPARED_CORPUS_ADMISSION_REUSED" in "\n".join(item.value for item in app.caption)
+    markup = "\n".join(item.value for item in app.markdown)
+    assert 'role="alert"' in markup
+    assert "Analysis run ended" in markup
+    assert "create a new private corpus preparation" in markup
+    app.button(key="analysis_start_over").click().run()
+    assert events == ["cleanup"]
+    assert app.session_state[webapp_module._FLOW_STAGE_KEY] == "upload"
+    assert webapp_module._FLOW_MATERIALIZATION_KEY not in app.session_state
 
 
 def test_analysis_not_ready_explains_how_to_continue_the_same_queued_job(
@@ -1604,10 +1645,14 @@ def test_analysis_not_ready_explains_how_to_continue_the_same_queued_job(
     app.checkbox(key="p008_parameter_confirmation").check().run()
     app.button(key="parameters_run_analysis").click().run()
 
-    assert [message.value for message in app.info][-1] == "Your analysis remains in the queue."
-    captions = "\n".join(item.value for item in app.caption)
-    assert "you do not need to upload the texts again" in captions
-    assert "WEB_RUNTIME_ANALYSIS_NOT_READY" in captions
+    markup = "\n".join(item.value for item in app.markdown)
+    assert 'role="status"' in markup
+    assert 'aria-live="polite"' in markup
+    assert 'aria-atomic="true"' in markup
+    assert "Your analysis remains in the queue." in markup
+    assert "you do not need to upload the texts again" in markup
+    assert "Status reference: WEB_RUNTIME_ANALYSIS_NOT_READY" in markup
+    assert "Rejection reference" not in markup
     assert [message.value for message in app.error] == []
     assert app.button(key="parameters_run_analysis").disabled is False
 

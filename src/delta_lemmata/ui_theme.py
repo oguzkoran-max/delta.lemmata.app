@@ -2176,6 +2176,60 @@ div[data-testid="stMainBlockContainer"] h3 {
   white-space: nowrap;
 }
 
+.delta-analysis-status {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: start;
+  gap: 12px;
+  margin: 12px 0;
+  padding: 14px 16px;
+  border: 1px solid #a9d8c6;
+  border-left: 4px solid var(--delta-teal);
+  border-radius: 6px;
+  background: var(--delta-mint-soft);
+}
+
+.delta-analysis-status.is-alert {
+  border-color: #e6a99c;
+  border-left-color: var(--delta-coral-text);
+  background: #fff5f1;
+}
+
+.delta-analysis-status-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--delta-teal);
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.delta-analysis-status.is-alert .delta-analysis-status-icon {
+  background: var(--delta-coral-text);
+}
+
+.delta-analysis-status-copy strong {
+  display: block;
+  color: var(--delta-teal-dark);
+  font-size: 14px;
+}
+
+.delta-analysis-status.is-alert .delta-analysis-status-copy strong {
+  color: var(--delta-coral-text);
+}
+
+.delta-analysis-status-copy p,
+.delta-analysis-reference {
+  display: block;
+  margin: 4px 0 0;
+  color: var(--delta-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .delta-review-metrics {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));

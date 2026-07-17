@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import multiprocessing
 import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -10,7 +11,12 @@ from pathlib import Path
 import pytest
 
 import delta_lemmata.job_store as job_store_module
-from delta_lemmata.job_models import ExecutionState, JobRecord
+from delta_lemmata.job_models import (
+    ExecutionState,
+    JobRecord,
+    TerminalOutcome,
+    transition_execution,
+)
 from delta_lemmata.job_store import (
     AnalysisAdmissionRejectedError,
     AnalysisAdmissionReusedError,
@@ -52,6 +58,45 @@ def _store(database: Path, factory=None) -> SQLiteJobStore:
 
 def _operation(number: int) -> str:
     return "op_" + f"{number:064x}"
+
+
+def _consume_admission_in_process(
+    database: str,
+    job_id: str,
+    capability: str,
+    operation_number: int,
+    start,
+    results,
+) -> None:
+    store = _store(Path(database))
+    start.wait()
+    try:
+        queued = store.consume_analysis_admission(
+            receipt_hmac=RECEIPT_HMAC,
+            job_id=job_id,
+            capability=SessionCapability.from_urlsafe(capability),
+            at_utc=NOW + timedelta(seconds=1),
+            operation_id=_operation(operation_number),
+        )
+    except JobStoreError as error:
+        results.put(("error", error.code.value))
+    else:
+        results.put(("accepted", queued.job_id))
+
+
+def _claim_in_process(
+    database: str,
+    operation_number: int,
+    start,
+    results,
+) -> None:
+    store = _store(Path(database))
+    start.wait()
+    claimed = store.claim_next(
+        at_utc=NOW + timedelta(seconds=2),
+        operation_id=_operation(operation_number),
+    )
+    results.put(None if claimed is None else claimed.job_id)
 
 
 def _bind(
@@ -389,6 +434,101 @@ def test_thirty_two_concurrent_consumers_enqueue_exactly_once(tmp_path: Path) ->
         assert connection.execute(
             "SELECT consumed_at_utc, version FROM analysis_admissions"
         ).fetchone() == ("2026-07-14T22:00:01Z", 1)
+
+
+def test_separate_processes_consume_one_analysis_admission_exactly_once(tmp_path: Path) -> None:
+    database = tmp_path / "control.sqlite3"
+    initial = _store(database)
+    owner = _capability(1)
+    staged = initial.stage_job(capability=owner, at_utc=NOW)
+    _bind(initial, staged, owner)
+    context = multiprocessing.get_context("spawn")
+    start = context.Event()
+    results = context.Queue()
+    processes = tuple(
+        context.Process(
+            target=_consume_admission_in_process,
+            args=(
+                str(database),
+                staged.job_id,
+                owner.to_urlsafe(),
+                100 + index,
+                start,
+                results,
+            ),
+        )
+        for index in range(2)
+    )
+    for process in processes:
+        process.start()
+    start.set()
+    outcomes = [results.get(timeout=10) for _ in processes]
+    for process in processes:
+        process.join(timeout=10)
+        assert process.exitcode == 0
+
+    assert outcomes.count(("accepted", staged.job_id)) == 1
+    assert outcomes.count(("error", JobStoreErrorCode.ANALYSIS_ADMISSION_REUSED.value)) == 1
+
+
+def test_separate_processes_claim_only_one_oldest_fifo_job(tmp_path: Path) -> None:
+    database = tmp_path / "control.sqlite3"
+    store = _store(database, CountingJobIds())
+    owners = (_capability(1), _capability(2))
+    staged = tuple(store.stage_job(capability=owner, at_utc=NOW) for owner in owners)
+    queued = tuple(
+        store.enqueue_job(
+            job_id=job.job_id,
+            capability=owner,
+            at_utc=NOW + timedelta(microseconds=index + 1),
+            expected_version=job.version,
+            operation_id=_operation(200 + index),
+        )
+        for index, (job, owner) in enumerate(zip(staged, owners, strict=True))
+    )
+    context = multiprocessing.get_context("spawn")
+    start = context.Event()
+    results = context.Queue()
+    processes = tuple(
+        context.Process(
+            target=_claim_in_process,
+            args=(str(database), 210 + index, start, results),
+        )
+        for index in range(2)
+    )
+    for process in processes:
+        process.start()
+    start.set()
+    claims = [results.get(timeout=10) for _ in processes]
+    for process in processes:
+        process.join(timeout=10)
+        assert process.exitcode == 0
+
+    assert claims.count(queued[0].job_id) == 1
+    assert claims.count(None) == 1
+    running = store.get_job(job_id=queued[0].job_id, capability=owners[0])
+    terminal = transition_execution(
+        running,
+        target=ExecutionState.TERMINAL,
+        outcome=TerminalOutcome.SUCCEEDED,
+        at_utc=NOW + timedelta(seconds=3),
+        tombstone_expires_at_utc=NOW + timedelta(days=7, seconds=3),
+        expected_version=running.version,
+        operation_id=_operation(220),
+    )
+    store.compare_and_swap(
+        job_id=running.job_id,
+        capability=owners[0],
+        expected_version=running.version,
+        updated=terminal,
+        at_utc=NOW + timedelta(seconds=3),
+    )
+    second = store.claim_next(
+        at_utc=NOW + timedelta(seconds=4),
+        operation_id=_operation(221),
+    )
+    assert second is not None
+    assert second.job_id == queued[1].job_id
 
 
 def test_corrupt_control_row_and_transition_failure_roll_back(tmp_path: Path, monkeypatch) -> None:
