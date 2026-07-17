@@ -132,17 +132,20 @@ Docker, and immediately runs the post-Docker Lemmata comparison:
 
 ```bash
 set -Eeuo pipefail
-python3 scripts/p014_host_gate.py pre-mutation \
-  --baseline /root/p014-host-evidence/pre-docker.json \
-  --output /root/p014-host-evidence/pre-mutation.json \
-  --samples 20
 scripts/p014_install_docker_ubuntu.sh \
-  --preflight /root/p014-host-evidence/pre-mutation.json \
+  --preflight /root/p014-host-evidence/pre-docker.json \
   --post-output /root/p014-host-evidence/post-docker.json \
   --rollback-output /root/p014-host-evidence/post-rollback.json \
   --state-dir /root/p014-host-evidence/docker-change \
   --apply
 ```
+
+The installer accepts the Phase 1 `pre-docker` baseline, copies it into its
+root-only transaction directory, then captures and validates a fresh
+`pre-mutation` observation immediately before the first package change. Do not
+generate or pass a standalone `pre-mutation` file to `--preflight`; that phase is
+owned by the guarded transaction so the baseline and last-moment observation
+cannot be interchanged.
 
 Any failed command or post-Docker gate invokes the guarded rollback. Rollback
 purges only the fixed Docker package allowlist introduced by this unfinished

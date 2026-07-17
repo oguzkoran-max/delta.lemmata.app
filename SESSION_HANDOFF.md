@@ -47,12 +47,20 @@ Pinokyo çalışması ve P014 host kapıları açık sınırdır.
 
 **Güncel operasyon kararı:** Oğuz `HD-20260717-0001` ile normal merge, exact-main
 CI, immutable image publication ve localhost-only host staging sırasını kabul
-etti. Merge ve publication tamamlandı; canlı VPS henüz değiştirilmedi. Önce bu
-kanıt-only dal normal CI ile `main`e alınır. Sonra fresh read-only baseline,
-official Docker hazırlığı, exact-digest pull/verification ve yalnız
-`127.0.0.1:8502` staging uygulanır. External denial ve değişmemiş Lemmata kanıtı
-Oğuz'a gösterilmeden Caddy, DNS veya public route değişmez. P014 `in-progress`;
-AC-05 ile AC-08-AC-10 pending kalır.
+etti. Merge, publication, evidence PR #9 ve main CI tamamlandı. Fresh live
+`pre-docker` gate'i geçti; ilk official-Docker installer dispatch'i, o sıradaki
+runbook `pre-mutation` kanıtını verirken installer doğru biçimde `pre-docker`
+baseline'ı istediği için mutasyondan önce
+`P014_DOCKER_INSTALL_GATE_PHASE_INVALID` ile durdu. Post-failure read-only
+recheck Docker binary/package/key/source/data root veya transaction directory
+bulmadı; Caddy ve Lemmata active, `8502` kapalı ve Caddyfile hash'i değişmemişti.
+Failed run `RUN-20260717-0004`, raw gate JSON'ları
+`provenance/evidence/P014/live-20260717/`, açıklama
+`docker-install-preflight-contract-failure-20260717.md` içindedir. Installer
+değişmez; runbook, validator ve test düzeltmesi normal review/CI'dan geçtikten
+sonra official Docker hazırlığı yeni bir Run olarak yeniden uygulanır. External
+denial ve değişmemiş Lemmata kanıtı Oğuz'a gösterilmeden Caddy, DNS veya public
+route değişmez. P014 `in-progress`; AC-05 ile AC-08-AC-10 pending kalır.
 
 **Tarihsel ve genel aşama özeti:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
@@ -132,15 +140,19 @@ AC-01 ile AC-04 ve AC-06 ile AC-07 passed, AC-05 ile host-bound AC-08 ile
 AC-10 pending)
 
 **Sıradaki tek ana iş:**
-`RUN-20260717-0003` publication kaydını normal CI ile birleştir; ardından runbook
-sırasıyla fresh host preflight ve localhost-only kurulum yap. Pre-Caddy evidence
-review tamamlanmadan public route açma.
+`RUN-20260717-0004` ile tutulan preflight-contract failure düzeltmesini normal
+review ve yeşil CI ile birleştir; ardından installer'a accepted `pre-docker`
+baseline'ı vererek guarded official-Docker preparation ve localhost-only kurulumu
+yeni Run olarak yap. Pre-Caddy evidence review tamamlanmadan public route açma.
 
 **Claude Code kesin devam noktası:** Önce `START_HERE.md`, sonra bu dosya,
 `deploy/public-alpha/README.md`,
 `provenance/evidence/P014/phase-b-main-immutable-image-publication.md`,
 `provenance/runs/RUN-20260717-0003.json` ve
-`memory/checkpoints/2026-07-17-p014-main-image-publication.md` okunur. Kalıcı
+`memory/checkpoints/2026-07-17-p014-main-image-publication.md`; ardından
+`provenance/evidence/P014/docker-install-preflight-contract-failure-20260717.md`,
+`provenance/runs/RUN-20260717-0004.json` ve
+`memory/checkpoints/2026-07-17-p014-host-preflight-contract-correction.md` okunur. Kalıcı
 tasarım kaynağı ve önceki exact review artefaktları değiştirilmeden korunur.
 Canlı işlem sırası runbook'tur; pre-Caddy owner gate atlanmaz.
 

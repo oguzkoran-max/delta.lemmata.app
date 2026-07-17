@@ -13,11 +13,23 @@ private GHCR immutable manifestini yayımladı:
 `RUN-20260717-0003` ve
 `provenance/evidence/P014/phase-b-main-immutable-image-publication.md` içindedir.
 İmaj imzalı veya attested değildir; bu sınırlama açık tutulur. VPS, Docker,
-Caddy, DNS ve public route henüz değiştirilmedi. P014 tek `in-progress`
-ticket'tır; AC-05 ve host-bound AC-08-AC-10 pending kalır.
-**Güncel operasyonel iş:** Önce bu kanıt-only dalı normal CI ile `main`e al.
-Sonra fresh read-only host inventory, guarded official-Docker preparation ve
-digest-verified Delta-only `127.0.0.1:8502` staging uygula. External denial ve
+Caddy, DNS ve public route henüz değiştirilmedi. Publication kanıtı PR #9 normal
+merge commit `26dc8df1ba4cc90794727745926dda412dd722df` ile `main`e alındı; main
+CI `29600088277` verify ve container işlerinde geçti. Fresh target-host
+`pre-docker` gate'i daha sonra sağlıklı Lemmata, aktif Caddy, Docker yokluğu ve
+kapalı `8502` ile geçti. İlk installer çağrısı, o sıradaki runbook'un yanlışlıkla
+`pre-mutation` kanıtı vermesi nedeniyle
+`P014_DOCKER_INSTALL_GATE_PHASE_INVALID` ile mutasyondan önce güvenle durdu.
+Post-failure recheck hiçbir paket, Docker key/source/data root, service,
+listener, Caddyfile, DNS veya route değişikliği bulmadı. Olay
+`RUN-20260717-0004` ve
+`provenance/evidence/P014/docker-install-preflight-contract-failure-20260717.md`
+içinde silinmeden tutulur. P014 tek `in-progress` ticket'tır; AC-05 ve
+host-bound AC-08-AC-10 pending kalır.
+**Güncel operasyonel iş:** Runbook, deployment validator ve regresyon testinin
+`pre-docker` sözleşme düzeltmesini normal review ve yeşil CI ile `main`e al.
+Ardından guarded official-Docker preparation ve digest-verified Delta-only
+`127.0.0.1:8502` staging'i yeni bir Run olarak uygula. External denial ve
 değişmemiş Lemmata kanıtını Oğuz'a göstermeden Caddy, DNS veya public route
 değiştirme. Pre-Caddy owner kararı ayrı ve zorunludur.
 **Aşağıdaki uzun aşama özeti tarihsel P014 gelişimini korur:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
@@ -191,9 +203,13 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 ## 9. Şu Anda Ne Yapılacak?
 
 Phase B merge ve immutable image publication tamamlandı. Önce yeni publication
-kanıtı `RUN-20260717-0003` ile normal review/CI üzerinden `main`e alınır. Sonra
-`deploy/public-alpha/README.md` sırası değiştirilmeden fresh target-host baseline,
-official Docker hazırlığı ve digest-verified localhost-only kurulum yapılır.
+kanıtı `RUN-20260717-0003` ile normal review/CI üzerinden `main`e alındı. Fresh
+target-host baseline geçti; ilk Docker dispatch'i runbook/installer evidence-phase
+uyuşmazlığı nedeniyle mutasyondan önce güvenle durdu ve `RUN-20260717-0004` olarak
+korundu. Şimdi `deploy/public-alpha/README.md`, deployment validator ve regresyon
+testi aynı `pre-docker` sözleşmesine getirilip normal PR/CI'dan geçirilir; ardından
+official Docker hazırlığı ve digest-verified localhost-only kurulum yeni bir Run
+olarak yapılır.
 Delta `127.0.0.1:8502` üzerinde sağlıklı, dışarıdan kapalı ve Lemmata değişmeden
 kalınca kanıt Oğuz'a sunulur. Ayrı pre-Caddy onayı olmadan Caddy, DNS veya public
 route değişmez. Phase B kapanışı ve imaj yayını P014 ticket kapanışı değildir;

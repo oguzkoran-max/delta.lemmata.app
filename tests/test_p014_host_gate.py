@@ -442,6 +442,14 @@ def test_runbook_orders_publication_host_gates_and_separate_route_authorization(
     assert "p014_install_docker_ubuntu.sh" in runbook
     assert "p014_rollback_docker_ubuntu.sh" in runbook
     assert "p014_host_gate.py pre-docker" in runbook
+    phase_3 = runbook[
+        runbook.index("## Phase 3: Install and Compare the Container Runtime") : runbook.index(
+            "## Phase 4: Install an Immutable Release"
+        )
+    ]
+    assert "--preflight /root/p014-host-evidence/pre-docker.json" in phase_3
+    assert "p014_host_gate.py pre-mutation" not in phase_3
+    assert "--preflight /root/p014-host-evidence/pre-mutation.json" not in phase_3
     assert "p014_host_gate.py post-docker" not in runbook
     assert "p014_host_gate.py delta-idle" in runbook
     assert "p014_host_gate.py under-load" not in runbook

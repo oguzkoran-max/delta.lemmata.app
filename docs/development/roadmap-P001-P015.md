@@ -571,6 +571,21 @@ official-Docker preparation, digest-verified `127.0.0.1:8502` staging, external
 denial ve pre-Caddy owner review'dur. Ayrı owner onayı olmadan public route
 açılmaz.
 
+**2026-07-17 fresh-host preflight checkpoint'i:** Schema `1.3.0` fresh
+`pre-docker` gate'i sağlıklı zero-restart Lemmata, active Caddy, absent Docker,
+kapalı `8502`, 2.339 MiB available RAM ve 32.449 MiB boş root disk ile geçti.
+İlk guarded installer dispatch'i, o sıradaki runbook ve deployment validator
+`pre-mutation` kanıtını `--preflight` olarak verirken installer doğru biçimde
+accepted `pre-docker` baseline'ı beklediği için
+`P014_DOCKER_INSTALL_GATE_PHASE_INVALID` ile mutasyondan önce durdu. Read-only
+recheck hiçbir Docker package/key/source/data root/transaction directory veya
+service/listener/Caddy/DNS değişikliği bulmadı; Lemmata sağlıklı kaldı. Failure
+`RUN-20260717-0004` ve
+`docker-install-preflight-contract-failure-20260717.md` ile korunur. Installer
+değiştirilmez; runbook, validator ve regression test aynı `pre-docker` contract'a
+getirilip normal PR/CI'dan geçmeden retry yapılmaz. Accepted post-Docker
+inventory hâlâ yoktur; P014-AC-08 pending ve public activation kapalıdır.
+
 **Deliverable'lar:**
 
 - Ayrı Delta container, Unix/service identity, network, volume, environment, port ve secret seti.
