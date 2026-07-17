@@ -557,6 +557,20 @@ Accepted post-preparation inventory, canlı TLS, Delta-Lemmata coexistence/load,
 restart cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
 P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.
 
+**2026-07-17 Phase B publication checkpoint'i:** Owner-selected A5.1 görsel
+entegrasyonu ve exact-SHA review kapanışı PR #8 ile normal merge commit
+`25fc2cadbba2147db6c7767e802088706a305f28` olarak `main`e alındı. Exact-main
+CI `29597139461` verify ve container işlerinde geçti. Publication run
+`29597615330` aynı source'u yeniden build edip hardened gate'ten geçirdi ve
+private GHCR immutable manifestini
+`sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d`
+olarak yayımladı; `latest` oluşturulmadı. Kayıt `RUN-20260717-0003` ve
+`phase-b-main-immutable-image-publication.md` içindedir. İmaj signed/attested
+değildir. VPS henüz değiştirilmedi. Sıradaki sıra fresh host baseline, guarded
+official-Docker preparation, digest-verified `127.0.0.1:8502` staging, external
+denial ve pre-Caddy owner review'dur. Ayrı owner onayı olmadan public route
+açılmaz.
+
 **Deliverable'lar:**
 
 - Ayrı Delta container, Unix/service identity, network, volume, environment, port ve secret seti.

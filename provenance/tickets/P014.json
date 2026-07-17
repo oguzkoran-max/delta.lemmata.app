@@ -27,7 +27,11 @@
   "dependencies": ["P005", "P008", "P009", "P012"],
   "claim_ids": ["CE-14", "CE-15", "CE-18"],
   "threat_ids": ["SEC-07", "SEC-12", "SEC-13", "SEC-14", "SEC-15", "SEC-16"],
-  "decision_ids": ["HD-20260714-0002", "HD-20260715-0002"],
+  "decision_ids": [
+    "HD-20260714-0002",
+    "HD-20260715-0002",
+    "HD-20260717-0001"
+  ],
   "prompt_event_ids": [
     "PE-20260715-0004",
     "PE-20260715-0005",
@@ -79,7 +83,8 @@
     "a5b94d5ffe36d18e6d16399ef0c8be7cb671dbdb",
     "dfce0299ce5674d2732870c6e286a5b6419e27aa",
     "8c813ff33f735172fb6d7e16e6eb76c1927a4d02",
-    "d637893a19cc33e57b8826c5ff8625bd196cb1d4"
+    "d637893a19cc33e57b8826c5ff8625bd196cb1d4",
+    "25fc2cadbba2147db6c7767e802088706a305f28"
   ],
   "run_ids": [
     "RUN-20260715-0004",
@@ -87,7 +92,8 @@
     "RUN-20260715-0006",
     "RUN-20260715-0007",
     "RUN-20260717-0001",
-    "RUN-20260717-0002"
+    "RUN-20260717-0002",
+    "RUN-20260717-0003"
   ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
@@ -107,6 +113,7 @@
     "provenance/evidence/P014/pre-execution-host-change-review.md",
     "provenance/evidence/P014/phase-b-visual-integration-validation.md",
     "provenance/evidence/P014/phase-b-review-remediation.md",
+    "provenance/evidence/P014/phase-b-main-immutable-image-publication.md",
     "provenance/evidence/P014/phase-b-exact-7585d83/README.md",
     "provenance/evidence/P014/phase-b-exact-8198dd82/README.md",
     "provenance/evidence/P014/phase-b-exact-a5b94d5/canonical-linux-failure/README.md",
@@ -125,22 +132,24 @@
     "provenance/runs/RUN-20260715-0007.json",
     "provenance/runs/RUN-20260717-0001.json",
     "provenance/runs/RUN-20260717-0002.json",
+    "provenance/runs/RUN-20260717-0003.json",
     "memory/checkpoints/2026-07-15-p014-start.md",
     "memory/checkpoints/2026-07-16-phase-b-visual-integration.md",
     "memory/checkpoints/2026-07-17-phase-b-exact-closure.md",
+    "memory/checkpoints/2026-07-17-p014-main-image-publication.md",
     "docs/development/phase-b-visual-integration.md",
     "docs/development/roadmap-P001-P015.md",
     "docs/research/claim-evidence-matrix.md",
     "docs/security/threat-model.md"
   ],
   "acceptance": [
-    {"id":"P014-AC-01","criterion":"The production image starts the real Streamlit application as fixed numeric non-root UID/GID, exposes only public-safe health, is identified by source and immutable image digest, and contains no production secret.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/immutable-image-publication.md","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260715-0006.json"]},
+    {"id":"P014-AC-01","criterion":"The production image starts the real Streamlit application as fixed numeric non-root UID/GID, exposes only public-safe health, is identified by source and immutable image digest, and contains no production secret.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/immutable-image-publication.md","provenance/evidence/P014/phase-b-main-immutable-image-publication.md","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260715-0006.json","provenance/runs/RUN-20260717-0003.json"]},
     {"id":"P014-AC-02","criterion":"Delta has separate service/container identity, loopback port, environment, three unique secrets, network, runtime storage, and resource limits, with no Lemmata path, service, environment, volume, secret, network, or internal-port reference.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-03","criterion":"The Delta gateway enforces exact Host, request-size, rate, connection, timeout, security-header, and WebSocket policy while Streamlit XSRF/CORS protections remain enabled and Streamlit has no direct public bind.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-04","criterion":"Application root is read-only, writable runtime paths are private and size-bounded, capabilities are dropped, no-new-privileges is active, egress is denied, and CPU/RAM/PID/restart limits are inspected at runtime.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/runs/RUN-20260715-0004.json"]},
     {"id":"P014-AC-05","criterion":"Application file/token/queue/concurrency and worker wall/CPU/RAM/process limits remain enforced under the deployment profile, and hostile, saturated, timeout, cancellation, and cleanup cases fail closed without payload leakage.","status":"pending","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/phase-b-review-remediation.md","provenance/evidence/P014/phase-b-exact-d637893/canonical-linux/browser-audit.json","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260717-0002.json"]},
     {"id":"P014-AC-06","criterion":"The English interface visibly and accessibly labels every stage Public alpha and experimental without prohibited scientific, FAIR, usability, publication, or isolation claims.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/phase-b-visual-integration-validation.md","provenance/evidence/P014/phase-b-review-remediation.md","provenance/evidence/P014/phase-b-exact-d637893/independent-reviews/accessibility.md","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260717-0001.json","provenance/runs/RUN-20260717-0002.json"]},
-    {"id":"P014-AC-07","criterion":"Canonical Linux CI builds and starts the exact stack, validates health and hostile requests, inspects runtime hardening, verifies denied egress and cleanup, records the image digest, and leaves no corpus artifact.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/immutable-image-publication.md","provenance/evidence/P014/phase-b-visual-integration-validation.md","provenance/evidence/P014/phase-b-review-remediation.md","provenance/evidence/P014/phase-b-exact-d637893/canonical-linux/browser-audit.json","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260715-0006.json","provenance/runs/RUN-20260717-0001.json","provenance/runs/RUN-20260717-0002.json"]},
+    {"id":"P014-AC-07","criterion":"Canonical Linux CI builds and starts the exact stack, validates health and hostile requests, inspects runtime hardening, verifies denied egress and cleanup, records the image digest, and leaves no corpus artifact.","status":"passed","evidence":["provenance/evidence/P014/canonical-alpha-stack-validation.md","provenance/evidence/P014/immutable-image-publication.md","provenance/evidence/P014/phase-b-main-immutable-image-publication.md","provenance/evidence/P014/phase-b-visual-integration-validation.md","provenance/evidence/P014/phase-b-review-remediation.md","provenance/evidence/P014/phase-b-exact-d637893/canonical-linux/browser-audit.json","provenance/runs/RUN-20260715-0004.json","provenance/runs/RUN-20260715-0006.json","provenance/runs/RUN-20260717-0001.json","provenance/runs/RUN-20260717-0002.json","provenance/runs/RUN-20260717-0003.json"]},
     {"id":"P014-AC-08","criterion":"Read-only target-host inventory and baseline prove that Delta installation is separate before any route or service is changed, and all live commands and outputs are retained content-free.","status":"pending","evidence":["provenance/evidence/P014/target-host-read-only-preflight.md","provenance/evidence/P014/target-host-runtime-capacity-observation.md","provenance/evidence/P014/pre-execution-host-change-review.md","provenance/runs/RUN-20260715-0005.json","provenance/runs/RUN-20260715-0007.json"]},
     {"id":"P014-AC-09","criterion":"Under the maximum accepted Delta load, Lemmata has zero restart and zero error, remains within the frozen latency budget, and both sites pass contemporaneous smoke checks.","status":"pending","evidence":[]},
     {"id":"P014-AC-10","criterion":"Restart/reboot cleanup and rollback complete without Lemmata interruption; Oğuz then passes the integrated owner walkthrough and explicitly accepts or rejects public-alpha activation.","status":"pending","evidence":[]}
@@ -152,7 +161,8 @@
     "Public-alpha labels and claim-boundary checks across the existing workbench stages",
     "P014 canonical CI, immutable registry publication, target-host preflight and capacity evidence, accepted runtime decision, pre-execution host-change review, Run records, ticket links, start card, handoff, roadmap, and checkpoint",
     "Claude Code A5.1 visual source, real Streamlit Entry/Review/Results integration, local Inter packaging, responsive and accessibility contracts, semantic chart browser gates, and Phase B FAIR evidence",
-    "Exact-job FIFO error isolation, one-job-per-interaction execution, terminal restart, accessible queue state, computed-font and table-region browser gates, bounded result-selection recovery, retained failure evidence, and independent exact-SHA closure reviews"
+    "Exact-job FIFO error isolation, one-job-per-interaction execution, terminal restart, accessible queue state, computed-font and table-region browser gates, bounded result-selection recovery, retained failure evidence, and independent exact-SHA closure reviews",
+    "Owner-approved Phase B normal merge, exact-main CI, private digest-only image publication, supply-chain limitation disclosure, and ordered localhost-only deployment checkpoint"
   ],
   "commands": [
     {"command":"./scripts/verify.sh at 7f26dbe before push","exit_code":0,"result":"1,563 tests passed with one documented macOS Linux-worker skip; all 11,382 statements and 2,964 branches were covered.","evidence":"provenance/runs/RUN-20260715-0004.json"},
@@ -188,11 +198,15 @@
     {"command":"Focused verification after native keyboard result selection","exit_code":0,"result":"All 12 browser-audit helper tests and Ruff checks passed. Commit 15ce5dd532c5054191518ea292f5cb966338d068 moves from checked 500 MFW to adjacent 1000 MFW through the native radio group's ArrowRight change event.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"},
     {"command":"Final local ./scripts/verify.sh for exact Phase B remediation source","exit_code":0,"result":"1,725 tests passed with one documented macOS canonical-Linux-only skip; all 11,692 statements and 3,050 branches reached 100% measured coverage; repository, metadata, record, schema, lock, and supply-chain gates passed.","evidence":"provenance/runs/RUN-20260717-0002.json"},
     {"command":"GitHub Actions push run 29592151976 and pull-request run 29592158057 for d637893a19cc33e57b8826c5ff8625bd196cb1d4","exit_code":0,"result":"Both verify and both container jobs passed. Canonical Linux passed 1,726 tests, real R/stylo FIFO predecessor isolation, exact-job result/export, terminal cleanup, responsive/table/chart gates, immutable browser JSON checksum, and the hardened public-alpha stack.","evidence":"provenance/evidence/P014/phase-b-exact-d637893/canonical-linux/README.md"},
-    {"command":"Three independent exact-SHA scientific-method, accessibility, and FAIR/privacy/lifecycle reviews","exit_code":0,"result":"No actionable P0-P3 finding remained. All three reviewers returned GO limited to Phase B code and automated evidence closure, with merge, deployment, public readiness, FAIR completeness, manual screen-reader testing, and AC-08 through AC-10 explicitly excluded.","evidence":"provenance/evidence/P014/phase-b-exact-d637893/independent-reviews/"}
+    {"command":"Three independent exact-SHA scientific-method, accessibility, and FAIR/privacy/lifecycle reviews","exit_code":0,"result":"No actionable P0-P3 finding remained. All three reviewers returned GO limited to Phase B code and automated evidence closure, with merge, deployment, public readiness, FAIR completeness, manual screen-reader testing, and AC-08 through AC-10 explicitly excluded.","evidence":"provenance/evidence/P014/phase-b-exact-d637893/independent-reviews/"},
+    {"command":"Merge PR #8 with a normal merge commit","exit_code":0,"result":"The approved Phase B implementation, retained failure history, review remediation, exact-SHA evidence, and independent reviews were preserved at main commit 25fc2cadbba2147db6c7767e802088706a305f28.","evidence":"provenance/evidence/P014/phase-b-main-immutable-image-publication.md"},
+    {"command":"GitHub Actions main CI run 29597139461 at 25fc2cadbba2147db6c7767e802088706a305f28","exit_code":0,"result":"The exact main push passed verify job 87940183844 and hardened-container job 87940183862 before image publication.","evidence":"provenance/runs/RUN-20260717-0003.json"},
+    {"command":"GitHub Actions P014 publish immutable image run 29597615330 at 25fc2cadbba2147db6c7767e802088706a305f28","exit_code":0,"result":"The exact merged source was rebuilt and re-gated, then published privately at immutable manifest sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d without a latest tag.","evidence":"provenance/evidence/P014/phase-b-main-immutable-image-publication.md"},
+    {"command":"Evidence-only full verification after two retained disposable-worktree environment-path stops","exit_code":0,"result":"The final explicit canonical-environment run passed 1,725 tests with one declared canonical-Linux-only skip, all 11,692 statements and 3,050 branches at 100% measured coverage, metadata, 116 records, repository scan, R oracle parse, R lock, and verify-ok. The earlier uv-path and R-library-path stops were not bypassed and are retained in the evidence.","evidence":"provenance/evidence/P014/phase-b-main-immutable-image-publication.md"}
   ],
   "blockers": [
-    "The first target-host inventory is retained but failed closed before installation because no supported container runtime exists; an accepted post-preparation inventory is still required.",
-    "PR #7 was merged at 26947e1f6843b2b4dc1d1b0cc552c0af808be3fa after its exact-head gates passed, but no host command was executed. Phase B code and automated evidence closed at d637893a19cc33e57b8826c5ff8625bd196cb1d4; draft PR #8 remains unmerged and requires Oğuz Koran's separate owner decision.",
+    "The first target-host inventory is retained but failed closed before installation because no supported container runtime existed; a fresh pre-Docker baseline, guarded runtime preparation, and accepted post-preparation inventory are still required.",
+    "Phase B was merged through PR #8 at 25fc2cadbba2147db6c7767e802088706a305f28 and its immutable image was published, but the current evidence branch must pass normal review and CI before host work begins.",
     "No live TLS, shared-VPS load, Lemmata coexistence, restart cleanup, rollback, or activation evidence exists yet.",
     "P007 integrated owner walkthrough remains a final activation gate even after technical deployment checks pass.",
     "Full P014 and CE-14/CE-15 require P012 and the normal scientific-release sequence; the accelerated minimum slice cannot close them."

@@ -2,13 +2,25 @@
 
 **Güncellendi:** 2026-07-17
 
-**En yeni checkpoint: Phase B exact closure.** Claude Code'un owner-selected
-A5.1 prototip sistemi exact base
-`26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` üzerinden
-`codex/p014-visual-phase-b` dalındaki gerçek Streamlit Entry, Review,
-Parameters ve Results yüzeylerine aktarıldı. İlk entegre implementation
-`3a554e0e76522672efaf547b1d03e12cb4f3531b`; final bağımsız incelenen
-implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`; draft PR #8'dir.
+**En yeni checkpoint: Phase B main image publication.** Claude Code'un
+owner-selected A5.1 prototip sistemiyle kapanan Phase B, PR #8 üzerinden normal
+merge commit `25fc2cadbba2147db6c7767e802088706a305f28` olarak `main`e alındı.
+Exact-main CI `29597139461` verify `87940183844` ve container `87940183862`
+işlerinde geçti. Publication run `29597615330`, job `87941738365`, aynı source'u
+yeniden build edip hardened stack gate'ten geçirdi ve yalnız exact-commit tag'i
+yayımladı.
+
+Güncel private deployment identity:
+`ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d`.
+`latest` yayımlanmadı. Exact tag yalnız locator'dır; deployment digest ile
+yapılır ve target hostta doğrulanır. İmaj signed/attested değildir. Kanıt
+`provenance/evidence/P014/phase-b-main-immutable-image-publication.md`, run
+`RUN-20260717-0003`, checkpoint
+`memory/checkpoints/2026-07-17-p014-main-image-publication.md` içindedir.
+
+Önceki exact closure implementation'i
+`d637893a19cc33e57b8826c5ff8625bd196cb1d4` ve onun retained kanıt zinciri
+değişmeden korunur.
 
 Final exact commit'te push CI `29592151976` verify `87923605718` ve container
 `87923605615`; PR CI `29592158057` verify `87923626171` ve container
@@ -33,13 +45,14 @@ owner activation kabulü, FAIR completeness, benchmark doğruluğu, genel usabil
 veya public deployment değildir. P011 sensitivity, tam P012 FAIR paketi,
 Pinokyo çalışması ve P014 host kapıları açık sınırdır.
 
-**Güncel operasyon kararı:** PR #8 taslak ve unmerged kalır. Phase B kod ve
-otomatik kanıt kapanışı tamamlandı; sıradaki adım Oğuz'un review/merge kararıdır.
-Claude Code limit yenilendiğinde Git içinde saklanan A5.1 kaynak paketi, bu dosya,
-Phase B belgesi, superseding Run ve PR #8 üzerinden doğrudan devam edebilir.
-Oğuz ayrıca karar vermeden merge, yeni image publication, VPS, Caddy, DNS veya
-public activation yapılmaz. P014 `in-progress`; AC-05'in tam deployment-profile
-ölçütü ile AC-08-AC-10 pending kalır.
+**Güncel operasyon kararı:** Oğuz `HD-20260717-0001` ile normal merge, exact-main
+CI, immutable image publication ve localhost-only host staging sırasını kabul
+etti. Merge ve publication tamamlandı; canlı VPS henüz değiştirilmedi. Önce bu
+kanıt-only dal normal CI ile `main`e alınır. Sonra fresh read-only baseline,
+official Docker hazırlığı, exact-digest pull/verification ve yalnız
+`127.0.0.1:8502` staging uygulanır. External denial ve değişmemiş Lemmata kanıtı
+Oğuz'a gösterilmeden Caddy, DNS veya public route değişmez. P014 `in-progress`;
+AC-05 ile AC-08-AC-10 pending kalır.
 
 **Tarihsel ve genel aşama özeti:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
@@ -119,22 +132,17 @@ AC-01 ile AC-04 ve AC-06 ile AC-07 passed, AC-05 ile host-bound AC-08 ile
 AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Draft PR #8'in exact `d637893` kod/kanıt kapanışını Oğuz ile incelemek. Yalnız
-Oğuz'un açık kararıyla normal merge düşünülür. Deployment ayrı bir sonraki karar
-alanıdır; bu dalda VPS, Caddy, DNS, image publication veya public route işi
-yapılmaz.
+`RUN-20260717-0003` publication kaydını normal CI ile birleştir; ardından runbook
+sırasıyla fresh host preflight ve localhost-only kurulum yap. Pre-Caddy evidence
+review tamamlanmadan public route açma.
 
 **Claude Code kesin devam noktası:** Önce `START_HERE.md`, sonra bu dosya,
-`docs/development/phase-b-visual-integration.md`,
-`provenance/evidence/P014/phase-b-review-remediation.md`,
-`provenance/runs/RUN-20260717-0002.json` ve draft PR #8 okunur. Kalıcı tasarım
-kaynağı ve redakte edilmiş Claude raporu
-`provenance/evidence/P014/phase-a51-design-source/` altındadır; özgün 24 dosyalı
-manifest ve 25 dosyalı repository-safe türev manifest doğrulanabilir durumdadır.
-Final reviewed implementation
-`d637893a19cc33e57b8826c5ff8625bd196cb1d4`'dir. `7585d83` ile başlayan
-başarısız/koşullu zinciri ve exact review artefaktlarını geriye almadan yalnız
-yeni bulgu veya açık owner kararı üzerinden devam edilir.
+`deploy/public-alpha/README.md`,
+`provenance/evidence/P014/phase-b-main-immutable-image-publication.md`,
+`provenance/runs/RUN-20260717-0003.json` ve
+`memory/checkpoints/2026-07-17-p014-main-image-publication.md` okunur. Kalıcı
+tasarım kaynağı ve önceki exact review artefaktları değiştirilmeden korunur.
+Canlı işlem sırası runbook'tur; pre-Caddy owner gate atlanmaz.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı
