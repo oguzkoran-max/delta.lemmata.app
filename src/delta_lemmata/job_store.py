@@ -1234,10 +1234,19 @@ class SQLiteJobStore:
             return updated
 
     @_content_free
-    def claim_next(self, *, at_utc: datetime, operation_id: str) -> JobRecord | None:
-        """Claim the oldest unexpired queued job if no worker is already running."""
+    def claim_next(
+        self,
+        *,
+        at_utc: datetime,
+        operation_id: str,
+        expected_job_id: JobId | str | None = None,
+    ) -> JobRecord | None:
+        """Claim the oldest job only when it matches an optional expected identity."""
 
         at_utc = require_utc(at_utc, field_name="at_utc")
+        expected = (
+            None if expected_job_id is None else self._coerce_job_id(expected_job_id).to_urlsafe()
+        )
         with self._immediate() as connection:
             running_row = cast(
                 sqlite3.Row,
@@ -1263,6 +1272,12 @@ class SQLiteJobStore:
                     return None
                 previous = self._decode(row)
                 if at_utc < previous.execution.entered_at_utc:
+                    return None
+                if (
+                    expected is not None
+                    and previous.job_id != expected
+                    and previous.cancellation.state is not CancellationState.REQUESTED
+                ):
                     return None
                 if previous.cancellation.state is not CancellationState.REQUESTED:
                     break

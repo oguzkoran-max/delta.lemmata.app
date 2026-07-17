@@ -227,8 +227,13 @@ def test_orchestrator_claims_verifies_and_hands_one_bound_request_to_runner(
     tmp_path: Path,
 ) -> None:
     environment = _environment(tmp_path)
+    [queued] = environment.store.list_jobs_for_maintenance()
+    other_job_id = JobId.generate(lambda size: b"x" * size).to_urlsafe()
 
-    running = environment.orchestrator.run_next()
+    assert environment.orchestrator.run_next(expected_job_id=other_job_id) is None
+    assert environment.runner.calls == []
+
+    running = environment.orchestrator.run_next(expected_job_id=queued.job_id)
 
     assert running is not None
     assert running.execution.state is ExecutionState.RUNNING

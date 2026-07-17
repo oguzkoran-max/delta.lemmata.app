@@ -718,6 +718,61 @@ def test_startup_accepted_scientific_result_is_confirmed_before_cleanup(
     assert confirmed.artifacts.work.state is CleanupState.VERIFIED_ABSENT
 
 
+def test_confirmed_result_retains_projection_context_for_bounded_retry(
+    tmp_path: Path,
+) -> None:
+    store, workspaces, clock, janitor = environment(tmp_path)
+    owner = capability()
+    scientific = scientific_terminal_job(store, owner)
+    terminal_version = scientific.version
+    scientific = add_artifact(
+        store,
+        owner,
+        scientific,
+        ArtifactKind.WORK,
+        deadline=NOW + timedelta(minutes=15),
+        operation_number=79,
+    )
+    receipt = scientific.scientific_result
+    assert receipt is not None
+    confirmed = store.confirm_scientific_result_after_guardian(
+        job_id=scientific.job_id,
+        expected_terminal_version=terminal_version,
+        expected_result=receipt,
+        operation_id=operation(80),
+        at_utc=NOW + timedelta(seconds=3, microseconds=1),
+    )
+    layout = layout_for(workspaces, confirmed)
+    workspaces.create_file(layout, WorkspaceArea.INPUT, "a" * 64, b"input")
+    workspaces.create_file(layout, WorkspaceArea.WORK, "b" * 64, b"request context")
+    workspaces.create_file(layout, WorkspaceArea.RESULT, receipt.artifact_component, b"result")
+
+    clock.set(NOW + timedelta(seconds=4))
+    retained_report = janitor.run_once()
+    retained = store.get_job(job_id=confirmed.job_id, capability=owner)
+
+    assert retained_report.cleanup_attempts == 0
+    assert retained.artifacts.input.state is CleanupState.PRESENT
+    assert retained.artifacts.work.state is CleanupState.PRESENT
+    assert retained.result_view is None
+    assert tuple(layout.input.iterdir())
+    assert tuple(layout.work.iterdir())
+
+    context_deadline = retained.artifacts.work.delete_by_utc
+    assert context_deadline is not None
+    clock.set(context_deadline)
+    expired_report = janitor.run_once()
+    expired = store.get_job(job_id=confirmed.job_id, capability=owner)
+
+    assert expired_report.cleanup_attempts == 1
+    assert expired.artifacts.input.state is CleanupState.VERIFIED_ABSENT
+    assert expired.artifacts.work.state is CleanupState.VERIFIED_ABSENT
+    assert expired.artifacts.result.state is CleanupState.PRESENT
+    assert not tuple(layout.input.iterdir())
+    assert not tuple(layout.work.iterdir())
+    assert tuple(layout.result.iterdir())
+
+
 def test_startup_recovery_removes_only_untracked_verified_workspaces(tmp_path: Path) -> None:
     store, workspaces, _clock, janitor = environment(tmp_path)
     owner = capability()

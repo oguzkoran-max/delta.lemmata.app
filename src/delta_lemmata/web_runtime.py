@@ -40,6 +40,7 @@ class WebRuntimeErrorCode(StrEnum):
     MISSING_SECRET = "WEB_RUNTIME_MISSING_SECRET"
     INVALID_SECRET = "WEB_RUNTIME_INVALID_SECRET"
     SECRET_REUSE = "WEB_RUNTIME_SECRET_REUSE"
+    ANALYSIS_NOT_READY = "WEB_RUNTIME_ANALYSIS_NOT_READY"
     MAINTENANCE_FAILED = "WEB_RUNTIME_MAINTENANCE_FAILED"
     INITIALIZATION_FAILED = "WEB_RUNTIME_INITIALIZATION_FAILED"
 
@@ -85,24 +86,31 @@ class WebRuntime:
     def run_analysis_once[ResultT](
         self,
         *,
-        finalize_result: Callable[[], ResultT],
+        expected_job_id: str,
+        admit_analysis: Callable[[], object],
+        resume_result: Callable[[], bool],
+        finalize_result: Callable[[], object],
+        present_result: Callable[[], ResultT],
     ) -> ResultT:
-        """Run, verify, and publish one result before terminal cleanup."""
+        """Resume or run one exact FIFO job, then publish before terminal cleanup."""
 
         with self._maintenance_lock:
-            primary_failed = False
             try:
-                self.analyses.run_next()
-                return finalize_result()
+                resumed = resume_result()
+                if not resumed:
+                    admit_analysis()
+                    completed = self.analyses.run_next(expected_job_id=expected_job_id)
+                    if completed is None or completed.job_id != expected_job_id:
+                        raise _error(WebRuntimeErrorCode.ANALYSIS_NOT_READY)
+                    finalize_result()
             except Exception:
-                primary_failed = True
-                raise
-            finally:
                 try:
                     self.maintain()
                 except WebRuntimeError:
-                    if not primary_failed:
-                        raise
+                    pass
+                raise
+            self.maintain()
+            return present_result()
 
     def start_periodic_maintenance(self) -> None:
         """Start process-local cleanup that does not depend on browser traffic."""

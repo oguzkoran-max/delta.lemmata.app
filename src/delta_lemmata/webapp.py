@@ -88,6 +88,7 @@ from delta_lemmata.intake_ui import (
 from delta_lemmata.prepared_corpus_service import (
     PreparationOutcome,
     PreparedCorpusError,
+    PreparedCorpusErrorCode,
 )
 from delta_lemmata.preprocessing import build_preprocessing_config, parse_custom_exclusions
 from delta_lemmata.preprocessing_models import (
@@ -100,6 +101,7 @@ from delta_lemmata.preprocessing_models import (
     canonical_p007_json,
 )
 from delta_lemmata.provenance import canonical_json_bytes
+from delta_lemmata.result_service import VerifiedScientificResult
 from delta_lemmata.result_view import (
     ResultCellStatus,
     ResultCellV1,
@@ -3298,6 +3300,8 @@ def _render_parameters_stage() -> None:
     ):
         _clear_documentation_state(keep_purpose=True)
         st.rerun()
+    ready_receipt = preparation.ready_receipt
+    assert ready_receipt is not None
 
     try:
         config = _resolve_session_workflow(inventory, annotations)
@@ -3418,21 +3422,19 @@ def _render_parameters_stage() -> None:
         if run_clicked:
             runtime = _runtime()
             try:
-                runtime.prepared_corpora.admit_once(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                    ready_receipt=preparation.ready_receipt,
-                    inventory=inventory,
-                    annotations=annotations,
-                    config=preparation.config,
-                    resolved_workflow_config=config,
-                )
 
-                def finalize_result() -> object:
-                    verified = runtime.prepared_corpora.scientific_result(
+                def admit_analysis() -> object:
+                    return runtime.prepared_corpora.admit_once(
                         owner_key=_owner_key(),
                         materialization_receipt=materialization,
+                        ready_receipt=ready_receipt,
+                        inventory=inventory,
+                        annotations=annotations,
+                        config=preparation.config,
+                        resolved_workflow_config=config,
                     )
+
+                def publish_verified(verified: VerifiedScientificResult) -> None:
                     result_view = project_result_view(
                         config=config,
                         result=verified.result,
@@ -3444,12 +3446,40 @@ def _render_parameters_stage() -> None:
                         materialization_receipt=materialization,
                         view=result_view,
                     )
+
+                def resume_result() -> bool:
+                    try:
+                        verified = runtime.prepared_corpora.scientific_result(
+                            owner_key=_owner_key(),
+                            materialization_receipt=materialization,
+                        )
+                    except PreparedCorpusError as error:
+                        if error.code is PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE:
+                            return False
+                        raise
+                    publish_verified(verified)
+                    return True
+
+                def finalize_result() -> None:
+                    verified = runtime.prepared_corpora.scientific_result(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+                    publish_verified(verified)
+
+                def present_result() -> object:
                     return runtime.prepared_corpora.status(
                         owner_key=_owner_key(),
                         materialization_receipt=materialization,
                     )
 
-                presentation = runtime.run_analysis_once(finalize_result=finalize_result)
+                presentation = runtime.run_analysis_once(
+                    expected_job_id=materialization.job_id,
+                    admit_analysis=admit_analysis,
+                    resume_result=resume_result,
+                    finalize_result=finalize_result,
+                    present_result=present_result,
+                )
             except (PreparedCorpusError, AnalysisOrchestratorError, WebRuntimeError) as error:
                 st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
                 st.caption(text("corpus.error.reference", code=error.code.value))

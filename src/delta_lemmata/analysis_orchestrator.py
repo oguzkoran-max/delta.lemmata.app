@@ -288,12 +288,13 @@ class AnalysisOrchestrator:
         )
 
     @_content_free
-    def run_next(self) -> JobRecord | None:
-        """Run the oldest queued P008 job, or return None when the queue is empty."""
+    def run_next(self, *, expected_job_id: str | None = None) -> JobRecord | None:
+        """Run the oldest queued job when it matches the expected server-side identity."""
 
         job = self._store.claim_next(
             at_utc=self._now(),
             operation_id=self._operation_id(),
+            expected_job_id=expected_job_id,
         )
         if job is None:
             return None

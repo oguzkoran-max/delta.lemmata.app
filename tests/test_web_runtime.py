@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 from threading import Event, Thread
+from types import SimpleNamespace
 
 import pytest
 
@@ -269,9 +270,9 @@ def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
 
     class Analyses:
         @staticmethod
-        def run_next() -> str:
-            events.append("analysis")
-            return "terminal"
+        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+            events.append(f"analysis:{expected_job_id}")
+            return SimpleNamespace(job_id=expected_job_id)
 
     class Janitor:
         @staticmethod
@@ -285,16 +286,44 @@ def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
         janitor=Janitor(),  # type: ignore[arg-type]
     )
 
-    def finalize_result() -> str:
+    def finalize_result() -> None:
         events.append("finalize")
+
+    def present_result() -> str:
+        events.append("present")
         return "published"
 
-    assert runtime.run_analysis_once(finalize_result=finalize_result) == "published"
-    assert events == ["analysis", "finalize", "materializations", "janitor"]
+    def admit_analysis() -> None:
+        events.append("admit")
+
+    def resume_result() -> bool:
+        events.append("resume")
+        return False
+
+    assert (
+        runtime.run_analysis_once(
+            expected_job_id="job-a",
+            admit_analysis=admit_analysis,
+            resume_result=resume_result,
+            finalize_result=finalize_result,
+            present_result=present_result,
+        )
+        == "published"
+    )
+    assert events == [
+        "resume",
+        "admit",
+        "analysis:job-a",
+        "finalize",
+        "materializations",
+        "janitor",
+        "present",
+    ]
 
     class FailedAnalyses:
         @staticmethod
-        def run_next() -> None:
+        def run_next(*, expected_job_id: str) -> None:
+            assert expected_job_id == "job-a"
             events.append("failed-analysis")
             raise RuntimeError("primary failure")
 
@@ -307,12 +336,24 @@ def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
     runtime.analyses = FailedAnalyses()  # type: ignore[assignment]
     runtime.materializations = FailedMaintenance()  # type: ignore[assignment]
     with pytest.raises(RuntimeError, match="primary failure"):
-        runtime.run_analysis_once(finalize_result=finalize_result)
+        runtime.run_analysis_once(
+            expected_job_id="job-a",
+            admit_analysis=admit_analysis,
+            resume_result=lambda: False,
+            finalize_result=finalize_result,
+            present_result=present_result,
+        )
     assert events[-3:] == ["failed-analysis", "failed-maintenance", "janitor"]
 
     runtime.analyses = Analyses()  # type: ignore[assignment]
     with pytest.raises(WebRuntimeError) as captured:
-        runtime.run_analysis_once(finalize_result=finalize_result)
+        runtime.run_analysis_once(
+            expected_job_id="job-a",
+            admit_analysis=admit_analysis,
+            resume_result=lambda: False,
+            finalize_result=finalize_result,
+            present_result=present_result,
+        )
     assert captured.value.code is WebRuntimeErrorCode.MAINTENANCE_FAILED
 
     runtime.materializations = Materializations()  # type: ignore[assignment]
@@ -322,10 +363,133 @@ def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
         raise RuntimeError("publication failure")
 
     with pytest.raises(RuntimeError, match="publication failure"):
-        runtime.run_analysis_once(finalize_result=failed_finalization)
+        runtime.run_analysis_once(
+            expected_job_id="job-a",
+            admit_analysis=admit_analysis,
+            resume_result=lambda: False,
+            finalize_result=failed_finalization,
+            present_result=present_result,
+        )
     assert events[-4:] == [
-        "analysis",
+        "analysis:job-a",
         "failed-finalization",
+        "materializations",
+        "janitor",
+    ]
+
+
+def test_analysis_run_resumes_published_context_and_rejects_job_mismatch() -> None:
+    events: list[str] = []
+
+    class Materializations:
+        @staticmethod
+        def reap_expired() -> None:
+            events.append("materializations")
+
+    class Analyses:
+        @staticmethod
+        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+            events.append(f"analysis:{expected_job_id}")
+            return SimpleNamespace(job_id="different-job")
+
+    class Janitor:
+        @staticmethod
+        def run_once() -> None:
+            events.append("janitor")
+
+    runtime = WebRuntime(
+        materializations=Materializations(),  # type: ignore[arg-type]
+        prepared_corpora=object(),  # type: ignore[arg-type]
+        analyses=Analyses(),  # type: ignore[arg-type]
+        janitor=Janitor(),  # type: ignore[arg-type]
+    )
+
+    assert (
+        runtime.run_analysis_once(
+            expected_job_id="job-a",
+            admit_analysis=lambda: events.append("unexpected-admit"),
+            resume_result=lambda: True,
+            finalize_result=lambda: events.append("unexpected-finalize"),
+            present_result=lambda: "recovered",
+        )
+        == "recovered"
+    )
+    assert events == ["materializations", "janitor"]
+
+    events.clear()
+    with pytest.raises(WebRuntimeError) as captured:
+        runtime.run_analysis_once(
+            expected_job_id="job-a",
+            admit_analysis=lambda: events.append("admit"),
+            resume_result=lambda: False,
+            finalize_result=lambda: events.append("unexpected-finalize"),
+            present_result=lambda: events.append("unexpected-present"),
+        )
+    assert captured.value.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY
+    assert events == ["admit", "analysis:job-a", "materializations", "janitor"]
+
+
+def test_concurrent_sessions_keep_admission_execution_and_finalization_bound() -> None:
+    events: list[str] = []
+    release = Event()
+    results: dict[str, str] = {}
+
+    class Materializations:
+        @staticmethod
+        def reap_expired() -> None:
+            events.append("materializations")
+
+    class Analyses:
+        @staticmethod
+        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+            events.append(f"analysis:{expected_job_id}")
+            return SimpleNamespace(job_id=expected_job_id)
+
+    class Janitor:
+        @staticmethod
+        def run_once() -> None:
+            events.append("janitor")
+
+    runtime = WebRuntime(
+        materializations=Materializations(),  # type: ignore[arg-type]
+        prepared_corpora=object(),  # type: ignore[arg-type]
+        analyses=Analyses(),  # type: ignore[arg-type]
+        janitor=Janitor(),  # type: ignore[arg-type]
+    )
+
+    def run(job_id: str) -> None:
+        assert release.wait(timeout=5)
+        results[job_id] = runtime.run_analysis_once(
+            expected_job_id=job_id,
+            admit_analysis=lambda: events.append(f"admit:{job_id}"),
+            resume_result=lambda: False,
+            finalize_result=lambda: events.append(f"finalize:{job_id}"),
+            present_result=lambda: f"published:{job_id}",
+        )
+
+    threads = [Thread(target=run, args=(job_id,)) for job_id in ("job-a", "job-b")]
+    for thread in threads:
+        thread.start()
+    release.set()
+    for thread in threads:
+        thread.join(timeout=5)
+
+    assert all(not thread.is_alive() for thread in threads)
+    assert results == {
+        "job-a": "published:job-a",
+        "job-b": "published:job-b",
+    }
+    first_job = events[0].split(":", maxsplit=1)[1]
+    second_job = "job-b" if first_job == "job-a" else "job-a"
+    assert events == [
+        f"admit:{first_job}",
+        f"analysis:{first_job}",
+        f"finalize:{first_job}",
+        "materializations",
+        "janitor",
+        f"admit:{second_job}",
+        f"analysis:{second_job}",
+        f"finalize:{second_job}",
         "materializations",
         "janitor",
     ]
@@ -345,8 +509,8 @@ def test_background_maintenance_waits_for_result_finalization() -> None:
 
     class Analyses:
         @staticmethod
-        def run_next() -> None:
-            return None
+        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+            return SimpleNamespace(job_id=expected_job_id)
 
     class Janitor:
         @staticmethod
@@ -366,7 +530,15 @@ def test_background_maintenance_waits_for_result_finalization() -> None:
         return "published"
 
     def run_analysis() -> None:
-        result.append(runtime.run_analysis_once(finalize_result=finalize_result))
+        result.append(
+            runtime.run_analysis_once(
+                expected_job_id="job-a",
+                admit_analysis=lambda: None,
+                resume_result=lambda: False,
+                finalize_result=finalize_result,
+                present_result=lambda: "published",
+            )
+        )
 
     def run_background_maintenance() -> None:
         background_started.set()

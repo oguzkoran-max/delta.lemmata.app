@@ -1333,6 +1333,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     app = _open_guided_parameters()
+    lifecycle_events: list[str] = []
 
     class RecordingPreparedCorpora:
         admitted: dict[str, object] | None = None
@@ -1342,18 +1343,21 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
         def admit_once(self, **kwargs: object) -> None:
             self.admitted = dict(kwargs)
 
-        @staticmethod
-        def scientific_result(**_kwargs: object) -> SimpleNamespace:
+        def scientific_result(self, **_kwargs: object) -> SimpleNamespace:
+            if self.admitted is None:
+                raise PreparedCorpusError(PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
             return SimpleNamespace(result=object(), sha256="a" * 64)
 
         def publish_result_view(self, **kwargs: object) -> None:
             self.published = kwargs["view"]
+            lifecycle_events.append("publish")
 
         def result_view(self, **_kwargs: object) -> object:
             return self.published
 
         def status(self, **_kwargs: object) -> SimpleNamespace:
             self.status_calls += 1
+            lifecycle_events.append("status")
             return SimpleNamespace(
                 state_id="succeeded",
                 title="Analysis complete",
@@ -1363,8 +1367,9 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     class RecordingAnalyses:
         run_calls = 0
 
-        def run_next(self) -> None:
+        def run_next(self, *, expected_job_id: str) -> SimpleNamespace:
             self.run_calls += 1
+            return SimpleNamespace(job_id=expected_job_id)
 
     prepared = RecordingPreparedCorpora()
     analyses = RecordingAnalyses()
@@ -1374,12 +1379,22 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     def maintain() -> None:
         nonlocal maintenance_calls
         maintenance_calls += 1
+        lifecycle_events.append("maintain")
 
-    def run_analysis_once(*, finalize_result: object) -> object:
-        analyses.run_next()
-        result = finalize_result()  # type: ignore[operator]
+    def run_analysis_once(
+        *,
+        expected_job_id: str,
+        admit_analysis: object,
+        resume_result: object,
+        finalize_result: object,
+        present_result: object,
+    ) -> object:
+        assert resume_result() is False  # type: ignore[operator]
+        admit_analysis()  # type: ignore[operator]
+        analyses.run_next(expected_job_id=expected_job_id)
+        finalize_result()  # type: ignore[operator]
         maintain()
-        return result
+        return present_result()  # type: ignore[operator]
 
     monkeypatch.setattr(
         webapp_module,
@@ -1404,6 +1419,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     assert maintenance_calls == 1
     assert prepared.status_calls == 1
     assert prepared.published == "verified-public-view"
+    assert lifecycle_events == ["publish", "maintain", "status"]
     assert rendered and set(rendered) == {"verified-public-view"}
     assert prepared.admitted is not None
     config = prepared.admitted["resolved_workflow_config"]
@@ -1417,6 +1433,94 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     state = repr(app.session_state.filtered_state)
     assert "alpha beta gamma" not in state
     assert "SessionCapability" not in state
+
+
+def test_guided_run_resumes_an_existing_result_without_readmission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    events: list[str] = []
+
+    class ResumablePreparedCorpora:
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            events.append("unexpected-admit")
+
+        @staticmethod
+        def scientific_result(**_kwargs: object) -> SimpleNamespace:
+            events.append("scientific")
+            return SimpleNamespace(result=object(), sha256="a" * 64)
+
+        @staticmethod
+        def publish_result_view(**_kwargs: object) -> None:
+            events.append("publish")
+
+        @staticmethod
+        def status(**_kwargs: object) -> SimpleNamespace:
+            events.append("status")
+            return SimpleNamespace(
+                state_id="succeeded",
+                title="Analysis complete",
+                body="The run completed and its temporary inputs were removed.",
+            )
+
+        @staticmethod
+        def result_view(**_kwargs: object) -> str:
+            return "resumed-public-view"
+
+    prepared = ResumablePreparedCorpora()
+
+    def run_analysis_once(**callbacks: object) -> object:
+        assert callbacks["resume_result"]() is True  # type: ignore[operator]
+        events.append("maintain")
+        return callbacks["present_result"]()  # type: ignore[operator]
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=prepared,
+            run_analysis_once=run_analysis_once,
+        ),
+    )
+    monkeypatch.setattr(webapp_module, "project_result_view", lambda **_kwargs: object())
+
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert events == ["scientific", "publish", "maintain", "status"]
+    assert app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY].state_id == "succeeded"
+
+
+def test_parameter_resume_failure_is_stable_and_content_free(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class RejectingPreparedCorpora:
+        @staticmethod
+        def scientific_result(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.OPERATION_FAILED)
+
+    def run_analysis_once(**callbacks: object) -> object:
+        return callbacks["resume_result"]()  # type: ignore[operator]
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=RejectingPreparedCorpora(),
+            run_analysis_once=run_analysis_once,
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ]
+    captions = "\n".join(item.value for item in app.caption)
+    assert "P007_PREPARED_CORPUS_OPERATION_FAILED" in captions
 
 
 def test_parameter_admission_failure_is_stable_and_content_free(
@@ -1434,7 +1538,7 @@ def test_parameter_admission_failure_is_stable_and_content_free(
         "_runtime",
         lambda: SimpleNamespace(
             prepared_corpora=RejectingPreparedCorpora(),
-            analyses=SimpleNamespace(run_next=lambda: None),
+            run_analysis_once=lambda **kwargs: kwargs["admit_analysis"](),
         ),
     )
     app.checkbox(key="p008_parameter_confirmation").check().run()
@@ -1463,7 +1567,7 @@ def test_parameter_configuration_failure_does_not_echo_exception_text(
         "_runtime",
         lambda: SimpleNamespace(
             prepared_corpora=RejectingPreparedCorpora(),
-            analyses=SimpleNamespace(run_next=lambda: None),
+            run_analysis_once=lambda **kwargs: kwargs["admit_analysis"](),
         ),
     )
     app.checkbox(key="p008_parameter_confirmation").check().run()
