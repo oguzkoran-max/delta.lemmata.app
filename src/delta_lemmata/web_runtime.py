@@ -99,7 +99,7 @@ class WebRuntime:
                 resumed = resume_result()
                 if not resumed:
                     admit_analysis()
-                    completed = self.analyses.run_next(expected_job_id=expected_job_id)
+                    completed = self.analyses.run_until(expected_job_id=expected_job_id)
                     if completed is None or completed.job_id != expected_job_id:
                         raise _error(WebRuntimeErrorCode.ANALYSIS_NOT_READY)
                     finalize_result()

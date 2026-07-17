@@ -313,6 +313,19 @@ class AnalysisOrchestrator:
             raise
         return self._runner.run(job=job, layout=layout, request=bundle.request)
 
+    @_content_free
+    def run_until(self, *, expected_job_id: str) -> JobRecord | None:
+        """Run the bounded FIFO prefix through one expected server-side job."""
+
+        expected = JobId.from_urlsafe(expected_job_id).to_urlsafe()
+        for _ in range(self._policy.max_queued):
+            completed = self.run_next()
+            if completed is None:
+                return None
+            if completed.job_id == expected:
+                return completed
+        return None
+
 
 __all__ = [
     "AnalysisOrchestrator",

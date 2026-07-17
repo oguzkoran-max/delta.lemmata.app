@@ -270,7 +270,7 @@ def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
 
     class Analyses:
         @staticmethod
-        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+        def run_until(*, expected_job_id: str) -> SimpleNamespace:
             events.append(f"analysis:{expected_job_id}")
             return SimpleNamespace(job_id=expected_job_id)
 
@@ -322,7 +322,7 @@ def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
 
     class FailedAnalyses:
         @staticmethod
-        def run_next(*, expected_job_id: str) -> None:
+        def run_until(*, expected_job_id: str) -> None:
             assert expected_job_id == "job-a"
             events.append("failed-analysis")
             raise RuntimeError("primary failure")
@@ -388,9 +388,9 @@ def test_analysis_run_resumes_published_context_and_rejects_job_mismatch() -> No
 
     class Analyses:
         @staticmethod
-        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+        def run_until(*, expected_job_id: str) -> None:
             events.append(f"analysis:{expected_job_id}")
-            return SimpleNamespace(job_id="different-job")
+            return None
 
     class Janitor:
         @staticmethod
@@ -429,6 +429,52 @@ def test_analysis_run_resumes_published_context_and_rejects_job_mismatch() -> No
     assert events == ["admit", "analysis:job-a", "materializations", "janitor"]
 
 
+def test_analysis_run_drains_a_stale_fifo_predecessor_without_cross_presentation() -> None:
+    events: list[str] = []
+
+    class Materializations:
+        @staticmethod
+        def reap_expired() -> None:
+            events.append("materializations")
+
+    class Analyses:
+        @staticmethod
+        def run_until(*, expected_job_id: str) -> SimpleNamespace:
+            events.extend(("run:stale-job", f"run:{expected_job_id}"))
+            return SimpleNamespace(job_id=expected_job_id)
+
+    class Janitor:
+        @staticmethod
+        def run_once() -> None:
+            events.append("janitor")
+
+    runtime = WebRuntime(
+        materializations=Materializations(),  # type: ignore[arg-type]
+        prepared_corpora=object(),  # type: ignore[arg-type]
+        analyses=Analyses(),  # type: ignore[arg-type]
+        janitor=Janitor(),  # type: ignore[arg-type]
+    )
+
+    assert (
+        runtime.run_analysis_once(
+            expected_job_id="expected-job",
+            admit_analysis=lambda: events.append("admit:expected-job"),
+            resume_result=lambda: False,
+            finalize_result=lambda: events.append("finalize:expected-job"),
+            present_result=lambda: "present:expected-job",
+        )
+        == "present:expected-job"
+    )
+    assert events == [
+        "admit:expected-job",
+        "run:stale-job",
+        "run:expected-job",
+        "finalize:expected-job",
+        "materializations",
+        "janitor",
+    ]
+
+
 def test_concurrent_sessions_keep_admission_execution_and_finalization_bound() -> None:
     events: list[str] = []
     release = Event()
@@ -441,7 +487,7 @@ def test_concurrent_sessions_keep_admission_execution_and_finalization_bound() -
 
     class Analyses:
         @staticmethod
-        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+        def run_until(*, expected_job_id: str) -> SimpleNamespace:
             events.append(f"analysis:{expected_job_id}")
             return SimpleNamespace(job_id=expected_job_id)
 
@@ -509,7 +555,7 @@ def test_background_maintenance_waits_for_result_finalization() -> None:
 
     class Analyses:
         @staticmethod
-        def run_next(*, expected_job_id: str) -> SimpleNamespace:
+        def run_until(*, expected_job_id: str) -> SimpleNamespace:
             return SimpleNamespace(job_id=expected_job_id)
 
     class Janitor:

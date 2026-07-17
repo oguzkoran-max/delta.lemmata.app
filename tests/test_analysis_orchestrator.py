@@ -241,6 +241,55 @@ def test_orchestrator_claims_verifies_and_hands_one_bound_request_to_runner(
     assert environment.orchestrator.run_next() is None
 
 
+def test_run_until_drains_only_the_bounded_fifo_prefix_for_the_expected_job(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    environment = _environment(tmp_path)
+    [expected] = environment.store.list_jobs_for_maintenance()
+    stale_ids = tuple(
+        JobId.generate(lambda size, byte=byte: bytes((byte,)) * size).to_urlsafe()
+        for byte in (ord("x"), ord("y"), ord("z"))
+    )
+    stale = tuple(expected.model_copy(update={"job_id": job_id}) for job_id in stale_ids)
+    prefix = iter((*stale[:2], expected))
+    calls = 0
+
+    def run_prefix() -> JobRecord:
+        nonlocal calls
+        calls += 1
+        return next(prefix)
+
+    monkeypatch.setattr(environment.orchestrator, "run_next", run_prefix)
+    assert environment.orchestrator.run_until(expected_job_id=expected.job_id) == expected
+    assert calls == 3
+
+    calls = 0
+    exhausted = iter(stale)
+
+    def run_bounded_prefix() -> JobRecord:
+        nonlocal calls
+        calls += 1
+        return next(exhausted)
+
+    monkeypatch.setattr(environment.orchestrator, "run_next", run_bounded_prefix)
+    missing = JobId.generate(lambda size: b"m" * size).to_urlsafe()
+    assert environment.orchestrator.run_until(expected_job_id=missing) is None
+    assert calls == 3
+
+    monkeypatch.setattr(environment.orchestrator, "run_next", lambda: None)
+    assert environment.orchestrator.run_until(expected_job_id=expected.job_id) is None
+
+
+def test_run_until_rejects_an_invalid_expected_identity_content_free(tmp_path: Path) -> None:
+    environment = _environment(tmp_path)
+
+    _expect_error(
+        lambda: environment.orchestrator.run_until(expected_job_id="not-a-job-id"),
+        AnalysisOrchestratorErrorCode.OPERATION_FAILED,
+    )
+
+
 def test_missing_bundle_is_terminalized_without_calling_runner(tmp_path: Path) -> None:
     environment = _environment(tmp_path, with_bundle=False)
 

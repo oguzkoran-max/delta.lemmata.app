@@ -181,6 +181,12 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.run_error": (
         "Delta could not complete this bounded analysis safely. No partial result is presented."
     ),
+    "parameters.queue_wait.title": "Your analysis remains in the queue.",
+    "parameters.queue_wait.body": (
+        "Another analysis is still finishing. Wait a moment, then choose Run the four "
+        "comparisons again. Delta will continue this same job; you do not need to upload the "
+        "texts again."
+    ),
     "parameters.configuration_error": (
         "The resolved parameter record no longer matches this documented corpus. Return to "
         "preparation and try again."

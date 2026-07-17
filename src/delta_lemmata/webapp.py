@@ -114,7 +114,12 @@ from delta_lemmata.result_view import (
 )
 from delta_lemmata.stylo_contracts import DocumentRole
 from delta_lemmata.ui_theme import APP_CSS
-from delta_lemmata.web_runtime import WebRuntime, WebRuntimeError, build_web_runtime
+from delta_lemmata.web_runtime import (
+    WebRuntime,
+    WebRuntimeError,
+    WebRuntimeErrorCode,
+    build_web_runtime,
+)
 from delta_lemmata.workbench import (
     MODE_BODY_KEYS,
     MODE_LABEL_KEYS,
@@ -3424,15 +3429,26 @@ def _render_parameters_stage() -> None:
             try:
 
                 def admit_analysis() -> object:
-                    return runtime.prepared_corpora.admit_once(
-                        owner_key=_owner_key(),
-                        materialization_receipt=materialization,
-                        ready_receipt=ready_receipt,
-                        inventory=inventory,
-                        annotations=annotations,
-                        config=preparation.config,
-                        resolved_workflow_config=config,
-                    )
+                    try:
+                        return runtime.prepared_corpora.admit_once(
+                            owner_key=_owner_key(),
+                            materialization_receipt=materialization,
+                            ready_receipt=ready_receipt,
+                            inventory=inventory,
+                            annotations=annotations,
+                            config=preparation.config,
+                            resolved_workflow_config=config,
+                        )
+                    except PreparedCorpusError as error:
+                        if error.code is not PreparedCorpusErrorCode.ADMISSION_REUSED:
+                            raise
+                        queued = runtime.prepared_corpora.status(
+                            owner_key=_owner_key(),
+                            materialization_receipt=materialization,
+                        )
+                        if getattr(queued, "state_id", "") not in {"queued", "running"}:
+                            raise
+                        return queued
 
                 def publish_verified(verified: VerifiedScientificResult) -> None:
                     result_view = project_result_view(
@@ -3480,7 +3496,17 @@ def _render_parameters_stage() -> None:
                     finalize_result=finalize_result,
                     present_result=present_result,
                 )
-            except (PreparedCorpusError, AnalysisOrchestratorError, WebRuntimeError) as error:
+            except WebRuntimeError as error:
+                if error.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY:
+                    st.info(
+                        text("parameters.queue_wait.title"),
+                        icon=":material/hourglass_top:",
+                    )
+                    st.caption(text("parameters.queue_wait.body"))
+                else:
+                    st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
+                st.caption(text("corpus.error.reference", code=error.code.value))
+            except (PreparedCorpusError, AnalysisOrchestratorError) as error:
                 st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
                 st.caption(text("corpus.error.reference", code=error.code.value))
             except (ValidationError, ValueError):

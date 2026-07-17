@@ -36,6 +36,7 @@ _entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
 _semantic_result_parity = P009_BROWSER_AUDIT._semantic_result_parity
 _semantic_table_rows = P009_BROWSER_AUDIT._semantic_table_rows
 _terminal_payload_cleanup_pass = P009_BROWSER_AUDIT._terminal_payload_cleanup_pass
+_result_viewport_pass = P009_BROWSER_AUDIT._result_viewport_pass
 
 
 class _Download:
@@ -285,6 +286,30 @@ def test_entry_primary_action_uses_the_a51_mobile_fold_budget() -> None:
     assert _entry_primary_action_max_y(390, 844) == 780.0
     assert _entry_primary_action_max_y(320, 800) == 800.0
     assert _entry_primary_action_max_y(1440, 1000) == 1000.0
+
+
+def test_result_viewport_contract_does_not_require_entry_uploader_evidence() -> None:
+    viewport = {
+        "horizontal_overflow": False,
+        "main_horizontal_overflow": False,
+        "overflowing_controls": [],
+        "small_targets": [],
+        "misframed_table_scroll_regions": [],
+        "unscrollable_table_regions": [],
+        "visible_h1_count": 1,
+        "main_landmark_count": 1,
+        "footer_count": 1,
+        "inter_font_loaded": True,
+        "source_sans_font_loaded": True,
+        "mfw_radio_layout_pass": True,
+        "all_result_cells_visible_pass": True,
+        "mds_metric_aspect_pass": True,
+        "chart_pixels": ({"pass": True}, {"pass": True}),
+    }
+
+    assert "uploader_context_pass" not in viewport
+    assert _result_viewport_pass(viewport) is True
+    assert _result_viewport_pass({**viewport, "horizontal_overflow": True}) is False
 
 
 def test_download_json_waits_for_idle_and_rejects_canceled_download() -> None:

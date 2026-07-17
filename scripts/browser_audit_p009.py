@@ -595,6 +595,28 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
     return tuple(results)
 
 
+def _result_viewport_pass(item: dict[str, Any]) -> bool:
+    """Evaluate only contracts that exist on the result surface."""
+
+    return bool(
+        not item["horizontal_overflow"]
+        and not item["main_horizontal_overflow"]
+        and not item["overflowing_controls"]
+        and not item["small_targets"]
+        and not item["misframed_table_scroll_regions"]
+        and not item["unscrollable_table_regions"]
+        and item["visible_h1_count"] == 1
+        and item["main_landmark_count"] == 1
+        and item["footer_count"] == 1
+        and item["inter_font_loaded"]
+        and item["source_sans_font_loaded"]
+        and item["mfw_radio_layout_pass"]
+        and item["all_result_cells_visible_pass"]
+        and item["mds_metric_aspect_pass"]
+        and all(chart["pass"] for chart in item["chart_pixels"])
+    )
+
+
 def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, Any]:
     confirmation = page.get_by_role(
         "checkbox",
@@ -756,25 +778,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         "canonical_export_sha256": export_digest,
         **export_checks,
         "payload_absent_from_page_pass": canary not in body,
-        "viewport_pass": all(
-            not item["horizontal_overflow"]
-            and not item["main_horizontal_overflow"]
-            and not item["overflowing_controls"]
-            and not item["small_targets"]
-            and not item["misframed_table_scroll_regions"]
-            and not item["unscrollable_table_regions"]
-            and item["visible_h1_count"] == 1
-            and item["main_landmark_count"] == 1
-            and item["footer_count"] == 1
-            and item["inter_font_loaded"]
-            and item["source_sans_font_loaded"]
-            and item["uploader_context_pass"]
-            and item["mfw_radio_layout_pass"]
-            and item["all_result_cells_visible_pass"]
-            and item["mds_metric_aspect_pass"]
-            and all(chart["pass"] for chart in item["chart_pixels"])
-            for item in viewports
-        ),
+        "viewport_pass": all(_result_viewport_pass(item) for item in viewports),
         "viewports": viewports,
     }
 

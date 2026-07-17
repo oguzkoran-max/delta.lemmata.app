@@ -64,6 +64,7 @@ from delta_lemmata.result_view import (
     classical_mds,
 )
 from delta_lemmata.stylo_contracts import DistanceMeasure, DocumentRole
+from delta_lemmata.web_runtime import WebRuntimeError, WebRuntimeErrorCode
 from delta_lemmata.workflow_models import AnalysisScope
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -1367,7 +1368,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     class RecordingAnalyses:
         run_calls = 0
 
-        def run_next(self, *, expected_job_id: str) -> SimpleNamespace:
+        def run_until(self, *, expected_job_id: str) -> SimpleNamespace:
             self.run_calls += 1
             return SimpleNamespace(job_id=expected_job_id)
 
@@ -1391,7 +1392,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
     ) -> object:
         assert resume_result() is False  # type: ignore[operator]
         admit_analysis()  # type: ignore[operator]
-        analyses.run_next(expected_job_id=expected_job_id)
+        analyses.run_until(expected_job_id=expected_job_id)
         finalize_result()  # type: ignore[operator]
         maintain()
         return present_result()  # type: ignore[operator]
@@ -1490,6 +1491,150 @@ def test_guided_run_resumes_an_existing_result_without_readmission(
 
     assert events == ["scientific", "publish", "maintain", "status"]
     assert app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY].state_id == "succeeded"
+
+
+def test_guided_run_reuses_an_already_queued_admission(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+    events: list[str] = []
+
+    class QueuedPreparedCorpora:
+        @staticmethod
+        def scientific_result(**_kwargs: object) -> None:
+            events.append("scientific")
+            raise PreparedCorpusError(PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
+
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            events.append("reused-admission")
+            raise PreparedCorpusError(PreparedCorpusErrorCode.ADMISSION_REUSED)
+
+        @staticmethod
+        def status(**_kwargs: object) -> SimpleNamespace:
+            events.append("status")
+            return SimpleNamespace(
+                state_id="queued",
+                title="Analysis queued",
+                body="The same job remains queued.",
+            )
+
+    prepared = QueuedPreparedCorpora()
+
+    def run_analysis_once(**callbacks: object) -> object:
+        assert callbacks["resume_result"]() is False  # type: ignore[operator]
+        queued = callbacks["admit_analysis"]()  # type: ignore[operator]
+        assert queued.state_id == "queued"
+        return SimpleNamespace(
+            state_id="succeeded",
+            title="Analysis complete",
+            body="The queued job completed.",
+        )
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=prepared,
+            run_analysis_once=run_analysis_once,
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert events == ["scientific", "reused-admission", "status"]
+    assert app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY].state_id == "succeeded"
+
+
+def test_guided_run_rejects_reused_admission_outside_queue_states(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    class FailedPreparedCorpora:
+        @staticmethod
+        def scientific_result(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE)
+
+        @staticmethod
+        def admit_once(**_kwargs: object) -> None:
+            raise PreparedCorpusError(PreparedCorpusErrorCode.ADMISSION_REUSED)
+
+        @staticmethod
+        def status(**_kwargs: object) -> SimpleNamespace:
+            return SimpleNamespace(state_id="failed")
+
+    def run_analysis_once(**callbacks: object) -> object:
+        assert callbacks["resume_result"]() is False  # type: ignore[operator]
+        return callbacks["admit_analysis"]()  # type: ignore[operator]
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=FailedPreparedCorpora(),
+            run_analysis_once=run_analysis_once,
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ]
+    assert "P007_PREPARED_CORPUS_ADMISSION_REUSED" in "\n".join(item.value for item in app.caption)
+
+
+def test_analysis_not_ready_explains_how_to_continue_the_same_queued_job(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    def run_analysis_once(**_callbacks: object) -> object:
+        raise WebRuntimeError(WebRuntimeErrorCode.ANALYSIS_NOT_READY)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=object(),
+            run_analysis_once=run_analysis_once,
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.info][-1] == "Your analysis remains in the queue."
+    captions = "\n".join(item.value for item in app.caption)
+    assert "you do not need to upload the texts again" in captions
+    assert "WEB_RUNTIME_ANALYSIS_NOT_READY" in captions
+    assert [message.value for message in app.error] == []
+    assert app.button(key="parameters_run_analysis").disabled is False
+
+
+def test_non_queue_runtime_failure_keeps_the_generic_fail_closed_message(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    app = _open_guided_parameters()
+
+    def run_analysis_once(**_callbacks: object) -> object:
+        raise WebRuntimeError(WebRuntimeErrorCode.MAINTENANCE_FAILED)
+
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=object(),
+            run_analysis_once=run_analysis_once,
+        ),
+    )
+    app.checkbox(key="p008_parameter_confirmation").check().run()
+    app.button(key="parameters_run_analysis").click().run()
+
+    assert [message.value for message in app.error] == [
+        "Delta could not complete this bounded analysis safely. No partial result is presented."
+    ]
+    assert "WEB_RUNTIME_MAINTENANCE_FAILED" in "\n".join(item.value for item in app.caption)
 
 
 def test_parameter_resume_failure_is_stable_and_content_free(
