@@ -133,6 +133,16 @@ raises only this browser-audit wait to 60 seconds. It does not change Streamlit
 behavior, scientific configuration, result values, or exports. Both failed PR
 attempts remain visible in GitHub Actions.
 
+Runs `29543777510` and `29543779165` then tested the longer boundary at
+`971d9c0048c289654620d321272c95957dc1a7d6`. Both container jobs and PR verify
+passed, while push verify retained the checked control with unchanged semantic
+tables for the full 60 seconds. The problem was therefore the automated label
+interaction, not worker speed. Commit
+`15ce5dd532c5054191518ea292f5cb966338d068` uses the accessible native radio
+group's ArrowRight change event from checked 500 MFW to adjacent 1000 MFW.
+Twelve focused tests and Ruff passed. No application behavior, parameter,
+distance, chart datum, or export was changed.
+
 ## Deliberately Deferred
 
 - Cross-parameter stability labels and sensitivity summaries require P011

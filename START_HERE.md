@@ -19,6 +19,11 @@ yeniden çizen yavaş işçide 15 saniyelik audit bekleme sınırını iki kez a
 `483c7a017a374958e312247c69e4fe42e0010810` yalnız bu kanıt bekleme süresini
 60 saniyeye çıkardı; ürün veya bilimsel hesap değişmedi. Güncel exact-head durumu
 için draft PR #8 kontrolleri esas alınır.
+`971d9c0048c289654620d321272c95957dc1a7d6` PR verify'da geçip push verify'da
+aynı durumda 60 saniye kaldığı için zamanlama-only açıklaması reddedildi.
+`15ce5dd532c5054191518ea292f5cb966338d068` görünür etiket otomasyonunu, checked
+500 MFW radyo öğesinden sağ okla 1000 MFW'ye geçen yerel klavye change olayıyla
+değiştirir; ürün ve bilimsel hesap yine değişmez.
 **Güncel operasyonel iş:** PR #8 Oğuz ve, limit yenilendiğinde, Claude Code
 tarafından incelenir. Bulgu aynı dalda kapatılır ve CI yeniden çalıştırılır.
 Oğuz'un açık kararı olmadan merge, image publication, VPS, Caddy, DNS veya

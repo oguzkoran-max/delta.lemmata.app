@@ -13,6 +13,11 @@
   expands the semantic result refresh wait from 15 to 60 seconds after the
   evidence-only PR run exceeded the shorter boundary twice. Product and
   scientific behavior are unchanged; the failed runs remain retained.
+- Native-event correction: `971d9c0048c289654620d321272c95957dc1a7d6`
+  showed that a 60-second wait alone was insufficient on push CI while PR CI
+  passed. `15ce5dd532c5054191518ea292f5cb966338d068` now changes the native radio
+  choice through ArrowRight from checked 500 MFW; 12 focused tests and Ruff
+  passed, with no product or scientific change.
 - Integrated: Entry, Review, Results, shared responsive tokens, native radio
   cards, local Inter, semantic tables, evidence-first charts, accessibility
   landmarks, and 44 px target sizing.

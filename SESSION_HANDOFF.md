@@ -25,6 +25,11 @@ birebirdir. Audit-only follow-up
 `483c7a017a374958e312247c69e4fe42e0010810` bu beklemeyi 60 saniyeye çıkarır;
 uygulama, parametre, bilimsel sonuç veya export değişmez. Güncel exact-head
 durumu için draft PR #8 kontrolleri esas alınır.
+Follow-up head `971d9c0048c289654620d321272c95957dc1a7d6` PR verify'da geçti,
+push verify'da aynı durumu 60 saniye korudu; böylece salt yavaşlık açıklaması
+reddedildi. `15ce5dd532c5054191518ea292f5cb966338d068`, checked 500-MFW yerel
+radyo öğesinden sağ okla 1000 MFW'ye geçen klavye change olayını kullanır.
+On iki focused test ve Ruff geçti; ürün ve bilimsel sözleşme değişmedi.
 Bilimsel-yöntem, erişilebilirlik ve release için üç ayrı local/agent review GO
 verdi; bunlar GitHub review'u, katılımcı testi veya owner activation kabulü
 değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
@@ -125,7 +130,8 @@ raporu
 `~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`;
 manifest 24/24 geçmiştir. Implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`,
 evidence `d40b14d3e202556d910955670a3c0b60087d8d71`, audit follow-up
-`483c7a017a374958e312247c69e4fe42e0010810`'dır. Bu zinciri geriye almadan
+`483c7a017a374958e312247c69e4fe42e0010810`, native-keyboard correction
+`15ce5dd532c5054191518ea292f5cb966338d068`'dir. Bu zinciri geriye almadan
 yalnız yeni bulgu veya açık owner kararı üzerinden devam edilir.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i

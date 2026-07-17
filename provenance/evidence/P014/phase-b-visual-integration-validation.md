@@ -160,6 +160,14 @@ gate rather than being erased:
    `483c7a017a374958e312247c69e4fe42e0010810` raises only that audit wait to
    60 seconds; it does not alter application code, parameters, result data, or
    exports.
+7. Follow-up head `971d9c0048c289654620d321272c95957dc1a7d6`, runs
+   `29543777510` and `29543779165`: both container jobs and the PR verify job
+   passed, but the push verify still retained the same checked-control and
+   unchanged-table state for the full 60 seconds. This disproved a timing-only
+   diagnosis. Commit `15ce5dd532c5054191518ea292f5cb966338d068` replaces the
+   flaky visible-label automation click with the native radio group's keyboard
+   change event from checked 500 MFW to adjacent 1000 MFW. Twelve focused helper
+   tests and Ruff passed; application and scientific behavior remain unchanged.
 
 No scientific parameter, corpus value, distance, chart datum, interpretation
 threshold, or export payload was altered to make these gates pass.

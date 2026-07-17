@@ -63,7 +63,9 @@
     "178a2dfbb217a52a94720cd8aceaee36464ac60e",
     "3a554e0e76522672efaf547b1d03e12cb4f3531b",
     "d40b14d3e202556d910955670a3c0b60087d8d71",
-    "483c7a017a374958e312247c69e4fe42e0010810"
+    "483c7a017a374958e312247c69e4fe42e0010810",
+    "971d9c0048c289654620d321272c95957dc1a7d6",
+    "15ce5dd532c5054191518ea292f5cb966338d068"
   ],
   "run_ids": [
     "RUN-20260715-0004",
@@ -150,7 +152,9 @@
     {"command":"Final Phase B implementation ./scripts/verify.sh before push","exit_code":0,"result":"1,669 tests passed with one documented canonical-Linux-only skip; all 11,507 statements and 3,002 branches reached 100% measured coverage; 109 provenance records and all repository gates passed.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"},
     {"command":"GitHub Actions push run 29541220413 and pull-request run 29541222417 for 3a554e0e76522672efaf547b1d03e12cb4f3531b","exit_code":0,"result":"Both verify and both container jobs passed. The exact-head push run passed 1,670 tests, 11,507 statements, 3,002 branches, the real R/stylo browser flow, responsive visual gates, installed-wheel resources, supply-chain checks, and the hardened container gate.","evidence":"provenance/runs/RUN-20260717-0001.json"},
     {"command":"GitHub Actions push run 29542674659 and pull-request run 29542676270 for fd72f6a77550ea0f612abe2d87966b761ec0f69e, including one failed-job rerun","exit_code":1,"result":"The exact-head push verify and both container gates passed. The PR verify reached a terminal scientific result and checked the 1000-MFW option, but the semantic tables did not refresh inside the browser audit's 15-second boundary on the first attempt or retained rerun. The PR synthetic merge tree and branch tree were identical.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"},
-    {"command":"Focused verification after expanding the result-refresh audit wait","exit_code":0,"result":"All 10 browser-audit helper tests and Ruff checks passed. Commit 483c7a017a374958e312247c69e4fe42e0010810 changes only the audit wait from 15 to 60 seconds.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"}
+    {"command":"Focused verification after expanding the result-refresh audit wait","exit_code":0,"result":"All 10 browser-audit helper tests and Ruff checks passed. Commit 483c7a017a374958e312247c69e4fe42e0010810 changes only the audit wait from 15 to 60 seconds.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"},
+    {"command":"GitHub Actions push run 29543777510 and pull-request run 29543779165 for 971d9c0048c289654620d321272c95957dc1a7d6","exit_code":1,"result":"Both container jobs and PR verify passed. Push verify retained a checked 1000-MFW control with unchanged semantic tables for the full 60-second audit boundary, disproving a timing-only diagnosis.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"},
+    {"command":"Focused verification after native keyboard result selection","exit_code":0,"result":"All 12 browser-audit helper tests and Ruff checks passed. Commit 15ce5dd532c5054191518ea292f5cb966338d068 moves from checked 500 MFW to adjacent 1000 MFW through the native radio group's ArrowRight change event.","evidence":"provenance/evidence/P014/phase-b-visual-integration-validation.md"}
   ],
   "blockers": [
     "The first target-host inventory is retained but failed closed before installation because no supported container runtime exists; an accepted post-preparation inventory is still required.",

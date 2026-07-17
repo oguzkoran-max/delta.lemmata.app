@@ -195,7 +195,7 @@
   "output_artifacts": [
     {
       "path": "provenance/evidence/P014/phase-b-visual-integration-validation.md",
-      "sha256": "0d48fca03773dbe88f010b15786821b568dfbe4325e79bcbe85bbace6164330f"
+      "sha256": "4a0c67953bfc6995f3c0858f2bb056f9f635d7ee32fbdbf55e64ed77fdfdc4bf"
     }
   ],
   "notes": "The exact implementation passed canonical push and synthetic-merge pull-request CI. Three separate local/agent scientific-method, accessibility, and release review passes returned GO but are not represented as GitHub reviews, participant tests, or owner activation acceptance. The Claude Code A5.1 source package remains outside the repository and is referenced with verified hashes in the evidence Markdown. No merge or deployment is authorised by this run."
