@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260717-0003",
+  "run_type": "security",
+  "status": "passed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-17T16:48:43Z",
+  "ended_at_utc": "2026-07-17T16:54:09Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "25fc2cadbba2147db6c7767e802088706a305f28",
+  "environment": {
+    "main_ci": {
+      "provider": "GitHub Actions",
+      "event": "push",
+      "branch": "main",
+      "source_commit": "25fc2cadbba2147db6c7767e802088706a305f28",
+      "run": "29597139461",
+      "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29597139461",
+      "verify_job": "87940183844",
+      "container_job": "87940183862",
+      "result": "passed"
+    },
+    "publication_ci": {
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "timezone": "UTC",
+      "workflow": "P014 publish immutable image",
+      "run": "29597615330",
+      "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29597615330",
+      "job": "87941738365",
+      "trigger": "workflow_dispatch",
+      "source_commit": "25fc2cadbba2147db6c7767e802088706a305f28",
+      "prerequisite_ci_run": "29597139461",
+      "prerequisite_verify_job": "87940183844",
+      "prerequisite_container_job": "87940183862"
+    },
+    "application_image": {
+      "local_image_id": "sha256:0228082e41611b86b37d09f3a77349ecb40086ee205c3c9c7011ae45938b2aa4",
+      "exact_commit_tag": "ghcr.io/oguzkoran-max/delta.lemmata.app:sha-25fc2cadbba2147db6c7767e802088706a305f28",
+      "immutable_manifest": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d",
+      "manifest_size_bytes": 5145,
+      "latest_tag_published": false,
+      "registry_visibility": "private",
+      "cryptographically_signed": false,
+      "provenance_attestation": false
+    },
+    "repeated_hardened_gate": {
+      "gateway_manifest": "nginxinc/nginx-unprivileged:1.30.3-alpine-slim@sha256:3b24c4bfb2b9f60359b1475605ca1c8ed6e4963eb8369c6835be4d96bdb3ea81",
+      "gateway_runtime_image_id": "sha256:acffd179eaca40d7d73dc928ed314730fc7110a2f34c03f295245c344c90d037",
+      "runtime_inspection": "passed",
+      "hostile_request_smoke": "passed",
+      "application_default_route_egress": false,
+      "browser": "passed",
+      "cleanup": "passed"
+    },
+    "operator_boundary_check": {
+      "head_equals_local_main": true,
+      "head_equals_origin_main": true,
+      "main_ci_event_is_push": true,
+      "main_ci_branch_is_main": true,
+      "main_ci_source_matches_publication_source": true,
+      "limitation": "The current publication workflow requires a successful CI run for the SHA but does not itself enforce that the prerequisite run is a main-branch push event. The current release satisfied and independently recorded that stronger boundary."
+    }
+  },
+  "command": "GitHub Actions workflow_dispatch: .github/workflows/p014-publish-image.yml with source_sha=25fc2cadbba2147db6c7767e802088706a305f28 (run 29597615330), after successful main push CI 29597139461",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "04c1a85640ee06ea623887749b9b5c8e9e68c2a4f19404bc88eb81b47bae8a47"
+    },
+    {
+      "path": ".github/workflows/p014-publish-image.yml",
+      "sha256": "0cd26309eca4605c10b5b1152e111890b40eab233581c0d03ea3fac716346385"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "7e3812352e11f43f345f2a21886ab708e1737b910882efe096fde33cb181a996"
+    },
+    {
+      "path": "containers/gateway-images.lock.json",
+      "sha256": "c8dfd31b8edb1ea5e6f9e3a198369b2d1e5fd79176ac6c459d36a083674d4e77"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "scripts/run_p014_runtime_gate.sh",
+      "sha256": "82feeba84eb62f2c3ced94e53ed870c2153f15397e71681b81800e68086f6cdf"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub Actions Ubuntu 24.04 x86_64 checkout of exact commit 25fc2cadbba2147db6c7767e802088706a305f28",
+    "command": "GitHub Actions workflow_dispatch: .github/workflows/p014-publish-image.yml with source_sha=25fc2cadbba2147db6c7767e802088706a305f28 (run 29597615330), after successful main push CI 29597139461",
+    "limitations": [
+      "The GitHub-hosted runner is named and time-stamped but is not represented by an immutable runner-image digest.",
+      "The private GHCR manifest can be replay-pulled only with separately authorised package access; no registry credential is retained in the repository.",
+      "The application image is content-addressed but is not cryptographically signed and has no separate provenance attestation.",
+      "The exact-commit tag is a mutable locator; only the immutable manifest digest is authorised for deployment.",
+      "The workflow records the pushed digest but does not perform an independent registry readback after logout; the target-host verifier must check the digest before service start.",
+      "The workflow does not itself enforce that prerequisite CI is a main-branch push; this release's exact successful main push run was independently checked and recorded.",
+      "The run did not prove target-host pull access, install Delta, modify the VPS, test Lemmata coexistence under load, rehearse host restart or rollback, or obtain owner acceptance."
+    ]
+  },
+  "supersedes": [
+    {
+      "run_id": "RUN-20260715-0006",
+      "fields": [
+        "git_commit",
+        "environment.application_image",
+        "output_artifacts",
+        "notes"
+      ],
+      "reason": "This run binds the later owner-approved Phase B merge commit to its own immutable image. It does not erase the earlier image publication or its historical evidence."
+    }
+  ],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "04c1a85640ee06ea623887749b9b5c8e9e68c2a4f19404bc88eb81b47bae8a47"
+    },
+    {
+      "path": ".github/workflows/p014-publish-image.yml",
+      "sha256": "0cd26309eca4605c10b5b1152e111890b40eab233581c0d03ea3fac716346385"
+    },
+    {
+      "path": "containers/Dockerfile",
+      "sha256": "7e3812352e11f43f345f2a21886ab708e1737b910882efe096fde33cb181a996"
+    },
+    {
+      "path": "containers/gateway-images.lock.json",
+      "sha256": "c8dfd31b8edb1ea5e6f9e3a198369b2d1e5fd79176ac6c459d36a083674d4e77"
+    },
+    {
+      "path": "deploy/public-alpha/compose.yml",
+      "sha256": "1826e504db204877240a95c43b53bd943b746b5b768b5912c4f7b0a389f7a2c3"
+    },
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "e448e5edf3961cfd4230a953154b268c8261f28aba1ab3ea428b7b3898a3a99e"
+    },
+    {
+      "path": "scripts/run_p014_runtime_gate.sh",
+      "sha256": "82feeba84eb62f2c3ced94e53ed870c2153f15397e71681b81800e68086f6cdf"
+    },
+    {
+      "path": "provenance/evidence/P014/phase-b-review-remediation.md",
+      "sha256": "5d97d5073fa4eed44e2a4b1afeef0cdca2288a59caccdb63279b9b28c1acdfa1"
+    },
+    {
+      "path": "provenance/runs/RUN-20260717-0002.json",
+      "sha256": "125193240683211921e9f974a7cc17260495e4590c368037982b053af4f6cd25"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/phase-b-main-immutable-image-publication.md",
+      "sha256": "d1aff777347fe6ec7962e1c45dceb8832dca70f782d508c6bad606bde0a27647"
+    },
+    {
+      "path": "memory/checkpoints/2026-07-17-p014-main-image-publication.md",
+      "sha256": "958b8c2619b7cbfeda690d975d837a2866360c1136122c65d1a6ce8081242c6c"
+    }
+  ],
+  "notes": "Owner-approved Phase B merge commit 25fc2cadbba2147db6c7767e802088706a305f28 passed exact main CI, was rebuilt and re-gated, and was published privately at immutable manifest sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d. No mutable latest tag or live-host change occurred."
+}

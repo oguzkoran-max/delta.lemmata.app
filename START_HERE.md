@@ -2,29 +2,24 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**2026-07-17 visual checkpoint:** Oğuz'un seçtiği Claude A5.1 tasarım sistemi
-`codex/p014-visual-phase-b` dalında gerçek Streamlit yüzeyine aktarıldı. İlk
-kanıtlı uygulama `3a554e0e76522672efaf547b1d03e12cb4f3531b`; final incelenen
-implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`; draft PR #8'dir.
-Exact commit'te push CI `29592151976` ve PR CI `29592158057` içindeki iki
-verify ve iki container işi yeşildir. Canonical Linux 1.726 test, 11.692
-statement, 3.050 branch ve yüzde 100 measured coverage ile geçti; içeriksiz
-browser JSON SHA-256 değeri
-`e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578`'dir.
-Bilimsel-yöntem, erişilebilirlik ve FAIR/lifecycle denetimleri exact SHA için
-P0-P3 açık bulgu bırakmadan yalnız Phase B kod ve otomatik kanıt kapanışına GO
-verdi. Eski conditional/NO-GO kararları ve başarısız CI denemeleri silinmeden
-`provenance/evidence/P014/phase-b-exact-*/` altında korunur.
-P014 tek `in-progress` ticket'tır. P007-P009 doğrulanmış minimum-alpha
-dilimlerini koruyarak ertelenmiş tam-kapsam ve owner kapıları nedeniyle
-`blocked` durumundadır. Tam P014 hâlâ P012'ye bağlıdır. Merge, image
-publication, VPS, Caddy, DNS ve public activation için Oğuz'un ayrıca açık kararı
-gerekir. Önce `docs/development/phase-b-visual-integration.md`, sonra
-`SESSION_HANDOFF.md` okunur.
-**Güncel operasyonel iş:** Phase B kod/otomatik kanıt kapanışını review et. Oğuz
-açıkça karar vermeden draft PR #8'i merge etme, image yayımlama veya VPS/Caddy/
-DNS/public activation işi başlatma. P014 `in-progress`; AC-05'in tam deployment
-profili ölçütü ile host-bound AC-08-AC-10 pending kalır.
+**2026-07-17 deployment checkpoint:** Oğuz'un seçtiği Claude A5.1 tasarım
+sistemiyle kapanan Phase B, PR #8 üzerinden normal merge commit
+`25fc2cadbba2147db6c7767e802088706a305f28` olarak `main`e alındı. Exact-main
+CI `29597139461` verify ve container işlerinde geçti. Publication run
+`29597615330` aynı source'u yeniden build edip hardened gate'ten geçirdi ve
+private GHCR immutable manifestini yayımladı:
+`sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d`.
+`latest` yayımlanmadı; deployment yalnız digest ile yapılır. Kayıt
+`RUN-20260717-0003` ve
+`provenance/evidence/P014/phase-b-main-immutable-image-publication.md` içindedir.
+İmaj imzalı veya attested değildir; bu sınırlama açık tutulur. VPS, Docker,
+Caddy, DNS ve public route henüz değiştirilmedi. P014 tek `in-progress`
+ticket'tır; AC-05 ve host-bound AC-08-AC-10 pending kalır.
+**Güncel operasyonel iş:** Önce bu kanıt-only dalı normal CI ile `main`e al.
+Sonra fresh read-only host inventory, guarded official-Docker preparation ve
+digest-verified Delta-only `127.0.0.1:8502` staging uygula. External denial ve
+değişmemiş Lemmata kanıtını Oğuz'a göstermeden Caddy, DNS veya public route
+değiştirme. Pre-Caddy owner kararı ayrı ve zorunludur.
 **Aşağıdaki uzun aşama özeti tarihsel P014 gelişimini korur:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
 Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
 P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum
@@ -195,14 +190,14 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Güncel tek iş draft PR #8 için owner kararını hazırlamaktır. Final incelenen
-implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`, superseding run
-`RUN-20260717-0002` ve kanıt
-`provenance/evidence/P014/phase-b-review-remediation.md` üzerinden incelenir.
-Claude Code A5.1 kaynak paketi, özgün manifesti ve repository-safe türev
-manifesti `provenance/evidence/P014/phase-a51-design-source/` altında kalıcıdır.
-Oğuz açıkça onaylamadan merge veya deployment yapılmaz. Phase B kapanışı P014
-ticket kapanışı değildir; AC-05 ve host-bound AC-08-AC-10 açık kalır.
+Phase B merge ve immutable image publication tamamlandı. Önce yeni publication
+kanıtı `RUN-20260717-0003` ile normal review/CI üzerinden `main`e alınır. Sonra
+`deploy/public-alpha/README.md` sırası değiştirilmeden fresh target-host baseline,
+official Docker hazırlığı ve digest-verified localhost-only kurulum yapılır.
+Delta `127.0.0.1:8502` üzerinde sağlıklı, dışarıdan kapalı ve Lemmata değişmeden
+kalınca kanıt Oğuz'a sunulur. Ayrı pre-Caddy onayı olmadan Caddy, DNS veya public
+route değişmez. Phase B kapanışı ve imaj yayını P014 ticket kapanışı değildir;
+AC-05 ve host-bound AC-08-AC-10 açık kalır.
 
 P004 complete durumundadır. Domain/CSV, Guided TXT ve ZIP, fail-closed rights,
 selectable Corpus Review, exact correction, hash-bound confirmation, exact-commit
