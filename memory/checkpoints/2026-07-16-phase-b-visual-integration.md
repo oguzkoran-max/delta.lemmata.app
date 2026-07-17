@@ -9,6 +9,10 @@
 - Exact implementation: `3a554e0e76522672efaf547b1d03e12cb4f3531b`;
   draft PR #8.
 - FAIR evidence commit: `d40b14d3e202556d910955670a3c0b60087d8d71`.
+- Audit follow-up: `483c7a017a374958e312247c69e4fe42e0010810`
+  expands the semantic result refresh wait from 15 to 60 seconds after the
+  evidence-only PR run exceeded the shorter boundary twice. Product and
+  scientific behavior are unchanged; the failed runs remain retained.
 - Integrated: Entry, Review, Results, shared responsive tokens, native radio
   cards, local Inter, semantic tables, evidence-first charts, accessibility
   landmarks, and 44 px target sizing.

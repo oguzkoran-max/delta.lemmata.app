@@ -124,6 +124,15 @@ The retained CI sequence is documented in
 failed verify runs remain visible with their causes; no scientific parameter or
 result value was changed to obtain the passing run.
 
+A later evidence-only head exposed one additional CI-harness boundary. Exact-head
+push run `29542674659` passed, but PR run `29542676270` twice reached a terminal
+scientific result and checked the 1000-MFW option without receiving the updated
+semantic tables inside the audit's 15-second limit. The PR merge tree and branch
+tree were identical. Commit `483c7a017a374958e312247c69e4fe42e0010810`
+raises only this browser-audit wait to 60 seconds. It does not change Streamlit
+behavior, scientific configuration, result values, or exports. Both failed PR
+attempts remain visible in GitHub Actions.
+
 ## Deliberately Deferred
 
 - Cross-parameter stability labels and sensitivity summaries require P011

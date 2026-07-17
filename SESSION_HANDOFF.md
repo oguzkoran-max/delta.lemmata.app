@@ -17,6 +17,14 @@ kaynakları, supply-chain ve hardened-container kapılarını geçti. Kayıt:
 `RUN-20260717-0001` ve
 `provenance/evidence/P014/phase-b-visual-integration-validation.md`; evidence
 commit'i `d40b14d3e202556d910955670a3c0b60087d8d71`'dir.
+Evidence-only head `fd72f6a77550ea0f612abe2d87966b761ec0f69e` için exact-head
+push doğrulaması geçti; PR doğrulaması, terminal bilimsel sonuç mevcut ve
+1000-MFW düğmesi seçili olduğu hâlde 15 saniyelik yeniden çizim beklemesini ilk
+koşuda ve bir retained rerun'da aştı. GitHub PR merge ağacı ile dal ağacı
+birebirdir. Audit-only follow-up
+`483c7a017a374958e312247c69e4fe42e0010810` bu beklemeyi 60 saniyeye çıkarır;
+uygulama, parametre, bilimsel sonuç veya export değişmez. Güncel exact-head
+durumu için draft PR #8 kontrolleri esas alınır.
 Bilimsel-yöntem, erişilebilirlik ve release için üç ayrı local/agent review GO
 verdi; bunlar GitHub review'u, katılımcı testi veya owner activation kabulü
 değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
@@ -116,7 +124,8 @@ image publication veya public route işi yapılmaz.
 raporu
 `~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`;
 manifest 24/24 geçmiştir. Implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`,
-evidence `d40b14d3e202556d910955670a3c0b60087d8d71`'dir. Bu zinciri geriye almadan
+evidence `d40b14d3e202556d910955670a3c0b60087d8d71`, audit follow-up
+`483c7a017a374958e312247c69e4fe42e0010810`'dır. Bu zinciri geriye almadan
 yalnız yeni bulgu veya açık owner kararı üzerinden devam edilir.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i

@@ -14,6 +14,11 @@ bilimsel-yöntem, erişilebilirlik ve release denetimi GO verdi, fakat bunlar ow
 veya katılımcı kabulü değildir. Merge/deploy yetkisi yoktur. Önce
 `docs/development/phase-b-visual-integration.md`, sonra `SESSION_HANDOFF.md`
 okunur.
+Son evidence-only head'in push kapısı geçerken PR kapısı, tamamlanmış sonucu
+yeniden çizen yavaş işçide 15 saniyelik audit bekleme sınırını iki kez aştı.
+`483c7a017a374958e312247c69e4fe42e0010810` yalnız bu kanıt bekleme süresini
+60 saniyeye çıkardı; ürün veya bilimsel hesap değişmedi. Güncel exact-head durumu
+için draft PR #8 kontrolleri esas alınır.
 **Güncel operasyonel iş:** PR #8 Oğuz ve, limit yenilendiğinde, Claude Code
 tarafından incelenir. Bulgu aynı dalda kapatılır ve CI yeniden çalıştırılır.
 Oğuz'un açık kararı olmadan merge, image publication, VPS, Caddy, DNS veya

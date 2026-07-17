@@ -151,6 +151,15 @@ gate rather than being erased:
    semantic matrix/MDS digests, input-box geometry was distinguished from text
    value scrolling, and completion was checked through the four visible result
    cards. Both verify and both container jobs passed.
+6. Evidence-only head `fd72f6a77550ea0f612abe2d87966b761ec0f69e`, runs
+   `29542674659` and `29542676270`: the exact-head push verify and both
+   container jobs passed, while the PR verify reached a terminal scientific
+   result and checked the 1000-MFW control but exceeded its 15-second wait for
+   the semantic tables on the first attempt and one retained rerun. The PR
+   synthetic merge commit and branch head had identical trees. Follow-up commit
+   `483c7a017a374958e312247c69e4fe42e0010810` raises only that audit wait to
+   60 seconds; it does not alter application code, parameters, result data, or
+   exports.
 
 No scientific parameter, corpus value, distance, chart datum, interpretation
 threshold, or export payload was altered to make these gates pass.
