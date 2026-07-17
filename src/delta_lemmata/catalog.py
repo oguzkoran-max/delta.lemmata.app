@@ -387,17 +387,17 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "corpus.mode.label": "Corpus input format",
     "corpus.mode.text": "Individual TXT files",
     "corpus.mode.archive": "One ZIP archive",
-    "corpus.text_uploader": "Corpus texts (.txt)",
+    "corpus.text_uploader": "Corpus texts (.txt) · {purpose} · {mode}",
     "corpus.text_uploader_help": (
         "Add one or more plain-text files. Each file is validated independently "
         "and again as part of the complete batch."
     ),
-    "corpus.archive_uploader": "Corpus archive (.zip)",
+    "corpus.archive_uploader": "Corpus archive (.zip) · {purpose} · {mode}",
     "corpus.archive_uploader_help": (
         "Add one standard ZIP containing TXT files only. Nested archives, links, "
         "ambiguous paths, extra fields, encryption, and ZIP64 are rejected."
     ),
-    "corpus.metadata_uploader": "Optional metadata table (.csv)",
+    "corpus.metadata_uploader": "Optional metadata table (.csv) · {purpose} · {mode}",
     "corpus.metadata_uploader_help": (
         "This stage checks CSV structure and unsafe cells only. Column meaning, corpus "
         "matching, dates, groups, and rights are reviewed in the next stage."

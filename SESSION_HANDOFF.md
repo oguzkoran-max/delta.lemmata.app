@@ -117,8 +117,9 @@ run package ve Pinokyo çalışması hâlâ yok.
 
 **Son tam kapanan ticket:** `provenance/tickets/P006.json` (`complete`)
 
-**Aktif implementation ticket:** `provenance/tickets/P014.json` (`in-progress`,
-AC-01 ile AC-07 canonical CI'da passed; host-bound AC-08 ile AC-10 pending)
+**Aktif implementation ticket:** `provenance/tickets/P014.json` (`in-progress`;
+AC-01 ile AC-04 ve AC-06 ile AC-07 passed, AC-05 ile host-bound AC-08 ile
+AC-10 pending)
 
 **Sıradaki tek ana iş:**
 Draft PR #8'i bu handoff ve Phase B kanıtı üzerinden Oğuz ile, limit yenilendiğinde
@@ -130,10 +131,10 @@ image publication veya public route işi yapılmaz.
 **Claude Code kesin devam noktası:** Önce `START_HERE.md`, sonra bu dosya,
 `docs/development/phase-b-visual-integration.md`,
 `provenance/evidence/P014/phase-b-visual-integration-validation.md` ve draft PR
-#8 okunur. Tasarım kaynağı `~/Desktop/Delta-Phase-A51-Review/`, özgün Claude
-raporu
-`~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`;
-manifest 24/24 geçmiştir. Implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`,
+#8 okunur. Kalıcı tasarım kaynağı ve redakte edilmiş Claude raporu
+`provenance/evidence/P014/phase-a51-design-source/` altındadır; özgün 24 dosyalı
+manifest ve 25 dosyalı repository-safe türev manifest doğrulanabilir durumdadır.
+Implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`,
 evidence `d40b14d3e202556d910955670a3c0b60087d8d71`, audit follow-up
 `483c7a017a374958e312247c69e4fe42e0010810`, native-keyboard correction
 `15ce5dd532c5054191518ea292f5cb966338d068`'dir. Bu zinciri geriye almadan

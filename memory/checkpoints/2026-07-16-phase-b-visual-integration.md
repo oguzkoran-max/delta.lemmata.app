@@ -1,9 +1,8 @@
 # 2026-07-16 Phase B Visual Integration
 
-- Source: Claude Code Phase A5.1 export at
-  `~/Desktop/Delta-Phase-A51-Review/`, manifest 24/24 verified; report
-  at
-  `~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`.
+- Source: Git-retained Claude Code Phase A5.1 source package, original manifest,
+  repository-safe derivative manifest, and redacted report under
+  `provenance/evidence/P014/phase-a51-design-source/`.
 - Branch/base: `codex/p014-visual-phase-b` from
   `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa`.
 - Exact implementation: `3a554e0e76522672efaf547b1d03e12cb4f3531b`;

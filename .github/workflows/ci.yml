@@ -76,7 +76,8 @@ jobs:
             cat /tmp/delta-p009-browser-audit/browser-audit.json
             echo "DELTA_BROWSER_AUDIT_JSON_END"
             echo "DELTA_BROWSER_AUDIT_SHA256_BEGIN"
-            sha256sum /tmp/delta-p009-browser-audit/browser-audit.json
+            cd /tmp/delta-p009-browser-audit
+            sha256sum browser-audit.json
             echo "DELTA_BROWSER_AUDIT_SHA256_END"
           else
             echo "browser-audit.json was not produced; inspect the preceding traceback."

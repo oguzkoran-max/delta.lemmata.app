@@ -33,9 +33,10 @@ Style Over Time tarih haritası ve geniş glossary için ertelenmiş `blocked` k
 Research Mode kilitlidir. Minimum P014 deployment paketi exact commit
 `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile Linux source,
 gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-request,
-runtime-inspection, denied-egress ve cleanup kapılarından geçti. P014-AC-01 ile
-P014-AC-07 passed; P014-AC-08 ile P014-AC-10 gerçek host inventory, Lemmata ile
-eşzamanlı load, restart/rollback ve Oğuz owner acceptance için pending'dir.
+runtime-inspection, denied-egress ve cleanup kapılarından geçti. Güncel ticket'ta
+P014-AC-01 ile P014-AC-04 ve P014-AC-06 ile P014-AC-07 passed; Phase B yaşam
+döngüsü yeniden doğrulanana kadar P014-AC-05, ayrıca P014-AC-08 ile P014-AC-10
+pending'dir.
 Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` yeşildir. İlk read-only VPS
 preflight'i `RUN-20260715-0005` olarak saklandı: Lemmata sağlıklı, `8502` boş,
 fakat hostta desteklenen container runtime yoktur; yaklaşık 4 GiB RAM, sıfır swap
@@ -194,9 +195,9 @@ Güncel tek iş draft PR #8'in review sürecidir. Exact implementation
 `3a554e0e76522672efaf547b1d03e12cb4f3531b`, canonical run
 `RUN-20260717-0001` ve kanıt
 `provenance/evidence/P014/phase-b-visual-integration-validation.md` üzerinden
-incelenir. Claude Code A5.1 paketi
-`~/Desktop/Delta-Phase-A51-Review/` konumundadır ve manifesti 24/24
-geçmiştir. Oğuz açıkça onaylamadan merge veya deployment yapılmaz.
+incelenir. Claude Code A5.1 kaynak paketi, özgün manifesti ve repository-safe
+türev manifesti `provenance/evidence/P014/phase-a51-design-source/` altında
+kalıcıdır. Oğuz açıkça onaylamadan merge veya deployment yapılmaz.
 
 P004 complete durumundadır. Domain/CSV, Guided TXT ve ZIP, fail-closed rights,
 selectable Corpus Review, exact correction, hash-bound confirmation, exact-commit

@@ -310,7 +310,7 @@ def _document_corpus(
     documents: tuple[tuple[str, bytes], ...],
     output: Path,
 ) -> None:
-    page.get_by_role("region", name="Corpus texts (.txt)", exact=True).locator(
+    page.get_by_role("region", name="Corpus texts (.txt)", exact=False).locator(
         'input[type="file"]'
     ).set_input_files(
         [{"name": name, "mimeType": "text/plain", "buffer": payload} for name, payload in documents]

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os
 from pathlib import Path
+from threading import Event, Thread
 
 import pytest
 
@@ -258,7 +259,7 @@ def test_runtime_maintenance_is_content_free_and_startup_recovery_is_mandatory(
     _expect({"DELTA_ENV": "test"}, WebRuntimeErrorCode.INITIALIZATION_FAILED)
 
 
-def test_analysis_run_always_attempts_immediate_terminal_maintenance() -> None:
+def test_analysis_run_finalizes_result_before_terminal_maintenance() -> None:
     events: list[str] = []
 
     class Materializations:
@@ -283,8 +284,13 @@ def test_analysis_run_always_attempts_immediate_terminal_maintenance() -> None:
         analyses=Analyses(),  # type: ignore[arg-type]
         janitor=Janitor(),  # type: ignore[arg-type]
     )
-    assert runtime.run_analysis_once() == "terminal"
-    assert events == ["analysis", "materializations", "janitor"]
+
+    def finalize_result() -> str:
+        events.append("finalize")
+        return "published"
+
+    assert runtime.run_analysis_once(finalize_result=finalize_result) == "published"
+    assert events == ["analysis", "finalize", "materializations", "janitor"]
 
     class FailedAnalyses:
         @staticmethod
@@ -301,13 +307,87 @@ def test_analysis_run_always_attempts_immediate_terminal_maintenance() -> None:
     runtime.analyses = FailedAnalyses()  # type: ignore[assignment]
     runtime.materializations = FailedMaintenance()  # type: ignore[assignment]
     with pytest.raises(RuntimeError, match="primary failure"):
-        runtime.run_analysis_once()
-    assert events[-2:] == ["failed-analysis", "failed-maintenance"]
+        runtime.run_analysis_once(finalize_result=finalize_result)
+    assert events[-3:] == ["failed-analysis", "failed-maintenance", "janitor"]
 
     runtime.analyses = Analyses()  # type: ignore[assignment]
     with pytest.raises(WebRuntimeError) as captured:
-        runtime.run_analysis_once()
+        runtime.run_analysis_once(finalize_result=finalize_result)
     assert captured.value.code is WebRuntimeErrorCode.MAINTENANCE_FAILED
+
+    runtime.materializations = Materializations()  # type: ignore[assignment]
+
+    def failed_finalization() -> None:
+        events.append("failed-finalization")
+        raise RuntimeError("publication failure")
+
+    with pytest.raises(RuntimeError, match="publication failure"):
+        runtime.run_analysis_once(finalize_result=failed_finalization)
+    assert events[-4:] == [
+        "analysis",
+        "failed-finalization",
+        "materializations",
+        "janitor",
+    ]
+
+
+def test_background_maintenance_waits_for_result_finalization() -> None:
+    finalization_started = Event()
+    release_finalization = Event()
+    background_started = Event()
+    background_finished = Event()
+    result: list[str] = []
+
+    class Materializations:
+        @staticmethod
+        def reap_expired() -> None:
+            return None
+
+    class Analyses:
+        @staticmethod
+        def run_next() -> None:
+            return None
+
+    class Janitor:
+        @staticmethod
+        def run_once() -> None:
+            return None
+
+    runtime = WebRuntime(
+        materializations=Materializations(),  # type: ignore[arg-type]
+        prepared_corpora=object(),  # type: ignore[arg-type]
+        analyses=Analyses(),  # type: ignore[arg-type]
+        janitor=Janitor(),  # type: ignore[arg-type]
+    )
+
+    def finalize_result() -> str:
+        finalization_started.set()
+        assert release_finalization.wait(timeout=5)
+        return "published"
+
+    def run_analysis() -> None:
+        result.append(runtime.run_analysis_once(finalize_result=finalize_result))
+
+    def run_background_maintenance() -> None:
+        background_started.set()
+        runtime.maintain()
+        background_finished.set()
+
+    analysis_thread = Thread(target=run_analysis)
+    maintenance_thread = Thread(target=run_background_maintenance)
+    analysis_thread.start()
+    assert finalization_started.wait(timeout=5)
+    maintenance_thread.start()
+    assert background_started.wait(timeout=5)
+    assert not background_finished.wait(timeout=0.05)
+    release_finalization.set()
+    analysis_thread.join(timeout=5)
+    maintenance_thread.join(timeout=5)
+
+    assert not analysis_thread.is_alive()
+    assert not maintenance_thread.is_alive()
+    assert background_finished.is_set()
+    assert result == ["published"]
 
 
 def test_periodic_maintenance_is_traffic_independent_and_idempotent() -> None:
@@ -344,7 +424,7 @@ def test_periodic_maintenance_is_traffic_independent_and_idempotent() -> None:
     )
     runtime._maintenance_loop(BoundedStop())  # type: ignore[arg-type]
     assert maintenance_calls == 2
-    assert janitor_calls == 1
+    assert janitor_calls == 2
 
     runtime.start_periodic_maintenance()
     thread = runtime._maintenance_thread

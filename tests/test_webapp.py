@@ -86,8 +86,8 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
         "Corpus input format",
     ]
     assert [(uploader.label, uploader.accept_multiple_files) for uploader in app.file_uploader] == [
-        ("Corpus texts (.txt)", True),
-        ("Optional metadata table (.csv)", False),
+        ("Corpus texts (.txt) · Compare Texts · Individual TXT files", True),
+        ("Optional metadata table (.csv) · Compare Texts · Individual TXT files", False),
     ]
     assert [(button.label, button.disabled) for button in app.button] == [
         ("Continue to describe the corpus", True),
@@ -178,8 +178,8 @@ def test_invalid_corpus_input_mode_falls_back_to_individual_text_files() -> None
     mode = _by_label(app.radio, "Corpus input format")
     assert mode.value == "text_files"
     assert [uploader.label for uploader in app.file_uploader] == [
-        "Corpus texts (.txt)",
-        "Optional metadata table (.csv)",
+        "Corpus texts (.txt) · Compare Texts · Individual TXT files",
+        "Optional metadata table (.csv) · Compare Texts · Individual TXT files",
     ]
 
 
@@ -253,8 +253,8 @@ def test_archive_member_catalog_opens_payload_free_guided_documentation() -> Non
     app = run_app()
     _by_label(app.radio, "Corpus input format").set_value("zip_archive").run()
     assert [uploader.label for uploader in app.file_uploader] == [
-        "Corpus archive (.zip)",
-        "Optional metadata table (.csv)",
+        "Corpus archive (.zip) · Compare Texts · One ZIP archive",
+        "Optional metadata table (.csv) · Compare Texts · One ZIP archive",
     ]
     app.file_uploader[0].upload(
         "corpus.zip",
@@ -330,7 +330,9 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
     assert "Not required for the selected purpose" in rendered
     assert 'class="delta-readiness-band"' in rendered
     assert 'aria-labelledby="delta-readiness-title"' in rendered
-    assert 'role="status"' not in rendered
+    assert 'role="status"' in rendered
+    assert 'aria-live="polite"' in rendered
+    assert 'aria-atomic="true"' in rendered
     assert 'class="delta-review-metrics"' in rendered
     assert [heading.value for heading in app.subheader] == [
         "Actionable corpus checks",

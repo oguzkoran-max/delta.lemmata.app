@@ -6,12 +6,12 @@ import os
 import re
 import secrets
 import stat
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from tempfile import TemporaryDirectory
-from threading import Event, Thread
+from threading import Event, RLock, Thread
 
 from delta_lemmata.analysis_orchestrator import AnalysisOrchestrator
 from delta_lemmata.clock import SystemClock
@@ -63,37 +63,46 @@ class WebRuntime:
     _temporary_directory: TemporaryDirectory[str] | None = field(default=None, repr=False)
     _maintenance_stop: Event | None = field(default=None, repr=False)
     _maintenance_thread: Thread | None = field(default=None, repr=False)
+    _maintenance_lock: RLock = field(default_factory=RLock, repr=False)
 
     def maintain(self) -> None:
         """Reconcile expired in-memory and durable work before new admission."""
 
-        rejection: WebRuntimeError | None = None
-        try:
-            self.materializations.reap_expired()
-            self.janitor.run_once()
-        except Exception:
+        failed = False
+        with self._maintenance_lock:
+            for operation in (self.materializations.reap_expired, self.janitor.run_once):
+                try:
+                    operation()
+                except Exception:
+                    failed = True
+        if failed:
             rejection = _error(WebRuntimeErrorCode.MAINTENANCE_FAILED)
-        if rejection is not None:
             rejection.__context__ = None
             rejection.__cause__ = None
             rejection.__suppress_context__ = True
             raise rejection
 
-    def run_analysis_once(self) -> object:
-        """Run one queued analysis and always attempt terminal cleanup immediately."""
+    def run_analysis_once[ResultT](
+        self,
+        *,
+        finalize_result: Callable[[], ResultT],
+    ) -> ResultT:
+        """Run, verify, and publish one result before terminal cleanup."""
 
-        primary_failed = False
-        try:
-            return self.analyses.run_next()
-        except Exception:
-            primary_failed = True
-            raise
-        finally:
+        with self._maintenance_lock:
+            primary_failed = False
             try:
-                self.maintain()
-            except WebRuntimeError:
-                if not primary_failed:
-                    raise
+                self.analyses.run_next()
+                return finalize_result()
+            except Exception:
+                primary_failed = True
+                raise
+            finally:
+                try:
+                    self.maintain()
+                except WebRuntimeError:
+                    if not primary_failed:
+                        raise
 
     def start_periodic_maintenance(self) -> None:
         """Start process-local cleanup that does not depend on browser traffic."""

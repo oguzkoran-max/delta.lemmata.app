@@ -536,8 +536,10 @@ Tam P014 ve CE-14/CE-15 iddiaları P012 dahil normal bağımlılıklarını koru
 
 **2026-07-15 minimum-alpha checkpoint'i:** Versioned deployment package exact
 commit `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile geçti.
-Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` de yeşildir. P014-AC-01 ile
-P014-AC-07 CI sınırında passed'dir. `RUN-20260715-0005` read-only target-host
+Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` de yeşildir. Bu tarihsel
+checkpoint'te P014-AC-01 ile P014-AC-07 CI sınırında passed'di; daha sonra Phase B
+yaşam döngüsü gerilemesi P014-AC-05'i exact-head yeniden doğrulamaya açtı.
+`RUN-20260715-0005` read-only target-host
 inventory'si Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat container runtime
 olmadığı için host değişikliği yapmadan exit `21` ile durdu; sıfır swap ve
 sınırsız Lemmata kaynak profili capacity kararını açık bırakır. PR #4 merge commit
@@ -548,8 +550,9 @@ olarak yayımlandı; `latest` oluşturulmadı. Registry kanıtı PR #5 ve main C
 `29429031944` ile yeşil `main`e alındı. `RUN-20260715-0007` ikinci read-only host
 gözleminde required cgroup controller'larını, boş pre-Docker firewall baseline'ını,
 sıfır memory pressure'ı, sıfır Lemmata restart'ını ve boş `8502`yi doğruladı.
-ADR-0018 same-VPS official Docker ve no-new-swap adayını fail-closed memory,
-network ve frozen yüzde 20 Lemmata p95 kapılarıyla önerir; owner kararı pending'dir.
+ADR-0018 same-VPS official Docker ve no-new-swap profilini fail-closed memory,
+network ve frozen yüzde 20 Lemmata p95 kapılarıyla bounded planlama kararı olarak
+kaydeder; bu karar kurulum, deployment veya public activation yetkisi vermez.
 Accepted post-preparation inventory, canlı TLS, Delta-Lemmata coexistence/load,
 restart cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
 P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.

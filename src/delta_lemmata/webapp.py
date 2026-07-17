@@ -799,9 +799,13 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                 horizontal=True,
             )
             mode = CorpusInputMode(selected_mode)
+            uploader_context = {
+                "purpose": _purpose_label(purpose.value),
+                "mode": _corpus_mode_label(mode.value),
+            }
             if mode is CorpusInputMode.TEXT_FILES:
                 uploaded_corpus = st.file_uploader(
-                    text("corpus.text_uploader"),
+                    text("corpus.text_uploader", **uploader_context),
                     type=["txt"],
                     accept_multiple_files=True,
                     help=text("corpus.text_uploader_help"),
@@ -810,7 +814,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                 corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
             else:
                 uploaded_archive = st.file_uploader(
-                    text("corpus.archive_uploader"),
+                    text("corpus.archive_uploader", **uploader_context),
                     type=["zip"],
                     accept_multiple_files=False,
                     help=text("corpus.archive_uploader_help"),
@@ -822,7 +826,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         uploaded_metadata = None
         with st.expander(text("corpus.metadata_advanced")):
             uploaded_metadata = st.file_uploader(
-                text("corpus.metadata_uploader"),
+                text("corpus.metadata_uploader", **uploader_context),
                 type=["csv"],
                 accept_multiple_files=False,
                 help=text("corpus.metadata_uploader_help"),
@@ -1905,7 +1909,8 @@ def _render_review_readiness(
             purpose=purpose_label,
         )
         st.markdown(
-            f'<section class="delta-readiness-band{band_state}" '
+            f'<section class="delta-readiness-band{band_state}" role="status" '
+            'aria-live="polite" aria-atomic="true" '
             'aria-labelledby="delta-readiness-title">'
             f'<span class="delta-readiness-icon" aria-hidden="true">{band_icon}</span>'
             '<div class="delta-readiness-copy">'
@@ -3422,26 +3427,29 @@ def _render_parameters_stage() -> None:
                     config=preparation.config,
                     resolved_workflow_config=config,
                 )
-                runtime.run_analysis_once()
-                verified = runtime.prepared_corpora.scientific_result(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                )
-                result_view = project_result_view(
-                    config=config,
-                    result=verified.result,
-                    source_result_sha256=verified.sha256,
-                    documents=_result_descriptors(inventory, preparation),
-                )
-                runtime.prepared_corpora.publish_result_view(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                    view=result_view,
-                )
-                presentation = runtime.prepared_corpora.status(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                )
+
+                def finalize_result() -> object:
+                    verified = runtime.prepared_corpora.scientific_result(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+                    result_view = project_result_view(
+                        config=config,
+                        result=verified.result,
+                        source_result_sha256=verified.sha256,
+                        documents=_result_descriptors(inventory, preparation),
+                    )
+                    runtime.prepared_corpora.publish_result_view(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                        view=result_view,
+                    )
+                    return runtime.prepared_corpora.status(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+
+                presentation = runtime.run_analysis_once(finalize_result=finalize_result)
             except (PreparedCorpusError, AnalysisOrchestratorError, WebRuntimeError) as error:
                 st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
                 st.caption(text("corpus.error.reference", code=error.code.value))

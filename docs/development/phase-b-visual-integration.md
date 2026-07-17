@@ -6,9 +6,9 @@
 **Exact implementation:** `3a554e0e76522672efaf547b1d03e12cb4f3531b`
 **Evidence commit:** `d40b14d3e202556d910955670a3c0b60087d8d71`
 **Draft pull request:** [#8](https://github.com/oguzkoran-max/delta.lemmata.app/pull/8)
-**Design source:** Claude Code Phase A5.1 review package at
-`~/Desktop/Delta-Phase-A51-Review/`, manifest verified 24/24; report at
-`~/.codex/attachments/3c2c8d45-61bb-4c75-9230-f1546cddb382/pasted-text.txt`
+**Design source:** Git-retained Claude Code Phase A5.1 source package, original
+manifest, repository-safe derivative manifest, and redacted report under
+`provenance/evidence/P014/phase-a51-design-source/`
 
 ## Scope
 

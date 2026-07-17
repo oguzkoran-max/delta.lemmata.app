@@ -23,7 +23,6 @@ from browser_audit_p008 import (
     VIEWPORTS,
     _audit_parameters,
     _confirm_and_prepare,
-    _display_path,
     _document_corpus,
     _download_json,
     _free_port,
@@ -64,6 +63,12 @@ PHASE_B_VIEWPORTS = (
 )
 _A51_MOBILE_PRIMARY_ACTION_WIDTHS = frozenset({375, 390})
 _A51_MOBILE_PRIMARY_ACTION_MAX_Y = 780.0
+
+
+def _evidence_path(path: Path, output: Path) -> str:
+    """Serialize one audit artifact relative to its portable evidence root."""
+
+    return path.relative_to(output).as_posix()
 
 
 def _entry_primary_action_max_y(width: int, height: int) -> float:
@@ -156,7 +161,7 @@ def _write_failure_record(
     )
 
 
-def _pixel_evidence(locator: Locator, screenshot: Path) -> dict[str, Any]:
+def _pixel_evidence(locator: Locator, screenshot: Path, output: Path) -> dict[str, Any]:
     payload = locator.screenshot(path=str(screenshot))
     image = Image.open(BytesIO(payload)).convert("RGB")
     pixels = tuple(image.get_flattened_data())
@@ -172,7 +177,7 @@ def _pixel_evidence(locator: Locator, screenshot: Path) -> dict[str, Any]:
         "pass": (
             image.width >= 200 and image.height >= 120 and fraction >= 0.01 and sampled_colors >= 8
         ),
-        "screenshot": _display_path(screenshot),
+        "screenshot": _evidence_path(screenshot, output),
     }
 
 
@@ -384,7 +389,11 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
         page.set_viewport_size({"width": width, "height": height})
         page.wait_for_timeout(300)
         geometry = _geometry(page)
-        upload = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+        upload = page.get_by_role(
+            "region",
+            name="Corpus texts (.txt) · Compare Texts · Individual TXT files",
+            exact=True,
+        )
         upload_button = upload.get_by_role("button").first
         input_mode = page.get_by_role("radiogroup", name="Corpus input format", exact=True)
         desktop_guide = page.locator(".delta-purpose-guide-desktop")
@@ -449,6 +458,7 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "footer_count": geometry["visibleFooterCount"],
                 "inter_font_loaded": geometry["interFontLoaded"],
                 "source_sans_font_loaded": geometry["sourceSansFontLoaded"],
+                "uploader_context_pass": upload.count() == 1,
                 "upload_before_teaching": (upload_box["y"] < teaching.bounding_box()["y"]),
                 "primary_upload_action_y": round(upload_button_box["y"], 3),
                 "primary_upload_action_max_y": primary_action_max_y,
@@ -459,7 +469,7 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "skip_target_pass": skip["target_pass"],
                 "skip_activation_pass": skip["activation_pass"],
                 "skip_bypass_pass": skip["bypass_pass"],
-                "screenshot": _display_path(screenshot),
+                "screenshot": _evidence_path(screenshot, output),
             }
         )
     page.set_viewport_size({"width": 1280, "height": 900})
@@ -479,6 +489,9 @@ def _review_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
         )
         selector_count = correction_selector.count()
         selector_box = correction_selector.bounding_box() if selector_count == 1 else None
+        readiness_status = page.locator(
+            '.delta-readiness-band[role="status"][aria-live="polite"][aria-atomic="true"]'
+        )
         screenshot = output / "screenshots" / f"review-{target}.png"
         page.screenshot(path=str(screenshot), full_page=True)
         results.append(
@@ -497,6 +510,7 @@ def _review_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "footer_count": geometry["visibleFooterCount"],
                 "inter_font_loaded": geometry["interFontLoaded"],
                 "source_sans_font_loaded": geometry["sourceSansFontLoaded"],
+                "readiness_status_pass": readiness_status.count() == 1,
                 "correction_selector_count": selector_count,
                 "correction_selector_pass": (
                     selector_count == 1
@@ -506,7 +520,7 @@ def _review_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "skip_target_pass": skip["target_pass"],
                 "skip_activation_pass": skip["activation_pass"],
                 "skip_bypass_pass": skip["bypass_pass"],
-                "screenshot": _display_path(screenshot),
+                "screenshot": _evidence_path(screenshot, output),
             }
         )
     page.set_viewport_size({"width": 1280, "height": 900})
@@ -525,6 +539,7 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
             _pixel_evidence(
                 chart_locator.nth(index),
                 output / "screenshots" / f"results-{target}-chart-{index + 1}.png",
+                output,
             )
             for index in range(2)
         )
@@ -572,7 +587,7 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 ),
                 "mds_plot_box": mds_plot_box,
                 "chart_pixels": chart_pixels,
-                "screenshot": _display_path(screenshot),
+                "screenshot": _evidence_path(screenshot, output),
             }
         )
     page.set_viewport_size({"width": 1280, "height": 900})
@@ -630,6 +645,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         _pixel_evidence(
             chart_locator.nth(index),
             output / "screenshots" / f"result-chart-{index + 1}.png",
+            output,
         )
         for index in range(2)
     )
@@ -679,6 +695,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         _pixel_evidence(
             chart_locator.nth(index),
             output / "screenshots" / f"result-chart-{index + 1}-1000-mfw.png",
+            output,
         )
         for index in range(2)
     )
@@ -751,6 +768,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
             and item["footer_count"] == 1
             and item["inter_font_loaded"]
             and item["source_sans_font_loaded"]
+            and item["uploader_context_pass"]
             and item["mfw_radio_layout_pass"]
             and item["all_result_cells_visible_pass"]
             and item["mds_metric_aspect_pass"]
@@ -794,6 +812,7 @@ def _audit_flow(
             and item["footer_count"] == 1
             and item["inter_font_loaded"]
             and item["source_sans_font_loaded"]
+            and item["uploader_context_pass"]
             and item["upload_before_teaching"]
             and item["primary_upload_action_pass"]
             and item["purpose_guide_layout_pass"]
@@ -818,6 +837,7 @@ def _audit_flow(
             and item["footer_count"] == 1
             and item["inter_font_loaded"]
             and item["source_sans_font_loaded"]
+            and item["readiness_status_pass"]
             and item["correction_selector_pass"]
             and item["skip_target_pass"]
             and item["skip_activation_pass"]
@@ -959,7 +979,7 @@ def main() -> int:
                 json.dumps(result, indent=2, ensure_ascii=False) + "\n",
                 encoding="utf-8",
             )
-            print(json.dumps({"result": result["result"], "output": _display_path(output)}))
+            print(json.dumps({"result": result["result"], "output": "."}))
             return 0 if passed else 1
         except Exception as error:
             _write_failure_record(

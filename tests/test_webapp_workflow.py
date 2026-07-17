@@ -1375,9 +1375,11 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
         nonlocal maintenance_calls
         maintenance_calls += 1
 
-    def run_analysis_once() -> None:
+    def run_analysis_once(*, finalize_result: object) -> object:
         analyses.run_next()
+        result = finalize_result()  # type: ignore[operator]
         maintain()
+        return result
 
     monkeypatch.setattr(
         webapp_module,
