@@ -1,0 +1,239 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260718-0001",
+  "run_type": "security",
+  "status": "failed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-17T21:46:25Z",
+  "ended_at_utc": "2026-07-17T22:10:36Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "748d3fdc688302d9b373557e030cf06bb39d78a1",
+  "environment": {
+    "release": {
+      "operations_source_commit": "748d3fdc688302d9b373557e030cf06bb39d78a1",
+      "application_source_commit": "25fc2cadbba2147db6c7767e802088706a305f28",
+      "source_archive_sha256": "00f3e78936a77511ede0120b54150bb2cf129629d90421201f101e7018cc5c75",
+      "root_only_operations_tree": "/root/p014-ops-748d3fdc688302d9b373557e030cf06bb39d78a1",
+      "immutable_application_image": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:eb0c13a77dc39af8cf4dbfdadc811dd3bbe1f0b3d0381b15e140f5367ce9a54d",
+      "image_pulled": false
+    },
+    "target_host": {
+      "role": "shared Lemmata VPS intended for bounded Delta public alpha",
+      "os": "Ubuntu 26.04 resolute",
+      "architecture": "x86_64",
+      "kernel": "7.0.0-22-generic",
+      "cpu_count": 2,
+      "memory_total_mib": 3814,
+      "memory_available_mib_before": 2359,
+      "swap_total_mib": 0,
+      "services_before": {
+        "caddy": "active",
+        "lemmata": "active",
+        "docker": "inactive",
+        "delta_public_alpha": "inactive"
+      },
+      "forwarding_before": {
+        "ipv4": 0,
+        "ipv6": 0
+      },
+      "firewall_rule_lines_before": {
+        "nftables": 0,
+        "iptables": 0,
+        "ip6tables": 0
+      },
+      "caddyfile_sha256": "ec824143747f51a2b571de61ae87bf06714e7be76684d5d9e665bb653116c9e5"
+    },
+    "pre_docker_gate": {
+      "schema_version": "1.3.0",
+      "captured_at_utc": "2026-07-17T21:46:25.894945Z",
+      "passed": true,
+      "failures": [],
+      "lemmata_health_successes": 20,
+      "lemmata_health_samples": 20,
+      "lemmata_median_ms": 56.711,
+      "lemmata_p95_ms": 130.16,
+      "lemmata_restart_count": 0,
+      "lemmata_start_monotonic_us": 487847582,
+      "docker_installed": false
+    },
+    "pre_mutation_gate": {
+      "schema_version": "1.3.0",
+      "captured_at_utc": "2026-07-17T21:48:25.283264Z",
+      "passed": true,
+      "failures": [],
+      "lemmata_health_successes": 20,
+      "lemmata_health_samples": 20,
+      "lemmata_p95_ms": 60.892,
+      "lemmata_restart_count": 0,
+      "lemmata_start_monotonic_us": 487847582,
+      "docker_installed": false
+    },
+    "post_docker_gate": {
+      "schema_version": "1.3.0",
+      "captured_at_utc": "2026-07-17T21:48:45.628616Z",
+      "passed": false,
+      "failures": [
+        "P014_DOCKER_PACKAGE_ORIGIN_INVALID"
+      ],
+      "docker_installed": true,
+      "docker_service": "active",
+      "docker_engine_version": "29.6.2",
+      "docker_compose_version": "5.3.1",
+      "official_key_fingerprint_valid": true,
+      "source_profile_valid": true,
+      "fixed_package_set_installed": true,
+      "apt_policy_used_installer_private_lists": false,
+      "lemmata_health_successes": 20,
+      "lemmata_health_samples": 20,
+      "lemmata_p95_ms": 61.219,
+      "lemmata_restart_count": 0,
+      "lemmata_start_monotonic_us": 487847582,
+      "delta_started": false
+    },
+    "automatic_rollback": {
+      "captured_at_utc": "2026-07-17T21:49:00.372080Z",
+      "passed": false,
+      "failures": [
+        "P014_FIREWALL_NOT_RESTORED"
+      ],
+      "docker_installed": false,
+      "docker_service": "inactive",
+      "docker_packages_remaining": 0,
+      "forwarding_restored": true,
+      "empty_firewall_baseline_restored": false,
+      "lemmata_health_successes": 20,
+      "lemmata_health_samples": 20,
+      "lemmata_p95_ms": 62.176,
+      "lemmata_restart_count": 0,
+      "lemmata_start_monotonic_us": 487847582
+    },
+    "guarded_manual_rollback_completion": {
+      "captured_at_utc": "2026-07-17T22:06:18.010838Z",
+      "passed": true,
+      "failures": [],
+      "precondition": "All three accepted baseline firewall captures were byte-empty and the retained residual ruleset was Docker-only.",
+      "action": "Retain the residual, flush the Docker-created nftables ruleset, and rerun the guarded rollback.",
+      "docker_installed": false,
+      "docker_service": "inactive",
+      "delta_service": "inactive",
+      "forwarding_restored": true,
+      "empty_firewall_baseline_restored": true,
+      "caddy_service": "active",
+      "lemmata_service": "active",
+      "lemmata_health_successes": 20,
+      "lemmata_health_samples": 20,
+      "lemmata_median_ms": 58.812,
+      "lemmata_p95_ms": 62.023,
+      "lemmata_restart_count": 0,
+      "lemmata_start_monotonic_us": 487847582
+    }
+  },
+  "command": "Stage and verify the exact operations archive at 748d3fdc; run the accepted pre-Docker gate; invoke the guarded official-Docker installer with its own pre-mutation gate; retain the failed post-Docker and automatic post-rollback records; preserve and inspect the Docker-only firewall residual; restore the verified empty firewall baseline and rerun the guarded post-rollback gate (full content-free sequence in provenance/evidence/P014/docker-post-install-gate-rollback-failure-20260718.md).",
+  "exit_code": 1,
+  "configuration_artifacts": [
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "5477cd6d42fae1f96b575d5a0044887fd19a504eafb4d0c2cff5bcdae00a266a"
+    },
+    {
+      "path": "scripts/p014_host_gate.py",
+      "sha256": "a962045e4ce7ffe4484e57c620d1d6a27ce761062c81b3bad50127aa099dc057"
+    },
+    {
+      "path": "scripts/p014_install_docker_ubuntu.sh",
+      "sha256": "ff295c79b3366274de105b5e5a80b45081799aed256442ca9ff124500e9b389d"
+    },
+    {
+      "path": "scripts/p014_rollback_docker_ubuntu.sh",
+      "sha256": "ad814d32f5dd0c14b4d92a9c1db3b96eceba0f3fc6dbbb199c40316a09550b4e"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Root-only target-host operations tree /root/p014-ops-748d3fdc688302d9b373557e030cf06bb39d78a1 plus an authorized operator workstation",
+    "command": "Stage and verify the exact operations archive at 748d3fdc; run the accepted pre-Docker gate; invoke the guarded official-Docker installer with its own pre-mutation gate; retain the failed post-Docker and automatic post-rollback records; preserve and inspect the Docker-only firewall residual; restore the verified empty firewall baseline and rerun the guarded post-rollback gate (full content-free sequence in provenance/evidence/P014/docker-post-install-gate-rollback-failure-20260718.md).",
+    "limitations": [
+      "The shared target host and public network are mutable, so later health and latency values may differ.",
+      "SSH and registry credentials are deliberately not retained; replay requires separate authorization.",
+      "The failed run installed and then removed Docker but did not pull the Delta image or create any Delta service, route, or public state.",
+      "The final firewall completion was operator-controlled after exact empty-baseline and Docker-only residual verification; the correction makes this path deterministic in the guarded rollback.",
+      "A new deployment attempt requires merged correction code, green Linux CI, green main CI, and a new Run ID."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": "deploy/public-alpha/README.md",
+      "sha256": "5477cd6d42fae1f96b575d5a0044887fd19a504eafb4d0c2cff5bcdae00a266a"
+    },
+    {
+      "path": "scripts/p014_host_gate.py",
+      "sha256": "a962045e4ce7ffe4484e57c620d1d6a27ce761062c81b3bad50127aa099dc057"
+    },
+    {
+      "path": "scripts/p014_install_docker_ubuntu.sh",
+      "sha256": "ff295c79b3366274de105b5e5a80b45081799aed256442ca9ff124500e9b389d"
+    },
+    {
+      "path": "scripts/p014_rollback_docker_ubuntu.sh",
+      "sha256": "ad814d32f5dd0c14b4d92a9c1db3b96eceba0f3fc6dbbb199c40316a09550b4e"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/live-20260718/pre-docker-20260718-r2.json",
+      "sha256": "747775d426d1fd3fa3114bfb2fefc56f2542782ca814d599ef8e4931254ff01c"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/transaction-pre-docker-20260718-r2.json",
+      "sha256": "747775d426d1fd3fa3114bfb2fefc56f2542782ca814d599ef8e4931254ff01c"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/transaction-pre-mutation-20260718-r2.json",
+      "sha256": "dc0c03b5543cfd4142641553829930a0eb7d7e27e8b9ad692307c81732cedcb4"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/post-docker-20260718-r2.json",
+      "sha256": "586d90a77db0ffb295725e206e32fa0acf5f20ddb04d4e6450eb4ad4b49b7f59"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/post-rollback-20260718-r2.json",
+      "sha256": "3d470eecc86dea32eab80cfa0045f0df3caa8d64ebe33a1e7965f3095c4e2ed3"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/post-rollback-manual-20260718-r2.json",
+      "sha256": "2d36d30174213ec2d82ef9e0bc8d410ca8011014fcc32f58ff3e45812569b5d8"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/installed-packages.txt",
+      "sha256": "57574621a1db905d7b5ad77d427763578d644a59ae1fb670f030f35dc472cc8a"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/firewall-nftables.before",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/firewall-iptables.before",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/firewall-ip6tables.before",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "provenance/evidence/P014/live-20260718/firewall-nftables.rollback-residual",
+      "sha256": "0e676b11805f4aa58c0f2dc56a5ae9186ea24d3f05f538b663a05d3a7ddfc24e"
+    },
+    {
+      "path": "provenance/evidence/P014/docker-post-install-gate-rollback-failure-20260718.md",
+      "sha256": "f6a576a513d30658c52a94326a98d7f49f7fa0a561e5dc4471aa6b2a6be2b057"
+    },
+    {
+      "path": "memory/checkpoints/2026-07-18-p014-live-host-integration-correction.md",
+      "sha256": "c6c7a63e261d7b330b3e24dada07c2272db7cb4971cb6ec9a9cb4fd7daa244e2"
+    }
+  ],
+  "notes": "The second Phase 3 live-host attempt exposed two real integration defects after Docker mutation: package-origin verification ignored the installer's private APT lists, and automatic rollback could not restore an exactly empty firewall baseline. The failed origin result and automatic rollback failure remain retained. Docker was fully removed, the Docker-only residual was preserved, and a guarded manual rollback restored the exact baseline while Lemmata remained 20/20 healthy with zero restarts and unchanged process identity. No Delta image, service, Caddy route, DNS record, or public state was created."
+}

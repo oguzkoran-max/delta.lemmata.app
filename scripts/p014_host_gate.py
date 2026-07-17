@@ -328,20 +328,18 @@ def _candidate_has_exact_official_origin(output: str, candidate: str) -> bool:
     return False
 
 
-def _apt_candidate(package: str) -> tuple[str | None, bool]:
-    official_output = _required_stdout(
-        [
-            "apt-cache",
-            "-o",
-            f"Dir::Etc::sourcelist={DOCKER_SOURCE}",
-            "-o",
-            "Dir::Etc::sourceparts=-",
-            "-o",
-            "APT::Get::List-Cleanup=0",
-            "policy",
-            package,
-        ]
-    )
+def _apt_candidate(package: str, *, apt_lists_dir: Path | None = None) -> tuple[str | None, bool]:
+    command = [
+        "apt-cache",
+        "-o",
+        f"Dir::Etc::sourcelist={DOCKER_SOURCE}",
+        "-o",
+        "Dir::Etc::sourceparts=-",
+    ]
+    if apt_lists_dir is not None:
+        command.extend(("-o", f"Dir::State::lists={apt_lists_dir}"))
+    command.extend(("-o", "APT::Get::List-Cleanup=0", "policy", package))
+    official_output = _required_stdout(command)
     official_candidate = _candidate_from_policy(official_output)
     exact_origin = bool(
         official_candidate
@@ -350,7 +348,7 @@ def _apt_candidate(package: str) -> tuple[str | None, bool]:
     return official_candidate, exact_origin
 
 
-def _docker_facts() -> dict[str, Any]:
+def _docker_facts(*, apt_lists_dir: Path | None = None) -> dict[str, Any]:
     installed = shutil.which("docker") is not None
     facts: dict[str, Any] = {
         "installed": installed,
@@ -379,7 +377,7 @@ def _docker_facts() -> dict[str, Any]:
         status, _, version = completed.stdout.partition("\t")
         if status == "installed" and version.strip():
             facts["packages"][package] = version.strip()
-            candidate, official = _apt_candidate(package)
+            candidate, official = _apt_candidate(package, apt_lists_dir=apt_lists_dir)
             if candidate is not None:
                 facts["candidate_versions"][package] = candidate
             facts["official_candidates"][package] = official
@@ -394,7 +392,9 @@ def _kernel_oom_count() -> int:
     )
 
 
-def collect_snapshot(phase: str, *, samples: int) -> dict[str, Any]:
+def collect_snapshot(
+    phase: str, *, samples: int, apt_lists_dir: Path | None = None
+) -> dict[str, Any]:
     if phase not in PHASES:
         raise HostGateError("P014_PHASE_INVALID")
     root = shutil.disk_usage("/")
@@ -434,7 +434,7 @@ def collect_snapshot(phase: str, *, samples: int) -> dict[str, Any]:
             )
         },
         "caddyfile_sha256": _sha256(Path("/etc/caddy/Caddyfile")),
-        "docker": _docker_facts(),
+        "docker": _docker_facts(apt_lists_dir=apt_lists_dir),
     }
 
 
@@ -932,6 +932,7 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
     parser.add_argument("phase", choices=PHASES)
     parser.add_argument("--output", required=True, type=Path)
     parser.add_argument("--baseline", type=Path)
+    parser.add_argument("--apt-lists-dir", type=Path)
     parser.add_argument("--samples", type=int, default=20)
     args = parser.parse_args(argv)
     if args.samples < 5 or args.samples > 100:
@@ -940,6 +941,11 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
         parser.error("--baseline is not accepted for pre-docker")
     if args.phase != "pre-docker" and args.baseline is None:
         parser.error("--baseline is required after pre-docker")
+    if args.phase in {"post-docker", "delta-idle"}:
+        if args.apt_lists_dir is None or not args.apt_lists_dir.is_absolute():
+            parser.error("--apt-lists-dir must be absolute after Docker installation")
+    elif args.apt_lists_dir is not None:
+        parser.error("--apt-lists-dir is accepted only for post-docker and delta-idle")
     return args
 
 
@@ -948,7 +954,11 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if os.geteuid() != 0:
             raise HostGateError("P014_HOST_GATE_REQUIRES_ROOT")
-        snapshot = collect_snapshot(args.phase, samples=args.samples)
+        snapshot = collect_snapshot(
+            args.phase,
+            samples=args.samples,
+            apt_lists_dir=args.apt_lists_dir,
+        )
         baseline = _load_baseline(args.baseline) if args.baseline is not None else None
         failures = evaluate_snapshot(snapshot, baseline)
         snapshot["gate"] = {"passed": not failures, "failures": failures}

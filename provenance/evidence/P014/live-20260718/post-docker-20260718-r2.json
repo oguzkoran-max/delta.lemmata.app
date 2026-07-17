@@ -1,0 +1,151 @@
+{
+  "caddyfile_sha256": "ec824143747f51a2b571de61ae87bf06714e7be76684d5d9e665bb653116c9e5",
+  "capture_mode": "live",
+  "captured_at_utc": "2026-07-17T21:48:45.628616Z",
+  "delta": {
+    "health": null
+  },
+  "docker": {
+    "candidate_versions": {
+      "containerd.io": "2.2.6-1~ubuntu.26.04~resolute",
+      "docker-buildx-plugin": "0.35.0-1~ubuntu.26.04~resolute",
+      "docker-ce": "5:29.6.2-1~ubuntu.26.04~resolute",
+      "docker-ce-cli": "5:29.6.2-1~ubuntu.26.04~resolute",
+      "docker-compose-plugin": "5.3.1-1~ubuntu.26.04~resolute"
+    },
+    "compose_version": "5.3.1",
+    "engine_version": "29.6.2",
+    "installed": true,
+    "official_candidates": {
+      "containerd.io": false,
+      "docker-buildx-plugin": false,
+      "docker-ce": false,
+      "docker-ce-cli": false,
+      "docker-compose-plugin": false
+    },
+    "packages": {
+      "containerd.io": "2.2.6-1~ubuntu.26.04~resolute",
+      "docker-buildx-plugin": "0.35.0-1~ubuntu.26.04~resolute",
+      "docker-ce": "5:29.6.2-1~ubuntu.26.04~resolute",
+      "docker-ce-cli": "5:29.6.2-1~ubuntu.26.04~resolute",
+      "docker-compose-plugin": "5.3.1-1~ubuntu.26.04~resolute"
+    },
+    "repository": {
+      "key_sha256": "1500c1f56fa9e26b9b8f42452a553675796ade0807cdce11975eb98170b3a570",
+      "primary_fingerprints": [
+        "9DC858229FC7DD38854AE2D88D81803C0EBFCD88"
+      ],
+      "source_profile_valid": true,
+      "source_sha256": "47be0f749c19273936c7e56fff5a29b9108bcce8137ee677cc736523fb876e71"
+    },
+    "service": "active"
+  },
+  "gate": {
+    "failures": [
+      "P014_DOCKER_PACKAGE_ORIGIN_INVALID"
+    ],
+    "passed": false
+  },
+  "host": {
+    "architecture": "x86_64",
+    "cpu_count": 2,
+    "firewall": {
+      "ip6tables": {
+        "line_count": 29,
+        "sha256": "d6aa16ae85e8a395955a06560e4b2b401360691fcd7b431d88eec0ad3f12d79a"
+      },
+      "iptables": {
+        "line_count": 34,
+        "sha256": "5788be91bfdadf45679ee26191d18dbd3493af6efd2958257f9e021be78e1ee1"
+      },
+      "nftables": {
+        "line_count": 76,
+        "sha256": "2d8ee9818f84072096c41fba4c577a9c6cd28b78392cbab51788b8e3df338adf"
+      }
+    },
+    "forwarding": {
+      "ipv4": 1,
+      "ipv6": 0
+    },
+    "identity": {
+      "boot_id_sha256": "2db5e221a772cb67a648745d9817f2ca8561358e9a61ec42dee8a4fd60e93b91",
+      "kernel_release": "7.0.0-22-generic",
+      "machine_id_sha256": "82a07c0e50e1f041c51f2098f68dab6764f0f0079a2df4d25849d4367f59eea2"
+    },
+    "kernel_oom_markers_30m": 0,
+    "listeners": [
+      {
+        "address": "*",
+        "port": 80
+      },
+      {
+        "address": "*",
+        "port": 443
+      },
+      {
+        "address": "0.0.0.0",
+        "port": 22
+      },
+      {
+        "address": "127.0.0.1",
+        "port": 2019
+      },
+      {
+        "address": "127.0.0.1",
+        "port": 8501
+      },
+      {
+        "address": "127.0.0.53%lo",
+        "port": 53
+      },
+      {
+        "address": "127.0.0.54",
+        "port": 53
+      },
+      {
+        "address": "::",
+        "port": 22
+      }
+    ],
+    "memory": {
+      "available_mib": 2269,
+      "swap_total_mib": 0,
+      "total_mib": 3814
+    },
+    "memory_pressure": {
+      "full_avg10": 0.0,
+      "some_avg10": 0.0
+    },
+    "os": {
+      "ID": "ubuntu",
+      "VERSION_CODENAME": "resolute",
+      "VERSION_ID": "26.04"
+    },
+    "root_free_mib": 31891
+  },
+  "lemmata": {
+    "health": {
+      "body_ok": 20,
+      "max_ms": 61.342,
+      "median_ms": 58.435,
+      "p95_ms": 61.219,
+      "samples": 20,
+      "successes": 20
+    },
+    "service": {
+      "active_state": "active",
+      "memory_bytes": 1120362496,
+      "restart_count": 0,
+      "start_monotonic_us": 487847582,
+      "sub_state": "running"
+    }
+  },
+  "phase": "post-docker",
+  "schema_version": "1.3.0",
+  "services": {
+    "caddy": "active",
+    "delta_public_alpha": "inactive",
+    "docker": "active",
+    "lemmata": "active"
+  }
+}
