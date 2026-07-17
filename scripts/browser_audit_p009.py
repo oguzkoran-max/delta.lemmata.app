@@ -37,6 +37,8 @@ from browser_audit_p008 import (
 from PIL import Image
 from playwright.sync_api import Browser, Locator, Page, sync_playwright
 
+from delta_lemmata.result_view import ResultCellV1, classical_mds
+
 ROOT = Path(__file__).resolve().parents[1]
 FORBIDDEN_EXPORT_KEYS = (
     "selected_features",
@@ -60,6 +62,16 @@ PHASE_B_VIEWPORTS = (
     *VIEWPORTS,
     ("mobile-375x844", 375, 844),
 )
+_A51_MOBILE_PRIMARY_ACTION_WIDTHS = frozenset({375, 390})
+_A51_MOBILE_PRIMARY_ACTION_MAX_Y = 780.0
+
+
+def _entry_primary_action_max_y(width: int, height: int) -> float:
+    """Return the approved A5.1 first-action fold budget for an entry viewport."""
+
+    if width in _A51_MOBILE_PRIMARY_ACTION_WIDTHS:
+        return _A51_MOBILE_PRIMARY_ACTION_MAX_Y
+    return float(height)
 
 
 def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
@@ -165,6 +177,60 @@ def _semantic_table_evidence(page: Page, label: str) -> dict[str, Any]:
     return {
         "sha256": hashlib.sha256(payload).hexdigest(),
         "row_count": table.locator("tbody tr").count(),
+    }
+
+
+def _semantic_table_rows(page: Page, label: str) -> tuple[tuple[str, ...], ...]:
+    table = page.get_by_role("table", name=label, exact=True)
+    rows = table.locator("tbody tr").evaluate_all(
+        """elements => elements.map(row =>
+          Array.from(row.querySelectorAll(':scope > th, :scope > td'))
+            .map(cell => cell.innerText.trim())
+        )"""
+    )
+    return tuple(tuple(str(cell).strip() for cell in row) for row in rows)
+
+
+def _semantic_rows_sha256(rows: tuple[tuple[str, ...], ...]) -> str:
+    payload = json.dumps(rows, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()
+
+
+def _semantic_result_parity(
+    page: Page,
+    exported: dict[str, Any],
+    mfw: int,
+) -> dict[str, Any]:
+    cell_payload = next(cell for cell in exported["cells"] if cell["mfw"] == mfw)
+    matrix_payload = cell_payload["matrix"]
+    document_keys = tuple(matrix_payload["document_keys"])
+    expected_matrix = tuple(
+        (key, *(f"{float(value):.6f}" for value in values))
+        for key, values in zip(document_keys, matrix_payload["values"], strict=True)
+    )
+    documents = {document["key"]: document for document in exported["documents"]}
+    points = classical_mds(ResultCellV1.model_validate(cell_payload))
+    expected_mds = tuple(
+        (
+            str(documents[point.document_key]["title"]),
+            str(documents[point.document_key]["role"]),
+            f"{point.x:.6f}",
+            f"{point.y:.6f}",
+        )
+        for point in points
+    )
+    observed_matrix = _semantic_table_rows(page, "Classic Delta distance matrix")
+    observed_mds = _semantic_table_rows(page, "MDS coordinate table")
+    return {
+        "mfw": mfw,
+        "matrix_row_count": len(observed_matrix),
+        "matrix_expected_sha256": _semantic_rows_sha256(expected_matrix),
+        "matrix_observed_sha256": _semantic_rows_sha256(observed_matrix),
+        "matrix_export_parity_pass": observed_matrix == expected_matrix,
+        "mds_row_count": len(observed_mds),
+        "mds_expected_sha256": _semantic_rows_sha256(expected_mds),
+        "mds_observed_sha256": _semantic_rows_sha256(observed_mds),
+        "mds_matrix_parity_pass": observed_mds == expected_mds,
     }
 
 
@@ -302,8 +368,39 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
         page.wait_for_timeout(300)
         geometry = _geometry(page)
         upload = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+        upload_button = upload.get_by_role("button").first
+        input_mode = page.get_by_role("radiogroup", name="Corpus input format", exact=True)
+        desktop_guide = page.locator(".delta-purpose-guide-desktop")
+        mobile_guide = page.locator("details.delta-purpose-guide-mobile")
         teaching = page.get_by_role("heading", name="How stylometry works", exact=True)
         skip = _skip_link_evidence(page)
+        upload_box = upload.bounding_box()
+        upload_button_box = upload_button.bounding_box()
+        input_mode_box = input_mode.bounding_box()
+        desktop_guide_box = desktop_guide.bounding_box()
+        mobile_guide_box = mobile_guide.bounding_box()
+        if upload_box is None or upload_button_box is None or input_mode_box is None:
+            raise RuntimeError(f"Entry controls are not measurable at {width}x{height}")
+        mobile = width <= 760
+        if mobile:
+            purpose_guide_layout_pass = (
+                not desktop_guide.is_visible()
+                and mobile_guide.is_visible()
+                and mobile_guide_box is not None
+                and mobile_guide_box["y"] >= upload_box["y"] + upload_box["height"]
+            )
+            corpus_mode_layout_pass = input_mode_box["y"] >= (
+                upload_box["y"] + upload_box["height"]
+            )
+        else:
+            purpose_guide_layout_pass = (
+                desktop_guide.is_visible()
+                and not mobile_guide.is_visible()
+                and desktop_guide_box is not None
+                and desktop_guide_box["y"] < upload_box["y"]
+            )
+            corpus_mode_layout_pass = input_mode_box["y"] < upload_box["y"]
+        primary_action_max_y = _entry_primary_action_max_y(width, height)
         screenshot = output / "screenshots" / f"entry-{target}.png"
         page.screenshot(path=str(screenshot), full_page=True)
         results.append(
@@ -321,9 +418,13 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "main_landmark_count": geometry["mainLandmarkCount"],
                 "footer_count": geometry["visibleFooterCount"],
                 "inter_font_loaded": geometry["interFontLoaded"],
-                "upload_before_teaching": (
-                    upload.bounding_box()["y"] < teaching.bounding_box()["y"]
-                ),
+                "source_sans_font_loaded": geometry["sourceSansFontLoaded"],
+                "upload_before_teaching": (upload_box["y"] < teaching.bounding_box()["y"]),
+                "primary_upload_action_y": round(upload_button_box["y"], 3),
+                "primary_upload_action_max_y": primary_action_max_y,
+                "primary_upload_action_pass": (upload_button_box["y"] <= primary_action_max_y),
+                "purpose_guide_layout_pass": purpose_guide_layout_pass,
+                "corpus_mode_layout_pass": corpus_mode_layout_pass,
                 "skip_target_pass": skip["target_pass"],
                 "skip_activation_pass": skip["activation_pass"],
                 "skip_bypass_pass": skip["bypass_pass"],
@@ -364,6 +465,7 @@ def _review_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "main_landmark_count": geometry["mainLandmarkCount"],
                 "footer_count": geometry["visibleFooterCount"],
                 "inter_font_loaded": geometry["interFontLoaded"],
+                "source_sans_font_loaded": geometry["sourceSansFontLoaded"],
                 "correction_selector_count": selector_count,
                 "correction_selector_pass": (
                     selector_count == 1
@@ -428,6 +530,7 @@ def _result_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "main_landmark_count": geometry["mainLandmarkCount"],
                 "footer_count": geometry["visibleFooterCount"],
                 "inter_font_loaded": geometry["interFontLoaded"],
+                "source_sans_font_loaded": geometry["sourceSansFontLoaded"],
                 "mfw_radio_rows": radio_rows,
                 "mfw_radio_layout_pass": (radio_rows == 1 if width > 760 else radio_rows == 2),
                 "visible_result_cell_count": visible_result_cells,
@@ -523,6 +626,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         "MDS coordinate table",
     )
     semantic_before = {label: _semantic_table_evidence(page, label) for label in semantic_labels}
+    parity_before = _semantic_result_parity(page, exported, 500)
 
     viewports = _result_viewports(page, output)
     target_option = selector.locator(
@@ -538,6 +642,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         target_radio,
         semantic_before,
     )
+    parity_after = _semantic_result_parity(page, exported, 1000)
     page.get_by_role("heading", name="Distance heatmap", level=3, exact=True).wait_for()
     changed_chart_evidence = tuple(
         _pixel_evidence(
@@ -590,6 +695,12 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
             for before, after in zip(chart_evidence, changed_chart_evidence, strict=True)
         ),
         "semantic_table_change_pass": semantic_change,
+        "semantic_export_parity_pass": all(
+            evidence[check]
+            for evidence in (parity_before, parity_after)
+            for check in ("matrix_export_parity_pass", "mds_matrix_parity_pass")
+        ),
+        "semantic_export_parity_evidence": (parity_before, parity_after),
         "semantic_table_evidence_before": semantic_before,
         "semantic_table_evidence_after": semantic_after,
         "chart_pixel_evidence": chart_evidence,
@@ -608,6 +719,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
             and item["main_landmark_count"] == 1
             and item["footer_count"] == 1
             and item["inter_font_loaded"]
+            and item["source_sans_font_loaded"]
             and item["mfw_radio_layout_pass"]
             and item["all_result_cells_visible_pass"]
             and item["mds_metric_aspect_pass"]
@@ -650,7 +762,11 @@ def _audit_flow(
             and item["main_landmark_count"] == 1
             and item["footer_count"] == 1
             and item["inter_font_loaded"]
+            and item["source_sans_font_loaded"]
             and item["upload_before_teaching"]
+            and item["primary_upload_action_pass"]
+            and item["purpose_guide_layout_pass"]
+            and item["corpus_mode_layout_pass"]
             and item["skip_target_pass"]
             and item["skip_activation_pass"]
             and item["skip_bypass_pass"]
@@ -669,6 +785,7 @@ def _audit_flow(
             and item["main_landmark_count"] == 1
             and item["footer_count"] == 1
             and item["inter_font_loaded"]
+            and item["source_sans_font_loaded"]
             and item["correction_selector_pass"]
             and item["skip_target_pass"]
             and item["skip_activation_pass"]

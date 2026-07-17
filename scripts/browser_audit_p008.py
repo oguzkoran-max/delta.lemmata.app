@@ -283,7 +283,9 @@ def _geometry(page: Page) -> dict[str, Any]:
             ).length,
             visibleFooterCount: [...document.querySelectorAll('.delta-footer')]
               .filter(visible).length,
-            interFontLoaded: document.fonts.check('16px "Inter"')
+            interFontLoaded: document.fonts.check('16px "Inter"'),
+            sourceSansFontLoaded: document.fonts.check('16px "Source Sans Pro"')
+              || document.fonts.check('16px "Source Sans 3"')
           };
         }"""
     )

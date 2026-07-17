@@ -32,6 +32,9 @@ _wait_for_streamlit_idle = BROWSER_AUDIT._wait_for_streamlit_idle
 _geometry = BROWSER_AUDIT._geometry
 _choose_next_result_option = P009_BROWSER_AUDIT._choose_next_result_option
 _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
+_entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
+_semantic_result_parity = P009_BROWSER_AUDIT._semantic_result_parity
+_semantic_table_rows = P009_BROWSER_AUDIT._semantic_table_rows
 
 
 class _Download:
@@ -86,6 +89,33 @@ class _Page:
     def get_by_role(self, role: str, **kwargs: object) -> _Button:
         self.calls.append(("get_by_role", (role, kwargs)))
         return _Button(self.calls)
+
+
+class _SemanticRows:
+    def __init__(self, rows: list[list[str]]) -> None:
+        self._rows = rows
+
+    def evaluate_all(self, _script: str) -> list[list[str]]:
+        return self._rows
+
+
+class _SemanticTable:
+    def __init__(self, rows: list[list[str]]) -> None:
+        self._rows = rows
+
+    def locator(self, selector: str) -> _SemanticRows:
+        assert selector == "tbody tr"
+        return _SemanticRows(self._rows)
+
+
+class _SemanticPage:
+    def __init__(self, tables: dict[str, list[list[str]]]) -> None:
+        self._tables = tables
+
+    def get_by_role(self, role: str, **kwargs: object) -> _SemanticTable:
+        assert role == "table"
+        assert kwargs["exact"] is True
+        return _SemanticTable(self._tables[cast(str, kwargs["name"])])
 
 
 class _Keyboard:
@@ -246,6 +276,14 @@ def test_geometry_distinguishes_internal_input_text_scroll_from_box_overflow() -
     assert "box.left < -1 || box.right > root.clientWidth + 1" in page.expression
     assert "element.tagName !== 'INPUT'" in page.expression
     assert "controls.filter(controlOverflows)" in page.expression
+    assert "document.fonts.check('16px \"Source Sans Pro\"')" in page.expression
+
+
+def test_entry_primary_action_uses_the_a51_mobile_fold_budget() -> None:
+    assert _entry_primary_action_max_y(375, 844) == 780.0
+    assert _entry_primary_action_max_y(390, 844) == 780.0
+    assert _entry_primary_action_max_y(320, 800) == 800.0
+    assert _entry_primary_action_max_y(1440, 1000) == 1000.0
 
 
 def test_download_json_waits_for_idle_and_rejects_canceled_download() -> None:
@@ -378,6 +416,70 @@ def test_result_selection_waits_for_changed_stable_semantic_tables(
         "MDS coordinate table": {"sha256": "new-mds", "row_count": 3},
     }
     assert ("wait_for_timeout", 250) in page.calls
+
+
+def test_semantic_table_rows_normalize_cells() -> None:
+    page = _SemanticPage({"Matrix": [[" D01 ", " 0.000000\n"]]})
+
+    assert _semantic_table_rows(cast(Page, page), "Matrix") == (("D01", "0.000000"),)
+
+
+def test_semantic_result_parity_binds_tables_to_exported_matrix_and_mds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    exported = {
+        "documents": [
+            {"key": "D01", "title": "Early work", "role": "known"},
+            {"key": "D02", "title": "Late work", "role": "known"},
+        ],
+        "cells": [
+            {
+                "mfw": 500,
+                "culling_percent": 0,
+                "distance": "classic_delta",
+                "is_reference": True,
+                "status": "complete",
+                "error_code": None,
+                "matrix": {
+                    "document_keys": ["D01", "D02"],
+                    "values": [[0.0, 2.0], [2.0, 0.0]],
+                },
+            }
+        ],
+    }
+    expected = {
+        "Classic Delta distance matrix": (
+            ("D01", "0.000000", "2.000000"),
+            ("D02", "2.000000", "0.000000"),
+        ),
+        "MDS coordinate table": (
+            ("Early work", "known", "1.000000", "0.000000"),
+            ("Late work", "known", "-1.000000", "0.000000"),
+        ),
+    }
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_semantic_table_rows",
+        lambda _page, label: expected[label],
+    )
+
+    evidence = _semantic_result_parity(cast(Page, object()), exported, 500)
+
+    assert evidence["matrix_export_parity_pass"] is True
+    assert evidence["mds_matrix_parity_pass"] is True
+    assert evidence["matrix_expected_sha256"] == evidence["matrix_observed_sha256"]
+    assert evidence["mds_expected_sha256"] == evidence["mds_observed_sha256"]
+
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_semantic_table_rows",
+        lambda _page, label: (
+            (("D01", "0.000000", "9.000000"),) if label.startswith("Classic") else expected[label]
+        ),
+    )
+    mismatch = _semantic_result_parity(cast(Page, object()), exported, 500)
+    assert mismatch["matrix_export_parity_pass"] is False
+    assert mismatch["mds_matrix_parity_pass"] is True
 
 
 def test_result_selection_uses_native_keyboard_change_event() -> None:

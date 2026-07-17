@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import tomllib
+from importlib.metadata import version
 from importlib.resources import files
 from pathlib import Path
 from unittest.mock import Mock
@@ -41,6 +42,8 @@ def test_phase_b_theme_uses_the_approved_a51_tokens_and_dimensions() -> None:
         "aspect-ratio: 60 / 61.18;",
         ".delta-mds-legend {",
         ".delta-mds-unknown {",
+        ".delta-purpose-guide-mobile {",
+        ".st-key-corpus_inputs > .st-key-corpus_input_mode {",
         '[data-testid="stVegaLiteChart"] details > summary',
         'button[data-testid="stBaseButton-elementToolbar"]',
     }
@@ -72,6 +75,24 @@ def test_inter_is_self_hosted_with_recorded_provenance_and_no_runtime_font_reque
         FONT_LICENSE.read_text(encoding="utf-8")
     )
     assert packaged_fonts.joinpath("VENDORED.md").read_text(encoding="utf-8") == record
+
+
+def test_streamlit_source_sans_assets_are_pinned_and_recorded() -> None:
+    assert version("streamlit") == "1.59.1"
+    media = files("streamlit").joinpath("static", "static", "media")
+    upright = media.joinpath("SourceSansVF-Upright.ttf.BsWL4Kly.woff2").read_bytes()
+    italic = media.joinpath("SourceSansVF-Italic.ttf.Bt9VkdQ3.woff2").read_bytes()
+    assert hashlib.sha256(upright).hexdigest() == (
+        "5f16566f7a40d39b339ad26be151fa5a1ab1f0c2574c7a2e619765584a1acbd8"
+    )
+    assert hashlib.sha256(italic).hexdigest() == (
+        "b4959abc0569392f87c6c6ac612f90e3fe0104d283724189b7d8b6f61af347d3"
+    )
+    record = FONT_RECORD.read_text(encoding="utf-8")
+    assert "Source Sans 3 runtime asset" in record
+    assert "Source Sans 3.052" in record
+    assert "SIL Open Font License 1.1" in record
+    assert "streamlit==1.59.1" in record
 
 
 def test_main_landmark_bridge_promotes_the_real_streamlit_main(
@@ -121,6 +142,7 @@ def test_skip_target_is_a_separate_focusable_content_anchor(
 def test_results_copy_matches_the_scientific_display_contract() -> None:
     assert text("results.selector.reference_suffix") == ""
     assert text("results.reference_note").startswith("500 MFW opens first")
+    assert text("results.reference_unavailable_note").startswith("500 MFW was unavailable")
     assert text("results.method.delta.definition") == (
         "The mean absolute difference between word-frequency profiles standardized with means "
         "and standard deviations estimated from the known reference texts in the frozen fitting "

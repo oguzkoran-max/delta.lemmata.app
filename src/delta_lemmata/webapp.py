@@ -519,7 +519,7 @@ def _render_receipts(outcome: IntakeOutcome) -> None:
         )
 
 
-def _render_purpose_guidance(purpose: PurposeSpec) -> None:
+def _purpose_guidance_markup(purpose: PurposeSpec) -> str:
     guidance = text("purpose.guidance")
     items = (
         ("purpose.question_label", purpose.question_key, "question"),
@@ -534,8 +534,22 @@ def _render_purpose_guidance(purpose: PurposeSpec) -> None:
         "</div>"
         for label_key, body_key, kind in items
     )
+    return f'<section class="delta-purpose-guide" aria-label="{_html(guidance)}">{markup}</section>'
+
+
+def _render_purpose_guidance(purpose: PurposeSpec) -> None:
     st.markdown(
-        f'<section class="delta-purpose-guide" aria-label="{_html(guidance)}">{markup}</section>',
+        f'<div class="delta-purpose-guide-desktop">{_purpose_guidance_markup(purpose)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _render_mobile_purpose_guidance(purpose: PurposeSpec) -> None:
+    guidance = text("purpose.guidance")
+    st.markdown(
+        '<details class="delta-purpose-guide-mobile">'
+        f"<summary>{_html(guidance)}</summary>"
+        f"{_purpose_guidance_markup(purpose)}</details>",
         unsafe_allow_html=True,
     )
 
@@ -766,33 +780,36 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         with badge_column:
             st.badge(text("corpus.available"), icon=":material/shield:", color="green")
         st.caption(text("corpus.body"))
-        selected_mode = st.radio(
-            text("corpus.mode.label"),
-            options=[mode.value for mode in CorpusInputMode],
-            index=0,
-            format_func=_corpus_mode_label,
-            key="corpus_input_mode",
-            horizontal=True,
-        )
-        mode = CorpusInputMode(selected_mode)
-        if mode is CorpusInputMode.TEXT_FILES:
-            uploaded_corpus = st.file_uploader(
-                text("corpus.text_uploader"),
-                type=["txt"],
-                accept_multiple_files=True,
-                help=text("corpus.text_uploader_help"),
-                key=f"corpus_text_files_{generation}",
+        with st.container(key="corpus_inputs"):
+            selected_mode = st.radio(
+                text("corpus.mode.label"),
+                options=[mode.value for mode in CorpusInputMode],
+                index=0,
+                format_func=_corpus_mode_label,
+                key="corpus_input_mode",
+                horizontal=True,
             )
-            corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
-        else:
-            uploaded_archive = st.file_uploader(
-                text("corpus.archive_uploader"),
-                type=["zip"],
-                accept_multiple_files=False,
-                help=text("corpus.archive_uploader_help"),
-                key=f"corpus_archive_file_{generation}",
-            )
-            corpus_files = () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
+            mode = CorpusInputMode(selected_mode)
+            if mode is CorpusInputMode.TEXT_FILES:
+                uploaded_corpus = st.file_uploader(
+                    text("corpus.text_uploader"),
+                    type=["txt"],
+                    accept_multiple_files=True,
+                    help=text("corpus.text_uploader_help"),
+                    key=f"corpus_text_files_{generation}",
+                )
+                corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
+            else:
+                uploaded_archive = st.file_uploader(
+                    text("corpus.archive_uploader"),
+                    type=["zip"],
+                    accept_multiple_files=False,
+                    help=text("corpus.archive_uploader_help"),
+                    key=f"corpus_archive_file_{generation}",
+                )
+                corpus_files = (
+                    () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
+                )
         uploaded_metadata = None
         with st.expander(text("corpus.metadata_advanced")):
             uploaded_metadata = st.file_uploader(
@@ -2733,6 +2750,9 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
     )
 
 
+_HEATMAP_TEXT_MAX_DOCUMENTS = 6
+
+
 def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
     matrix = cell.matrix
     if matrix is None:
@@ -2777,6 +2797,7 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "field": "distance",
             "type": "quantitative",
             "scale": {
+                "type": "quantize",
                 "domain": [scale_min, scale_max],
                 "range": [
                     "#f4faf7",
@@ -2789,7 +2810,7 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             },
             "legend": {"title": "Classic Delta", "orient": "bottom"},
         }
-        contrast_threshold = scale_min + (scale_max - scale_min) * 0.58
+        contrast_threshold = scale_min + (scale_max - scale_min) * (4 / 6)
         contrast_test = f"datum.distance >= {contrast_threshold!r}"
     chart_data = pa.table(
         {
@@ -2807,42 +2828,41 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             ),
         }
     )
-    spec = {
-        "data": {"values": chart_data},
-        "width": 360,
-        "height": 360,
-        "layer": [
-            {
-                "mark": {"type": "rect", "cornerRadius": 3},
-                "encoding": {
-                    "x": {
-                        "field": "compared",
-                        "type": "ordinal",
-                        "sort": order,
-                        "title": text("results.heatmap.x"),
-                    },
-                    "y": {
-                        "field": "reference",
-                        "type": "ordinal",
-                        "sort": order,
-                        "title": text("results.heatmap.y"),
-                    },
-                    "color": color_encoding,
-                    "tooltip": [
-                        {"field": "reference_title", "type": "nominal", "title": "Text"},
-                        {
-                            "field": "compared_title",
-                            "type": "nominal",
-                            "title": "Compared with",
-                        },
-                        {
-                            "field": "distance_label",
-                            "type": "nominal",
-                            "title": "Distance",
-                        },
-                    ],
+    layers: list[dict[str, Any]] = [
+        {
+            "mark": {"type": "rect", "cornerRadius": 3},
+            "encoding": {
+                "x": {
+                    "field": "compared",
+                    "type": "ordinal",
+                    "sort": order,
+                    "title": text("results.heatmap.x"),
                 },
+                "y": {
+                    "field": "reference",
+                    "type": "ordinal",
+                    "sort": order,
+                    "title": text("results.heatmap.y"),
+                },
+                "color": color_encoding,
+                "tooltip": [
+                    {"field": "reference_title", "type": "nominal", "title": "Text"},
+                    {
+                        "field": "compared_title",
+                        "type": "nominal",
+                        "title": "Compared with",
+                    },
+                    {
+                        "field": "distance_label",
+                        "type": "nominal",
+                        "title": "Distance",
+                    },
+                ],
             },
+        }
+    ]
+    if len(order) <= _HEATMAP_TEXT_MAX_DOCUMENTS:
+        layers.append(
             {
                 "mark": {"type": "text", "fontSize": 12},
                 "encoding": {
@@ -2863,8 +2883,13 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
                         "value": "#1a1a1a",
                     },
                 },
-            },
-        ],
+            }
+        )
+    spec = {
+        "data": {"values": chart_data},
+        "width": 360,
+        "height": 360,
+        "layer": layers,
         "config": {
             "background": "#ffffff",
             "view": {"stroke": None},
@@ -3061,10 +3086,11 @@ def _render_result_view(view: ResultViewV1) -> None:
     if view.source_result_outcome == "partial":
         st.warning(text("results.partial"), icon=":material/warning:")
     completed = tuple(cell for cell in view.cells if cell.status is ResultCellStatus.COMPLETE)
-    default_index = next(
+    reference_index = next(
         (index for index, cell in enumerate(completed) if cell.mfw == view.reference_mfw),
-        0,
+        None,
     )
+    default_index = 0 if reference_index is None else reference_index
     selected_mfw = st.radio(
         text("results.selector"),
         options=[cell.mfw for cell in completed],
@@ -3080,7 +3106,12 @@ def _render_result_view(view: ResultViewV1) -> None:
         horizontal=True,
     )
     selected = next(cell for cell in completed if cell.mfw == selected_mfw)
-    st.info(text("results.reference_note"), icon=":material/push_pin:")
+    reference_note = (
+        "results.reference_note"
+        if reference_index is not None
+        else "results.reference_unavailable_note"
+    )
+    st.info(text(reference_note), icon=":material/push_pin:")
 
     heatmap_column, method_column = st.columns([1.45, 0.75], gap="large")
     with heatmap_column:
@@ -3369,6 +3400,7 @@ def main() -> None:
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
+            _render_mobile_purpose_guidance(PURPOSE_BY_ID[purpose.value])
             _render_stylometry_orientation()
             _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:

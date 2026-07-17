@@ -110,7 +110,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.eyebrow": "PARAMETERS · GUIDED MODE",
     "parameters.title": "Review what Delta will calculate",
     "parameters.body": (
-        "Guided Mode runs four pre-registered comparisons on the same documented corpus. "
+        "Guided Mode runs four pre-specified comparisons on the same documented corpus. "
         "Review the complete grid and its limits before starting the analysis."
     ),
     "parameters.mode.label": "Parameter mode",
@@ -164,8 +164,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "parameters.learn.reference.title": "Why 500 MFW is the display reference",
     "parameters.learn.reference.body": (
-        "Delta uses 500 MFW as a fixed, reproducible visual anchor. It does not select the "
-        "most attractive result. The other three comparisons remain equally visible."
+        "Delta uses 500 MFW as a fixed display reference. It does not select the most "
+        "attractive result. The other three comparisons remain equally visible."
     ),
     "parameters.interpretive_boundary": (
         "These comparisons describe relative stylistic proximity within this corpus. They "
@@ -221,8 +221,12 @@ _ENGLISH_STRINGS: dict[str, str] = {
     # Keep every selector card the same height; the reference role is explained below.
     "results.selector.reference_suffix": "",
     "results.reference_note": (
-        "500 MFW opens first as a pre-registered visual reference. It is not selected as the "
-        "best or most convincing result."
+        "500 MFW opens first as the pre-specified display reference. It is not selected as "
+        "the best or most convincing result."
+    ),
+    "results.reference_unavailable_note": (
+        "500 MFW was unavailable, so the first completed pre-specified comparison opened. "
+        "This is a display fallback, not a best-result selection."
     ),
     "results.heatmap.title": "Distance heatmap",
     "results.heatmap.body": (

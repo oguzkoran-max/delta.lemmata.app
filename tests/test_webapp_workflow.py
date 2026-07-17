@@ -60,6 +60,7 @@ from delta_lemmata.result_view import (
     ResultDocumentV1,
     ResultMatrixV1,
     ResultViewV1,
+    classical_mds,
 )
 from delta_lemmata.stylo_contracts import DistanceMeasure, DocumentRole
 from delta_lemmata.workflow_models import AnalysisScope
@@ -94,6 +95,19 @@ def _zip_payload(entries: list[tuple[str, bytes]]) -> bytes:
         for name, payload in entries:
             archive.writestr(name, payload)
     return output.getvalue()
+
+
+def _contrast_ratio(foreground: str, background: str) -> float:
+    def luminance(value: str) -> float:
+        channels = tuple(int(value[index : index + 2], 16) / 255 for index in (1, 3, 5))
+        linear = tuple(
+            channel / 12.92 if channel <= 0.04045 else ((channel + 0.055) / 1.055) ** 2.4
+            for channel in channels
+        )
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2]
+
+    lighter, darker = sorted((luminance(foreground), luminance(background)), reverse=True)
+    return (lighter + 0.05) / (darker + 0.05)
 
 
 def _public_result_view() -> ResultViewV1:
@@ -728,6 +742,54 @@ def test_partial_result_marks_unavailable_cell_without_hiding_completed_evidence
     ]
 
 
+@pytest.mark.parametrize(
+    ("status", "error_code"),
+    (
+        (ResultCellStatus.FAILED, "fit_unavailable"),
+        (ResultCellStatus.NOT_ENOUGH_FEATURES, "not_enough_features"),
+    ),
+)
+def test_unavailable_reference_opens_first_completed_cell_with_an_explicit_notice(
+    monkeypatch: pytest.MonkeyPatch,
+    status: ResultCellStatus,
+    error_code: str,
+) -> None:
+    app = _open_guided_parameters()
+    complete = _public_result_view()
+    unavailable_reference = complete.cells[2].model_copy(
+        update={"status": status, "error_code": error_code, "matrix": None}
+    )
+    cells = (*complete.cells[:2], unavailable_reference, complete.cells[3])
+    partial = ResultViewV1.model_validate(
+        {
+            **complete.model_dump(mode="python"),
+            "source_result_outcome": "partial",
+            "cells": cells,
+        }
+    )
+    app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY] = SimpleNamespace(
+        state_id="succeeded",
+        title="Analysis complete",
+        body="The bounded result is ready.",
+    )
+    monkeypatch.setattr(
+        webapp_module,
+        "_runtime",
+        lambda: SimpleNamespace(
+            prepared_corpora=SimpleNamespace(result_view=lambda **_kwargs: partial)
+        ),
+    )
+
+    app.run(timeout=40)
+
+    selector = _by_label(app.radio, "View one completed comparison")
+    assert selector.value == 100
+    messages = "\n".join(message.value for message in app.info)
+    assert "500 MFW was unavailable" in messages
+    assert "display fallback, not a best-result selection" in messages
+    assert "500 MFW opens first" not in messages
+
+
 def test_succeeded_result_readback_failure_is_visible_and_content_free(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -822,6 +884,34 @@ def test_result_charts_bypass_pandas_string_inference(
         "distance_label",
     ]
     assert tables[1].column_names == ["key", "title", "role", "x", "y"]
+    expected_heatmap = [
+        {
+            "reference": row_key,
+            "reference_title": next(
+                document.title for document in view.documents if document.key == row_key
+            ),
+            "compared": column_key,
+            "compared_title": next(
+                document.title for document in view.documents if document.key == column_key
+            ),
+            "distance": float(distance),
+            "distance_label": f"{float(distance):.6f}",
+        }
+        for row_key, row in zip(cell.matrix.document_keys, cell.matrix.values, strict=True)
+        for column_key, distance in zip(cell.matrix.document_keys, row, strict=True)
+    ]
+    assert tables[0].to_pylist() == expected_heatmap
+    documents = {document.key: document for document in view.documents}
+    assert tables[1].to_pylist() == [
+        {
+            "key": point.document_key,
+            "title": documents[point.document_key].title,
+            "role": documents[point.document_key].role.value,
+            "x": point.x,
+            "y": point.y,
+        }
+        for point in classical_mds(cell)
+    ]
 
 
 def test_review_labels_cover_nested_fields_and_all_issue_entity_types() -> None:
@@ -925,6 +1015,7 @@ def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(
     heatmap = charts[0]["spec"]
     heatmap_color = heatmap["layer"][0]["encoding"]["color"]
     assert heatmap_color["scale"]["domain"] == [1.0, 2.0]
+    assert heatmap_color["scale"]["type"] == "quantize"
     assert heatmap_color["scale"]["range"] == [
         "#f4faf7",
         "#d7efe5",
@@ -933,6 +1024,10 @@ def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(
         "#297658",
         "#0a5443",
     ]
+    contrast_condition = heatmap["layer"][1]["encoding"]["color"]["condition"][1]
+    assert float(contrast_condition["test"].removeprefix("datum.distance >= ")) == pytest.approx(
+        1.0 + (4 / 6)
+    )
     assert "<td>2 texts</td>" in "\n".join(markup)
 
     diagonal_residue = varied.model_copy(
@@ -990,6 +1085,59 @@ def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(
     x_domain = mds["layer"][0]["encoding"]["x"]["scale"]["domain"]
     y_domain = mds["layer"][0]["encoding"]["y"]["scale"]["domain"]
     assert x_domain == y_domain == [-1.08, 1.08]
+
+
+def test_heatmap_labels_are_contrasted_and_hidden_below_the_a51_cell_budget(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    ramp = ("#f4faf7", "#d7efe5", "#a9dcc7", "#6fbf9f", "#297658", "#0a5443")
+    text_colors = (
+        "#1a1a1a",
+        "#1a1a1a",
+        "#1a1a1a",
+        "#1a1a1a",
+        "#ffffff",
+        "#ffffff",
+    )
+    assert all(
+        _contrast_ratio(text_color, fill) >= 4.5
+        for text_color, fill in zip(text_colors, ramp, strict=True)
+    )
+
+    charts: list[dict[str, object]] = []
+    monkeypatch.setattr(
+        webapp_module.st,
+        "vega_lite_chart",
+        lambda **kwargs: charts.append(kwargs),
+    )
+    document_count = webapp_module._HEATMAP_TEXT_MAX_DOCUMENTS + 1
+    keys = tuple(f"D{index:02d}" for index in range(1, document_count + 1))
+    documents = tuple(
+        ResultDocumentV1(key=key, title=f"Text {index}", role=DocumentRole.KNOWN)
+        for index, key in enumerate(keys, start=1)
+    )
+    values = tuple(
+        tuple(
+            0.0 if row == column else float(abs(row - column) + 1)
+            for column in range(document_count)
+        )
+        for row in range(document_count)
+    )
+    cell = ResultCellV1(
+        mfw=100,
+        culling_percent=0,
+        distance=DistanceMeasure.CLASSIC_DELTA,
+        is_reference=False,
+        status=ResultCellStatus.COMPLETE,
+        error_code=None,
+        matrix=ResultMatrixV1(document_keys=keys, values=values),
+    )
+
+    webapp_module._render_heatmap(cell, SimpleNamespace(documents=documents))
+
+    spec = charts[0]["spec"]
+    assert len(spec["layer"]) == 1
+    assert spec["layer"][0]["encoding"]["tooltip"][-1]["field"] == "distance_label"
 
 
 def test_research_parameter_mode_is_visibly_locked() -> None:

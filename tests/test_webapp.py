@@ -141,7 +141,7 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     ]
 
 
-def test_purpose_control_updates_guidance_before_upload() -> None:
+def test_purpose_control_updates_desktop_and_mobile_guidance() -> None:
     app = run_app()
     purpose = _by_label(app.radio, "What do you want to investigate?")
     purpose.set_value("style_over_time").run()
@@ -149,7 +149,9 @@ def test_purpose_control_updates_guidance_before_upload() -> None:
     rendered = unescape("\n".join(element.value for element in app.markdown))
     assert "How does one writer's stylistic position vary" in rendered
     assert "Chronology alone does not establish" in rendered
-    assert rendered.count("Chronology alone does not establish") == 1
+    assert rendered.count("Chronology alone does not establish") == 2
+    assert 'class="delta-purpose-guide-desktop"' in rendered
+    assert 'class="delta-purpose-guide-mobile"' in rendered
 
 
 def test_v01_upload_shell_has_no_locale_selector() -> None:

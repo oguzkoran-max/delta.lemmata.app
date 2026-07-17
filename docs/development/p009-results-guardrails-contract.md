@@ -49,15 +49,21 @@ analysis, erase other cells, or mark the selected cell as best.
 Every complete selected cell has three views derived from the same validated
 matrix:
 
-1. **Distance heatmap:** every ordered matrix pair and exact Delta distance.
-2. **Nearest neighbours:** one row per work, preserving all exact minimum-distance
-   ties rather than choosing one arbitrarily.
+1. **Distance heatmap:** every ordered matrix pair from the stored Delta matrix; visible
+   labels use six decimal places while the canonical result retains stored values.
+2. **Nearest neighbours:** one row per work, preserving all minimum-distance ties
+   within the frozen `1e-12` structural tolerance rather than choosing one
+   arbitrarily.
 3. **Classical MDS map:** a deterministic two-dimensional representation of the
    matrix, with sign-stable coordinates and an explicit approximation warning.
 
 Every chart has a semantic table containing the same work labels and values.
 The heatmap legend says that smaller values mean greater relative proximity. MDS
 axis names are computational coordinates, not literary dimensions.
+
+This 2026-07-17 wording clarification aligns the accepted display contract with
+the already frozen structural tolerance and six-decimal presentation rule. It
+does not change fitting, distance calculation, ranking, or stored result values.
 
 ## 5. Result View and Download
 

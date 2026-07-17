@@ -31,7 +31,7 @@ The integrated surfaces are:
 
 - Guided Mode remains 100, 300, 500, and 1000 MFW, zero culling, whole text,
   Classic Delta, and fixed seed 20260713.
-- 500 MFW remains a pre-registered display reference, not a best result.
+- 500 MFW remains a pre-specified display reference, not a best result.
 - Every completed Guided comparison remains available; changing the result
   selector changes display only and never reruns or rewrites the canonical
   result record.
