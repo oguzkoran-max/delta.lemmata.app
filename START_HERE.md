@@ -4,24 +4,27 @@
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
 **2026-07-17 visual checkpoint:** Oğuz'un seçtiği Claude A5.1 tasarım sistemi
 `codex/p014-visual-phase-b` dalında gerçek Streamlit yüzeyine aktarıldı. İlk
-kanıtlı uygulama `3a554e0e76522672efaf547b1d03e12cb4f3531b`; draft PR #8'dir.
-Sonraki tarayıcı-harness düzeltmeleri `15ce5dd532c5054191518ea292f5cb966338d068`
-ve A5.1 bulgu kapatma commit'i `816dba94eb64458a1fe42bf4ad7b76e63d04a8d4`
-üzerinden ilerledi. Bilimsel-yöntem, erişilebilirlik ve FAIR denetimleri nihai GO
-değil, yeni düzeltme bulguları verdi. Bu bulgular çalışma ağacında giderildi;
-failed-job cleanup, purpose-conditioned exploratory language, pre-run method
-disclosure, warning semantics, accessible uploader naming ve A5.1 kaynak
-paketinin Git içinde saklanması exact-commit yeniden denetimini bekliyor.
+kanıtlı uygulama `3a554e0e76522672efaf547b1d03e12cb4f3531b`; final incelenen
+implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`; draft PR #8'dir.
+Exact commit'te push CI `29592151976` ve PR CI `29592158057` içindeki iki
+verify ve iki container işi yeşildir. Canonical Linux 1.726 test, 11.692
+statement, 3.050 branch ve yüzde 100 measured coverage ile geçti; içeriksiz
+browser JSON SHA-256 değeri
+`e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578`'dir.
+Bilimsel-yöntem, erişilebilirlik ve FAIR/lifecycle denetimleri exact SHA için
+P0-P3 açık bulgu bırakmadan yalnız Phase B kod ve otomatik kanıt kapanışına GO
+verdi. Eski conditional/NO-GO kararları ve başarısız CI denemeleri silinmeden
+`provenance/evidence/P014/phase-b-exact-*/` altında korunur.
 P014 tek `in-progress` ticket'tır. P007-P009 doğrulanmış minimum-alpha
 dilimlerini koruyarak ertelenmiş tam-kapsam ve owner kapıları nedeniyle
 `blocked` durumundadır. Tam P014 hâlâ P012'ye bağlıdır. Merge, image
 publication, VPS, Caddy, DNS ve public activation için Oğuz'un ayrıca açık kararı
 gerekir. Önce `docs/development/phase-b-visual-integration.md`, sonra
 `SESSION_HANDOFF.md` okunur.
-**Güncel operasyonel iş:** Düzeltmeleri tek exact commit'te dondur; full verify,
-bağımsız exact-SHA bilimsel/erişilebilirlik/FAIR yeniden denetimi ve canonical
-Linux CI çalıştır. CI tarayıcı JSON'u ile SHA-256 özetini Git kanıtına bağlamadan
-review closure veya GO iddiası yazma.
+**Güncel operasyonel iş:** Phase B kod/otomatik kanıt kapanışını review et. Oğuz
+açıkça karar vermeden draft PR #8'i merge etme, image yayımlama veya VPS/Caddy/
+DNS/public activation işi başlatma. P014 `in-progress`; AC-05'in tam deployment
+profili ölçütü ile host-bound AC-08-AC-10 pending kalır.
 **Aşağıdaki uzun aşama özeti tarihsel P014 gelişimini korur:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
 Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
 P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum
@@ -35,7 +38,8 @@ Research Mode kilitlidir. Minimum P014 deployment paketi exact commit
 gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-request,
 runtime-inspection, denied-egress ve cleanup kapılarından geçti. Güncel ticket'ta
 P014-AC-01 ile P014-AC-04 ve P014-AC-06 ile P014-AC-07 passed; Phase B yaşam
-döngüsü yeniden doğrulanana kadar P014-AC-05, ayrıca P014-AC-08 ile P014-AC-10
+döngüsü exact `d637893` üzerinde yeniden doğrulandı, fakat tam deployment-profile
+ölçütü nedeniyle P014-AC-05 ve host-bound P014-AC-08 ile P014-AC-10
 pending'dir.
 Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` yeşildir. İlk read-only VPS
 preflight'i `RUN-20260715-0005` olarak saklandı: Lemmata sağlıklı, `8502` boş,
@@ -191,13 +195,14 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
-Güncel tek iş draft PR #8'in review sürecidir. Exact implementation
-`3a554e0e76522672efaf547b1d03e12cb4f3531b`, canonical run
-`RUN-20260717-0001` ve kanıt
-`provenance/evidence/P014/phase-b-visual-integration-validation.md` üzerinden
-incelenir. Claude Code A5.1 kaynak paketi, özgün manifesti ve repository-safe
-türev manifesti `provenance/evidence/P014/phase-a51-design-source/` altında
-kalıcıdır. Oğuz açıkça onaylamadan merge veya deployment yapılmaz.
+Güncel tek iş draft PR #8 için owner kararını hazırlamaktır. Final incelenen
+implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`, superseding run
+`RUN-20260717-0002` ve kanıt
+`provenance/evidence/P014/phase-b-review-remediation.md` üzerinden incelenir.
+Claude Code A5.1 kaynak paketi, özgün manifesti ve repository-safe türev
+manifesti `provenance/evidence/P014/phase-a51-design-source/` altında kalıcıdır.
+Oğuz açıkça onaylamadan merge veya deployment yapılmaz. Phase B kapanışı P014
+ticket kapanışı değildir; AC-05 ve host-bound AC-08-AC-10 açık kalır.
 
 P004 complete durumundadır. Domain/CSV, Guided TXT ve ZIP, fail-closed rights,
 selectable Corpus Review, exact correction, hash-bound confirmation, exact-commit

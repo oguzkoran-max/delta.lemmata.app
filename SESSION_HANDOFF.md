@@ -2,47 +2,44 @@
 
 **Güncellendi:** 2026-07-17
 
-**En yeni checkpoint: Phase B visual integration.** Claude Code'un owner-selected A5.1
-prototip sistemi exact base
+**En yeni checkpoint: Phase B exact closure.** Claude Code'un owner-selected
+A5.1 prototip sistemi exact base
 `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` üzerinden
 `codex/p014-visual-phase-b` dalındaki gerçek Streamlit Entry, Review,
-Parameters ve Results yüzeylerine aktarıldı. Exact implementation commit'i
-`3a554e0e76522672efaf547b1d03e12cb4f3531b`; draft PR #8'dir. Yerel kapı
-1.669 pass, bir canonical-Linux-only skip, 11.507 statement, 3.002 branch ve
-yüzde 100 measured coverage ile geçti. Exact-head push CI `29541220413` ve PR
-CI `29541222417` içindeki iki verify ve iki container işi de yeşildir. Push CI
-1.670 test, gerçek R/`stylo` browser akışı, dört görünür sonuç hücresi, iki
-nonblank grafik, 320/375/390/1280/1440 responsive kapıları, yerel Inter wheel
-kaynakları, supply-chain ve hardened-container kapılarını geçti. Kayıt:
-`RUN-20260717-0001` ve
-`provenance/evidence/P014/phase-b-visual-integration-validation.md`; evidence
-commit'i `d40b14d3e202556d910955670a3c0b60087d8d71`'dir.
-Evidence-only head `fd72f6a77550ea0f612abe2d87966b761ec0f69e` için exact-head
-push doğrulaması geçti; PR doğrulaması, terminal bilimsel sonuç mevcut ve
-1000-MFW düğmesi seçili olduğu hâlde 15 saniyelik yeniden çizim beklemesini ilk
-koşuda ve bir retained rerun'da aştı. GitHub PR merge ağacı ile dal ağacı
-birebirdir. Audit-only follow-up
-`483c7a017a374958e312247c69e4fe42e0010810` bu beklemeyi 60 saniyeye çıkarır;
-uygulama, parametre, bilimsel sonuç veya export değişmez. Güncel exact-head
-durumu için draft PR #8 kontrolleri esas alınır.
-Follow-up head `971d9c0048c289654620d321272c95957dc1a7d6` PR verify'da geçti,
-push verify'da aynı durumu 60 saniye korudu; böylece salt yavaşlık açıklaması
-reddedildi. `15ce5dd532c5054191518ea292f5cb966338d068`, checked 500-MFW yerel
-radyo öğesinden sağ okla 1000 MFW'ye geçen klavye change olayını kullanır.
-On iki focused test ve Ruff geçti; ürün ve bilimsel sözleşme değişmedi.
-Önceki üç review GO özeti kalıcı reviewer artefaktına bağlı olmadığı için geri
-çekildi. Son bilimsel-yöntem, erişilebilirlik ve FAIR denetimleri somut düzeltme
-bulguları verdi; düzeltmeler çalışma ağacında uygulandı ve exact-commit yeniden
-denetimi bekliyor. Bunlar GitHub review'u, katılımcı testi veya owner activation
-kabulü değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
-usability ve public deployment hâlâ açık sınırdır.
+Parameters ve Results yüzeylerine aktarıldı. İlk entegre implementation
+`3a554e0e76522672efaf547b1d03e12cb4f3531b`; final bağımsız incelenen
+implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`; draft PR #8'dir.
 
-**Güncel operasyon kararı:** PR #8 taslak kalır; düzeltme ağacı exact-commit tam
-doğrulama ve bağımsız yeniden denetim tamamlanmadan `review-ready` sayılmaz.
+Final exact commit'te push CI `29592151976` verify `87923605718` ve container
+`87923605615`; PR CI `29592158057` verify `87923626171` ve container
+`87923628578` işleri geçti. Canonical Linux 1.726 test, 11.692 statement,
+3.050 branch ve yüzde 100 measured coverage bildirdi. Browser audit temiz Git,
+canonical worker, distinct-owner predecessor izolasyonu, tek-en-eski FIFO işi,
+exact-job sonuç görünümü, terminal payload cleanup, responsive viewport,
+native-keyboard result selection, semantic tables/charts ve export kapılarından
+geçti. İçeriksiz JSON SHA-256:
+`e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578`.
+
+Üç bağımsız exact-SHA bilimsel-yöntem, erişilebilirlik ve FAIR/privacy/lifecycle
+denetimi P0-P3 açık bulgu bırakmadan yalnız Phase B kod ve otomatik kanıt
+kapanışına `GO` verdi. `7585d83`, `8198dd82`, `a5b94d5`, `dfce029` ve
+`8c813ff` aşamalarındaki failure, conditional ve NO-GO kanıtları silinmeden
+korunur. Superseding kayıt `RUN-20260717-0002`; ana belge
+`provenance/evidence/P014/phase-b-review-remediation.md`; exact artefaktlar
+`provenance/evidence/P014/phase-b-exact-d637893/` altındadır.
+
+Bu kapanış GitHub review'u, katılımcı testi, manual VoiceOver/NVDA doğrulaması,
+owner activation kabulü, FAIR completeness, benchmark doğruluğu, genel usability
+veya public deployment değildir. P011 sensitivity, tam P012 FAIR paketi,
+Pinokyo çalışması ve P014 host kapıları açık sınırdır.
+
+**Güncel operasyon kararı:** PR #8 taslak ve unmerged kalır. Phase B kod ve
+otomatik kanıt kapanışı tamamlandı; sıradaki adım Oğuz'un review/merge kararıdır.
 Claude Code limit yenilendiğinde Git içinde saklanan A5.1 kaynak paketi, bu dosya,
-Phase B belgesi ve PR #8 üzerinden doğrudan devam edebilir. Oğuz ayrıca karar
-vermeden merge, yeni image publication, VPS, Caddy, DNS veya public activation
-yapılmaz.
+Phase B belgesi, superseding Run ve PR #8 üzerinden doğrudan devam edebilir.
+Oğuz ayrıca karar vermeden merge, yeni image publication, VPS, Caddy, DNS veya
+public activation yapılmaz. P014 `in-progress`; AC-05'in tam deployment-profile
+ölçütü ile AC-08-AC-10 pending kalır.
 
 **Tarihsel ve genel aşama özeti:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
@@ -122,23 +119,22 @@ AC-01 ile AC-04 ve AC-06 ile AC-07 passed, AC-05 ile host-bound AC-08 ile
 AC-10 pending)
 
 **Sıradaki tek ana iş:**
-Draft PR #8'i bu handoff ve Phase B kanıtı üzerinden Oğuz ile, limit yenilendiğinde
-de Claude Code ile incelemek. Bulgu varsa aynı dalda kapatıp exact-head CI'yı
-yeniden yeşile getirmek. Bulgu yoksa yalnız Oğuz'un açık kararıyla normal merge
-düşünülür. Deployment ayrı bir sonraki karar alanıdır; bu dalda VPS, Caddy, DNS,
-image publication veya public route işi yapılmaz.
+Draft PR #8'in exact `d637893` kod/kanıt kapanışını Oğuz ile incelemek. Yalnız
+Oğuz'un açık kararıyla normal merge düşünülür. Deployment ayrı bir sonraki karar
+alanıdır; bu dalda VPS, Caddy, DNS, image publication veya public route işi
+yapılmaz.
 
 **Claude Code kesin devam noktası:** Önce `START_HERE.md`, sonra bu dosya,
 `docs/development/phase-b-visual-integration.md`,
-`provenance/evidence/P014/phase-b-visual-integration-validation.md` ve draft PR
-#8 okunur. Kalıcı tasarım kaynağı ve redakte edilmiş Claude raporu
+`provenance/evidence/P014/phase-b-review-remediation.md`,
+`provenance/runs/RUN-20260717-0002.json` ve draft PR #8 okunur. Kalıcı tasarım
+kaynağı ve redakte edilmiş Claude raporu
 `provenance/evidence/P014/phase-a51-design-source/` altındadır; özgün 24 dosyalı
 manifest ve 25 dosyalı repository-safe türev manifest doğrulanabilir durumdadır.
-Implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`,
-evidence `d40b14d3e202556d910955670a3c0b60087d8d71`, audit follow-up
-`483c7a017a374958e312247c69e4fe42e0010810`, native-keyboard correction
-`15ce5dd532c5054191518ea292f5cb966338d068`'dir. Bu zinciri geriye almadan
-yalnız yeni bulgu veya açık owner kararı üzerinden devam edilir.
+Final reviewed implementation
+`d637893a19cc33e57b8826c5ff8625bd196cb1d4`'dir. `7585d83` ile başlayan
+başarısız/koşullu zinciri ve exact review artefaktlarını geriye almadan yalnız
+yeni bulgu veya açık owner kararı üzerinden devam edilir.
 
 **P014 canonical package checkpoint'i:** Exact implementation commit'i
 `7f26dbe82437e7f9757e7c35b10b7666a3078578`; run kaydı

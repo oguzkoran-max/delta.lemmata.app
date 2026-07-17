@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "git_commit": "7585d83a45dbc35580fc85346c2bdc731c07c720",
+  "git_dirty": false,
+  "canonical_worker_platform": false,
+  "synthetic_inputs_only": true,
+  "failure_type": "RuntimeError",
+  "failure_message": "Real worker or result publication failed safely: references=['Rejection reference: P009_PREPARED_CORPUS_RESULT_NOT_AVAILABLE']; alerts=['check_circle\\n\\nThe exact Guided Mode grid is resolved and ready for your confirmation.', 'info\\n\\nThese comparisons describe relative stylistic proximity within this corpus. They do not prove authorship, authenticity, influence, intention, chronology, or causation.', 'gpp_bad\\n\\nDelta could not complete this bounded analysis safely. No partial result is presented.']; headings=['Review what Delta will calculate', 'Method boundary']",
+  "lifecycle_diagnostics": {
+    "available": true,
+    "job_count": 1,
+    "records": [
+      {
+        "execution_state": "terminal",
+        "terminal_outcome": "failed",
+        "scientific_result_present": false,
+        "scientific_result_confirmed": false,
+        "result_view_present": false,
+        "export_available": false,
+        "artifact_states": {
+          "input": "verified_absent",
+          "work": "verified_absent",
+          "result": "verified_absent",
+          "export": "verified_absent"
+        },
+        "operation_count": 8
+      }
+    ]
+  },
+  "terminal_payload_cleanup_pass": true,
+  "result": "failed"
+}

@@ -3,8 +3,9 @@
 **Date:** 2026-07-16
 **Branch:** `codex/p014-visual-phase-b`
 **Exact base:** `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa`
-**Exact implementation:** `3a554e0e76522672efaf547b1d03e12cb4f3531b`
-**Evidence commit:** `d40b14d3e202556d910955670a3c0b60087d8d71`
+**Initial integrated implementation:** `3a554e0e76522672efaf547b1d03e12cb4f3531b`
+**Final reviewed implementation:** `d637893a19cc33e57b8826c5ff8625bd196cb1d4`
+**Initial evidence commit:** `d40b14d3e202556d910955670a3c0b60087d8d71`
 **Draft pull request:** [#8](https://github.com/oguzkoran-max/delta.lemmata.app/pull/8)
 **Design source:** Git-retained Claude Code Phase A5.1 source package, original
 manifest, repository-safe derivative manifest, and redacted report under
@@ -114,14 +115,16 @@ visible Guided result cells, two nonblank charts, no unexpected console message,
 and no external browser host. Parallel PR run `29541222417` also passed verify
 job `87763705842` and container job `87763705851`.
 
-The latest independent scientific-method, accessibility, and FAIR reviews
-returned concrete remediation findings rather than final GO. The working tree
-now addresses those findings, including immediate and periodic failed-job
-cleanup, purpose-conditioned exploratory chronology language, pre-run method
-disclosure, warning semantics, and durable A5.1 source retention. Exact-commit
-re-review and fresh CI remain required. These are local/agent reviews, not
-GitHub or participant reviews; merge and deployment still require separate
-owner decisions.
+The first independent scientific-method, accessibility, and FAIR reviews
+returned concrete remediation findings rather than final GO. Their conditional
+and NO-GO verdicts are retained under
+`provenance/evidence/P014/phase-b-exact-dfce029/independent-reviews/`.
+The remediation added immediate and periodic failed-job cleanup,
+purpose-conditioned exploratory chronology language, pre-run method disclosure,
+warning semantics, durable A5.1 source retention, cross-owner predecessor
+isolation, one-job-per-interaction FIFO execution, clean terminal restart,
+coherent queue status, computed-font checks, and named keyboard-scrollable table
+regions.
 
 The retained CI sequence is documented in
 `provenance/evidence/P014/phase-b-visual-integration-validation.md`. Earlier
@@ -147,6 +150,24 @@ group's ArrowRight change event from checked 500 MFW to adjacent 1000 MFW.
 Twelve focused tests and Ruff passed. No application behavior, parameter,
 distance, chart datum, or export was changed.
 
+The final remediation implementation is exact commit
+`d637893a19cc33e57b8826c5ff8625bd196cb1d4`. Push run `29592151976` passed
+verify job `87923605718` and container job `87923605615`; pull-request run
+`29592158057` passed verify job `87923626171` and container job
+`87923628578`. Canonical Linux passed 1,726 tests, 11,692 statements, and 3,050
+branches at 100% measured coverage. Its content-free browser audit passed the
+distinct-owner FIFO failure/success sequence, exact-job projection, terminal
+payload cleanup, responsive viewport, semantic result selection, table, chart,
+and export gates. The retained JSON SHA-256 is
+`e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578`.
+
+Three independent exact-SHA reviews found no actionable P0-P3 issue and returned
+GO only for Phase B code and automated evidence closure. These are read-only
+agent reviews, not GitHub approval, participant testing, manual screen-reader
+testing, owner activation acceptance, FAIR completeness, or general scientific
+validation. The exact artifacts and historical failures are linked from
+`provenance/evidence/P014/phase-b-review-remediation.md`.
+
 ## Deliberately Deferred
 
 - Cross-parameter stability labels and sensitivity summaries require P011
@@ -160,9 +181,9 @@ distance, chart datum, or export was changed.
 
 ## Release Gate
 
-Phase B remains proposed for review in draft PR #8. The earlier implementation
-commit passed push and pull-request verify/container jobs, but the current
-remediation tree requires a new exact commit, independent re-review, and fresh
-push plus pull-request CI. It must not be merged, deployed, or routed publicly
-without Oğuz Koran's separate decision. Live-host, Caddy, DNS, and
-public-activation work remain outside this branch.
+Phase B code and automated evidence are closed at exact commit `d637893`, but
+draft PR #8 remains unmerged. It must not be merged, deployed, or routed
+publicly without Oğuz Koran's separate decision. P014 stays `in-progress`:
+AC-05 remains pending at its complete deployment-profile criterion, and
+host-bound AC-08 through AC-10 remain pending. Live-host, Caddy, DNS, and public
+activation work remain outside this branch.

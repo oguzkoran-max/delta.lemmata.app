@@ -1,0 +1,263 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260717-0002",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-17T15:27:00Z",
+  "ended_at_utc": "2026-07-17T15:32:28Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "d637893a19cc33e57b8826c5ff8625bd196cb1d4",
+  "environment": {
+    "local_final_source_gate": {
+      "os": "macOS",
+      "tests_passed": 1725,
+      "tests_skipped": 1,
+      "skip_boundary": "One real-R worker case is canonical-Linux-only because the closed worker environment requires /opt/renv/cache.",
+      "measured_statements": 11692,
+      "measured_branches": 3050,
+      "coverage_percent": 100,
+      "result": "passed"
+    },
+    "canonical_ci": {
+      "provider": "GitHub Actions",
+      "event": "push",
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "timezone": "UTC",
+      "run": "29592151976",
+      "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29592151976",
+      "verify_job": "87923605718",
+      "container_job": "87923605615",
+      "tests_passed": 1726,
+      "tests_skipped": 0,
+      "measured_statements": 11692,
+      "measured_branches": 3050,
+      "coverage_percent": 100,
+      "records_validated_before_this_record": 113,
+      "source_and_metadata_gate": "passed",
+      "installed_wheel_resource_gate": "passed",
+      "real_r_stylo_browser_gate": "passed",
+      "sbom_dependency_secret_gate": "passed",
+      "hardened_container_gate": "passed",
+      "application_image_id": "sha256:8c308ddc344118b6c90682e4bbeb8816a1b7cf06b97c039ca026b2f6e883c8ad",
+      "gateway_image_id": "sha256:acffd179eaca40d7d73dc928ed314730fc7110a2f34c03f295245c344c90d037"
+    },
+    "parallel_pull_request_ci": {
+      "event": "pull_request",
+      "run": "29592158057",
+      "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29592158057",
+      "verify_job": "87923626171",
+      "container_job": "87923628578",
+      "result": "passed",
+      "boundary": "GitHub checked the exact branch head. Exact source identity and retained browser JSON are established by the parallel push run."
+    },
+    "browser_audit": {
+      "synthetic_inputs_only": true,
+      "synthetic_document_count": 3,
+      "synthetic_candidate_feature_target": 1100,
+      "git_dirty": false,
+      "canonical_worker_platform": true,
+      "fifo_queue_status_pass": true,
+      "viewport_pass": true,
+      "terminal_payload_cleanup_pass": true,
+      "job_count": 2,
+      "distinct_owner_predecessor_status": "crashed",
+      "distinct_owner_result_or_export_exposed": false,
+      "distinct_owner_input_work_result_export_absent": true,
+      "expected_owner_job_status": "succeeded",
+      "expected_owner_scientific_result_confirmed": true,
+      "expected_owner_result_and_export_exposed": true,
+      "expected_owner_input_and_work_absent": true,
+      "result_selection_path": "native-keyboard",
+      "canonical_export_sha256": "5935e60c3deef20779174b81e652078c5762ccecece7945351e2615ff6072f17",
+      "browser_audit_sha256": "e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578",
+      "result": "passed"
+    },
+    "independent_exact_sha_reviews": [
+      {
+        "lens": "scientific-method",
+        "verdict": "GO",
+        "actionable_p0_p3_findings": 0
+      },
+      {
+        "lens": "accessibility",
+        "verdict": "GO",
+        "actionable_p0_p3_findings": 0,
+        "limitation": "Automated review does not replace manual VoiceOver or NVDA verification."
+      },
+      {
+        "lens": "FAIR-privacy-lifecycle",
+        "verdict": "GO",
+        "actionable_p0_p3_findings": 0,
+        "limitation": "The verdict is not P012 FAIR completeness or P014 host-gate closure."
+      }
+    ],
+    "retained_exact_attempts": [
+      {
+        "commit": "7585d83a45dbc35580fc85346c2bdc731c07c720",
+        "run": "29566681494",
+        "status": "failed",
+        "reason": "Maintenance removed WORK after scientific completion but before public result finalization."
+      },
+      {
+        "commit": "8198dd82a30af2f6c89301ab38189e1b1b0b4fe9",
+        "runs": [
+          "29581928666",
+          "29581931331"
+        ],
+        "status": "failed",
+        "reason": "The session retained a pre-cleanup finalizing projection after scientific result and export publication."
+      },
+      {
+        "commit": "a5b94d5ffe36d18e6d16399ef0c8be7cb671dbdb",
+        "run": "29584671661",
+        "status": "failed",
+        "reason": "The successful lifecycle reached a result-surface evidence aggregator KeyError."
+      },
+      {
+        "commit": "dfce0299ce5674d2732870c6e286a5b6419e27aa",
+        "runs": [
+          "29586630602",
+          "29586634067"
+        ],
+        "status": "automation-passed-review-not-closed",
+        "reason": "Automation passed, but independent reviews retained conditional scientific/accessibility findings and FAIR/lifecycle NO-GO findings."
+      },
+      {
+        "commit": "8c813ff33f735172fb6d7e16e6eb76c1927a4d02",
+        "push_run": "29591314260",
+        "pull_request_run": "29591317281",
+        "status": "mixed",
+        "reason": "The PR run passed. The push verify job retained one semantic result-selection refresh failure while its container job passed."
+      },
+      {
+        "commit": "d637893a19cc33e57b8826c5ff8625bd196cb1d4",
+        "runs": [
+          "29592151976",
+          "29592158057"
+        ],
+        "status": "passed",
+        "reason": "Both exact-SHA verify and container pairs, canonical browser evidence, and three independent reviews passed within their declared boundaries."
+      }
+    ]
+  },
+  "command": "GitHub Actions push CI 29592151976 and parallel pull-request CI 29592158057: bootstrap; full source, schema, metadata, record, supply-chain, and locked-environment verification; installed-wheel resource gate; real R/stylo browser audit with FIFO predecessor isolation and result/export checks; canonical linux/amd64 image build; hardened public-alpha stack gate.",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "04c1a85640ee06ea623887749b9b5c8e9e68c2a4f19404bc88eb81b47bae8a47"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "0b3d557d89b314d1632b93ff4c2d2375be665040a62e699abfa8b36411d34491"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub Actions Ubuntu 24.04 x86_64 checkout of exact commit d637893a19cc33e57b8826c5ff8625bd196cb1d4",
+    "command": "GitHub Actions push CI 29592151976 and parallel pull-request CI 29592158057: bootstrap; full source, schema, metadata, record, supply-chain, and locked-environment verification; installed-wheel resource gate; real R/stylo browser audit with FIFO predecessor isolation and result/export checks; canonical linux/amd64 image build; hardened public-alpha stack gate.",
+    "limitations": [
+      "The GitHub-hosted runner release is named but is not represented by an immutable runner image digest.",
+      "Synthetic texts validate workflow, lifecycle, and presentation contracts but do not establish benchmark accuracy or a literary finding.",
+      "Automated geometry, keyboard, and semantic-table assertions do not establish manual screen-reader conformance, general usability, ease, or teachability.",
+      "This run does not establish P012 FAIR completeness or close P014 AC-05 and host-bound AC-08 through AC-10.",
+      "This run made no merge, shared-VPS, Caddy, DNS, image-publication, or public-activation change."
+    ]
+  },
+  "supersedes": [
+    {
+      "run_id": "RUN-20260717-0001",
+      "fields": [
+        "git_commit",
+        "environment",
+        "output_artifacts",
+        "notes"
+      ],
+      "reason": "This run binds the final independently reviewed remediation commit and retained exact browser evidence. It does not erase RUN-20260717-0001 or supersede that run's historical initial-integration result."
+    }
+  ],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "04c1a85640ee06ea623887749b9b5c8e9e68c2a4f19404bc88eb81b47bae8a47"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "0b3d557d89b314d1632b93ff4c2d2375be665040a62e699abfa8b36411d34491"
+    },
+    {
+      "path": "src/delta_lemmata/analysis_orchestrator.py",
+      "sha256": "fcd1602178772ceedc4b93e2c8e97ece680d31f11656427c9093a4e9a6d40788"
+    },
+    {
+      "path": "src/delta_lemmata/catalog.py",
+      "sha256": "1dfb714802509348c65a69c438e4dbbb1ebe002b282b763bb6e6ae5781a08fa0"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "77cc4335e7363b1607b7a5e810efd337a66ee23801d576451870b2e204f03673"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "ce6ae4ab193833e1e553c96993f0d8311f125b6249b66b87bc4cefd3a6737d5f"
+    },
+    {
+      "path": "scripts/browser_audit_p009.py",
+      "sha256": "b12feaf96652e6a80160df2934d669616e688261abf5b2bfb2fef41f93db8b6d"
+    },
+    {
+      "path": "tests/test_analysis_admission_store.py",
+      "sha256": "8208dd3b345206a2c653945c673078842aa8fcccf33fd1f56db9a8ed30714a97"
+    },
+    {
+      "path": "tests/test_analysis_orchestrator.py",
+      "sha256": "7212ac490aad5ad0756111ec5964e3812e87df463cc7cc39f8e936037257574a"
+    },
+    {
+      "path": "tests/test_browser_audit_helpers.py",
+      "sha256": "1042c117baef29a0becd0137ca35afcc5a291893d188642fbfcbc5c77762d4f9"
+    },
+    {
+      "path": "tests/test_web_runtime.py",
+      "sha256": "b991f7ae623fae55b511a542bab8c8cad875accb7e1f52079e4b7e076ba7cc6c"
+    },
+    {
+      "path": "tests/test_webapp_workflow.py",
+      "sha256": "d1ca3c0c93e27cc6c2569b78d437893ef8f9adc41299974f1fee88abf688b26d"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/phase-b-review-remediation.md",
+      "sha256": "5d97d5073fa4eed44e2a4b1afeef0cdca2288a59caccdb63279b9b28c1acdfa1"
+    },
+    {
+      "path": "provenance/evidence/P014/phase-b-exact-d637893/canonical-linux/browser-audit.json",
+      "sha256": "e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578"
+    },
+    {
+      "path": "provenance/evidence/P014/phase-b-exact-d637893/independent-reviews/accessibility.md",
+      "sha256": "1f75a6bece1494ce66f7b5dfe5496fd178f6eb184f42dc762129ff9f05b01b8e"
+    },
+    {
+      "path": "provenance/evidence/P014/phase-b-exact-d637893/independent-reviews/fair-privacy.md",
+      "sha256": "03284a1dd9cead07c6b416901aabf40d922af52c9b24d4c0559a3b1a28851a9b"
+    },
+    {
+      "path": "provenance/evidence/P014/phase-b-exact-d637893/independent-reviews/scientific-method.md",
+      "sha256": "c8e4e911e8debf6933cbd044b8b93ebd2301dde35c2040cd95b1ed72b6d2318c"
+    },
+    {
+      "path": "memory/checkpoints/2026-07-17-phase-b-exact-closure.md",
+      "sha256": "d52b8b0b4dc7d491bb501b6d3eac430109d6eac0a4fa45267b986e0914234bb0"
+    }
+  ],
+  "notes": "Phase B code and automated evidence close at exact implementation d637893. Three independent exact-SHA reviews found no actionable P0-P3 issue within that boundary. Earlier failed, mixed, conditional, and NO-GO evidence remains retained. Draft PR #8 is unmerged; no deployment or activation is authorised; P014 remains in-progress with AC-05 and AC-08 through AC-10 pending."
+}

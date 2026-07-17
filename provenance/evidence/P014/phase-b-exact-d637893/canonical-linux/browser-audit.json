@@ -1,0 +1,1008 @@
+{
+  "schema_version": "1.0.0",
+  "git_commit": "d637893a19cc33e57b8826c5ff8625bd196cb1d4",
+  "git_dirty": false,
+  "canonical_worker_platform": true,
+  "target_url": "http://127.0.0.1:46163",
+  "audit_method": "Tracked Python Playwright harness, fresh local Streamlit process, synthetic whole texts, production R/stylo execution, export verification, responsive screenshots, and chart pixel inspection.",
+  "synthetic_inputs_only": true,
+  "synthetic_document_count": 3,
+  "synthetic_candidate_feature_target": 1100,
+  "flow": {
+    "entry": {
+      "viewport_pass": true,
+      "viewports": [
+        {
+          "target": "desktop-1440x1000",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "uploader_context_pass": true,
+          "upload_before_teaching": true,
+          "primary_upload_action_y": 820.578,
+          "primary_upload_action_max_y": 1000.0,
+          "primary_upload_action_pass": true,
+          "purpose_guide_layout_pass": true,
+          "corpus_mode_layout_pass": true,
+          "corpus_mode_dom_order_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/entry-desktop-1440x1000.png"
+        },
+        {
+          "target": "desktop-1280x900",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "uploader_context_pass": true,
+          "upload_before_teaching": true,
+          "primary_upload_action_y": 842.969,
+          "primary_upload_action_max_y": 900.0,
+          "primary_upload_action_pass": true,
+          "purpose_guide_layout_pass": true,
+          "corpus_mode_layout_pass": true,
+          "corpus_mode_dom_order_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/entry-desktop-1280x900.png"
+        },
+        {
+          "target": "mobile-390x844",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "uploader_context_pass": true,
+          "upload_before_teaching": true,
+          "primary_upload_action_y": 642.703,
+          "primary_upload_action_max_y": 780.0,
+          "primary_upload_action_pass": true,
+          "purpose_guide_layout_pass": true,
+          "corpus_mode_layout_pass": true,
+          "corpus_mode_dom_order_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/entry-mobile-390x844.png"
+        },
+        {
+          "target": "reflow-320x800",
+          "viewport": {
+            "width": 320,
+            "height": 800
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "uploader_context_pass": true,
+          "upload_before_teaching": true,
+          "primary_upload_action_y": 680.875,
+          "primary_upload_action_max_y": 800.0,
+          "primary_upload_action_pass": true,
+          "purpose_guide_layout_pass": true,
+          "corpus_mode_layout_pass": true,
+          "corpus_mode_dom_order_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/entry-reflow-320x800.png"
+        },
+        {
+          "target": "mobile-375x844",
+          "viewport": {
+            "width": 375,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "uploader_context_pass": true,
+          "upload_before_teaching": true,
+          "primary_upload_action_y": 642.703,
+          "primary_upload_action_max_y": 780.0,
+          "primary_upload_action_pass": true,
+          "purpose_guide_layout_pass": true,
+          "corpus_mode_layout_pass": true,
+          "corpus_mode_dom_order_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/entry-mobile-375x844.png"
+        }
+      ]
+    },
+    "review": {
+      "viewport_pass": true,
+      "viewports": [
+        {
+          "target": "desktop-1440x1000",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "readiness_status_pass": true,
+          "correction_selector_count": 1,
+          "correction_selector_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/review-desktop-1440x1000.png"
+        },
+        {
+          "target": "desktop-1280x900",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "readiness_status_pass": true,
+          "correction_selector_count": 1,
+          "correction_selector_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/review-desktop-1280x900.png"
+        },
+        {
+          "target": "mobile-390x844",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "readiness_status_pass": true,
+          "correction_selector_count": 1,
+          "correction_selector_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/review-mobile-390x844.png"
+        },
+        {
+          "target": "reflow-320x800",
+          "viewport": {
+            "width": 320,
+            "height": 800
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "readiness_status_pass": true,
+          "correction_selector_count": 1,
+          "correction_selector_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/review-reflow-320x800.png"
+        },
+        {
+          "target": "mobile-375x844",
+          "viewport": {
+            "width": 375,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "readiness_status_pass": true,
+          "correction_selector_count": 1,
+          "correction_selector_pass": true,
+          "skip_target_pass": true,
+          "skip_activation_pass": true,
+          "skip_bypass_pass": true,
+          "screenshot": "screenshots/review-mobile-375x844.png"
+        }
+      ]
+    },
+    "preparation": {
+      "review_ready_pass": true,
+      "confirmation_enabled_pass": true,
+      "confirmation_recorded_pass": true,
+      "preflight_ready_pass": true,
+      "candidate_feature_count_pass": true,
+      "all_mfw_available_pass": true,
+      "capacity_records": [
+        [
+          "100",
+          "1100",
+          "Available"
+        ],
+        [
+          "300",
+          "1100",
+          "Available"
+        ],
+        [
+          "500",
+          "1100",
+          "Available"
+        ],
+        [
+          "1000",
+          "1100",
+          "Available"
+        ]
+      ]
+    },
+    "parameters": {
+      "parameter_rows_pass": true,
+      "reference_row_pass": true,
+      "semantic_table_pass": true,
+      "beginner_explanations_pass": true,
+      "method_disclosure_open_pass": true,
+      "method_disclosure_order_pass": true,
+      "interpretive_boundary_pass": true,
+      "research_locked_pass": true,
+      "run_initially_disabled_pass": true,
+      "config_download_pass": true,
+      "viewport_pass": true,
+      "viewports": [
+        {
+          "target": "desktop-1280x900",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "misframed_table_scroll_regions": [],
+          "screenshot": "/tmp/delta-p009-browser-audit/screenshots/parameters-desktop-1280x900.png"
+        },
+        {
+          "target": "mobile-390x844",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "misframed_table_scroll_regions": [],
+          "screenshot": "/tmp/delta-p009-browser-audit/screenshots/parameters-mobile-390x844.png"
+        },
+        {
+          "target": "reflow-320x800",
+          "viewport": {
+            "width": 320,
+            "height": 800
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "misframed_table_scroll_regions": [],
+          "screenshot": "/tmp/delta-p009-browser-audit/screenshots/parameters-reflow-320x800.png"
+        }
+      ]
+    },
+    "results": {
+      "run_enabled_after_confirmation_pass": true,
+      "analysis_complete_pass": true,
+      "fifo_queue_status_pass": true,
+      "fifo_queue_status_evidence": {
+        "single_status_region_pass": true,
+        "complete_instruction_pass": true,
+        "rejection_language_absent_pass": true,
+        "screenshot": "screenshots/fifo-queue-status.png"
+      },
+      "all_four_cells_visible_pass": true,
+      "all_four_cells_complete_pass": true,
+      "default_reference_500_pass": true,
+      "display_only_selector_pass": true,
+      "semantic_tables_pass": true,
+      "interpretation_boundaries_pass": true,
+      "two_visualizations_pass": true,
+      "visualizations_change_with_mfw_pass": true,
+      "semantic_table_change_pass": true,
+      "semantic_export_parity_pass": true,
+      "semantic_export_parity_evidence": [
+        {
+          "mfw": 500,
+          "matrix_row_count": 3,
+          "matrix_expected_sha256": "f675d982e27c60340a00c0112265bebfee5cf65a15fa8d045264b4396f2fd141",
+          "matrix_observed_sha256": "f675d982e27c60340a00c0112265bebfee5cf65a15fa8d045264b4396f2fd141",
+          "matrix_export_parity_pass": true,
+          "mds_row_count": 3,
+          "mds_expected_sha256": "ec0b0b9e9f59316fed8cf2c962feeaae6e24f229f7ac9cf49f0ce66803906e02",
+          "mds_observed_sha256": "ec0b0b9e9f59316fed8cf2c962feeaae6e24f229f7ac9cf49f0ce66803906e02",
+          "mds_matrix_parity_pass": true
+        },
+        {
+          "mfw": 1000,
+          "matrix_row_count": 3,
+          "matrix_expected_sha256": "482a2f94d3f2cdea0e07c8797f7905eda55cb1c23707b2683670532d99985bec",
+          "matrix_observed_sha256": "482a2f94d3f2cdea0e07c8797f7905eda55cb1c23707b2683670532d99985bec",
+          "matrix_export_parity_pass": true,
+          "mds_row_count": 3,
+          "mds_expected_sha256": "bdfbce8aebee40c0cd949974ccb0120df9ea70055fc5799cef270ed1541675bc",
+          "mds_observed_sha256": "bdfbce8aebee40c0cd949974ccb0120df9ea70055fc5799cef270ed1541675bc",
+          "mds_matrix_parity_pass": true
+        }
+      ],
+      "semantic_table_evidence_before": {
+        "Classic Delta distance matrix": {
+          "sha256": "2401a7d3a9a8aa306fbf25b6e9b57ef9e7a95178d4be3afb42bfe1d5d78514f2",
+          "row_count": 3
+        },
+        "MDS coordinate table": {
+          "sha256": "c6ea800caf324dd174913588120f5ad545b1e90f514def1438c30f64fa8e56ff",
+          "row_count": 3
+        }
+      },
+      "semantic_table_evidence_after": {
+        "Classic Delta distance matrix": {
+          "sha256": "3b6505a219d1fff4da49851c2d171c7e80187357a4710358da4f1d2b7689ff8b",
+          "row_count": 3
+        },
+        "MDS coordinate table": {
+          "sha256": "16c73c7f454110ed6259fc5b521875c617c9844634370ae240db9528f8ed7e84",
+          "row_count": 3
+        }
+      },
+      "result_selection_path": "native-keyboard",
+      "chart_pixel_evidence": [
+        {
+          "width": 322,
+          "height": 361,
+          "non_blank_fraction": 0.443772,
+          "sampled_color_count": 788,
+          "sha256": "ffc879732a49c402e531394f3dfbe41bc95e3feb1dfa78a77873f730a667d36f",
+          "pass": true,
+          "screenshot": "screenshots/result-chart-1.png"
+        },
+        {
+          "width": 322,
+          "height": 329,
+          "non_blank_fraction": 0.2004,
+          "sampled_color_count": 432,
+          "sha256": "769b12f9d72b37b1f5343aa40eaf71a3b48ec2a6a28564c6be70b46698fc2c83",
+          "pass": true,
+          "screenshot": "screenshots/result-chart-2.png"
+        }
+      ],
+      "changed_chart_pixel_evidence": [
+        {
+          "width": 322,
+          "height": 361,
+          "non_blank_fraction": 0.444478,
+          "sampled_color_count": 851,
+          "sha256": "0142b9ff04d979d1c1a25bb36d36b689730972024ec1a79e620ea8c9fdcad189",
+          "pass": true,
+          "screenshot": "screenshots/result-chart-1-1000-mfw.png"
+        },
+        {
+          "width": 322,
+          "height": 329,
+          "non_blank_fraction": 0.198484,
+          "sampled_color_count": 419,
+          "sha256": "c497cdaaa137e446474cd85627d1d0baef1a6945dab4a76241fdca97b5a173d1",
+          "pass": true,
+          "screenshot": "screenshots/result-chart-2-1000-mfw.png"
+        }
+      ],
+      "canonical_export_sha256": "5935e60c3deef20779174b81e652078c5762ccecece7945351e2615ff6072f17",
+      "filename_pass": true,
+      "schema_pass": true,
+      "complete_grid_pass": true,
+      "reference_pass": true,
+      "matrix_pass": true,
+      "finite_matrix_values_pass": true,
+      "private_material_absent_pass": true,
+      "payload_absent_from_page_pass": true,
+      "viewport_pass": true,
+      "viewports": [
+        {
+          "target": "desktop-1440x1000",
+          "viewport": {
+            "width": 1440,
+            "height": 1000
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "misframed_table_scroll_regions": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "persistent_text": {
+            "checked": 141,
+            "offenders": [],
+            "pass": true
+          },
+          "table_regions": {
+            "region_count": 4,
+            "contracts_pass": true,
+            "focus_ring_pass": true,
+            "keyboard_scroll_pass": true,
+            "regions": [
+              {
+                "index": 0,
+                "visible": true,
+                "role": "region",
+                "label": "Complete Guided Mode result grid",
+                "tabIndex": "0",
+                "scrollable": false
+              },
+              {
+                "index": 1,
+                "visible": true,
+                "role": "region",
+                "label": "Classic Delta distance matrix",
+                "tabIndex": "0",
+                "scrollable": false
+              },
+              {
+                "index": 2,
+                "visible": true,
+                "role": "region",
+                "label": "Nearest-neighbour table with tolerance-aware ties",
+                "tabIndex": "0",
+                "scrollable": false
+              },
+              {
+                "index": 3,
+                "visible": true,
+                "role": "region",
+                "label": "MDS coordinate table",
+                "tabIndex": "0",
+                "scrollable": true
+              }
+            ]
+          },
+          "mfw_radio_rows": 1,
+          "mfw_radio_layout_pass": true,
+          "visible_result_cell_count": 4,
+          "all_result_cells_visible_pass": true,
+          "mds_metric_aspect_pass": true,
+          "mds_plot_box": {
+            "x": 420.5,
+            "y": 294.046875,
+            "width": 358.0625,
+            "height": 359.59375
+          },
+          "chart_pixels": [
+            {
+              "width": 395,
+              "height": 361,
+              "non_blank_fraction": 0.441565,
+              "sampled_color_count": 648,
+              "sha256": "e0e993418fe5c17ff0fa0d24d3517c46a0bafa4f42dfc5932899678fb26315cc",
+              "pass": true,
+              "screenshot": "screenshots/results-desktop-1440x1000-chart-1.png"
+            },
+            {
+              "width": 395,
+              "height": 404,
+              "non_blank_fraction": 0.166675,
+              "sampled_color_count": 379,
+              "sha256": "27d991dba85b6b3a0faabf1032203dcdedbb1550af8cd21795bf571d74dcb9fc",
+              "pass": true,
+              "screenshot": "screenshots/results-desktop-1440x1000-chart-2.png"
+            }
+          ],
+          "screenshot": "screenshots/results-desktop-1440x1000.png"
+        },
+        {
+          "target": "desktop-1280x900",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "misframed_table_scroll_regions": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "persistent_text": {
+            "checked": 141,
+            "offenders": [],
+            "pass": true
+          },
+          "table_regions": {
+            "region_count": 4,
+            "contracts_pass": true,
+            "focus_ring_pass": true,
+            "keyboard_scroll_pass": true,
+            "regions": [
+              {
+                "index": 0,
+                "visible": true,
+                "role": "region",
+                "label": "Complete Guided Mode result grid",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 1,
+                "visible": true,
+                "role": "region",
+                "label": "Classic Delta distance matrix",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 2,
+                "visible": true,
+                "role": "region",
+                "label": "Nearest-neighbour table with tolerance-aware ties",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 3,
+                "visible": true,
+                "role": "region",
+                "label": "MDS coordinate table",
+                "tabIndex": "0",
+                "scrollable": true
+              }
+            ]
+          },
+          "mfw_radio_rows": 1,
+          "mfw_radio_layout_pass": true,
+          "visible_result_cell_count": 4,
+          "all_result_cells_visible_pass": true,
+          "mds_metric_aspect_pass": true,
+          "mds_plot_box": {
+            "x": 420.5,
+            "y": 281.78125,
+            "width": 284.0625,
+            "height": 285.015625
+          },
+          "chart_pixels": [
+            {
+              "width": 322,
+              "height": 361,
+              "non_blank_fraction": 0.443772,
+              "sampled_color_count": 804,
+              "sha256": "66f8b4ce74a42769b75256dce37f26ff3bfacae3b142c9ed3f605152ed0f6290",
+              "pass": true,
+              "screenshot": "screenshots/results-desktop-1280x900-chart-1.png"
+            },
+            {
+              "width": 322,
+              "height": 329,
+              "non_blank_fraction": 0.200797,
+              "sampled_color_count": 419,
+              "sha256": "4d72730d3902403dd9d03bfd473f11d9d546e2a2cf6d3611cd8ccb18afdb3344",
+              "pass": true,
+              "screenshot": "screenshots/results-desktop-1280x900-chart-2.png"
+            }
+          ],
+          "screenshot": "screenshots/results-desktop-1280x900.png"
+        },
+        {
+          "target": "mobile-390x844",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "misframed_table_scroll_regions": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "persistent_text": {
+            "checked": 130,
+            "offenders": [],
+            "pass": true
+          },
+          "table_regions": {
+            "region_count": 4,
+            "contracts_pass": true,
+            "focus_ring_pass": true,
+            "keyboard_scroll_pass": true,
+            "regions": [
+              {
+                "index": 0,
+                "visible": true,
+                "role": "region",
+                "label": "Complete Guided Mode result grid",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 1,
+                "visible": true,
+                "role": "region",
+                "label": "Classic Delta distance matrix",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 2,
+                "visible": true,
+                "role": "region",
+                "label": "Nearest-neighbour table with tolerance-aware ties",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 3,
+                "visible": true,
+                "role": "region",
+                "label": "MDS coordinate table",
+                "tabIndex": "0",
+                "scrollable": true
+              }
+            ]
+          },
+          "mfw_radio_rows": 2,
+          "mfw_radio_layout_pass": true,
+          "visible_result_cell_count": 4,
+          "all_result_cells_visible_pass": true,
+          "mds_metric_aspect_pass": true,
+          "mds_plot_box": {
+            "x": 54.5,
+            "y": 232.359375,
+            "width": 326,
+            "height": 326.828125
+          },
+          "chart_pixels": [
+            {
+              "width": 362,
+              "height": 361,
+              "non_blank_fraction": 0.443282,
+              "sampled_color_count": 619,
+              "sha256": "1d2bf32f478630d5eec20836a004523e5dfd03fc0641cd90484b64b1a5a6794b",
+              "pass": true,
+              "screenshot": "screenshots/results-mobile-390x844-chart-1.png"
+            },
+            {
+              "width": 362,
+              "height": 371,
+              "non_blank_fraction": 0.078941,
+              "sampled_color_count": 272,
+              "sha256": "2a625fa1b884eb64675c8e6f3230c73bb3cccb4b018ae4cbfbb006deb15cf0b3",
+              "pass": true,
+              "screenshot": "screenshots/results-mobile-390x844-chart-2.png"
+            }
+          ],
+          "screenshot": "screenshots/results-mobile-390x844.png"
+        },
+        {
+          "target": "reflow-320x800",
+          "viewport": {
+            "width": 320,
+            "height": 800
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "misframed_table_scroll_regions": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "persistent_text": {
+            "checked": 129,
+            "offenders": [],
+            "pass": true
+          },
+          "table_regions": {
+            "region_count": 4,
+            "contracts_pass": true,
+            "focus_ring_pass": true,
+            "keyboard_scroll_pass": true,
+            "regions": [
+              {
+                "index": 0,
+                "visible": true,
+                "role": "region",
+                "label": "Complete Guided Mode result grid",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 1,
+                "visible": true,
+                "role": "region",
+                "label": "Classic Delta distance matrix",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 2,
+                "visible": true,
+                "role": "region",
+                "label": "Nearest-neighbour table with tolerance-aware ties",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 3,
+                "visible": true,
+                "role": "region",
+                "label": "MDS coordinate table",
+                "tabIndex": "0",
+                "scrollable": true
+              }
+            ]
+          },
+          "mfw_radio_rows": 2,
+          "mfw_radio_layout_pass": true,
+          "visible_result_cell_count": 4,
+          "all_result_cells_visible_pass": true,
+          "mds_metric_aspect_pass": true,
+          "mds_plot_box": {
+            "x": 54.5,
+            "y": 247.421875,
+            "width": 255,
+            "height": 254.3125
+          },
+          "chart_pixels": [
+            {
+              "width": 292,
+              "height": 361,
+              "non_blank_fraction": 0.443147,
+              "sampled_color_count": 738,
+              "sha256": "55fe4a26fb254fbcb7602f56e1cafc2228f80ab5ab39134e5f88ad474d45f894",
+              "pass": true,
+              "screenshot": "screenshots/results-reflow-320x800-chart-1.png"
+            },
+            {
+              "width": 292,
+              "height": 300,
+              "non_blank_fraction": 0.101221,
+              "sampled_color_count": 320,
+              "sha256": "fea85801c062c7f12ce4d005c780a3119461eb293a65ee910579d4f3ff200c7c",
+              "pass": true,
+              "screenshot": "screenshots/results-reflow-320x800-chart-2.png"
+            }
+          ],
+          "screenshot": "screenshots/results-reflow-320x800.png"
+        },
+        {
+          "target": "mobile-375x844",
+          "viewport": {
+            "width": 375,
+            "height": 844
+          },
+          "horizontal_overflow": false,
+          "main_horizontal_overflow": false,
+          "overflowing_controls": [],
+          "small_targets": [],
+          "misframed_table_scroll_regions": [],
+          "unscrollable_table_regions": [],
+          "visible_h1_count": 1,
+          "main_landmark_count": 1,
+          "footer_count": 1,
+          "inter_font_loaded": true,
+          "source_sans_font_loaded": true,
+          "persistent_text": {
+            "checked": 130,
+            "offenders": [],
+            "pass": true
+          },
+          "table_regions": {
+            "region_count": 4,
+            "contracts_pass": true,
+            "focus_ring_pass": true,
+            "keyboard_scroll_pass": true,
+            "regions": [
+              {
+                "index": 0,
+                "visible": true,
+                "role": "region",
+                "label": "Complete Guided Mode result grid",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 1,
+                "visible": true,
+                "role": "region",
+                "label": "Classic Delta distance matrix",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 2,
+                "visible": true,
+                "role": "region",
+                "label": "Nearest-neighbour table with tolerance-aware ties",
+                "tabIndex": "0",
+                "scrollable": true
+              },
+              {
+                "index": 3,
+                "visible": true,
+                "role": "region",
+                "label": "MDS coordinate table",
+                "tabIndex": "0",
+                "scrollable": true
+              }
+            ]
+          },
+          "mfw_radio_rows": 2,
+          "mfw_radio_layout_pass": true,
+          "visible_result_cell_count": 4,
+          "all_result_cells_visible_pass": true,
+          "mds_metric_aspect_pass": true,
+          "mds_plot_box": {
+            "x": 54.5,
+            "y": 240.375,
+            "width": 311,
+            "height": 311.5
+          },
+          "chart_pixels": [
+            {
+              "width": 347,
+              "height": 361,
+              "non_blank_fraction": 0.443389,
+              "sampled_color_count": 668,
+              "sha256": "bfac102edf4c7c36357afc2c2fca6088880ff2ea6258a707b40cb2d2165d40fe",
+              "pass": true,
+              "screenshot": "screenshots/results-mobile-375x844-chart-1.png"
+            },
+            {
+              "width": 347,
+              "height": 356,
+              "non_blank_fraction": 0.08261,
+              "sampled_color_count": 277,
+              "sha256": "4464e5d5abd3ef8a8137b9aa6d91e5f27b62be08bdd6e504bb220b094c8ec945",
+              "pass": true,
+              "screenshot": "screenshots/results-mobile-375x844-chart-2.png"
+            }
+          ],
+          "screenshot": "screenshots/results-mobile-375x844.png"
+        }
+      ]
+    },
+    "lifecycle": {
+      "terminal_payload_cleanup_pass": true,
+      "diagnostics": {
+        "available": true,
+        "job_count": 2,
+        "records": [
+          {
+            "execution_state": "terminal",
+            "terminal_outcome": "crashed",
+            "scientific_result_present": false,
+            "scientific_result_confirmed": false,
+            "result_view_present": false,
+            "export_available": false,
+            "artifact_states": {
+              "input": "verified_absent",
+              "work": "verified_absent",
+              "result": "verified_absent",
+              "export": "verified_absent"
+            },
+            "operation_count": 7
+          },
+          {
+            "execution_state": "terminal",
+            "terminal_outcome": "succeeded",
+            "scientific_result_present": true,
+            "scientific_result_confirmed": true,
+            "result_view_present": true,
+            "export_available": true,
+            "artifact_states": {
+              "input": "verified_absent",
+              "work": "verified_absent",
+              "result": "present",
+              "export": "present"
+            },
+            "operation_count": 9
+          }
+        ]
+      }
+    }
+  },
+  "console_policy": "Only a bounded set of exact Vega transient empty-dataset warnings is allowed after finite exported matrices and non-blank chart pixels pass.",
+  "console_policy_pass": true,
+  "allowed_console_messages": [],
+  "console_messages": [],
+  "external_hosts_observed": [],
+  "network_scope": "Browser requests observed by Playwright; not a packet capture.",
+  "result": "passed"
+}
