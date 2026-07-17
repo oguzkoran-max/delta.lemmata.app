@@ -38,6 +38,21 @@ def test_public_alpha_deployment_package_is_fail_closed() -> None:
     VALIDATOR.validate()
 
 
+def test_runbook_rejects_pre_mutation_as_installer_preflight() -> None:
+    runbook = (ROOT / "deploy" / "public-alpha" / "README.md").read_text(encoding="utf-8")
+    invalid = runbook.replace(
+        "--preflight /root/p014-host-evidence/pre-docker.json",
+        "--preflight /root/p014-host-evidence/pre-mutation.json",
+        1,
+    )
+
+    with pytest.raises(
+        VALIDATOR.DeploymentValidationError,
+        match="P014_RUNBOOK_CONTRACT_INCOMPLETE|P014_RUNBOOK_PREFLIGHT_CONTRACT_INVALID",
+    ):
+        VALIDATOR._validate_runbook_contracts(invalid)
+
+
 def test_first_release_cleanup_is_armed_before_unit_mutation() -> None:
     runbook = (ROOT / "deploy" / "public-alpha" / "README.md").read_text(encoding="utf-8")
     trap = "trap cleanup_failed_first_release EXIT"

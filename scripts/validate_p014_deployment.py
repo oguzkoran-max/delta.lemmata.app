@@ -103,9 +103,7 @@ def _first_bash_block_after(text: str, heading: str, code: str) -> str:
 def _validate_runbook_contracts(runbook: str) -> None:
     required = (
         "p014-host-gate/1.3.0",
-        "python3 scripts/p014_host_gate.py pre-mutation",
-        "--baseline /root/p014-host-evidence/pre-docker.json",
-        "--preflight /root/p014-host-evidence/pre-mutation.json",
+        "--preflight /root/p014-host-evidence/pre-docker.json",
         "P014_POST_DOCKER_EXTERNAL_8502_REACHABLE",
         "cleanup_registry_auth()",
         "trap cleanup_registry_auth EXIT",
@@ -126,10 +124,22 @@ def _validate_runbook_contracts(runbook: str) -> None:
         "P014_REGISTRY_TRAP_NOT_EXIT_ONLY",
     )
 
+    phase_3 = _slice_between(
+        runbook,
+        "## Phase 3: Install and Compare the Container Runtime",
+        "## Phase 4: Install an Immutable Release",
+        "P014_RUNBOOK_PHASE_3_INVALID",
+    )
+    _require(
+        "--preflight /root/p014-host-evidence/pre-docker.json" in phase_3
+        and "python3 scripts/p014_host_gate.py pre-mutation" not in phase_3
+        and "--preflight /root/p014-host-evidence/pre-mutation.json" not in phase_3,
+        "P014_RUNBOOK_PREFLIGHT_CONTRACT_INVALID",
+    )
+
     _require_ordered(
         runbook,
         (
-            "python3 scripts/p014_host_gate.py pre-mutation",
             "scripts/p014_install_docker_ubuntu.sh",
             "P014_POST_DOCKER_EXTERNAL_8502_REACHABLE",
             'docker pull "$DELTA_IMAGE"',
