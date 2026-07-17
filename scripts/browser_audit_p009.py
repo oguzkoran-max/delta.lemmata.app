@@ -403,6 +403,20 @@ def _choose_next_result_option(page: Page, reference_radio: Locator) -> None:
     page.keyboard.press("ArrowRight")
 
 
+def _retry_next_result_option(
+    page: Page,
+    reference_radio: Locator,
+    target_radio: Locator,
+) -> None:
+    """Repeat one native change sequence after a bounded missing server update."""
+
+    if target_radio.is_checked():
+        target_radio.focus()
+        page.keyboard.press("ArrowLeft")
+        page.wait_for_timeout(250)
+    _choose_next_result_option(page, reference_radio)
+
+
 def _wait_for_result_selection_update(
     page: Page,
     target_radio: Locator,
@@ -901,11 +915,23 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         raise RuntimeError("Expected exactly one visible 1000 MFW result card")
     target_radio = selector.get_by_role("radio", name="1000 MFW", exact=True)
     _choose_next_result_option(page, reference_radio)
-    semantic_after = _wait_for_result_selection_update(
-        page,
-        target_radio,
-        semantic_before,
-    )
+    selection_path = "native-keyboard"
+    try:
+        semantic_after = _wait_for_result_selection_update(
+            page,
+            target_radio,
+            semantic_before,
+            attempts=75,
+        )
+    except RuntimeError:
+        _retry_next_result_option(page, reference_radio, target_radio)
+        semantic_after = _wait_for_result_selection_update(
+            page,
+            target_radio,
+            semantic_before,
+            attempts=525,
+        )
+        selection_path = "native-keyboard-bounded-retry"
     parity_after = _semantic_result_parity(page, exported, 1000)
     page.get_by_role("heading", name="Distance heatmap", level=3, exact=True).wait_for()
     changed_chart_evidence = tuple(
@@ -971,6 +997,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         "semantic_export_parity_evidence": (parity_before, parity_after),
         "semantic_table_evidence_before": semantic_before,
         "semantic_table_evidence_after": semantic_after,
+        "result_selection_path": selection_path,
         "chart_pixel_evidence": chart_evidence,
         "changed_chart_pixel_evidence": changed_chart_evidence,
         "canonical_export_sha256": export_digest,

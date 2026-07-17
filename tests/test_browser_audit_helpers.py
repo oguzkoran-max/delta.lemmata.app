@@ -32,6 +32,7 @@ _wait_for_capacity_records = BROWSER_AUDIT._wait_for_capacity_records
 _wait_for_streamlit_idle = BROWSER_AUDIT._wait_for_streamlit_idle
 _geometry = BROWSER_AUDIT._geometry
 _choose_next_result_option = P009_BROWSER_AUDIT._choose_next_result_option
+_retry_next_result_option = P009_BROWSER_AUDIT._retry_next_result_option
 _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
 _entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
 _preload_missing_distinct_owner_job = P009_BROWSER_AUDIT._preload_missing_distinct_owner_job
@@ -551,6 +552,47 @@ def test_result_selection_rejects_an_unchecked_reference() -> None:
         _choose_next_result_option(cast(Page, page), cast(Locator, radio))
 
     assert page.calls == [("radio_is_checked", None)]
+
+
+def test_result_selection_retry_replays_one_native_back_forward_change() -> None:
+    page = _SelectPage(require_keyboard=False)
+    reference = _FocusableRadio(page.calls, checked=True)
+    target = _FocusableRadio(page.calls, checked=True)
+
+    _retry_next_result_option(
+        cast(Page, page),
+        cast(Locator, reference),
+        cast(Locator, target),
+    )
+
+    assert page.calls == [
+        ("radio_is_checked", None),
+        ("radio_focus", None),
+        ("keyboard_press", "ArrowLeft"),
+        ("wait_for_timeout", 250),
+        ("radio_is_checked", None),
+        ("radio_focus", None),
+        ("keyboard_press", "ArrowRight"),
+    ]
+
+
+def test_result_selection_retry_repeats_forward_change_when_target_is_unchecked() -> None:
+    page = _SelectPage(require_keyboard=False)
+    reference = _FocusableRadio(page.calls, checked=True)
+    target = _FocusableRadio(page.calls, checked=False)
+
+    _retry_next_result_option(
+        cast(Page, page),
+        cast(Locator, reference),
+        cast(Locator, target),
+    )
+
+    assert page.calls == [
+        ("radio_is_checked", None),
+        ("radio_is_checked", None),
+        ("radio_focus", None),
+        ("keyboard_press", "ArrowRight"),
+    ]
 
 
 def test_result_selection_rejects_unchanged_semantic_tables(
