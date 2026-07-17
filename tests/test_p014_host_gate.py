@@ -218,6 +218,7 @@ def test_pre_mutation_rechecks_every_change_sensitive_host_boundary() -> None:
 def test_apt_candidate_requires_an_isolated_exact_official_stanza(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    apt_lists_dir = Path("/root/p014-host-evidence/docker-change/apt-lists")
     official = (
         "docker-ce:\n"
         "  Installed: (none)\n"
@@ -237,23 +238,66 @@ def test_apt_candidate_requires_an_isolated_exact_official_stanza(
         lambda: {"ID": "ubuntu", "VERSION_ID": "26.04", "VERSION_CODENAME": "resolute"},
     )
 
-    def policy_output(isolated: str):
+    def policy_output(isolated: str, expected_lists_dir: Path | None):
         def fake(command: list[str], **_kwargs) -> str:
             if command[:2] == ["dpkg", "--print-architecture"]:
                 return "amd64"
             assert "Dir::Etc::sourceparts=-" in command
+            list_options = [token for token in command if token.startswith("Dir::State::lists=")]
+            if expected_lists_dir is None:
+                assert list_options == []
+            else:
+                assert list_options == [f"Dir::State::lists={expected_lists_dir}"]
             return isolated
 
         return fake
 
-    monkeypatch.setattr(GATE, "_required_stdout", policy_output(official))
-    assert GATE._apt_candidate("docker-ce") == (
+    monkeypatch.setattr(GATE, "_required_stdout", policy_output(official, apt_lists_dir))
+    assert GATE._apt_candidate("docker-ce", apt_lists_dir=apt_lists_dir) == (
         "5:29.1.3-1~ubuntu.26.04~resolute",
         True,
     )
 
-    monkeypatch.setattr(GATE, "_required_stdout", policy_output(hostile))
+    monkeypatch.setattr(GATE, "_required_stdout", policy_output(hostile, None))
     assert GATE._apt_candidate("docker-ce")[1] is False
+
+
+@pytest.mark.parametrize("phase", ["post-docker", "delta-idle"])
+def test_post_install_cli_requires_an_absolute_private_apt_list_directory(phase: str) -> None:
+    common = [
+        phase,
+        "--baseline",
+        "/root/p014-host-evidence/pre-docker.json",
+        "--output",
+        f"/root/p014-host-evidence/{phase}.json",
+    ]
+
+    with pytest.raises(SystemExit, match="2"):
+        GATE._parse_args(common)
+    with pytest.raises(SystemExit, match="2"):
+        GATE._parse_args([*common, "--apt-lists-dir", "relative/apt-lists"])
+
+    args = GATE._parse_args(
+        [
+            *common,
+            "--apt-lists-dir",
+            "/root/p014-host-evidence/docker-change/apt-lists",
+        ]
+    )
+    assert args.apt_lists_dir == Path("/root/p014-host-evidence/docker-change/apt-lists")
+
+
+def test_pre_docker_cli_rejects_an_apt_list_directory() -> None:
+    with pytest.raises(SystemExit, match="2"):
+        GATE._parse_args(
+            [
+                "pre-docker",
+                "--output",
+                "/root/p014-host-evidence/pre-docker.json",
+                "--apt-lists-dir",
+                "/root/p014-host-evidence/docker-change/apt-lists",
+            ]
+        )
 
 
 def test_docker_key_evidence_retains_every_primary_fingerprint(

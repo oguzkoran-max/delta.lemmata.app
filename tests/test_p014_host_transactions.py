@@ -95,6 +95,132 @@ def test_python_optimization_cannot_disable_firewall_comparison(tmp_path: Path) 
     assert "P014_DOCKER_INSTALL_FIREWALL_CAPTURE_MISMATCH" in completed.stderr
 
 
+def _write_fake_firewall_commands(fake_bin: Path, log: Path) -> None:
+    _write_executable(
+        fake_bin / "nft",
+        "#!/bin/sh\n"
+        'printf "nft:%s\\n" "$*" >> "$P014_FIREWALL_LOG"\n'
+        'if [ "$1 $2" = "list ruleset" ]; then printf "nft residual\\n"; fi\n',
+    )
+    for command in ("iptables-save", "ip6tables-save"):
+        _write_executable(
+            fake_bin / command,
+            "#!/bin/sh\n"
+            f'printf "{command}:%s\\n" "$*" >> "$P014_FIREWALL_LOG"\n'
+            f'printf "{command} residual\\n"\n',
+        )
+    for command in ("iptables-restore", "ip6tables-restore"):
+        _write_executable(
+            fake_bin / command,
+            f'#!/bin/sh\nprintf "{command}:%s\\n" "$*" >> "$P014_FIREWALL_LOG"\ncat >/dev/null\n',
+        )
+    log.touch()
+
+
+def test_empty_firewall_baseline_flushes_docker_rules_after_preserving_residuals(
+    tmp_path: Path,
+) -> None:
+    fake_bin = tmp_path / "bin"
+    state = tmp_path / "state"
+    log = tmp_path / "firewall.log"
+    fake_bin.mkdir()
+    state.mkdir()
+    _write_fake_firewall_commands(fake_bin, log)
+    for name in ("nftables", "iptables", "ip6tables"):
+        (state / f"firewall-{name}.before").touch()
+
+    completed = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; restore_firewall_snapshot',
+        state,
+        env={
+            "PATH": f"{fake_bin}:{os.environ['PATH']}",
+            "P014_FIREWALL_LOG": str(log),
+        },
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert log.read_text(encoding="utf-8").splitlines() == [
+        "nft:list ruleset",
+        "iptables-save:",
+        "ip6tables-save:",
+        "nft:flush ruleset",
+    ]
+    assert (state / "firewall-empty-baseline-restored").is_file()
+    assert (state / "firewall-nftables.rollback-residual").read_text(
+        encoding="utf-8"
+    ) == "nft residual\n"
+    assert (state / "firewall-iptables.rollback-residual").read_text(
+        encoding="utf-8"
+    ) == "iptables-save residual\n"
+    assert (state / "firewall-ip6tables.rollback-residual").read_text(
+        encoding="utf-8"
+    ) == "ip6tables-save residual\n"
+
+
+def test_nonempty_firewall_baseline_uses_captured_restore_inputs(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
+    state = tmp_path / "state"
+    log = tmp_path / "firewall.log"
+    fake_bin.mkdir()
+    state.mkdir()
+    _write_fake_firewall_commands(fake_bin, log)
+    for name in ("nftables", "iptables", "ip6tables"):
+        (state / f"firewall-{name}.before").write_text(f"{name} baseline\n", encoding="utf-8")
+
+    completed = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; restore_firewall_snapshot',
+        state,
+        env={
+            "PATH": f"{fake_bin}:{os.environ['PATH']}",
+            "P014_FIREWALL_LOG": str(log),
+        },
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    calls = log.read_text(encoding="utf-8").splitlines()
+    assert calls == [
+        "nft:list ruleset",
+        "iptables-save:",
+        "ip6tables-save:",
+        "iptables-restore:",
+        "ip6tables-restore:",
+    ]
+    assert "nft:flush ruleset" not in calls
+    assert not (state / "firewall-empty-baseline-restored").exists()
+
+
+def test_existing_firewall_residual_evidence_is_never_overwritten(tmp_path: Path) -> None:
+    fake_bin = tmp_path / "bin"
+    state = tmp_path / "state"
+    log = tmp_path / "firewall.log"
+    fake_bin.mkdir()
+    state.mkdir()
+    _write_fake_firewall_commands(fake_bin, log)
+    for name in ("nftables", "iptables", "ip6tables"):
+        (state / f"firewall-{name}.rollback-residual").write_text(
+            f"original {name}\n", encoding="utf-8"
+        )
+
+    completed = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; capture_firewall_residual',
+        state,
+        env={
+            "PATH": f"{fake_bin}:{os.environ['PATH']}",
+            "P014_FIREWALL_LOG": str(log),
+        },
+    )
+
+    assert completed.returncode == 0, completed.stderr
+    assert log.read_text(encoding="utf-8") == ""
+    for name in ("nftables", "iptables", "ip6tables"):
+        assert (state / f"firewall-{name}.rollback-residual").read_text(
+            encoding="utf-8"
+        ) == f"original {name}\n"
+
+
 def test_python_optimization_cannot_disable_rollback_preflight_validation(
     tmp_path: Path,
 ) -> None:

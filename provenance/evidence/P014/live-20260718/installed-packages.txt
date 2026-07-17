@@ -1,0 +1,5 @@
+containerd.io=2.2.6-1~ubuntu.26.04~resolute
+docker-buildx-plugin=0.35.0-1~ubuntu.26.04~resolute
+docker-ce=5:29.6.2-1~ubuntu.26.04~resolute
+docker-ce-cli=5:29.6.2-1~ubuntu.26.04~resolute
+docker-compose-plugin=5.3.1-1~ubuntu.26.04~resolute

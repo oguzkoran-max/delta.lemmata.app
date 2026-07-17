@@ -348,6 +348,38 @@ prove_runtime_stopped() {
   done
 }
 
+capture_firewall_residual_file() {
+  local name=$1
+  shift
+  local final_path
+  local stage_path
+  final_path="$STATE_DIR/firewall-$name.rollback-residual"
+  [[ ! -e $final_path ]] || return 0
+  stage_path="$STATE_DIR/.firewall-$name.rollback-residual"
+  [[ ! -e $stage_path ]] || fail "P014_DOCKER_ROLLBACK_FIREWALL_RESIDUAL_STAGE_EXISTS:$name"
+  "$@" > "$stage_path"
+  mv "$stage_path" "$final_path"
+}
+
+capture_firewall_residual() {
+  capture_firewall_residual_file nftables nft list ruleset
+  capture_firewall_residual_file iptables iptables-save
+  capture_firewall_residual_file ip6tables ip6tables-save
+}
+
+restore_firewall_snapshot() {
+  capture_firewall_residual
+  if [[ ! -s $STATE_DIR/firewall-nftables.before ]] &&
+    [[ ! -s $STATE_DIR/firewall-iptables.before ]] &&
+    [[ ! -s $STATE_DIR/firewall-ip6tables.before ]]; then
+    nft flush ruleset
+    touch "$STATE_DIR/firewall-empty-baseline-restored"
+    return 0
+  fi
+  iptables-restore < "$STATE_DIR/firewall-iptables.before"
+  ip6tables-restore < "$STATE_DIR/firewall-ip6tables.before"
+}
+
 main() {
   while (($#)); do
     case "$1" in
@@ -373,7 +405,7 @@ main() {
   local command
   for command in \
     apt-get awk dpkg dpkg-query ip6tables-restore ip6tables-save \
-    iptables-restore iptables-save nft pgrep python3 rm rmdir sha256sum sysctl systemctl; do
+    iptables-restore iptables-save mv nft pgrep python3 rm rmdir sha256sum sysctl systemctl; do
     command -v "$command" >/dev/null || fail "P014_DOCKER_ROLLBACK_COMMAND_MISSING:$command"
   done
 
@@ -458,8 +490,7 @@ main() {
   rm -rf --one-file-system -- /var/lib/docker /var/lib/containerd
   touch "$STATE_DIR/runtime-roots-removed"
 
-  iptables-restore < "$STATE_DIR/firewall-iptables.before"
-  ip6tables-restore < "$STATE_DIR/firewall-ip6tables.before"
+  restore_firewall_snapshot
   sysctl -q -w "net.ipv4.ip_forward=$ipv4_forward"
   sysctl -q -w "net.ipv6.conf.all.forwarding=$ipv6_forward"
   systemctl daemon-reload

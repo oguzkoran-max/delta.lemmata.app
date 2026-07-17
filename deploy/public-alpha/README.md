@@ -156,6 +156,13 @@ original listeners, complete firewall hashes, Caddyfile hash, Lemmata process
 identity, health, latency budget, and no-Docker state. A successful installation
 disarms this destructive rollback before any Delta image is pulled.
 
+The post-install gate reuses the installer's private APT list directory rather
+than consulting the host's unrelated default package index. If the accepted
+pre-Docker firewall snapshots were all empty, rollback captures the residual
+rules and flushes the Docker-created nftables ruleset before proving the exact
+empty baseline. Non-empty baselines continue to use their captured iptables and
+ip6tables restore inputs.
+
 Do not continue unless `post-docker.json` has `gate.passed=true`, available
 memory is at least `1,800 MiB`, and no public listener was added. Retain the
 root-only state directory for the rollout evidence.
@@ -458,6 +465,7 @@ GATEWAY_ID=$("${COMPOSE[@]}" ps --quiet gateway)
 python3 scripts/inspect_p014_runtime.py --app "$APP_ID" --gateway "$GATEWAY_ID"
 python3 scripts/p014_host_gate.py delta-idle \
   --baseline /root/p014-host-evidence/pre-docker.json \
+  --apt-lists-dir /root/p014-host-evidence/docker-change/apt-lists \
   --output /root/p014-host-evidence/delta-idle.json \
   --samples 20
 PRE_CADDY_GATES_COMPLETE=1

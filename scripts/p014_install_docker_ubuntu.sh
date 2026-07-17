@@ -465,6 +465,7 @@ main() {
 
   python3 "$HOST_GATE" post-docker \
     --baseline "$STATE_DIR/pre-docker.json" \
+    --apt-lists-dir "$STATE_DIR/apt-lists" \
     --output "$POST_OUTPUT" \
     --samples 20
 
