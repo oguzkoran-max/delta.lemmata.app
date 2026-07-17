@@ -168,6 +168,15 @@ def _semantic_table_evidence(page: Page, label: str) -> dict[str, Any]:
     }
 
 
+def _choose_next_result_option(page: Page, reference_radio: Locator) -> None:
+    """Move from the checked reference to the next native radio option."""
+
+    if not reference_radio.is_checked():
+        raise RuntimeError("Expected the 500 MFW reference option to be checked")
+    reference_radio.focus()
+    page.keyboard.press("ArrowRight")
+
+
 def _wait_for_result_selection_update(
     page: Page,
     target_radio: Locator,
@@ -523,7 +532,7 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
     if target_option.count() != 1:
         raise RuntimeError("Expected exactly one visible 1000 MFW result card")
     target_radio = selector.get_by_role("radio", name="1000 MFW", exact=True)
-    target_option.click()
+    _choose_next_result_option(page, reference_radio)
     semantic_after = _wait_for_result_selection_update(
         page,
         target_radio,

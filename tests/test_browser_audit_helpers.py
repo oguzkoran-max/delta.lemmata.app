@@ -30,6 +30,7 @@ _choose_selectbox = BROWSER_AUDIT._choose_selectbox
 _wait_for_capacity_records = BROWSER_AUDIT._wait_for_capacity_records
 _wait_for_streamlit_idle = BROWSER_AUDIT._wait_for_streamlit_idle
 _geometry = BROWSER_AUDIT._geometry
+_choose_next_result_option = P009_BROWSER_AUDIT._choose_next_result_option
 _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
 
 
@@ -193,6 +194,19 @@ class _CheckedRadio:
         state = self._states[min(self._index, len(self._states) - 1)]
         self._index += 1
         return state
+
+
+class _FocusableRadio:
+    def __init__(self, calls: list[tuple[str, Any]], *, checked: bool) -> None:
+        self._calls = calls
+        self._checked = checked
+
+    def is_checked(self) -> bool:
+        self._calls.append(("radio_is_checked", None))
+        return self._checked
+
+    def focus(self) -> None:
+        self._calls.append(("radio_focus", None))
 
 
 class _GeometryPage:
@@ -364,6 +378,29 @@ def test_result_selection_waits_for_changed_stable_semantic_tables(
         "MDS coordinate table": {"sha256": "new-mds", "row_count": 3},
     }
     assert ("wait_for_timeout", 250) in page.calls
+
+
+def test_result_selection_uses_native_keyboard_change_event() -> None:
+    page = _SelectPage(require_keyboard=False)
+    radio = _FocusableRadio(page.calls, checked=True)
+
+    _choose_next_result_option(cast(Page, page), cast(Locator, radio))
+
+    assert page.calls == [
+        ("radio_is_checked", None),
+        ("radio_focus", None),
+        ("keyboard_press", "ArrowRight"),
+    ]
+
+
+def test_result_selection_rejects_an_unchecked_reference() -> None:
+    page = _SelectPage(require_keyboard=False)
+    radio = _FocusableRadio(page.calls, checked=False)
+
+    with pytest.raises(RuntimeError, match="reference option to be checked"):
+        _choose_next_result_option(cast(Page, page), cast(Locator, radio))
+
+    assert page.calls == [("radio_is_checked", None)]
 
 
 def test_result_selection_rejects_unchanged_semantic_tables(
