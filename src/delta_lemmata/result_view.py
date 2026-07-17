@@ -533,7 +533,7 @@ def project_result_view(
 
 
 def nearest_neighbours(cell: ResultCellV1) -> tuple[NearestNeighbourRow, ...]:
-    """Return every exact minimum-distance tie for each document."""
+    """Return every minimum-distance neighbour within the structural tolerance."""
 
     if not isinstance(cell, ResultCellV1) or cell.matrix is None:
         raise _error(P009ContractErrorCode.INVALID_REQUEST)

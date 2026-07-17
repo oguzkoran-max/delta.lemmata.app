@@ -27,6 +27,7 @@ from delta_lemmata.corpus import (
     DateMode,
     DateValue,
     GuidedWorkInput,
+    IssueSeverity,
     MetadataCsvExportError,
     MetadataCsvImportResult,
     PurposeId,
@@ -87,6 +88,7 @@ from delta_lemmata.intake_ui import (
 from delta_lemmata.prepared_corpus_service import (
     PreparationOutcome,
     PreparedCorpusError,
+    PreparedCorpusErrorCode,
 )
 from delta_lemmata.preprocessing import build_preprocessing_config, parse_custom_exclusions
 from delta_lemmata.preprocessing_models import (
@@ -99,6 +101,7 @@ from delta_lemmata.preprocessing_models import (
     canonical_p007_json,
 )
 from delta_lemmata.provenance import canonical_json_bytes
+from delta_lemmata.result_service import VerifiedScientificResult
 from delta_lemmata.result_view import (
     ResultCellStatus,
     ResultCellV1,
@@ -111,7 +114,12 @@ from delta_lemmata.result_view import (
 )
 from delta_lemmata.stylo_contracts import DocumentRole
 from delta_lemmata.ui_theme import APP_CSS
-from delta_lemmata.web_runtime import WebRuntime, WebRuntimeError, build_web_runtime
+from delta_lemmata.web_runtime import (
+    WebRuntime,
+    WebRuntimeError,
+    WebRuntimeErrorCode,
+    build_web_runtime,
+)
 from delta_lemmata.workbench import (
     MODE_BODY_KEYS,
     MODE_LABEL_KEYS,
@@ -131,6 +139,7 @@ _PENDING_ERROR_KEY = "_intake_pending_error"
 _PENDING_UPLOAD_CLEAR_KEY = "_intake_pending_widget_clear"
 _FLOW_STAGE_KEY = "_p004_flow_stage"
 _FLOW_PURPOSE_KEY = "_p004_purpose"
+_FLOW_INPUT_MODE_KEY = "_p004_input_mode"
 _FLOW_CATALOG_KEY = "_p004_catalog"
 _FLOW_CATALOG_HASH_KEY = "_p004_catalog_sha256"
 _FLOW_IMPORT_KEY = "_p004_metadata_import"
@@ -146,6 +155,9 @@ _FLOW_ANNOTATIONS_KEY = "_p007_annotations"
 _FLOW_PREPARATION_KEY = "_p007_preparation_outcome"
 _FLOW_WORKFLOW_CONFIG_KEY = "_p008_resolved_workflow_config"
 _FLOW_JOB_PRESENTATION_KEY = "_p008_job_presentation"
+_RECOVERABLE_JOB_STATES = frozenset(
+    {"failed", "cancelled", "timed_out", "crashed", "abandoned", "expired"}
+)
 _HTTP_URL_ADAPTER = TypeAdapter(HttpUrl)
 
 
@@ -198,12 +210,54 @@ def _html(value: str) -> str:
     return escape(value, quote=True)
 
 
-def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
+def _render_main_landmark_bridge() -> None:
+    """Promote Streamlit's application section to the page's main landmark."""
+
+    st.html(
+        """
+        <script>
+        (() => {
+          const main = document.querySelector('[data-testid="stMain"]');
+          if (main) {
+            main.id = 'delta-main-landmark';
+            main.setAttribute('role', 'main');
+          }
+
+          const root = document.documentElement;
+          if (!root.dataset.deltaSkipHandler) {
+            document.addEventListener('click', (event) => {
+              const link = event.target.closest?.('.delta-skip-link');
+              if (!link) return;
+              const target = document.getElementById('delta-content-start');
+              if (!target) return;
+              event.preventDefault();
+              target.focus({preventScroll: true});
+              target.scrollIntoView({block: 'start'});
+            }, true);
+            root.dataset.deltaSkipHandler = 'ready';
+          }
+        })();
+        </script>
+        """,
+        width="content",
+        unsafe_allow_javascript=True,
+    )
+
+
+def _render_header(
+    health: dict[str, Any],
+    stage: CorpusSubstage,
+    *,
+    evidence_active: bool,
+) -> None:
+    _render_main_landmark_bridge()
     version = text("header.version", version=health["version"])
     build = text("header.build", build_id=health["build_id"])
     release_alpha = _html(text("header.release_public_alpha"))
     release_experimental = _html(text("header.release_experimental"))
-    if stage is CorpusSubstage.UPLOAD:
+    if evidence_active:
+        stage_label = text("header.stage.evidence")
+    elif stage is CorpusSubstage.UPLOAD:
         stage_label = text("header.stage.upload")
     elif stage is CorpusSubstage.PARAMETERS:
         stage_label = text("header.stage.parameters")
@@ -211,13 +265,16 @@ def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
         stage_label = text("header.stage.corpus")
     st.markdown(
         f"""
+        <a class="delta-skip-link" href="#delta-content-start">
+          {_html(text("accessibility.skip_to_main"))}
+        </a>
         <div class="delta-header">
           <div class="delta-brand">
             <span class="delta-mark" aria-hidden="true">{_html(text("brand.mark"))}</span>
             <div>
               <div class="delta-brand-name">{_html(text("brand.name"))}</div>
               <div class="delta-brand-subtitle">{_html(text("brand.subtitle"))}</div>
-              <div class="delta-release-status" role="status"
+              <div class="delta-release-status"
                    aria-label="{_html(text("header.release_status"))}">
                 <span class="delta-release-alpha">{release_alpha}</span>
                 <span class="delta-release-experimental">{release_experimental}</span>
@@ -232,6 +289,13 @@ def _render_header(health: dict[str, Any], stage: CorpusSubstage) -> None:
           </div>
         </div>
         """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_content_anchor() -> None:
+    st.markdown(
+        '<span id="delta-content-start" class="delta-main-anchor" tabindex="-1"></span>',
         unsafe_allow_html=True,
     )
 
@@ -267,7 +331,7 @@ def _map_row(
     )
 
 
-def _render_stepper(stage: CorpusSubstage) -> None:
+def _render_stepper(stage: CorpusSubstage, *, evidence_active: bool) -> None:
     stage_key = {
         CorpusSubstage.UPLOAD: "flow.stage.upload",
         CorpusSubstage.DESCRIBE: "flow.stage.describe",
@@ -275,18 +339,22 @@ def _render_stepper(stage: CorpusSubstage) -> None:
         CorpusSubstage.PREPARE: "flow.stage.prepare",
         CorpusSubstage.PARAMETERS: "flow.stage.parameters",
     }[stage]
-    parameter_stage = stage is CorpusSubstage.PARAMETERS
+    parameter_stage = stage is CorpusSubstage.PARAMETERS and not evidence_active
     corpus_state = "sidebar.state.complete" if parameter_stage else stage_key
     parameter_state = stage_key if parameter_stage else "flow.locked"
+    if evidence_active:
+        corpus_state = "sidebar.state.complete"
+        parameter_state = "sidebar.state.complete"
     markup = (
-        '<nav class="delta-map" aria-label="Experiment progress">'
+        f'<nav class="delta-map delta-map-{stage.value}" '
+        'aria-label="Experiment progress">'
         '<ol class="delta-map-list">'
         + _map_row(1, "sidebar.step.purpose", "sidebar.state.complete")
         + _map_row(
             2,
             "sidebar.step.corpus",
             corpus_state,
-            active=not parameter_stage,
+            active=not parameter_stage and not evidence_active,
         )
         + _map_row(
             3,
@@ -294,7 +362,12 @@ def _render_stepper(stage: CorpusSubstage) -> None:
             parameter_state,
             active=parameter_stage,
         )
-        + _map_row(4, "sidebar.step.evidence", "flow.locked")
+        + _map_row(
+            4,
+            "sidebar.step.evidence",
+            "sidebar.state.active" if evidence_active else "flow.locked",
+            active=evidence_active,
+        )
         + "</ol></nav>"
     )
     st.markdown(markup, unsafe_allow_html=True)
@@ -350,6 +423,19 @@ def _corpus_mode_label(mode_id: str) -> str:
 
 def _choice_label(value: str) -> str:
     return value.replace("_", " ").title()
+
+
+def _field_label(field_path: str) -> str:
+    """Return a readable field name while keeping the raw path for audit details."""
+
+    parts = tuple(part for part in field_path.split(".") if part)
+    if not parts:
+        return field_path
+    leaf = parts[-1].split("[")[0]
+    parent = parts[-2].split("[")[0] if len(parts) > 1 else ""
+    if leaf in {"start_year", "end_year", "mode"} and parent:
+        return f"{_choice_label(parent)}: {_choice_label(leaf)}"
+    return _choice_label(leaf)
 
 
 def _rights_label(value: str) -> str:
@@ -445,7 +531,7 @@ def _render_receipts(outcome: IntakeOutcome) -> None:
         )
 
 
-def _render_purpose_guidance(purpose: PurposeSpec) -> None:
+def _purpose_guidance_markup(purpose: PurposeSpec) -> str:
     guidance = text("purpose.guidance")
     items = (
         ("purpose.question_label", purpose.question_key, "question"),
@@ -460,14 +546,43 @@ def _render_purpose_guidance(purpose: PurposeSpec) -> None:
         "</div>"
         for label_key, body_key, kind in items
     )
+    return f'<section class="delta-purpose-guide" aria-label="{_html(guidance)}">{markup}</section>'
+
+
+def _render_purpose_guidance(purpose: PurposeSpec) -> None:
     st.markdown(
-        '<section class="delta-purpose-guide" role="region" aria-live="polite" '
-        f'aria-label="{_html(guidance)}">{markup}</section>',
+        f'<div class="delta-purpose-guide-desktop">{_purpose_guidance_markup(purpose)}</div>',
+        unsafe_allow_html=True,
+    )
+
+
+def _render_mobile_purpose_guidance(purpose: PurposeSpec) -> None:
+    guidance = text("purpose.guidance")
+    st.markdown(
+        '<details class="delta-purpose-guide-mobile">'
+        f"<summary>{_html(guidance)}</summary>"
+        f"{_purpose_guidance_markup(purpose)}</details>",
         unsafe_allow_html=True,
     )
 
 
 def _render_entry_experience() -> None:
+    st.markdown(
+        f"""
+        <section class="delta-entry" aria-labelledby="delta-entry-title">
+          <div class="delta-entry-copy">
+            <div class="delta-entry-eyebrow">{_html(text("setup.eyebrow"))}</div>
+            <h1 id="delta-entry-title">{_html(text("setup.title"))}</h1>
+            <p class="delta-entry-lede">{_html(text("setup.intro"))}</p>
+            <p class="delta-entry-scope">{_html(text("setup.corpus_scope"))}</p>
+          </div>
+        </section>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def _render_stylometry_orientation() -> None:
     trace_rows = tuple(
         (
             text(f"setup.trace.row_{row}_label"),
@@ -513,13 +628,12 @@ def _render_entry_experience() -> None:
     )
     st.markdown(
         f"""
-        <section class="delta-entry" aria-labelledby="delta-entry-title">
-          <div class="delta-entry-copy">
-            <div class="delta-entry-eyebrow">{_html(text("setup.eyebrow"))}</div>
-            <h1 id="delta-entry-title">{_html(text("setup.title"))}</h1>
-            <p class="delta-entry-lede">{_html(text("setup.intro"))}</p>
-            <p class="delta-entry-scope">{_html(text("setup.corpus_scope"))}</p>
-          </div>
+        <section class="delta-stylometry-orientation" aria-labelledby="delta-method-title">
+          <h2 id="delta-method-title">{_html(text("setup.method_label"))}</h2>
+          <p class="delta-orientation-caption">{_html(text("setup.method.caption"))}</p>
+          <figure class="delta-method" aria-label="{_html(text("setup.method_label"))}">
+            <ol>{method_markup}</ol>
+          </figure>
           <figure class="delta-style-trace" aria-labelledby="delta-trace-title">
             <figcaption>
               <span class="delta-trace-kicker">{_html(text("setup.trace.kicker"))}</span>
@@ -532,13 +646,6 @@ def _render_entry_experience() -> None:
               <span>{_html(text("setup.trace.legend"))}</span>
               <ul>{trace_legend}</ul>
             </div>
-          </figure>
-          <figure class="delta-method" aria-labelledby="delta-method-title">
-            <figcaption id="delta-method-title">
-              <strong>{_html(text("setup.method_label"))}</strong>
-              <span>{_html(text("setup.method.caption"))}</span>
-            </figcaption>
-            <ol>{method_markup}</ol>
           </figure>
         </section>
         """,
@@ -565,6 +672,50 @@ def _render_parameter_orientation() -> None:
         f'<div class="delta-parameter-grid">{items}</div>'
         "</section>",
         unsafe_allow_html=True,
+    )
+
+
+def _analysis_status_markup(
+    *,
+    title: str,
+    body: str,
+    reference: str | None,
+    alert: bool,
+) -> str:
+    role = "alert" if alert else "status"
+    live = "assertive" if alert else "polite"
+    reference_markup = (
+        ""
+        if reference is None
+        else f'<small class="delta-analysis-reference">{_html(reference)}</small>'
+    )
+    state_class = " is-alert" if alert else ""
+    return (
+        f'<section class="delta-analysis-status{state_class}" role="{role}" '
+        f'aria-live="{live}" aria-atomic="true">'
+        '<span class="delta-analysis-status-icon" aria-hidden="true">'
+        f"{'!' if alert else 'i'}</span>"
+        '<div class="delta-analysis-status-copy">'
+        f"<strong>{_html(title)}</strong>"
+        f"<p>{_html(body)}</p>"
+        f"{reference_markup}"
+        "</div></section>"
+    )
+
+
+def _terminal_presentation(
+    runtime: WebRuntime,
+    materialization: CorpusMaterializationReceipt,
+) -> object | None:
+    try:
+        presentation = runtime.prepared_corpora.status(
+            owner_key=_owner_key(),
+            materialization_receipt=materialization,
+        )
+    except (PreparedCorpusError, WebRuntimeError, AttributeError):
+        return None
+    return (
+        presentation if getattr(presentation, "state_id", "") in _RECOVERABLE_JOB_STATES else None
     )
 
 
@@ -601,6 +752,9 @@ def _clear_pending_upload_widgets() -> None:
     keys = st.session_state.pop(_PENDING_UPLOAD_CLEAR_KEY, ())
     for key in keys:
         st.session_state.pop(key, None)
+    if keys:
+        # Complete one payload-free rerun before rendering the documentation view.
+        st.rerun()
 
 
 def _clear_documentation_state(*, keep_purpose: bool) -> None:
@@ -621,6 +775,7 @@ def _clear_documentation_state(*, keep_purpose: bool) -> None:
         )
     for key in (
         _FLOW_CATALOG_KEY,
+        _FLOW_INPUT_MODE_KEY,
         _FLOW_CATALOG_HASH_KEY,
         _FLOW_IMPORT_KEY,
         _FLOW_INVENTORY_KEY,
@@ -670,6 +825,13 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
     generation = int(st.session_state.get(_UPLOAD_GENERATION_KEY, 0))
     pending_error_value = st.session_state.pop(_PENDING_ERROR_KEY, None)
     pending_error = None if pending_error_value is None else IntakeErrorCode(pending_error_value)
+    try:
+        mode = CorpusInputMode(
+            st.session_state.get("corpus_input_mode", CorpusInputMode.TEXT_FILES.value)
+        )
+    except (TypeError, ValueError):
+        mode = CorpusInputMode.TEXT_FILES
+        st.session_state["corpus_input_mode"] = mode.value
     with st.container(border=True, key="corpus_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("corpus.eyebrow"))}</div>',
@@ -681,37 +843,44 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         with badge_column:
             st.badge(text("corpus.available"), icon=":material/shield:", color="green")
         st.caption(text("corpus.body"))
-        selected_mode = st.segmented_control(
-            text("corpus.mode.label"),
-            options=[mode.value for mode in CorpusInputMode],
-            default=CorpusInputMode.TEXT_FILES.value,
-            format_func=_corpus_mode_label,
-            key="corpus_input_mode",
-            width="stretch",
-        )
-        mode = CorpusInputMode(selected_mode or CorpusInputMode.TEXT_FILES.value)
-        if mode is CorpusInputMode.TEXT_FILES:
-            uploaded_corpus = st.file_uploader(
-                text("corpus.text_uploader"),
-                type=["txt"],
-                accept_multiple_files=True,
-                help=text("corpus.text_uploader_help"),
-                key=f"corpus_text_files_{generation}",
+        with st.container(key="corpus_inputs"):
+            selected_mode = st.radio(
+                text("corpus.mode.label"),
+                options=[item.value for item in CorpusInputMode],
+                index=tuple(CorpusInputMode).index(mode),
+                format_func=_corpus_mode_label,
+                key="corpus_input_mode",
+                horizontal=True,
             )
-            corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
-        else:
-            uploaded_archive = st.file_uploader(
-                text("corpus.archive_uploader"),
-                type=["zip"],
-                accept_multiple_files=False,
-                help=text("corpus.archive_uploader_help"),
-                key=f"corpus_archive_file_{generation}",
-            )
-            corpus_files = () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
+            mode = CorpusInputMode(selected_mode)
+            uploader_context = {
+                "purpose": _purpose_label(purpose.value),
+                "mode": _corpus_mode_label(mode.value),
+            }
+            if mode is CorpusInputMode.TEXT_FILES:
+                uploaded_corpus = st.file_uploader(
+                    text("corpus.text_uploader", **uploader_context),
+                    type=["txt"],
+                    accept_multiple_files=True,
+                    help=text("corpus.text_uploader_help"),
+                    key=f"corpus_text_files_{generation}",
+                )
+                corpus_files = tuple(_browser_upload(upload) for upload in uploaded_corpus)
+            else:
+                uploaded_archive = st.file_uploader(
+                    text("corpus.archive_uploader", **uploader_context),
+                    type=["zip"],
+                    accept_multiple_files=False,
+                    help=text("corpus.archive_uploader_help"),
+                    key=f"corpus_archive_file_{generation}",
+                )
+                corpus_files = (
+                    () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
+                )
         uploaded_metadata = None
         with st.expander(text("corpus.metadata_advanced")):
             uploaded_metadata = st.file_uploader(
-                text("corpus.metadata_uploader"),
+                text("corpus.metadata_uploader", **uploader_context),
                 type=["csv"],
                 accept_multiple_files=False,
                 help=text("corpus.metadata_uploader_help"),
@@ -801,6 +970,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                 st.caption(text("corpus.error.reference", code=code))
             else:
                 st.session_state[_FLOW_PURPOSE_KEY] = purpose.value
+                st.session_state[_FLOW_INPUT_MODE_KEY] = mode.value
                 st.session_state[_FLOW_CATALOG_KEY] = units
                 st.session_state[_FLOW_CATALOG_HASH_KEY] = corpus_catalog_sha256(units)
                 st.session_state[_FLOW_IMPORT_KEY] = metadata_result
@@ -867,7 +1037,7 @@ def _render_target_notice(
 ) -> None:
     if target is not None and target.group is group:
         st.info(
-            text("describe.correction_here", field_path=target.field_path),
+            text("describe.correction_here", field_path=_field_label(target.field_path)),
             icon=":material/edit_location_alt:",
         )
 
@@ -1199,7 +1369,7 @@ def _render_describe_stage(purpose: PurposeId) -> None:
             f'<div class="delta-eyebrow">{_html(text("describe.eyebrow"))}</div>',
             unsafe_allow_html=True,
         )
-        st.header(text("describe.title"), anchor=False)
+        st.title(text("describe.title"), anchor=False)
         st.caption(text("describe.body"))
         if st.button(text("describe.back"), icon=":material/arrow_back:"):
             _clear_documentation_state(keep_purpose=True)
@@ -1209,14 +1379,14 @@ def _render_describe_stage(purpose: PurposeId) -> None:
             st.markdown(
                 f"**{_html(target.work_title)} · "
                 f"{_html(_choice_label(target.group.value))} · "
-                f"{_html(target.field_path)}**",
+                f"{_html(_field_label(target.field_path))}**",
                 unsafe_allow_html=True,
             )
             if _origin() is CorpusOrigin.CSV:
                 st.warning(
                     text(
                         "describe.correction_csv",
-                        field_path=target.field_path,
+                        field_path=_field_label(target.field_path),
                         work_id=target.work_id,
                     ),
                     icon=":material/table_edit:",
@@ -1224,7 +1394,10 @@ def _render_describe_stage(purpose: PurposeId) -> None:
                 st.caption(text("describe.correction_csv_boundary"))
                 return
             st.info(
-                text("describe.correction_guided", field_path=target.field_path),
+                text(
+                    "describe.correction_guided",
+                    field_path=_field_label(target.field_path),
+                ),
                 icon=":material/edit_location_alt:",
             )
         _render_mode()
@@ -1382,6 +1555,7 @@ def _render_timeline(projection: CorpusReviewProjection) -> None:
             f"<td>{_html(item.audience_label)}</td>"
             f"<td>{_html(_timeline_source_label(item))}</td></tr>"
         )
+    _render_table_scroll_note("review.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("review.timeline_table"))}" tabindex="0">'
@@ -1423,6 +1597,7 @@ def _render_composition(projection: CorpusReviewProjection) -> None:
             f"<td>{item.work_count}</td>"
             f"<td>{share:.2f}%</td></tr>"
         )
+    _render_table_scroll_note("review.table_scroll")
     st.markdown(
         '<div class="delta-composition-bars" aria-hidden="true">' + "".join(bars) + "</div>"
         '<div class="delta-table-scroll" role="region" '
@@ -1450,7 +1625,7 @@ def _render_completeness(projection: CorpusReviewProjection) -> None:
         for group in CompletenessGroup:
             item = groups[group]
             fields = (
-                ", ".join(item.field_paths)
+                ", ".join(dict.fromkeys(_field_label(path) for path in item.field_paths))
                 if item.field_paths
                 else text("review.completeness_no_field")
             )
@@ -1470,6 +1645,20 @@ def _render_completeness(projection: CorpusReviewProjection) -> None:
     headers = "".join(
         f'<th scope="col">{_html(_choice_label(group.value))}</th>' for group in CompletenessGroup
     )
+    raw_details = "".join(
+        f"<li><strong>{_html(item.work_title)} · "
+        f"{_html(_choice_label(item.group.value))}</strong>: "
+        f"{_html(', '.join(item.field_paths) or text('review.completeness_no_field'))}"
+        + (
+            " · " + _html(", ".join(code.value for code in item.issue_codes))
+            if item.issue_codes
+            else ""
+        )
+        + "</li>"
+        for item in projection.completeness
+        if item.field_paths or item.issue_codes
+    )
+    _render_table_scroll_note("review.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("review.completeness_title"))}" tabindex="0">'
@@ -1477,7 +1666,14 @@ def _render_completeness(projection: CorpusReviewProjection) -> None:
         f"<caption>{_html(text('review.completeness_title'))}</caption>"
         f'<thead><tr><th scope="col">Work</th>{headers}</tr></thead><tbody>'
         + "".join(body)
-        + "</tbody></table></div>",
+        + "</tbody></table></div>"
+        + (
+            '<details class="delta-tech"><summary>'
+            f"{_html(text('review.technical_details'))}</summary>"
+            f'<div class="delta-tech-body"><ul>{raw_details}</ul></div></details>'
+            if raw_details
+            else ""
+        ),
         unsafe_allow_html=True,
     )
     targets = tuple(
@@ -1501,7 +1697,7 @@ def _render_completeness(projection: CorpusReviewProjection) -> None:
             format_func=lambda index: (
                 f"{targets[index].work_title} · "
                 f"{_choice_label(targets[index].group.value)} · "
-                f"{targets[index].field_path}"
+                f"{_field_label(targets[index].field_path)}"
             ),
             key=f"review_correction_target_{projection.inventory_sha256[:12]}",
         )
@@ -1537,6 +1733,7 @@ def _render_rights_matrix(inventory: CorpusInventory) -> None:
             + "".join(f"<td>{_html(_choice_label(value))}</td>" for value in cells)
             + "</tr>"
         )
+    _render_table_scroll_note("review.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("review.rights_title"))}" tabindex="0">'
@@ -1551,22 +1748,73 @@ def _render_rights_matrix(inventory: CorpusInventory) -> None:
     )
 
 
-def _render_issues(report: ValidationReport) -> None:
+def _issue_affected_label(issue: Any, inventory: CorpusInventory) -> str:
+    entity_id = str(issue.entity_id or "")
+    entity_type = getattr(issue.entity_type, "value", issue.entity_type)
+    if not entity_id:
+        return _choice_label(entity_type)
+    if entity_type == "author":
+        author = next((item for item in inventory.authors if item.author_id == entity_id), None)
+        return author.display_name if author is not None else entity_id
+    if entity_type == "work":
+        work = next((item for item in inventory.works if item.work_id == entity_id), None)
+        return work.title_original if work is not None else entity_id
+    if entity_type == "edition":
+        edition = next((item for item in inventory.editions if item.edition_id == entity_id), None)
+        if edition is not None:
+            work = next((item for item in inventory.works if item.work_id == edition.work_id), None)
+            title = work.title_original if work is not None else edition.work_id
+            return f"{title} · {edition.edition_label}"
+    if entity_type == "source":
+        source = next((item for item in inventory.sources if item.source_id == entity_id), None)
+        return source.title if source is not None else entity_id
+    if entity_type in {"asset", "rights"}:
+        asset = next((item for item in inventory.assets if item.asset_id == entity_id), None)
+        return asset.file_label if asset is not None else entity_id
+    return entity_id
+
+
+def _render_issues(report: ValidationReport, inventory: CorpusInventory) -> None:
     st.subheader(text("review.issues_title"), anchor=False)
     if not report.issues:
         st.success(text("review.no_issues"), icon=":material/task_alt:")
         return
-    rows = []
+    grouped: dict[tuple[str, str, str, str, str], list[Any]] = {}
     for issue in report.issues:
+        key = (
+            issue.code.value,
+            issue.severity.value,
+            issue.message,
+            issue.why_it_matters,
+            issue.how_to_fix,
+        )
+        grouped.setdefault(key, []).append(issue)
+    rows = []
+    for (code, severity, message, why, fix), issues in grouped.items():
+        affected = tuple(dict.fromkeys(_issue_affected_label(issue, inventory) for issue in issues))
+        technical = "".join(
+            "<li>"
+            f"<code>{_html(code)}</code> · "
+            f"<code>{_html(getattr(issue.entity_type, 'value', issue.entity_type))}:"
+            f"{_html(issue.entity_id or 'corpus')}</code> · "
+            f"<code>{_html(issue.field_path)}</code>"
+            "</li>"
+            for issue in issues
+        )
         rows.append(
-            f'<li class="delta-issue delta-issue-{_html(issue.severity.value)}">'
-            f'<div class="delta-issue-code">{_html(issue.severity.value.upper())} · '
-            f"{_html(issue.code.value)}</div>"
-            f"<strong>{_html(issue.message)}</strong>"
-            f"<span><b>{_html(text('review.issue_why'))}:</b> "
-            f"{_html(issue.why_it_matters)}</span>"
-            f"<span><b>{_html(text('review.issue_fix'))}:</b> "
-            f"{_html(issue.how_to_fix)}</span></li>"
+            f'<li class="delta-issue delta-issue-{_html(severity)}">'
+            '<div class="delta-issue-heading">'
+            f'<span class="delta-issue-count">'
+            f"{_html(text('review.issue_count', count=len(issues)))}</span>"
+            f'<span class="delta-issue-severity">{_html(severity)}</span>'
+            f"<strong>{_html(message)}</strong></div>"
+            f"<span><b>{_html(text('review.issue_affected'))}:</b> "
+            f"{_html(', '.join(affected))}</span>"
+            f"<span><b>{_html(text('review.issue_why'))}:</b> {_html(why)}</span>"
+            f"<span><b>{_html(text('review.issue_fix'))}:</b> {_html(fix)}</span>"
+            '<details class="delta-tech"><summary>'
+            f"{_html(text('review.technical_details'))}</summary>"
+            f'<div class="delta-tech-body"><ul>{technical}</ul></div></details></li>'
         )
     st.markdown('<ul class="delta-issues">' + "".join(rows) + "</ul>", unsafe_allow_html=True)
 
@@ -1666,18 +1914,148 @@ def _render_downloads(
         )
 
 
+def _review_issue_type_count(report: ValidationReport) -> int:
+    return len({issue.code for issue in report.issues if issue.severity is IssueSeverity.WARNING})
+
+
+def _review_readiness_detail(inventory: CorpusInventory, report: ValidationReport) -> str:
+    readiness = report.readiness
+    if inventory.purpose is PurposeId.STYLE_OVER_TIME and readiness.exploratory:
+        return text(
+            "review.style_over_time_exploratory",
+            works_label=_review_count_label(
+                readiness.independent_work_count,
+                "independent work",
+                "independent works",
+            ),
+            points_label=_review_count_label(
+                readiness.chronology_point_count,
+                "chronology point",
+                "chronology points",
+            ),
+        )
+    return " ".join((text("review.ready"), text("review.other_purposes_separate")))
+
+
+def _review_count_label(count: int, singular: str, plural: str) -> str:
+    return f"{count} {singular if count == 1 else plural}"
+
+
+def _render_review_readiness(
+    inventory: CorpusInventory,
+    report: ValidationReport,
+    purpose_label: str,
+) -> None:
+    readiness = report.readiness
+    if report.blocked:
+        st.error(text("review.blocked"), icon=":material/block:")
+    else:
+        exploratory = inventory.purpose is PurposeId.STYLE_OVER_TIME and readiness.exploratory
+        blocker_summary = _review_count_label(readiness.blocker_count, "blocker", "blockers")
+        warning_summary = _review_count_label(readiness.warning_count, "warning", "warnings")
+        rights_summary = _review_count_label(
+            readiness.rights_restriction_count, "rights limit", "rights limits"
+        )
+        band_state = " is-exploratory" if exploratory else ""
+        band_icon = "&#9888;" if exploratory else "&#10003;"
+        readiness_title = text(
+            "review.exploratory_for_purpose" if exploratory else "review.ready_for_purpose",
+            purpose=purpose_label,
+        )
+        st.markdown(
+            f'<section class="delta-readiness-band{band_state}" role="status" '
+            'aria-live="polite" aria-atomic="true" '
+            'aria-labelledby="delta-readiness-title">'
+            f'<span class="delta-readiness-icon" aria-hidden="true">{band_icon}</span>'
+            '<div class="delta-readiness-copy">'
+            '<strong id="delta-readiness-title">'
+            f"{_html(readiness_title)}</strong>"
+            f"<p>{_html(_review_readiness_detail(inventory, report))}</p></div>"
+            '<div class="delta-readiness-counts">'
+            f"<span>{_html(blocker_summary)}</span>"
+            f"<span>{_html(warning_summary)}</span>"
+            f"<span>{_html(rights_summary)}</span>"
+            "</div></section>",
+            unsafe_allow_html=True,
+        )
+
+    chronology_shortfall = (
+        inventory.purpose is PurposeId.STYLE_OVER_TIME and readiness.chronology_point_count < 3
+    )
+    if inventory.purpose is not PurposeId.STYLE_OVER_TIME:
+        chronology_note = text("review.metric.chronology_not_required")
+    elif chronology_shortfall:
+        chronology_note = text("review.metric.chronology_note")
+    else:
+        chronology_note = text("review.metric.documented")
+    warning_types = _review_issue_type_count(report)
+    rights_note = (
+        text("review.metric.rights_note")
+        if readiness.rights_restriction_count
+        else text("review.metric.none_documented")
+    )
+    tiles = (
+        ("review.metric.works", readiness.independent_work_count, "", ""),
+        (
+            "review.metric.chronology",
+            readiness.chronology_point_count,
+            chronology_note,
+            " is-warning" if chronology_shortfall else "",
+        ),
+        (
+            "review.metric.blockers",
+            readiness.blocker_count,
+            "",
+            " is-blocked" if readiness.blocker_count else "",
+        ),
+        (
+            "review.metric.warnings",
+            readiness.warning_count,
+            _review_count_label(warning_types, "issue type", "issue types"),
+            " is-warning" if readiness.warning_count else "",
+        ),
+        (
+            "review.metric.rights",
+            readiness.rights_restriction_count,
+            rights_note,
+            " is-warning" if readiness.rights_restriction_count else "",
+        ),
+    )
+    tile_markup = "".join(
+        f'<div class="delta-review-metric{state}">'
+        f"<span>{_html(text(label_key))}</span><strong>{value}</strong>"
+        + (f"<small>{_html(note)}</small>" if note else "")
+        + "</div>"
+        for label_key, value, note, state in tiles
+    )
+    st.markdown(
+        '<section class="delta-review-metrics" '
+        f'aria-label="{_html(text("review.metrics_summary"))}">{tile_markup}</section>',
+        unsafe_allow_html=True,
+    )
+
+
 def _render_review_stage() -> None:
     inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
     report = st.session_state.get(_FLOW_REPORT_KEY)
     if not isinstance(inventory, CorpusInventory) or not isinstance(report, ValidationReport):
         _clear_documentation_state(keep_purpose=True)
         st.rerun()
-    with st.container(border=True, key="review_stage"):
+    with st.container(key="review_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("review.eyebrow"))}</div>',
             unsafe_allow_html=True,
         )
-        st.header(text("review.title"), anchor=False)
+        st.title(text("review.title"), anchor=False)
+        purpose_spec = PURPOSE_BY_ID[inventory.purpose.value]
+        purpose_label = _purpose_label(inventory.purpose.value)
+        st.markdown(
+            '<div class="delta-context-strip delta-selected-purpose">'
+            f"<span>{_html(text('review.selected_purpose', purpose=purpose_label))}</span>"
+            f"<p>{_html(text(purpose_spec.question_key))}</p>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
         st.caption(text("review.body"))
         try:
             projection = build_review_projection(inventory, report)
@@ -1685,33 +2063,24 @@ def _render_review_stage() -> None:
             st.error(text("review.projection_unavailable"), icon=":material/block:")
             st.info(text("review.analysis_locked"), icon=":material/lock:")
             return
+        _render_review_readiness(inventory, report, purpose_label)
+        _render_issues(report, inventory)
+        _render_completeness(projection)
+        _render_timeline(projection)
+        _render_composition(projection)
+        _render_rights_matrix(inventory)
+        confirmed = _render_confirmation(projection, report)
         edit_column, reset_column = st.columns(2)
         with edit_column:
             if st.button(text("review.edit"), icon=":material/edit:", width="stretch"):
                 st.session_state.pop(_FLOW_CORRECTION_KEY, None)
+                st.session_state.pop(_FLOW_CONFIRMATION_HASH_KEY, None)
                 st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.DESCRIBE.value
                 st.rerun()
         with reset_column:
             if st.button(text("review.start_over"), icon=":material/restart_alt:", width="stretch"):
                 _clear_documentation_state(keep_purpose=False)
                 st.rerun()
-        if report.blocked:
-            st.error(text("review.blocked"), icon=":material/block:")
-        else:
-            st.success(text("review.ready"), icon=":material/check_circle:")
-        readiness = report.readiness
-        first, second, third, fourth = st.columns(4)
-        first.metric(text("review.metric.works"), readiness.independent_work_count)
-        second.metric(text("review.metric.chronology"), readiness.chronology_point_count)
-        third.metric(text("review.metric.blockers"), readiness.blocker_count)
-        fourth.metric(text("review.metric.warnings"), readiness.warning_count)
-        st.metric(text("review.metric.rights"), readiness.rights_restriction_count)
-        _render_composition(projection)
-        _render_completeness(projection)
-        _render_timeline(projection)
-        _render_rights_matrix(inventory)
-        _render_issues(report)
-        confirmed = _render_confirmation(projection, report)
         _render_downloads(inventory, report, projection)
         st.info(
             text("review.analysis_locked" if confirmed else "review.analysis_locked_confirmation"),
@@ -2242,7 +2611,7 @@ def _render_prepare_stage() -> None:
             f'<div class="delta-eyebrow">{_html(text("prepare.eyebrow"))}</div>',
             unsafe_allow_html=True,
         )
-        st.header(text("prepare.title"), anchor=False)
+        st.title(text("prepare.title"), anchor=False)
         st.caption(text("prepare.body"))
         st.info(text("prepare.profile_summary"), icon=":material/tune:")
 
@@ -2338,6 +2707,15 @@ def _resolve_session_workflow(
     )
 
 
+def _render_table_scroll_note(copy_key: str) -> None:
+    st.markdown(
+        '<p class="delta-scroll-note">'
+        '<span aria-hidden="true">↔</span>'
+        f"{_html(text(copy_key))}</p>",
+        unsafe_allow_html=True,
+    )
+
+
 def _render_parameter_grid(config: ResolvedWorkflowConfigV1) -> None:
     rows = []
     for cell in config.cells:
@@ -2352,6 +2730,7 @@ def _render_parameter_grid(config: ResolvedWorkflowConfigV1) -> None:
             f"<td>{_html(role)}</td></tr>"
         )
     label = _html(text("parameters.table.label"))
+    _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{label}" tabindex="0">'
@@ -2407,8 +2786,39 @@ def _distance_label(value: int | float) -> str:
     return f"{float(value):.6f}"
 
 
-def _render_result_status(view: ResultViewV1) -> None:
+def _render_result_status_summary(view: ResultViewV1) -> None:
     cards = []
+    for cell in view.cells:
+        evidence_role = text(
+            "results.cell.reference" if cell.is_reference else "results.cell.sensitivity"
+        )
+        status_label = _result_status_label(cell)
+        status_symbol = {
+            ResultCellStatus.COMPLETE: "&#10003;",
+            ResultCellStatus.NOT_ENOUGH_FEATURES: "!",
+            ResultCellStatus.FAILED: "&times;",
+        }[cell.status]
+        accessible_label = _html(f"{cell.mfw} MFW, {status_label}, {evidence_role}")
+        cards.append(
+            f'<article class="delta-result-cell delta-result-cell-{cell.status.value}" '
+            'role="listitem" '
+            f'aria-label="{accessible_label}" data-mfw="{cell.mfw}" '
+            f'data-status="{cell.status.value}">'
+            f'<span class="delta-result-cell-icon" aria-hidden="true">{status_symbol}</span>'
+            f'<span class="delta-result-cell-mfw">{cell.mfw} MFW</span>'
+            '<span class="delta-result-cell-divider" aria-hidden="true">&middot;</span>'
+            f"<strong>{_html(status_label)}</strong></article>"
+        )
+    label = _html(text("results.cell_grid.label"))
+    st.markdown(
+        f'<div class="delta-result-cell-grid" role="list" aria-label="{label}">'
+        + "".join(cards)
+        + "</div>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_result_status_table(view: ResultViewV1) -> None:
     rows = []
     for cell in view.cells:
         evidence_role = text(
@@ -2419,25 +2829,12 @@ def _render_result_status(view: ResultViewV1) -> None:
             if cell.status is ResultCellStatus.COMPLETE
             else "results.cell.unavailable"
         )
-        cards.append(
-            f'<article class="delta-result-cell delta-result-cell-{cell.status.value}" '
-            f'data-mfw="{cell.mfw}" data-status="{cell.status.value}">'
-            f'<span class="delta-result-cell-mfw">{cell.mfw} MFW</span>'
-            f"<strong>{_html(_result_status_label(cell))}</strong>"
-            f"<small>{_html(evidence_role)}</small></article>"
-        )
         rows.append(
             f'<tr data-mfw="{cell.mfw}" data-status="{cell.status.value}">'
             f'<th scope="row">{cell.mfw}</th><td>{_html(evidence_role)}</td>'
             f"<td>{_html(_result_status_label(cell))}</td><td>{_html(output)}</td></tr>"
         )
-    label = _html(text("results.cell_grid.label"))
-    st.markdown(
-        f'<div class="delta-result-cell-grid" role="list" aria-label="{label}">'
-        + "".join(cards)
-        + "</div>",
-        unsafe_allow_html=True,
-    )
+    _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("results.status.table"))}" tabindex="0">'
@@ -2463,6 +2860,42 @@ def _render_result_boundary() -> None:
     )
 
 
+def _render_result_method_key() -> None:
+    terms = tuple(
+        (
+            text(f"results.method.{key}.term"),
+            text(f"results.method.{key}.definition"),
+        )
+        for key in ("mfw", "delta", "smaller", "threshold", "cell")
+    )
+    st.markdown(
+        '<aside class="delta-method-key" aria-labelledby="delta-method-key-title">'
+        f'<h3 id="delta-method-key-title">{_html(text("results.method.title"))}</h3><dl>'
+        + "".join(
+            f"<div><dt>{_html(term)}</dt><dd>{_html(definition)}</dd></div>"
+            for term, definition in terms
+        )
+        + "</dl></aside>",
+        unsafe_allow_html=True,
+    )
+
+
+def _render_mds_guide() -> None:
+    st.markdown(
+        '<aside class="delta-method-key" aria-labelledby="delta-mds-guide-title">'
+        f'<h3 id="delta-mds-guide-title">{_html(text("results.mds.guide.title"))}</h3>'
+        f"<p>{_html(text('results.mds.guide.body'))}</p>"
+        '<div class="delta-mds-legend" role="group" '
+        f'aria-label="{_html(text("results.mds.guide.legend"))}">'
+        '<span><i class="delta-mds-known" aria-hidden="true"></i>'
+        f"{_html(text('results.mds.guide.known'))}</span>"
+        '<span><i class="delta-mds-unknown" aria-hidden="true"></i>'
+        f"{_html(text('results.mds.guide.unknown'))}</span>"
+        "</div></aside>",
+        unsafe_allow_html=True,
+    )
+
+
 def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
     matrix = cell.matrix
     if matrix is None:
@@ -2478,6 +2911,7 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
         rows.append(
             f'<tr><th scope="row" title="{_html(titles[key])}">{_html(key)}</th>' + cells + "</tr>"
         )
+    _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("results.matrix.label"))}" tabindex="0">'
@@ -2488,6 +2922,9 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
         + "</tbody></table></div>",
         unsafe_allow_html=True,
     )
+
+
+_HEATMAP_TEXT_MAX_DOCUMENTS = 6
 
 
 def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
@@ -2508,6 +2945,47 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
         for column_key, distance in zip(matrix.document_keys, row, strict=True)
     ]
     order = list(matrix.document_keys)
+    off_diagonal_distances = tuple(
+        float(distance)
+        for row_index, row in enumerate(matrix.values)
+        for column_index, distance in enumerate(row)
+        if row_index != column_index
+    )
+    scale_min = min(off_diagonal_distances, default=0.0)
+    scale_max = max(off_diagonal_distances, default=0.0)
+    if scale_min == scale_max:
+        color_encoding: dict[str, Any] = {
+            "condition": {
+                "test": "datum.reference === datum.compared",
+                "value": "#ffffff",
+            },
+            "value": "#a9dcc7",
+        }
+        contrast_test = "false"
+    else:
+        color_encoding = {
+            "condition": {
+                "test": "datum.reference === datum.compared",
+                "value": "#ffffff",
+            },
+            "field": "distance",
+            "type": "quantitative",
+            "scale": {
+                "type": "quantize",
+                "domain": [scale_min, scale_max],
+                "range": [
+                    "#f4faf7",
+                    "#d7efe5",
+                    "#a9dcc7",
+                    "#6fbf9f",
+                    "#297658",
+                    "#0a5443",
+                ],
+            },
+            "legend": {"title": "Classic Delta", "orient": "bottom"},
+        }
+        contrast_threshold = scale_min + (scale_max - scale_min) * (4 / 6)
+        contrast_test = f"datum.distance >= {contrast_threshold!r}"
     chart_data = pa.table(
         {
             "reference": pa.array((value["reference"] for value in values), type=pa.string()),
@@ -2524,54 +3002,82 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             ),
         }
     )
-    spec = {
-        "data": {"values": chart_data},
-        "layer": [
-            {
-                "mark": {"type": "rect", "cornerRadius": 3},
-                "encoding": {
-                    "x": {
-                        "field": "compared",
-                        "type": "ordinal",
-                        "sort": order,
-                        "title": text("results.heatmap.x"),
-                    },
-                    "y": {
-                        "field": "reference",
-                        "type": "ordinal",
-                        "sort": order,
-                        "title": text("results.heatmap.y"),
-                    },
-                    "color": {
-                        "field": "distance",
-                        "type": "quantitative",
-                        "scale": {"range": ["#eef8f4", "#c5e8dc", "#f4c7b8", "#d85a30"]},
-                        "legend": {"title": "Classic Delta", "orient": "bottom"},
-                    },
-                    "tooltip": [
-                        {"field": "reference_title", "type": "nominal", "title": "Text"},
-                        {
-                            "field": "compared_title",
-                            "type": "nominal",
-                            "title": "Compared with",
-                        },
-                        {
-                            "field": "distance_label",
-                            "type": "nominal",
-                            "title": "Distance",
-                        },
-                    ],
+    layers: list[dict[str, Any]] = [
+        {
+            "mark": {"type": "rect", "cornerRadius": 3},
+            "encoding": {
+                "x": {
+                    "field": "compared",
+                    "type": "ordinal",
+                    "sort": order,
+                    "title": text("results.heatmap.x"),
                 },
+                "y": {
+                    "field": "reference",
+                    "type": "ordinal",
+                    "sort": order,
+                    "title": text("results.heatmap.y"),
+                },
+                "color": color_encoding,
+                "stroke": {
+                    "condition": {
+                        "test": "datum.reference === datum.compared",
+                        "value": "#596762",
+                    },
+                    "value": "#d5ddda",
+                },
+                "strokeWidth": {
+                    "condition": {
+                        "test": "datum.reference === datum.compared",
+                        "value": 1.5,
+                    },
+                    "value": 0.5,
+                },
+                "tooltip": [
+                    {"field": "reference_title", "type": "nominal", "title": "Text"},
+                    {
+                        "field": "compared_title",
+                        "type": "nominal",
+                        "title": "Compared with",
+                    },
+                    {
+                        "field": "distance_label",
+                        "type": "nominal",
+                        "title": "Distance",
+                    },
+                ],
             },
+        }
+    ]
+    if len(order) <= _HEATMAP_TEXT_MAX_DOCUMENTS:
+        layers.append(
             {
-                "mark": {"type": "text", "fontSize": 12, "color": "#1a1a1a"},
+                "mark": {"type": "text", "fontSize": 12},
                 "encoding": {
                     "x": {"field": "compared", "type": "ordinal", "sort": order},
                     "y": {"field": "reference", "type": "ordinal", "sort": order},
                     "text": {"field": "distance_label", "type": "nominal"},
+                    "color": {
+                        "condition": [
+                            {
+                                "test": "datum.reference === datum.compared",
+                                "value": "#6f6f6f",
+                            },
+                            {
+                                "test": contrast_test,
+                                "value": "#ffffff",
+                            },
+                        ],
+                        "value": "#1a1a1a",
+                    },
                 },
-            },
-        ],
+            }
+        )
+    spec = {
+        "data": {"values": chart_data},
+        "width": 360,
+        "height": 360,
+        "layer": layers,
         "config": {
             "background": "#ffffff",
             "view": {"stroke": None},
@@ -2589,12 +3095,20 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
 
 def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
     titles = {document.key: document.title for document in view.documents}
+
+    def tie_label(count: int) -> str:
+        if count == 1:
+            return text("results.neighbour.no_tie")
+        return text("results.neighbour.tie_count", count=count)
+
     rows = "".join(
         f'<tr><th scope="row">{_html(titles[item.document_key])}</th>'
         f"<td>{_html(titles[item.neighbour_key])}</td>"
-        f"<td>{_distance_label(item.distance)}</td><td>{item.tie_count}</td></tr>"
+        f"<td>{_distance_label(item.distance)}</td>"
+        f"<td>{_html(tie_label(item.tie_count))}</td></tr>"
         for item in nearest_neighbours(cell)
     )
+    _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("results.neighbour.label"))}" tabindex="0">'
@@ -2622,6 +3136,13 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         }
         for point in points
     ]
+    coordinate_extent = max(
+        (abs(value) for point in points for value in (point.x, point.y)),
+        default=1.0,
+    )
+    if coordinate_extent == 0:
+        coordinate_extent = 1.0
+    shared_domain = [-coordinate_extent * 1.08, coordinate_extent * 1.08]
     chart_data = pa.table(
         {
             "key": pa.array((value["key"] for value in values), type=pa.string()),
@@ -2633,10 +3154,13 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
     )
     spec = {
         "data": {"values": chart_data},
+        "width": 360,
+        "height": 360,
         "layer": [
             {
                 "mark": {
-                    "type": "circle",
+                    "type": "point",
+                    "filled": True,
                     "size": 260,
                     "opacity": 0.9,
                     "stroke": "#ffffff",
@@ -2647,13 +3171,13 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
                         "field": "x",
                         "type": "quantitative",
                         "title": text("results.mds.x"),
-                        "scale": {"zero": False},
+                        "scale": {"domain": shared_domain, "nice": False, "zero": False},
                     },
                     "y": {
                         "field": "y",
                         "type": "quantitative",
                         "title": text("results.mds.y"),
-                        "scale": {"zero": False},
+                        "scale": {"domain": shared_domain, "nice": False, "zero": False},
                     },
                     "color": {
                         "field": "role",
@@ -2662,7 +3186,16 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
                             "domain": ["known", "unknown"],
                             "range": ["#0f6e56", "#d85a30"],
                         },
-                        "legend": {"title": text("results.mds.role"), "orient": "bottom"},
+                        "legend": None,
+                    },
+                    "shape": {
+                        "field": "role",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": ["known", "unknown"],
+                            "range": ["circle", "diamond"],
+                        },
+                        "legend": None,
                     },
                     "tooltip": [
                         {"field": "title", "type": "nominal", "title": "Text"},
@@ -2675,8 +3208,16 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
             {
                 "mark": {"type": "text", "dy": -16, "fontSize": 12, "color": "#1a1a1a"},
                 "encoding": {
-                    "x": {"field": "x", "type": "quantitative", "scale": {"zero": False}},
-                    "y": {"field": "y", "type": "quantitative", "scale": {"zero": False}},
+                    "x": {
+                        "field": "x",
+                        "type": "quantitative",
+                        "scale": {"domain": shared_domain, "nice": False, "zero": False},
+                    },
+                    "y": {
+                        "field": "y",
+                        "type": "quantitative",
+                        "scale": {"domain": shared_domain, "nice": False, "zero": False},
+                    },
                     "text": {"field": "key", "type": "nominal"},
                 },
             },
@@ -2687,19 +3228,21 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
             "axis": {"gridColor": "#eef0ef", "labelColor": "#31333f"},
         },
     }
-    st.vega_lite_chart(
-        spec=spec,
-        width="stretch",
-        height=360,
-        theme=None,
-        key=f"p009_mds_{cell.mfw}",
-    )
+    with st.container(key="p009_mds_square"):
+        st.vega_lite_chart(
+            spec=spec,
+            width="stretch",
+            height=360,
+            theme=None,
+            key=f"p009_mds_{cell.mfw}",
+        )
     rows = "".join(
         f'<tr><th scope="row">{_html(documents[point.document_key].title)}</th>'
         f"<td>{_html(documents[point.document_key].role.value)}</td>"
         f"<td>{_distance_label(point.x)}</td><td>{_distance_label(point.y)}</td></tr>"
         for point in points
     )
+    _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
         f'aria-label="{_html(text("results.mds.coordinates"))}" tabindex="0">'
@@ -2715,22 +3258,28 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
 
 
 def _render_result_view(view: ResultViewV1) -> None:
-    st.divider()
     st.markdown(
         f'<div class="delta-eyebrow">{_html(text("results.eyebrow"))}</div>',
         unsafe_allow_html=True,
     )
-    st.header(text("results.title"), anchor=False)
+    st.title(text("results.title"), anchor=False)
     st.caption(text("results.body"))
-    _render_result_status(view)
+    complete_count = sum(cell.status is ResultCellStatus.COMPLETE for cell in view.cells)
+    with st.expander(
+        text("results.run_details", complete=complete_count, total=len(view.cells)),
+        expanded=False,
+    ):
+        _render_result_status_table(view)
+    _render_result_status_summary(view)
     if view.source_result_outcome == "partial":
         st.warning(text("results.partial"), icon=":material/warning:")
     completed = tuple(cell for cell in view.cells if cell.status is ResultCellStatus.COMPLETE)
-    default_index = next(
+    reference_index = next(
         (index for index, cell in enumerate(completed) if cell.mfw == view.reference_mfw),
-        0,
+        None,
     )
-    selected_mfw = st.selectbox(
+    default_index = 0 if reference_index is None else reference_index
+    selected_mfw = st.radio(
         text("results.selector"),
         options=[cell.mfw for cell in completed],
         index=default_index,
@@ -2742,26 +3291,40 @@ def _render_result_view(view: ResultViewV1) -> None:
             ),
         ),
         key="p009_result_cell_selector",
+        horizontal=True,
     )
     selected = next(cell for cell in completed if cell.mfw == selected_mfw)
-    st.info(text("results.reference_note"), icon=":material/push_pin:")
+    reference_note = (
+        "results.reference_note"
+        if reference_index is not None
+        else "results.reference_unavailable_note"
+    )
+    st.info(text(reference_note), icon=":material/push_pin:")
 
-    st.subheader(text("results.heatmap.title"), anchor=False)
-    st.caption(text("results.heatmap.body"))
-    _render_heatmap(selected, view)
+    heatmap_column, method_column = st.columns([1.45, 0.75], gap="large")
+    with heatmap_column:
+        st.subheader(text("results.heatmap.title"), anchor=False)
+        st.caption(text("results.heatmap.body"))
+        _render_heatmap(selected, view)
+    with method_column:
+        _render_result_method_key()
+
     st.subheader(text("results.matrix.title"), anchor=False)
     st.caption(text("results.matrix.body"))
     _render_distance_matrix(selected, view)
-    _render_result_boundary()
 
     st.subheader(text("results.neighbour.title"), anchor=False)
     st.caption(text("results.neighbour.body"))
     _render_nearest_neighbours(selected, view)
-    _render_result_boundary()
 
-    st.subheader(text("results.mds.title"), anchor=False)
-    st.caption(text("results.mds.body"))
-    _render_mds(selected, view)
+    mds_column, guide_column = st.columns([1.45, 0.75], gap="large")
+    with mds_column:
+        st.subheader(text("results.mds.title"), anchor=False)
+        st.caption(text("results.mds.body"))
+        _render_mds(selected, view)
+    with guide_column:
+        _render_mds_guide()
+
     _render_result_boundary()
     st.download_button(
         text("results.download"),
@@ -2789,26 +3352,49 @@ def _render_parameters_stage() -> None:
     ):
         _clear_documentation_state(keep_purpose=True)
         st.rerun()
+    ready_receipt = preparation.ready_receipt
+    assert ready_receipt is not None
 
     try:
         config = _resolve_session_workflow(inventory, annotations)
     except (ValidationError, ValueError):
-        st.error(text("parameters.configuration_error"), icon=":material/error:")
-        if st.button(
-            text("parameters.back_prepare"),
-            icon=":material/arrow_back:",
-            key="p008_back_prepare_invalid",
-        ):
-            _set_stage(CorpusSubstage.PREPARE)
-            st.rerun()
+        with st.container(key="parameters_stage"):
+            st.markdown(
+                f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
+                unsafe_allow_html=True,
+            )
+            st.title(text("parameters.title"), anchor=False)
+            st.caption(text("parameters.body"))
+            st.error(text("parameters.configuration_error"), icon=":material/error:")
+            if st.button(
+                text("parameters.back_prepare"),
+                icon=":material/arrow_back:",
+                key="p008_back_prepare_invalid",
+            ):
+                _set_stage(CorpusSubstage.PREPARE)
+                st.rerun()
         return
     st.session_state[_FLOW_WORKFLOW_CONFIG_KEY] = config
-    with st.container(border=True, key="parameters_stage"):
+    presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
+    if getattr(presentation, "state_id", "") == "succeeded":
+        with st.container(key="evidence_panel"):
+            try:
+                result_view = _runtime().prepared_corpora.result_view(
+                    owner_key=_owner_key(),
+                    materialization_receipt=materialization,
+                )
+            except (PreparedCorpusError, WebRuntimeError):
+                st.title(text("results.title"), anchor=False)
+                st.error(text("results.unavailable"), icon=":material/gpp_bad:")
+            else:
+                _render_result_view(result_view)
+        return
+    with st.container(key="parameters_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
             unsafe_allow_html=True,
         )
-        st.header(text("parameters.title"), anchor=False)
+        st.title(text("parameters.title"), anchor=False)
         st.caption(text("parameters.body"))
 
         selected = st.segmented_control(
@@ -2840,7 +3426,6 @@ def _render_parameters_stage() -> None:
         metric_columns[3].metric(text("parameters.metric.unit"), text("parameters.unit.whole"))
         _render_parameter_grid(config)
         st.caption(text("parameters.grid_caption"))
-        _render_parameter_explanations()
         st.info(text("parameters.interpretive_boundary"), icon=":material/info:")
         st.download_button(
             text("parameters.download_config"),
@@ -2849,29 +3434,31 @@ def _render_parameters_stage() -> None:
             mime="application/json",
             width="stretch",
         )
+        _render_parameter_explanations()
 
-        presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
         if presentation is not None:
             state_id = getattr(presentation, "state_id", "")
             title = getattr(presentation, "title", text("parameters.run_status_unknown"))
             body = getattr(presentation, "body", text("parameters.run_status_unknown"))
-            if state_id == "succeeded":
-                st.success(title, icon=":material/check_circle:")
-            elif state_id in {"queued", "running", "finalizing", "cleaning"}:
-                st.info(title, icon=":material/progress_activity:")
-            else:
-                st.error(title, icon=":material/error:")
-            st.caption(body)
-            if state_id == "succeeded":
-                try:
-                    result_view = _runtime().prepared_corpora.result_view(
-                        owner_key=_owner_key(),
-                        materialization_receipt=materialization,
-                    )
-                except (PreparedCorpusError, WebRuntimeError):
-                    st.error(text("results.unavailable"), icon=":material/gpp_bad:")
-                else:
-                    _render_result_view(result_view)
+            recoverable = state_id in _RECOVERABLE_JOB_STATES
+            st.markdown(
+                _analysis_status_markup(
+                    title=title,
+                    body=(text("parameters.recovery.body") if recoverable else body),
+                    reference=getattr(presentation, "support_reference", None),
+                    alert=recoverable,
+                ),
+                unsafe_allow_html=True,
+            )
+            if recoverable and st.button(
+                text("parameters.recovery.start_over"),
+                icon=":material/restart_alt:",
+                type="primary",
+                width="stretch",
+                key="analysis_start_over",
+            ):
+                _clear_documentation_state(keep_purpose=True)
+                st.rerun()
             return
 
         confirmed = st.checkbox(
@@ -2901,39 +3488,100 @@ def _render_parameters_stage() -> None:
         if run_clicked:
             runtime = _runtime()
             try:
-                runtime.prepared_corpora.admit_once(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                    ready_receipt=preparation.ready_receipt,
-                    inventory=inventory,
-                    annotations=annotations,
-                    config=preparation.config,
-                    resolved_workflow_config=config,
+
+                def admit_analysis() -> object:
+                    try:
+                        return runtime.prepared_corpora.admit_once(
+                            owner_key=_owner_key(),
+                            materialization_receipt=materialization,
+                            ready_receipt=ready_receipt,
+                            inventory=inventory,
+                            annotations=annotations,
+                            config=preparation.config,
+                            resolved_workflow_config=config,
+                        )
+                    except PreparedCorpusError as error:
+                        if error.code is not PreparedCorpusErrorCode.ADMISSION_REUSED:
+                            raise
+                        queued = runtime.prepared_corpora.status(
+                            owner_key=_owner_key(),
+                            materialization_receipt=materialization,
+                        )
+                        if getattr(queued, "state_id", "") not in {"queued", "running"}:
+                            raise
+                        return queued
+
+                def publish_verified(verified: VerifiedScientificResult) -> None:
+                    result_view = project_result_view(
+                        config=config,
+                        result=verified.result,
+                        source_result_sha256=verified.sha256,
+                        documents=_result_descriptors(inventory, preparation),
+                    )
+                    runtime.prepared_corpora.publish_result_view(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                        view=result_view,
+                    )
+
+                def resume_result() -> bool:
+                    try:
+                        verified = runtime.prepared_corpora.scientific_result(
+                            owner_key=_owner_key(),
+                            materialization_receipt=materialization,
+                        )
+                    except PreparedCorpusError as error:
+                        if error.code is PreparedCorpusErrorCode.RESULT_NOT_AVAILABLE:
+                            return False
+                        raise
+                    publish_verified(verified)
+                    return True
+
+                def finalize_result() -> None:
+                    verified = runtime.prepared_corpora.scientific_result(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+                    publish_verified(verified)
+
+                def present_result() -> object:
+                    return runtime.prepared_corpora.status(
+                        owner_key=_owner_key(),
+                        materialization_receipt=materialization,
+                    )
+
+                presentation = runtime.run_analysis_once(
+                    expected_job_id=materialization.job_id,
+                    admit_analysis=admit_analysis,
+                    resume_result=resume_result,
+                    finalize_result=finalize_result,
+                    present_result=present_result,
                 )
-                runtime.analyses.run_next()
-                verified = runtime.prepared_corpora.scientific_result(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                )
-                result_view = project_result_view(
-                    config=config,
-                    result=verified.result,
-                    source_result_sha256=verified.sha256,
-                    documents=_result_descriptors(inventory, preparation),
-                )
-                runtime.prepared_corpora.publish_result_view(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                    view=result_view,
-                )
-                runtime.maintain()
-                presentation = runtime.prepared_corpora.status(
-                    owner_key=_owner_key(),
-                    materialization_receipt=materialization,
-                )
-            except (PreparedCorpusError, AnalysisOrchestratorError, WebRuntimeError) as error:
-                st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
-                st.caption(text("corpus.error.reference", code=error.code.value))
+            except WebRuntimeError as error:
+                if error.code is WebRuntimeErrorCode.ANALYSIS_NOT_READY:
+                    st.markdown(
+                        _analysis_status_markup(
+                            title=text("parameters.queue_wait.title"),
+                            body=text("parameters.queue_wait.body"),
+                            reference=text(
+                                "parameters.status_reference",
+                                code=error.code.value,
+                            ),
+                            alert=False,
+                        ),
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
+                    st.caption(text("corpus.error.reference", code=error.code.value))
+            except (PreparedCorpusError, AnalysisOrchestratorError) as error:
+                terminal = _terminal_presentation(runtime, materialization)
+                if terminal is not None:
+                    st.session_state[_FLOW_JOB_PRESENTATION_KEY] = terminal
+                    st.rerun()
+                else:
+                    st.error(text("parameters.run_error"), icon=":material/gpp_bad:")
+                    st.caption(text("corpus.error.reference", code=error.code.value))
             except (ValidationError, ValueError):
                 st.error(text("parameters.configuration_error"), icon=":material/error:")
             else:
@@ -2944,25 +3592,52 @@ def _render_parameters_stage() -> None:
 def _render_setup(stage: CorpusSubstage) -> PurposeId:
     if stage is CorpusSubstage.UPLOAD:
         _render_entry_experience()
-        selected = st.segmented_control(
+        selected = st.radio(
             text("purpose.label"),
             options=[purpose.purpose_id for purpose in PURPOSES],
-            default=PURPOSES[0].purpose_id,
+            index=0,
             format_func=_purpose_label,
             key="research_purpose",
-            width="stretch",
+            horizontal=True,
+            captions=[text(f"purpose.{purpose.purpose_id}.summary") for purpose in PURPOSES],
         )
-        purpose_spec = PURPOSE_BY_ID[selected or PURPOSES[0].purpose_id]
+        purpose_spec = PURPOSE_BY_ID[selected]
         _render_purpose_guidance(purpose_spec)
         return PurposeId(purpose_spec.purpose_id)
-    st.markdown(
-        f'<div class="delta-eyebrow">{_html(text("setup.eyebrow"))}</div>',
-        unsafe_allow_html=True,
-    )
-    st.title(text("setup.title"))
     purpose = PurposeId(st.session_state.get(_FLOW_PURPOSE_KEY, PurposeId.TEXT_PROXIMITY.value))
-    st.caption(f"{text('purpose.label')}: {_purpose_label(purpose.value)}")
+    input_mode = CorpusInputMode(
+        st.session_state.get(_FLOW_INPUT_MODE_KEY, CorpusInputMode.TEXT_FILES.value)
+    )
+    with st.container(key="persisted_upload_choices"):
+        st.radio(
+            text("purpose.label"),
+            options=[item.purpose_id for item in PURPOSES],
+            index=next(
+                index for index, item in enumerate(PURPOSES) if item.purpose_id == purpose.value
+            ),
+            format_func=_purpose_label,
+            key="research_purpose",
+            horizontal=True,
+            captions=[text(f"purpose.{item.purpose_id}.summary") for item in PURPOSES],
+            disabled=True,
+        )
+        st.radio(
+            text("corpus.mode.label"),
+            options=[mode.value for mode in CorpusInputMode],
+            index=next(index for index, mode in enumerate(CorpusInputMode) if mode is input_mode),
+            format_func=_corpus_mode_label,
+            key="corpus_input_mode",
+            horizontal=True,
+            disabled=True,
+        )
     return purpose
+
+
+def _evidence_is_active(stage: CorpusSubstage) -> bool:
+    if stage is not CorpusSubstage.PARAMETERS:
+        return False
+    presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
+    return getattr(presentation, "state_id", "") == "succeeded"
 
 
 def main() -> None:
@@ -2978,15 +3653,22 @@ def main() -> None:
     _clear_pending_upload_widgets()
     health = dict(public_health())
     stage = _stage()
-    _render_header(health, stage)
+    evidence_active = _evidence_is_active(stage)
+    _render_header(health, stage, evidence_active=evidence_active)
+    if stage is CorpusSubstage.UPLOAD:
+        _render_content_anchor()
     purpose = _render_setup(stage)
-    _render_stepper(stage)
+    _render_stepper(stage, evidence_active=evidence_active)
+    if stage is not CorpusSubstage.UPLOAD:
+        _render_content_anchor()
     column_ratio = [1000, 1] if stage is CorpusSubstage.UPLOAD else [1.8, 0.8]
     column_gap: Literal["large"] | None = None if stage is CorpusSubstage.UPLOAD else "large"
     left, right = st.columns(column_ratio, gap=column_gap)
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
+            _render_mobile_purpose_guidance(PURPOSE_BY_ID[purpose.value])
+            _render_stylometry_orientation()
             _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:
             _render_describe_stage(purpose)
@@ -3002,12 +3684,13 @@ def main() -> None:
         with right:
             _render_boundary()
     _render_sidebar(health, stage)
-    st.divider()
-    footer_left, footer_right = st.columns(2)
-    with footer_left:
-        st.caption(text("footer.scope"))
-    with footer_right:
-        st.caption(text("footer.fair"))
+    st.markdown(
+        '<footer class="delta-footer">'
+        f"<p>{_html(text('footer.scope'))}</p>"
+        f"<p>{_html(text('footer.fair'))}</p>"
+        "</footer>",
+        unsafe_allow_html=True,
+    )
 
 
 __all__ = ["CorpusSubstage", "main"]

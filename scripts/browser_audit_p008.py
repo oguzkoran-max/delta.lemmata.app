@@ -188,7 +188,8 @@ def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
 
 def _geometry(page: Page) -> dict[str, Any]:
     return page.evaluate(
-        """() => {
+        """async () => {
+          await document.fonts.ready;
           const root = document.documentElement;
           const main = document.querySelector('[data-testid="stMainBlockContainer"]');
           const visible = element => {
@@ -202,23 +203,64 @@ def _geometry(page: Page) -> dict[str, Any]:
             + '[data-testid="stMainBlockContainer"] input:not([type="file"]), '
             + '[data-testid="stMainBlockContainer"] [role="radiogroup"]'
           )].filter(visible);
+          const controlOverflows = element => {
+            const box = element.getBoundingClientRect();
+            if (box.left < -1 || box.right > root.clientWidth + 1) return true;
+            // Text inputs scroll their value internally by design. Treat that as
+            // overflow only when the input box itself leaves the viewport.
+            return element.tagName !== 'INPUT'
+              && element.scrollWidth > element.clientWidth + 1;
+          };
           const tableScrollRegions = [...document.querySelectorAll(
             '[data-testid="stMainBlockContainer"] .delta-table-scroll'
           )].filter(visible);
+          const unscrollableTableRegions = tableScrollRegions.filter(element => {
+            if (element.scrollWidth <= element.clientWidth + 1) return false;
+            const original = element.scrollLeft;
+            const maximum = element.scrollWidth - element.clientWidth;
+            element.scrollLeft = Math.min(maximum, original + 24);
+            const moved = element.scrollLeft > original;
+            element.scrollLeft = original;
+            const overflowX = getComputedStyle(element).overflowX;
+            return !moved || !['auto', 'scroll'].includes(overflowX);
+          });
+          const targetSelectors = [
+            '[data-testid="stMainBlockContainer"] button',
+            '[data-testid="stMainBlockContainer"] [data-testid="stRadioOption"]',
+            '[data-testid="stMainBlockContainer"] [role="combobox"]',
+            '[data-testid="stMainBlockContainer"] [data-testid="stCheckbox"] label',
+            '[data-testid="stMainBlockContainer"] [data-testid="stFileUploaderDropzone"]',
+            '[data-testid="stMainBlockContainer"] summary',
+            '.delta-skip-link'
+          ];
+          const targets = [...document.querySelectorAll(targetSelectors.join(','))]
+            .filter(visible);
           return {
             scrollWidth: root.scrollWidth,
             clientWidth: root.clientWidth,
             mainScrollWidth: main?.scrollWidth || 0,
             mainClientWidth: main?.clientWidth || 0,
-            overflowingControls: controls.filter(
-              element => element.scrollWidth > element.clientWidth + 1
-            ).map(element => ({
+            overflowingControls: controls.filter(controlOverflows).map(element => ({
               tag: element.tagName,
               text: (element.textContent || element.getAttribute('aria-label') || '')
                 .trim().slice(0, 80),
               clientWidth: element.clientWidth,
               scrollWidth: element.scrollWidth
             })),
+            smallTargets: targets.filter(element => {
+              const box = element.getBoundingClientRect();
+              return box.width < 44 || box.height < 44;
+            }).map(element => {
+              const box = element.getBoundingClientRect();
+              return {
+                tag: element.tagName,
+                role: element.getAttribute('role') || '',
+                text: (element.textContent || element.getAttribute('aria-label') || '')
+                  .trim().slice(0, 80),
+                width: Math.round(box.width),
+                height: Math.round(box.height)
+              };
+            }),
             misframedTableScrollRegions: tableScrollRegions.filter(element => {
               const box = element.getBoundingClientRect();
               return box.left < -1 || box.right > root.clientWidth + 1;
@@ -226,7 +268,24 @@ def _geometry(page: Page) -> dict[str, Any]:
               left: element.getBoundingClientRect().left,
               right: element.getBoundingClientRect().right,
               viewportWidth: root.clientWidth
-            }))
+            })),
+            unscrollableTableRegions: unscrollableTableRegions.map(element => ({
+              label: element.getAttribute('aria-label') || '',
+              clientWidth: element.clientWidth,
+              scrollWidth: element.scrollWidth,
+              overflowX: getComputedStyle(element).overflowX
+            })),
+            visibleH1Count: [...document.querySelectorAll(
+              '[data-testid="stMainBlockContainer"] h1'
+            )].filter(visible).length,
+            mainLandmarkCount: document.querySelectorAll(
+              '[role="main"]#delta-main-landmark'
+            ).length,
+            visibleFooterCount: [...document.querySelectorAll('.delta-footer')]
+              .filter(visible).length,
+            interFontLoaded: document.fonts.check('16px "Inter"'),
+            sourceSansFontLoaded: document.fonts.check('16px "Source Sans Pro"')
+              || document.fonts.check('16px "Source Sans 3"')
           };
         }"""
     )
@@ -251,14 +310,14 @@ def _document_corpus(
     documents: tuple[tuple[str, bytes], ...],
     output: Path,
 ) -> None:
-    page.get_by_role("region", name="Corpus texts (.txt)", exact=True).locator(
+    page.get_by_role("region", name="Corpus texts (.txt)", exact=False).locator(
         'input[type="file"]'
     ).set_input_files(
         [{"name": name, "mimeType": "text/plain", "buffer": payload} for name, payload in documents]
     )
     page.get_by_text("Intake checks passed · Uploads: 3", exact=False).wait_for()
     page.get_by_role("button", name="Continue to describe the corpus", exact=True).click()
-    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    page.get_by_role("heading", name="Describe what each text represents", level=1).wait_for()
 
     def document_field(group_label: str, label: str, *, role: str | None = None) -> Locator:
         last_state = "unresolved"
@@ -344,7 +403,7 @@ def _document_corpus(
                 fill_document_field(group_label, label, value)
 
     page.get_by_role("button", name="Build corpus review", exact=True).click()
-    review_heading = page.get_by_role("heading", name="Review the documented corpus", level=2)
+    review_heading = page.get_by_role("heading", name="Review the documented corpus", level=1)
     try:
         review_heading.wait_for()
     except Exception:
@@ -383,7 +442,7 @@ def _confirm_and_prepare(page: Page, output: Path) -> dict[str, Any]:
         messages = page.locator('[data-testid="stAlert"]').all_inner_texts()
         raise RuntimeError(f"Review could not continue: {messages!r}") from None
     continue_button.click()
-    page.get_by_role("heading", name="Prepare and check the corpus", level=2).wait_for()
+    page.get_by_role("heading", name="Prepare and check the corpus", level=1).wait_for()
     page.get_by_role("button", name="Prepare texts and check corpus health", exact=False).click()
     page.get_by_text("Computational preflight passed", exact=False).wait_for(timeout=60_000)
 
@@ -409,7 +468,7 @@ def _confirm_and_prepare(page: Page, output: Path) -> dict[str, Any]:
         "capacity_records": capacity_records,
     }
     page.get_by_role("button", name="Continue to parameter review", exact=False).click()
-    page.get_by_role("heading", name="Review what Delta will calculate", level=2).wait_for()
+    page.get_by_role("heading", name="Review what Delta will calculate", level=1).wait_for()
     return preparation
 
 
@@ -430,6 +489,22 @@ def _audit_parameters(page: Page, output: Path) -> dict[str, Any]:
     page.screenshot(path=str(output / "screenshots" / "research-mode-locked.png"), full_page=True)
     page.get_by_role("radio", name="Guided", exact=True).click()
     table.wait_for()
+    explanation = page.locator("details").filter(has_text="Understand these settings").first
+    confirmation = page.get_by_role(
+        "checkbox",
+        name="I reviewed the four comparisons and their interpretation limits.",
+        exact=True,
+    )
+    current_run = page.get_by_role("button", name="Run the four comparisons", exact=False)
+    explanation_box = explanation.bounding_box()
+    confirmation_box = confirmation.bounding_box()
+    run_box = current_run.bounding_box()
+    method_disclosure_order = (
+        explanation_box is not None
+        and confirmation_box is not None
+        and run_box is not None
+        and explanation_box["y"] < confirmation_box["y"] < run_box["y"]
+    )
 
     filename, config = _download_json(page, "Download resolved parameter record")
     config_pass = (
@@ -482,6 +557,8 @@ def _audit_parameters(page: Page, output: Path) -> dict[str, Any]:
                 "Why 500 MFW is the display reference",
             )
         ),
+        "method_disclosure_open_pass": explanation.get_attribute("open") is not None,
+        "method_disclosure_order_pass": method_disclosure_order,
         "interpretive_boundary_pass": page.get_by_text(
             "These comparisons describe relative stylistic proximity", exact=False
         ).count()
@@ -514,43 +591,38 @@ def _run_analysis(page: Page, output: Path, canary: str) -> dict[str, Any]:
         raise RuntimeError("Run control did not become enabled after confirmation")
     run_button.focus()
     page.keyboard.press("Enter")
-    terminal = page.get_by_text(
-        re.compile(
-            r"Finalizing analysis|Analysis failed|Delta could not complete this bounded analysis"
-        )
+    result_heading = page.get_by_role(
+        "heading",
+        name="Explore the relative distances",
+        level=1,
+        exact=True,
     )
-    try:
-        terminal.first.wait_for(timeout=75_000)
-    except PlaywrightTimeoutError:
+    error_reference = page.get_by_text("Rejection reference:", exact=False)
+    for _ in range(600):
+        if result_heading.is_visible():
+            break
+        if error_reference.count() > 0:
+            failure_screenshot = output / "screenshots" / "analysis-failure.png"
+            page.screenshot(path=str(failure_screenshot), full_page=True)
+            messages = page.locator('[data-testid="stAlert"]').all_inner_texts()
+            raise RuntimeError(f"Real worker did not succeed: {messages!r}")
+        page.wait_for_timeout(200)
+    else:
         timeout_screenshot = output / "screenshots" / "analysis-timeout.png"
         page.screenshot(path=str(timeout_screenshot), full_page=True)
         messages = page.locator('[data-testid="stAlert"]').all_inner_texts()
         headings = page.locator("h1, h2, h3").all_inner_texts()
         raise RuntimeError(
-            f"Real worker produced no terminal UI: alerts={messages!r}; headings={headings!r}"
+            f"Real worker produced no Evidence UI: alerts={messages!r}; headings={headings!r}"
         ) from None
-    # P008 ends at a validated scientific result. P009 owns the export-backed
-    # result surface that changes this lifecycle state to "Analysis complete".
-    if page.get_by_text("Finalizing analysis", exact=True).count() != 1:
-        failure_screenshot = output / "screenshots" / "analysis-failure.png"
-        page.screenshot(path=str(failure_screenshot), full_page=True)
-        messages = page.locator('[data-testid="stAlert"]').all_inner_texts()
-        raise RuntimeError(f"Real worker did not succeed: {messages!r}")
     screenshot = output / "screenshots" / "validated-p006-result.png"
     page.screenshot(path=str(screenshot), full_page=True)
     body = page.locator("body").inner_text()
     return {
         "run_enabled_after_confirmation_pass": enabled_after_confirmation,
-        "real_worker_success_pass": page.get_by_text("Finalizing analysis", exact=True).count()
-        == 1,
-        "p008_boundary_pass": page.get_by_text("Analysis complete", exact=True).count() == 0
-        and page.get_by_text(
-            "The run finished. Temporary inputs are being removed before results become available.",
-            exact=True,
-        ).count()
-        == 1,
-        "p009_boundary_pass": page.get_by_text(
-            "Evidence review and result visualizations are the next step.", exact=False
+        "real_worker_success_pass": result_heading.count() == 1,
+        "evidence_surface_pass": page.get_by_role(
+            "radiogroup", name="View one completed comparison", exact=True
         ).count()
         == 1,
         "payload_absent_pass": canary not in body,

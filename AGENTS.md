@@ -13,9 +13,10 @@ docs/archive/ altındaki belgeler tarihsel bağlamdır. Kanonik talimat değildi
 
 ## Çalışma Kuralları
 
-- P001-P006 kapanmıştır. P007 aktif Ticket'tır. `HD-20260714-0001` yöntem
-  paketini kabul etmiş ve ADR-0014 Accepted olmuştur; P007'yi schema-first ve
-  tests-first uygula, kabul edilen sınırları yeni insan kararı olmadan değiştirme.
+- P001-P006 kapanmıştır. P014 tek aktif Ticket'tır. P007-P009 doğrulanmış
+  minimum-alpha dilimlerini koruyarak ertelenmiş tam-kapsam ve owner kapıları
+  nedeniyle `blocked` durumundadır. Kabul edilen bilimsel sınırları yeni insan
+  kararı olmadan değiştirme.
 - `HD-20260714-0002` ve ADR-0015, bütün minimum kapılar geçerse 2026-07-17
   Public-alpha hedefini kabul eder. Hız için privacy, admission, real-result,
   explanation, resource, isolation, rollback veya Lemmata smoke kapısını atlama.

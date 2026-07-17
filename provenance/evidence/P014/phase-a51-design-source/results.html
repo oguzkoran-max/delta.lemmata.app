@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delta · Results prototype · A5.1</title>
+<style>
+:root {
+  --teal: #0F6E56;
+  --teal-dark: #0a5443;
+  --mint: #e8f5f0;
+  --mint-strong: #c5e8dc;
+  --mint-soft: #f4faf7;
+  --coral: #D85A30;
+  --coral-text: #a33d1c;
+  --coral-soft: #fef0eb;
+  --amber: #B8860B;
+  --amber-text: #6b4d00;
+  --amber-soft: #fdf6e3;
+  --blue: #185FA5;
+  --blue-soft: #e8f0fa;
+  --slate: #5e6f86;
+  --ink: #1a1a1a;
+  --secondary: #5c5c5c;
+  --tertiary: #6f6f6f;
+  --control-line: #6f7d78;
+  --paper: #ffffff;
+  --canvas: #f8f9fa;
+  --sidebar: #f0f2f6;
+  --line: #e2e5e4;
+  --line-soft: #eef0ef;
+  --font-head: -apple-system, "SF Pro Text", "Segoe UI", sans-serif; /* Inter stand-in */
+  --font-body: -apple-system, "SF Pro Text", "Segoe UI", sans-serif; /* Source Sans stand-in */
+  --radius-control: 4px;
+  --radius-panel: 6px;
+  --radius-band: 8px;
+  --shadow-tile: 0 1px 3px rgba(0,0,0,0.06);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; letter-spacing: 0 !important; }
+html { font-size: 16px; }
+body { font-family: var(--font-body); color: var(--ink); background: var(--canvas);
+  font-size: 15.5px; line-height: 1.55; }
+.page { max-width: 1240px; margin: 0 auto; padding: 0 24px 56px; }
+h1, h2, h3 { font-family: var(--font-head); color: var(--ink); }
+h1 { font-size: 26px; font-weight: 700; line-height: 1.2; }
+h1.display { font-size: 34px; line-height: 1.15; }
+h2 { font-size: 19px; font-weight: 650; line-height: 1.25; }
+h3 { font-size: 16px; font-weight: 650; line-height: 1.3; }
+.small { font-size: 13.5px; line-height: 1.45; }
+.caption { font-size: 12.5px; line-height: 1.4; color: var(--secondary); }
+.micro { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--secondary); line-height: 1.3; }
+.eyebrow { font-size: 12px; font-weight: 750; text-transform: uppercase; color: var(--teal); margin-bottom: 6px; }
+.num, td.num, .tile-value { font-variant-numeric: tabular-nums; }
+a { color: var(--blue); }
+:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+.skip-link { position: absolute; left: -9999px; top: 0; z-index: 50; background: var(--teal);
+  color: #fff; font-weight: 700; padding: 10px 18px; border-radius: 0 0 6px 0; }
+.skip-link:focus { left: 0; }
+
+/* header */
+.hd { display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  min-height: 64px; padding: 12px 0; border-bottom: 1px solid var(--line-soft); margin-bottom: 16px; }
+.hd-brand { display: flex; align-items: center; gap: 12px; }
+.hd-mark { width: 40px; height: 40px; display: inline-flex; align-items: center; justify-content: center;
+  background: var(--teal); color: #fff; border-radius: 6px; font-size: 22px; font-weight: 700; }
+.hd-name { font-family: var(--font-head); font-weight: 700; font-size: 17px; line-height: 1.2; }
+.hd-sub { font-size: 12.5px; color: var(--secondary); }
+.pills { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.pill { display: inline-flex; align-items: center; gap: 4px; min-height: 20px; padding: 1px 10px;
+  border-radius: 999px; font-size: 12px; font-weight: 750; }
+.pill-alpha { background: var(--mint); color: var(--teal-dark); border: 1px solid var(--mint-strong); }
+.pill-exp { background: var(--amber-soft); color: var(--amber-text); border: 1px solid #efd8a4; }
+.hd-right { text-align: right; }
+.hd-stage { color: var(--teal); font-size: 12px; font-weight: 750; text-transform: uppercase; white-space: nowrap; }
+.hd-meta { color: var(--secondary); font-size: 12px; }
+
+/* stepper */
+.stepper { display: flex; border: 1px solid var(--line); border-radius: var(--radius-panel);
+  background: var(--paper); margin: 0 0 20px; list-style: none; }
+.step { flex: 1; display: flex; align-items: center; gap: 8px; min-height: 46px; padding: 6px 14px;
+  border-right: 1px solid var(--line-soft); border-top: 3px solid transparent; min-width: 0; }
+.step:first-child { border-radius: var(--radius-panel) 0 0 var(--radius-panel); }
+.step:last-child { border-right: 0; border-radius: 0 var(--radius-panel) var(--radius-panel) 0; }
+.step-n { font-variant-numeric: tabular-nums; color: var(--tertiary); font-size: 12.5px; font-weight: 700; }
+.step-name { font-weight: 650; font-size: 14px; white-space: nowrap; }
+.step-state { margin-left: auto; font-size: 12px; font-weight: 750; text-transform: uppercase;
+  color: var(--secondary); white-space: nowrap; }
+.step.is-active { border-top-color: var(--teal); }
+.step.is-active .step-n, .step.is-active .step-state { color: var(--teal); }
+.step.is-done .step-state { color: var(--teal-dark); }
+.step.is-locked .step-name { color: var(--secondary); }
+.step-compact { display: none; }
+
+/* layout with rail */
+.cols { display: grid; grid-template-columns: minmax(0,1fr) 300px; gap: 24px; align-items: start; }
+.cols.no-rail { grid-template-columns: minmax(0,1fr); }
+.rail { position: sticky; top: 16px; display: grid; gap: 12px; }
+
+/* panels and bands */
+.panel { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-panel); padding: 20px; }
+.section { margin-top: 32px; }
+.band { display: flex; align-items: flex-start; gap: 10px; padding: 12px 16px;
+  border-radius: var(--radius-band); border: 1px solid var(--line); background: var(--paper); }
+.band .ic { flex: 0 0 auto; margin-top: 2px; }
+.band-title { font-weight: 700; font-size: 14.5px; }
+.band-body { font-size: 13.5px; color: var(--secondary); }
+.band-success { background: var(--mint); border-color: var(--mint-strong); color: var(--teal-dark); }
+.band-success .band-body { color: var(--teal-dark); }
+.band-warning { background: var(--amber-soft); border-color: #efd8a4; color: var(--amber-text); }
+.band-warning .band-body { color: var(--amber-text); }
+.band-error { background: var(--coral-soft); border-color: #f2c4ae; color: var(--coral-text); }
+.band-error .band-body { color: var(--coral-text); }
+.band-info { border-left: 3px solid var(--blue); }
+.band-metrics { margin-left: auto; display: flex; gap: 14px; white-space: nowrap; font-size: 13px;
+  font-weight: 700; font-variant-numeric: tabular-nums; align-self: center; }
+
+/* stat tiles */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(128px, 1fr)); gap: 10px; }
+.tile { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-band);
+  padding: 12px 14px; box-shadow: var(--shadow-tile); min-width: 0; }
+.tile-label { font-size: 12px; font-weight: 750; text-transform: uppercase; color: var(--secondary);
+  line-height: 1.3; overflow-wrap: anywhere; }
+.tile-value { font-family: var(--font-head); font-size: 25px; font-weight: 700; line-height: 1.25; margin-top: 2px; }
+.tile-note { font-size: 12px; color: var(--secondary); margin-top: 2px; overflow-wrap: anywhere; }
+.tile-warn .tile-value { color: var(--amber-text); }
+.tile-bad .tile-value { color: var(--coral-text); }
+
+/* buttons and controls */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 44px;
+  padding: 8px 20px; border-radius: var(--radius-control); border: 1px solid var(--control-line);
+  background: var(--paper); color: var(--ink); font-size: 14.5px; font-weight: 650; cursor: pointer;
+  font-family: var(--font-body); }
+.btn-primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+.btn-disabled { background: var(--canvas); color: var(--tertiary); border-color: var(--line); cursor: not-allowed; }
+.btn-block { width: 100%; }
+.btn-small { padding: 6px 14px; font-size: 13.5px; }
+input[type="checkbox"], input[type="radio"] { width: 22px; height: 22px; accent-color: var(--teal);
+  border: 1px solid var(--control-line); flex: 0 0 auto; }
+.check-row { display: flex; gap: 12px; align-items: center; min-height: 44px; font-size: 14.5px; cursor: pointer; }
+
+/* choice sets: native radios presented as cards or segments */
+.choice-set { display: grid; gap: 6px; border: 0; }
+.choice-set legend { padding: 0; }
+.choice { display: flex; align-items: center; gap: 10px; background: var(--paper);
+  border: 1px solid var(--control-line); border-radius: var(--radius-panel);
+  padding: 8px 14px; min-height: 44px; cursor: pointer; min-width: 0; }
+.choice-copy strong { display: block; font-size: 14.5px; }
+.choice-copy span { display: block; font-size: 12.5px; color: var(--secondary); margin-top: 1px; }
+.choice.is-selected { border-color: var(--teal); background: var(--mint-soft);
+  box-shadow: inset 0 -3px 0 var(--teal); }
+.choice-set.is-row { grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.choice-set.is-pair { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.choice-set.is-quad { grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; }
+.choice.is-compact { justify-content: flex-start; }
+.choice.is-compact .choice-copy strong { font-size: 14px; }
+
+.purpose-guide { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); border: 1px solid var(--line);
+  border-radius: var(--radius-panel); background: var(--paper); margin-top: 10px; }
+.pg-item { padding: 10px 14px; border-right: 1px solid var(--line-soft); min-width: 0; }
+.pg-item:last-child { border-right: 0; }
+.pg-item .micro { margin-bottom: 2px; }
+.pg-item p { font-size: 13px; line-height: 1.4; }
+.pg-boundary .micro { color: var(--coral-text); }
+
+/* uploader */
+.uploader { border: 2px dashed var(--teal); background: var(--mint-soft); border-radius: var(--radius-band);
+  padding: 20px; display: flex; align-items: center; gap: 16px; }
+.uploader .ic { color: var(--teal); }
+.up-copy strong { font-size: 15px; display: block; }
+.up-copy span { font-size: 12.5px; color: var(--secondary); }
+.uploader .btn { margin-left: auto; }
+
+/* warning ledger */
+.ledger { display: grid; gap: 10px; }
+.ledger-row { background: var(--paper); border: 1px solid var(--line); border-left: 4px solid var(--amber);
+  border-radius: var(--radius-panel); padding: 12px 16px; }
+.ledger-row.is-blocker { border-left-color: #b42318; }
+.ledger-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.count-pill { background: var(--amber-soft); color: var(--amber-text); border: 1px solid #efd8a4;
+  border-radius: 999px; font-size: 12px; font-weight: 750; padding: 1px 9px;
+  font-variant-numeric: tabular-nums; }
+.sev { font-size: 12px; font-weight: 750; text-transform: uppercase; color: var(--amber-text); }
+.ledger-title { font-weight: 700; font-size: 14.5px; }
+.ledger-meta { font-size: 13px; color: var(--secondary); margin-top: 4px; }
+.ledger-meta b { color: var(--ink); font-weight: 650; }
+.ledger-detail { font-size: 13px; color: var(--secondary); margin-top: 6px;
+  border-top: 1px solid var(--line-soft); padding-top: 6px; }
+
+/* technical details disclosure */
+details.tech { margin-top: 8px; border: 1px solid var(--line); border-radius: var(--radius-control);
+  background: var(--canvas); }
+details.tech summary { cursor: pointer; list-style: none; display: flex; align-items: center;
+  min-height: 34px; padding: 4px 12px; font-size: 12.5px; font-weight: 650; color: var(--secondary); }
+details.tech summary::after { content: "▸"; margin-left: auto; color: var(--tertiary); }
+details.tech[open] summary::after { content: "▾"; }
+details.tech .tech-body { padding: 4px 12px 10px; font-size: 12.5px; color: var(--secondary);
+  overflow-wrap: anywhere; }
+details.tech code { font-family: ui-monospace, "SF Mono", monospace; font-size: 12px;
+  background: var(--paper); border: 1px solid var(--line); border-radius: 3px; padding: 0 4px; }
+
+/* tables */
+.scroll-note { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--secondary);
+  margin: 8px 0 6px; }
+.scroll-note .ic { color: var(--tertiary); }
+.tscroll { position: relative; max-width: 100%; overflow-x: auto; border: 1px solid var(--line);
+  border-radius: var(--radius-panel); background: var(--paper);
+  scrollbar-width: thin; scrollbar-color: var(--control-line) var(--line-soft); }
+.tscroll::-webkit-scrollbar { height: 9px; }
+.tscroll::-webkit-scrollbar-thumb { background: var(--control-line); border-radius: 4px; }
+.tscroll::-webkit-scrollbar-track { background: var(--line-soft); }
+.tscroll:focus-visible { outline: 3px solid var(--teal); outline-offset: 2px; }
+table.data { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.data caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+table.data th, table.data td { padding: 9px 12px; border-bottom: 1px solid var(--line-soft);
+  text-align: left; vertical-align: top; white-space: nowrap; }
+table.data thead th { background: var(--sidebar); font-size: 12px; text-transform: uppercase;
+  color: var(--secondary); position: sticky; top: 0; }
+table.data th[scope="row"] { position: sticky; left: 0; background: var(--paper); font-weight: 650;
+  border-right: 1px solid var(--line-soft); }
+table.data thead th:first-child { position: sticky; left: 0; z-index: 2; }
+table.data tbody tr:last-child th, table.data tbody tr:last-child td { border-bottom: 0; }
+table.data.wrap th, table.data.wrap td { white-space: normal; }
+td.num { text-align: right; }
+.cell-state { display: inline-flex; align-items: center; gap: 6px; font-weight: 650; }
+.state-complete { color: var(--teal-dark); }
+.state-missing { color: #b42318; }
+.state-warning { color: var(--amber-text); }
+
+/* completeness matrix cells */
+td.cm { border-left: 1px solid var(--line-soft); min-width: 168px; white-space: normal; }
+.cm-status { font-weight: 700; font-size: 13px; }
+.cm-note { display: block; font-size: 12px; color: var(--secondary); margin-top: 2px; white-space: normal; }
+td.cm-complete { box-shadow: inset 0 3px 0 #287a50; background: #f2f9f5; }
+td.cm-missing { box-shadow: inset 0 3px 0 #b42318; background: #fdf3f2; }
+td.cm-warning { box-shadow: inset 0 3px 0 #8a5a00; background: #fffaf0; }
+
+/* result cells */
+.rchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.rchip { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--mint-strong);
+  background: var(--mint); color: var(--teal-dark); border-radius: 999px; min-height: 30px;
+  padding: 2px 12px; font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rcells { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 10px; }
+.rcell { background: var(--paper); border: 1px solid var(--line); border-top: 4px solid var(--teal);
+  border-radius: var(--radius-panel); padding: 12px 14px; min-height: 92px;
+  display: flex; flex-direction: column; justify-content: space-between; box-shadow: var(--shadow-tile); }
+.rcell-mfw { font-size: 12px; font-weight: 750; color: var(--teal-dark); font-variant-numeric: tabular-nums; }
+.rcell strong { font-size: 14.5px; }
+.rcell small { font-size: 12px; color: var(--secondary); }
+
+/* heatmap and duo layout */
+.duo { display: grid; grid-template-columns: minmax(0,1.25fr) minmax(0,0.75fr); gap: 24px; align-items: start; }
+.hm { display: grid; gap: 3px; }
+.hm-cell { display: flex; align-items: center; justify-content: center; aspect-ratio: 1;
+  border-radius: 3px; font-size: 12px; font-variant-numeric: tabular-nums; min-width: 0; }
+.hm-lab { display: flex; align-items: center; justify-content: flex-end; font-size: 12px;
+  color: var(--secondary); padding-right: 6px; font-variant-numeric: tabular-nums; }
+.hm-collab { display: flex; align-items: flex-end; justify-content: center; font-size: 12px;
+  color: var(--secondary); padding-bottom: 4px; font-variant-numeric: tabular-nums; }
+.hm-legend { display: flex; align-items: center; gap: 8px; margin-top: 10px; font-size: 12.5px;
+  color: var(--secondary); flex-wrap: wrap; }
+.hm-steps { display: flex; border-radius: 3px; overflow: hidden; border: 1px solid var(--line); }
+.hm-steps span { width: 34px; height: 12px; display: block; }
+.method-key { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-band);
+  padding: 14px 16px; box-shadow: var(--shadow-tile); }
+.method-key h3 { font-size: 14px; margin-bottom: 8px; }
+.method-key dl { display: grid; gap: 8px; }
+.method-key dt { font-size: 12.5px; font-weight: 750; color: var(--teal-dark); }
+.method-key dd { font-size: 12.5px; color: var(--secondary); margin: 0; line-height: 1.45; }
+
+/* boundary */
+.boundary { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line);
+  border-radius: var(--radius-panel); overflow: hidden; background: var(--paper); }
+.boundary > div { padding: 14px 16px; min-width: 0; }
+.boundary > div + div { border-left: 3px solid var(--coral); background: var(--coral-soft); }
+.boundary strong { display: block; font-size: 13.5px; margin-bottom: 2px; }
+.boundary p { font-size: 13px; color: var(--secondary); line-height: 1.45; }
+.boundary > div + div p, .boundary > div + div strong { color: var(--coral-text); }
+.reminder { display: inline-flex; align-items: center; gap: 6px; background: var(--coral-soft);
+  color: var(--coral-text); border: 1px solid #f2c4ae; border-radius: 999px;
+  font-size: 12px; font-weight: 650; padding: 2px 10px; }
+
+/* job states */
+.job { display: flex; gap: 12px; align-items: flex-start; background: var(--paper);
+  border: 1px solid var(--line); border-radius: var(--radius-band); padding: 14px 16px; }
+.job .ic { margin-top: 2px; }
+.job-label { font-size: 12px; font-weight: 750; text-transform: uppercase; color: var(--secondary); }
+.job .job-title { font-size: 16px; font-weight: 650; font-family: var(--font-head); margin: 1px 0 2px; }
+.job p { font-size: 13.5px; color: var(--secondary); }
+.job-status { border-left: 4px solid var(--teal); }
+.job-alert { border-left: 4px solid var(--coral); background: var(--coral-soft); }
+.job-alert .job-title, .job-alert .ic { color: var(--coral-text); }
+.job-success { border-left: 4px solid var(--teal); background: var(--mint); }
+.job-success .job-title, .job-success .ic { color: var(--teal-dark); }
+.ref-chip { display: inline-block; margin-top: 6px; background: var(--paper); border: 1px solid var(--line);
+  border-radius: var(--radius-control); font-size: 12px; padding: 2px 8px; color: var(--secondary);
+  font-variant-numeric: tabular-nums; }
+details.run-details { border: 1px solid var(--mint-strong); border-radius: var(--radius-band);
+  background: var(--mint); }
+details.run-details > summary { cursor: pointer; list-style: none; display: flex; align-items: center;
+  gap: 10px; min-height: 44px; padding: 6px 16px; color: var(--teal-dark); font-weight: 700; font-size: 14px; }
+details.run-details > summary::after { content: "▸"; margin-left: auto; }
+details.run-details[open] > summary::after { content: "▾"; }
+details.run-details .run-body { padding: 0 16px 14px; display: grid; gap: 12px; }
+
+/* rail summary */
+.rail-card { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-band);
+  padding: 14px 16px; box-shadow: var(--shadow-tile); }
+.rail-card h3 { font-size: 13.5px; margin-bottom: 8px; }
+.rail-rows { display: grid; gap: 6px; }
+.rail-row { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; }
+.rail-row b { font-variant-numeric: tabular-nums; font-weight: 700; text-align: right; }
+.rail-row span { color: var(--secondary); }
+.rail-note { font-size: 12px; color: var(--secondary); border-top: 1px solid var(--line-soft);
+  margin-top: 10px; padding-top: 8px; }
+.summary-strip { display: none; }
+
+/* weave */
+.weave { border-top: 1px solid var(--mint-strong); border-bottom: 1px solid var(--mint-strong);
+  padding: 12px 0; display: grid; grid-template-columns: minmax(170px,0.5fr) minmax(0,1.5fr); gap: 8px 20px; }
+.weave-cap strong { font-size: 14px; display: block; }
+.weave-cap small { font-size: 12px; color: var(--tertiary); }
+.weave-rows { display: grid; gap: 8px; }
+.weave-row { display: grid; grid-template-columns: 100px 1fr; gap: 10px; align-items: end; }
+.weave-row-label { font-size: 12px; font-weight: 750; text-transform: uppercase; color: var(--secondary); }
+.weave-tokens { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 5px; }
+.weave-token { text-align: center; font-family: ui-monospace, "SF Mono", monospace; font-size: 12px;
+  padding: 2px 0 4px; border-bottom: 3px solid var(--teal); }
+.signals { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 8px; margin-top: 6px; }
+.signal { border-top: 3px solid var(--teal); padding-top: 6px; min-width: 0; }
+.signal.sig-blue { border-top-color: var(--blue); }
+.signal.sig-amber { border-top-color: var(--amber); }
+.signal.sig-slate { border-top-color: var(--slate); }
+.signal b { font-size: 12.5px; display: block; }
+.signal span { font-size: 12px; color: var(--secondary); font-family: ui-monospace, "SF Mono", monospace; }
+
+/* misc */
+.dl-row { display: flex; flex-wrap: wrap; gap: 10px; }
+footer.site { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; border-top: 1px solid var(--line-soft);
+  margin-top: 40px; padding-top: 14px; }
+.specimen { background: var(--sidebar); border: 1px dashed var(--slate); color: var(--ink);
+  border-radius: var(--radius-band); padding: 10px 14px; font-size: 12.5px; margin-bottom: 14px; }
+.specimen b { text-transform: uppercase; font-size: 12px; color: var(--slate); }
+.sw { display: inline-block; width: 20px; height: 20px; border-radius: 4px; border: 1px solid var(--line);
+  vertical-align: middle; margin-right: 8px; flex: 0 0 auto; }
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+.spec-block h3 { margin-bottom: 8px; }
+.spec-block { background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-panel);
+  padding: 16px; min-width: 0; }
+.mds-frame { display: flex; justify-content: center; }
+.only-mobile { display: none; }
+details.pg-details { border: 1px solid var(--line); border-radius: var(--radius-panel); background: var(--paper); }
+details.pg-details summary { min-height: 44px; display: flex; align-items: center; padding: 4px 14px;
+  font-size: 14px; font-weight: 650; cursor: pointer; list-style: none; }
+details.pg-details summary::after { content: "▸"; margin-left: auto; color: var(--tertiary); }
+details.pg-details[open] summary::after { content: "▾"; }
+details.pg-details .purpose-guide { border: 0; border-top: 1px solid var(--line-soft); border-radius: 0; margin-top: 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+@media (max-width: 760px) {
+  .page { padding: 0 14px 40px; }
+  .cols, .cols.no-rail { grid-template-columns: 1fr; }
+  .rail { display: none; }
+  .only-desktop { display: none; }
+  .only-mobile { display: block; }
+  .hd-sub { display: none; }
+  h1.display { font-size: 26px; }
+  h1 { font-size: 22px; }
+  .lede { font-size: 14px; line-height: 1.45; }
+  .entry-scope { display: none; }
+  .stepper { display: none; }
+  .step-compact { display: flex; align-items: center; gap: 10px; min-height: 44px;
+    padding: 4px 14px; background: var(--paper); border: 1px solid var(--line);
+    border-radius: var(--radius-panel); border-top: 3px solid var(--teal); margin-bottom: 14px; }
+  .step-compact .step-n { font-variant-numeric: tabular-nums; color: var(--teal);
+    font-size: 12.5px; font-weight: 700; }
+  .step-compact .step-name { font-weight: 650; font-size: 14px; }
+  .step-compact .step-state { margin-left: auto; color: var(--teal); font-size: 12px;
+    font-weight: 750; text-transform: uppercase; }
+  .summary-strip { display: flex; gap: 12px; overflow-x: auto; padding: 10px 12px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius-band);
+    box-shadow: var(--shadow-tile); margin: 12px 0; }
+  .summary-strip span { white-space: nowrap; font-size: 12.5px; color: var(--secondary); }
+  .summary-strip b { font-variant-numeric: tabular-nums; color: var(--ink); }
+  .choice-set.is-row { grid-template-columns: 1fr; gap: 6px; }
+  .choice-set.is-quad { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .choice-copy span { display: none; }
+  .purpose-guide { grid-template-columns: 1fr; }
+  .pg-item { border-right: 0; border-bottom: 1px solid var(--line-soft); }
+  .pg-item:last-child { border-bottom: 0; }
+  .panel { padding: 16px 14px; }
+  .uploader { flex-wrap: wrap; padding: 14px; }
+  .uploader .btn { margin-left: 0; width: 100%; order: -1; }
+  .rcells { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .boundary { grid-template-columns: 1fr; }
+  .boundary > div + div { border-left-width: 3px; border-top: 1px solid var(--line); }
+  .weave { grid-template-columns: 1fr; }
+  .signals { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .tiles { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .hm-cell { font-size: 0; }
+  .duo { grid-template-columns: 1fr; }
+  .band { flex-wrap: wrap; }
+  .band-metrics { margin-left: 28px; flex-basis: 100%; white-space: normal; flex-wrap: wrap; gap: 10px; }
+  footer.site { grid-template-columns: 1fr; }
+  .hd-meta { display: none; }
+  .spec-grid { grid-template-columns: 1fr; }
+  .btn { white-space: normal; }
+  .hm-legend { flex-wrap: wrap; }
+}
+</style></head>
+<body>
+<a class="skip-link" href="#main">Skip to main content</a>
+<div class="page">
+<main id="main">
+<header class="hd">
+  <div class="hd-brand">
+    <span class="hd-mark" aria-hidden="true">Δ</span>
+    <div>
+      <div class="hd-name">Delta</div>
+      <div class="hd-sub">A Lemmata stylometry workbench</div>
+      <div class="pills" role="status" aria-label="Release status: Public alpha, experimental">
+        <span class="pill pill-alpha">Public alpha</span>
+        <span class="pill pill-exp">Experimental</span>
+      </div>
+    </div>
+  </div>
+  <div class="hd-right">
+    <div class="hd-stage">● Evidence · Results</div>
+    <div class="hd-meta">Version 0.1.0a1 · Build phase-a5.1</div>
+  </div>
+</header><nav aria-label="Experiment progress"><ol class="stepper only-desktop"><li class="step is-done"><span class="step-n">01</span><span class="step-name">Purpose</span><span class="step-state">Complete</span></li><li class="step is-done"><span class="step-n">02</span><span class="step-name">Corpus</span><span class="step-state">Complete</span></li><li class="step is-done"><span class="step-n">03</span><span class="step-name">Parameters</span><span class="step-state">Complete</span></li><li class="step is-active" aria-current="step"><span class="step-n">04</span><span class="step-name">Evidence</span><span class="step-state">Active</span></li></ol><div class="step-compact" role="status" aria-label="Experiment progress: step 4 of 4, Evidence, Active"><span class="step-n">04 / 04</span><span class="step-name">Evidence</span><span class="step-state">Active</span></div></nav><div class="specimen"><b>Design specimen</b> · Layout demonstration using the frozen P006 oracle fixture <code>p006-whole-text-v2</code> (synthetic corpus, seed 20260713, retained in repository evidence). Cell MFW values are the fixture's 6 / 5 / 4 / 3. Not a scholarly result. The production guided grid remains 100 / 300 / 500 / 1,000 MFW with a fixed 500-MFW display reference.</div><div class="eyebrow">EVIDENCE · ALL GUIDED COMPARISONS</div><h1>Explore the relative distances</h1><p class="caption" style="margin:4px 0 12px">Every Guided Mode comparison remains visible. Choose a completed parameter cell to inspect its matrix and derived views; this changes the display only and never reruns the analysis.</p><details class="run-details"><summary><svg class="ic" width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Analysis complete · 4 of 4 comparisons finished · run details</summary><div class="run-body"><section class="job job-success" role="status"><svg class="ic" width="20" height="20" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg><div><div class="job-label">Succeeded</div><p class="job-title">Analysis complete</p><p>The run completed and its temporary inputs were removed.</p></div></section><div class="rcells"><article class="rcell"><span class="rcell-mfw">6 MFW</span><strong>Complete</strong><small>Distance matrix available</small></article><article class="rcell"><span class="rcell-mfw">5 MFW</span><strong>Complete</strong><small>Distance matrix available</small></article><article class="rcell"><span class="rcell-mfw">4 MFW</span><strong>Complete</strong><small>Distance matrix available</small></article><article class="rcell"><span class="rcell-mfw">3 MFW</span><strong>Complete</strong><small>Distance matrix available</small></article></div></div></details><div class="section" style="margin-top:20px;display:grid;gap:10px"><div class="rchips" role="status" aria-label="Status of all comparisons"><span class="rchip"><svg class="ic" width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 6 MFW · Complete</span><span class="rchip"><svg class="ic" width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 5 MFW · Complete</span><span class="rchip"><svg class="ic" width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 4 MFW · Complete</span><span class="rchip"><svg class="ic" width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5 6.5 12 13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> 3 MFW · Complete</span></div><fieldset class="choice-set is-quad"><legend class="micro" style="margin-bottom:6px">View one completed comparison</legend><label class="choice is-selected is-compact"><input type="radio" name="mfw-view" value="0" checked><span class="choice-copy"><strong>6 MFW</strong></span></label><label class="choice is-compact"><input type="radio" name="mfw-view" value="1"><span class="choice-copy"><strong>5 MFW</strong></span></label><label class="choice is-compact"><input type="radio" name="mfw-view" value="2"><span class="choice-copy"><strong>4 MFW</strong></span></label><label class="choice is-compact"><input type="radio" name="mfw-view" value="3"><span class="choice-copy"><strong>3 MFW</strong></span></label></fieldset></div><div class="section"><div class="duo"><div class="panel"><h2>Distance heatmap</h2><p class="caption" style="margin:4px 0 12px">Each square reports the Classic Delta distance between two documented texts. Lighter values are smaller within this selected matrix.</p><figure role="figure" aria-label="Distance heatmap, design specimen from the frozen fixture"><div class="hm" style="grid-template-columns:auto repeat(6, minmax(0,1fr))"><div class="hm-collab"></div><div class="hm-collab">D01</div><div class="hm-collab">D02</div><div class="hm-collab">D03</div><div class="hm-collab">D04</div><div class="hm-collab">D05</div><div class="hm-collab">D06</div><div class="hm-lab">D01</div><div class="hm-cell" style="background:#ffffff;color:#6f6f6f">0</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.14</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.20</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.21</div><div class="hm-cell" style="background:#d7efe5;color:#1a1a1a">0.63</div><div class="hm-cell" style="background:#d7efe5;color:#1a1a1a">0.68</div><div class="hm-lab">D02</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.14</div><div class="hm-cell" style="background:#ffffff;color:#6f6f6f">0</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.35</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.08</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.38</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.24</div><div class="hm-lab">D03</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.20</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.35</div><div class="hm-cell" style="background:#ffffff;color:#6f6f6f">0</div><div class="hm-cell" style="background:#0a5443;color:#ffffff">1.45</div><div class="hm-cell" style="background:#a9dcc7;color:#1a1a1a">0.96</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.06</div><div class="hm-lab">D04</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.21</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.08</div><div class="hm-cell" style="background:#0a5443;color:#ffffff">1.45</div><div class="hm-cell" style="background:#ffffff;color:#6f6f6f">0</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.17</div><div class="hm-cell" style="background:#0a5443;color:#ffffff">1.50</div><div class="hm-lab">D05</div><div class="hm-cell" style="background:#d7efe5;color:#1a1a1a">0.63</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.38</div><div class="hm-cell" style="background:#a9dcc7;color:#1a1a1a">0.96</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.17</div><div class="hm-cell" style="background:#ffffff;color:#6f6f6f">0</div><div class="hm-cell" style="background:#f4faf7;color:#1a1a1a">0.53</div><div class="hm-lab">D06</div><div class="hm-cell" style="background:#d7efe5;color:#1a1a1a">0.68</div><div class="hm-cell" style="background:#297658;color:#ffffff">1.24</div><div class="hm-cell" style="background:#6fbf9f;color:#1a1a1a">1.06</div><div class="hm-cell" style="background:#0a5443;color:#ffffff">1.50</div><div class="hm-cell" style="background:#f4faf7;color:#1a1a1a">0.53</div><div class="hm-cell" style="background:#ffffff;color:#6f6f6f">0</div></div><figcaption class="hm-legend"><span class="num">0.53</span><div class="hm-steps" aria-hidden="true"><span style="background:#f4faf7"></span><span style="background:#d7efe5"></span><span style="background:#a9dcc7"></span><span style="background:#6fbf9f"></span><span style="background:#297658"></span><span style="background:#0a5443"></span></div><span class="num">1.50</span><span>Classic Delta distance · darker is larger · smaller means nearer in this corpus</span></figcaption></figure><p class="caption" style="margin-top:10px">The white diagonal is each text compared with itself, which is always distance zero. Colours are scaled inside this matrix only: the same colour can mean a different value in another comparison or another run. For numeric comparison, use the distance matrix below.</p></div>
+<aside class="method-key" role="complementary" aria-label="Method key">
+  <h3>Method key</h3>
+  <dl>
+    <div><dt>Most frequent words (MFW)</dt>
+      <dd>Only the most common words shared across the corpus are compared. This specimen uses the fixture's small feature set.</dd></div>
+    <div><dt>Classic Delta</dt>
+      <dd>Classic Delta standardizes word frequencies and measures the average distance between texts. A smaller distance means relatively greater stylistic proximity inside this corpus; it does not prove authorship.</dd></div>
+    <div><dt>Reading a distance</dt>
+      <dd>Smaller means relatively nearer within this corpus and this parameter cell. Values are not percentages or probabilities.</dd></div>
+    <div><dt>Corpus relativity</dt>
+      <dd>Every number depends on which texts are in the corpus. Adding or removing a text changes all distances.</dd></div>
+    <div><dt>No universal threshold</dt>
+      <dd>There is no fixed value that separates "close" from "far". Compare values against each other, not against a rule of thumb.</dd></div>
+  </dl>
+</aside></div></div><div class="section"><h2>Distance matrix</h2><p class="caption" style="margin:4px 0 4px">The table is the accessible numerical counterpart of the heatmap. Distances are symmetric and each text has distance zero from itself. Values are displayed rounded to six decimal places; the downloadable record keeps full precision.</p><p class="scroll-note"><svg class="ic" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8h13 M4.2 5.2 1.5 8l2.7 2.8 M11.8 5.2 14.5 8l-2.7 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Wide table: scroll sideways for the remaining columns</p><div class="tscroll" role="region" aria-label="Distance matrix" tabindex="0"><table class="data"><caption>Distance matrix</caption><thead><tr><th scope="col">Text</th><th scope="col">D01</th><th scope="col">D02</th><th scope="col">D03</th><th scope="col">D04</th><th scope="col">D05</th><th scope="col">D06</th></tr></thead><tbody><tr><th scope="row">Fixture text A (known) <span class="caption">(D01)</span></th><td><span class="num">0.000000</span></td><td><span class="num">1.142532</span></td><td><span class="num">1.204079</span></td><td><span class="num">1.212357</span></td><td><span class="num">0.632288</span></td><td><span class="num">0.679601</span></td></tr><tr><th scope="row">Fixture text B (unknown) <span class="caption">(D02)</span></th><td><span class="num">1.142532</span></td><td><span class="num">0.000000</span></td><td><span class="num">1.354934</span></td><td><span class="num">1.084876</span></td><td><span class="num">1.384460</span></td><td><span class="num">1.239323</span></td></tr><tr><th scope="row">Fixture text C (known) <span class="caption">(D03)</span></th><td><span class="num">1.204079</span></td><td><span class="num">1.354934</span></td><td><span class="num">0.000000</span></td><td><span class="num">1.448725</span></td><td><span class="num">0.962151</span></td><td><span class="num">1.062437</span></td></tr><tr><th scope="row">Fixture text D (known) <span class="caption">(D04)</span></th><td><span class="num">1.212357</span></td><td><span class="num">1.084876</span></td><td><span class="num">1.448725</span></td><td><span class="num">0.000000</span></td><td><span class="num">1.165609</span></td><td><span class="num">1.501597</span></td></tr><tr><th scope="row">Fixture text E (unknown) <span class="caption">(D05)</span></th><td><span class="num">0.632288</span></td><td><span class="num">1.384460</span></td><td><span class="num">0.962151</span></td><td><span class="num">1.165609</span></td><td><span class="num">0.000000</span></td><td><span class="num">0.531168</span></td></tr><tr><th scope="row">Fixture text F (known) <span class="caption">(D06)</span></th><td><span class="num">0.679601</span></td><td><span class="num">1.239323</span></td><td><span class="num">1.062437</span></td><td><span class="num">1.501597</span></td><td><span class="num">0.531168</span></td><td><span class="num">0.000000</span></td></tr></tbody></table></div></div><div class="section">
+<div class="boundary" role="region" aria-label="Interpretation boundary">
+  <div><strong>What this shows</strong><p>Relative stylistic proximity among these documented texts under this exact parameter cell.</p></div>
+  <div><strong>What this does not show</strong><p>Authorship, authenticity, influence, intention, chronology, causation, or a probability that one interpretation is correct.</p></div>
+</div></div><div class="section"><h2>Nearest neighbours, including ties</h2><p class="caption" style="margin:4px 0 4px">For each text, the table lists the smallest distance in this selected matrix. A tie means two or more texts share that minimum within the recorded numerical tolerance. Nearness is not mutual: text A's nearest text can itself be nearest to a different text.</p><p class="scroll-note"><svg class="ic" width="14" height="14" viewBox="0 0 16 16" aria-hidden="true"><path d="M1.5 8h13 M4.2 5.2 1.5 8l2.7 2.8 M11.8 5.2 14.5 8l-2.7 2.8" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Wide table: scroll sideways if columns are cut off</p><div class="tscroll" role="region" aria-label="Nearest-neighbour table" tabindex="0"><table class="data"><caption>Nearest-neighbour table</caption><thead><tr><th scope="col">Text</th><th scope="col">Nearest text</th><th scope="col">Distance (rounded)</th><th scope="col">Texts tied at this minimum</th></tr></thead><tbody><tr><th scope="row">Fixture text A (known)</th><td>Fixture text E (unknown)</td><td><span class="num">0.632288</span></td><td><span class="num">1</span></td></tr><tr><th scope="row">Fixture text B (unknown)</th><td>Fixture text D (known)</td><td><span class="num">1.084876</span></td><td><span class="num">1</span></td></tr><tr><th scope="row">Fixture text C (known)</th><td>Fixture text E (unknown)</td><td><span class="num">0.962151</span></td><td><span class="num">1</span></td></tr><tr><th scope="row">Fixture text D (known)</th><td>Fixture text B (unknown)</td><td><span class="num">1.084876</span></td><td><span class="num">1</span></td></tr><tr><th scope="row">Fixture text E (unknown)</th><td>Fixture text F (known)</td><td><span class="num">0.531168</span></td><td><span class="num">1</span></td></tr><tr><th scope="row">Fixture text F (known)</th><td>Fixture text E (unknown)</td><td><span class="num">0.531168</span></td><td><span class="num">1</span></td></tr></tbody></table></div></div><div class="section"><div class="duo"><div class="panel"><h2>Two-dimensional proximity map</h2><div class="mds-frame" style="margin-top:10px">
+<figure role="figure" aria-label="Two-dimensional proximity map, equal scale on both axes, design specimen">
+<svg width="430" height="430" viewBox="0 0 430 430" role="img"
+  aria-label="MDS map of six fixture texts"
+  style="max-width:100%;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px">
+<line x1="0" y1="0" x2="0" y2="430" stroke="#eef0ef" stroke-width="1"/><line x1="0" y1="0" x2="430" y2="0" stroke="#eef0ef" stroke-width="1"/><line x1="86" y1="0" x2="86" y2="430" stroke="#eef0ef" stroke-width="1"/><line x1="0" y1="86" x2="430" y2="86" stroke="#eef0ef" stroke-width="1"/><line x1="172" y1="0" x2="172" y2="430" stroke="#eef0ef" stroke-width="1"/><line x1="0" y1="172" x2="430" y2="172" stroke="#eef0ef" stroke-width="1"/><line x1="258" y1="0" x2="258" y2="430" stroke="#eef0ef" stroke-width="1"/><line x1="0" y1="258" x2="430" y2="258" stroke="#eef0ef" stroke-width="1"/><line x1="344" y1="0" x2="344" y2="430" stroke="#eef0ef" stroke-width="1"/><line x1="0" y1="344" x2="430" y2="344" stroke="#eef0ef" stroke-width="1"/><line x1="430" y1="0" x2="430" y2="430" stroke="#eef0ef" stroke-width="1"/><line x1="0" y1="430" x2="430" y2="430" stroke="#eef0ef" stroke-width="1"/><circle cx="140.1" cy="373.1" r="9" fill="#0F6E56" stroke="#fff" stroke-width="2"/><text x="140.1" y="359.1" text-anchor="middle" font-size="12" fill="#1a1a1a" font-family="inherit">D01</text><rect x="331.0" y="233.8" width="16" height="16" transform="rotate(45 339.0 241.8)" fill="none" stroke="#D85A30" stroke-width="2.4"/><text x="339.0" y="227.8" text-anchor="middle" font-size="12" fill="#1a1a1a" font-family="inherit">D02</text><circle cx="99.4" cy="91.3" r="9" fill="#0F6E56" stroke="#fff" stroke-width="2"/><text x="99.4" y="77.3" text-anchor="middle" font-size="12" fill="#1a1a1a" font-family="inherit">D03</text><circle cx="373.1" cy="295.4" r="9" fill="#0F6E56" stroke="#fff" stroke-width="2"/><text x="373.1" y="281.4" text-anchor="middle" font-size="12" fill="#1a1a1a" font-family="inherit">D04</text><rect x="80.8" y="312.1" width="16" height="16" transform="rotate(45 88.8 320.1)" fill="none" stroke="#D85A30" stroke-width="2.4"/><text x="104.8" y="306.1" text-anchor="middle" font-size="12" fill="#1a1a1a" font-family="inherit">D05</text><circle cx="56.9" cy="319.5" r="9" fill="#0F6E56" stroke="#fff" stroke-width="2"/><text x="56.9" y="305.5" text-anchor="middle" font-size="12" fill="#1a1a1a" font-family="inherit">D06</text>
+</svg>
+<figcaption class="caption" style="margin-top:6px">
+Equal scale on both axes ·
+<span style="color:#0F6E56">●</span> known reference &nbsp;
+<span style="color:#D85A30">◇</span> unknown or focal
+</figcaption></figure></div></div>
+<aside class="method-key" role="complementary" aria-label="How to read this map">
+  <h3>How to read this map</h3>
+  <dl>
+    <div><dt>The matrix is authoritative</dt>
+      <dd>The distance matrix above is the evidence. This map is a two-dimensional approximation of it.</dd></div>
+    <div><dt>Apparent clusters can be artefacts</dt>
+      <dd>Groupings that appear in two dimensions may be projection artefacts. Verify any pattern against the matrix values before interpreting it.</dd></div>
+    <div><dt>Axes carry no meaning</dt>
+      <dd>Classical multidimensional scaling places texts so that their spacing approximates the selected distance matrix in two dimensions. The axes have no intrinsic literary meaning.</dd></div>
+  </dl>
+  <p style="margin-top:10px"><span class="reminder"><svg class="ic" width="11" height="11" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1.5 15 14H1Z M8 6v4 M8 11.6v.9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg> Not an author identification</span></p>
+</aside></div></div><div class="section"><button class="btn btn-primary btn-block"><svg class="ic" width="15" height="15" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 2.5v7 M4.8 6.7 8 9.9l3.2-3.2 M2.5 11v2.3h11V11" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg> Download canonical result record</button><p class="caption" style="margin-top:8px">This bounded JSON record contains public document labels, the four cell states, distance matrices, method identifiers, and interpretation limits. It excludes uploaded text, tokens, feature words, fitted vectors, paths, and private capabilities.</p></div></main>
+<footer class="site">
+  <p class="caption">Designed to remove R and Python coding from supported workflows. Method knowledge and interpretation remain the researcher&#x27;s responsibility.</p>
+  <p class="caption">FAIR-oriented development record · decisions, tests, failures, and limitations are versioned.</p>
+  <p class="caption" style="grid-column:1/-1">Phase A5.1 prototype · Results / Evidence · design specimen ·
+  headings render in a system stand-in for Inter (Phase B ships self-hosted Inter, SIL OFL 1.1);
+  body stands in for Source Sans, which Streamlit already bundles offline.</p>
+</footer>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  function syncScrollNotes() {
+    document.querySelectorAll('.tscroll').forEach(function (region) {
+      var note = region.previousElementSibling;
+      if (note && note.classList.contains('scroll-note')) {
+        note.hidden = region.scrollWidth <= region.clientWidth + 1;
+      }
+    });
+  }
+  syncScrollNotes();
+  window.addEventListener('resize', syncScrollNotes);
+  document.querySelectorAll('.choice-set').forEach(function (group) {
+    group.addEventListener('change', function (event) {
+      group.querySelectorAll('.choice').forEach(function (card) {
+        var input = card.querySelector('input');
+        card.classList.toggle('is-selected', input && input.checked);
+      });
+    });
+  });
+});
+</script>
+</body></html>

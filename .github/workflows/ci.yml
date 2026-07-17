@@ -42,6 +42,24 @@ jobs:
       - name: Verify source, metadata, schemas, and records
         run: ./scripts/verify.sh
 
+      - name: Build and verify installed wheel resources
+        run: |
+          uv build --wheel --out-dir /tmp/delta-wheel
+          uv venv /tmp/delta-wheel-venv
+          uv pip install --python /tmp/delta-wheel-venv/bin/python --no-deps /tmp/delta-wheel/*.whl
+          /tmp/delta-wheel-venv/bin/python - <<'PY'
+          import hashlib
+          from importlib.resources import files
+
+          fonts = files("delta_lemmata").joinpath("data", "fonts")
+          font = fonts.joinpath("InterVariable.woff2").read_bytes()
+          assert hashlib.sha256(font).hexdigest() == (
+              "693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3"
+          )
+          assert "SIL OPEN FONT LICENSE" in fonts.joinpath("LICENSE-Inter.txt").read_text()
+          assert "InterVariable.woff2" in fonts.joinpath("VENDORED.md").read_text()
+          PY
+
       - name: Install Chromium for the real-workflow browser gate
         run: uv run playwright install --with-deps chromium
 
@@ -54,7 +72,13 @@ jobs:
         if: always()
         run: |
           if [[ -f /tmp/delta-p009-browser-audit/browser-audit.json ]]; then
-            python -m json.tool /tmp/delta-p009-browser-audit/browser-audit.json
+            echo "DELTA_BROWSER_AUDIT_JSON_BEGIN"
+            cat /tmp/delta-p009-browser-audit/browser-audit.json
+            echo "DELTA_BROWSER_AUDIT_JSON_END"
+            echo "DELTA_BROWSER_AUDIT_SHA256_BEGIN"
+            cd /tmp/delta-p009-browser-audit
+            sha256sum browser-audit.json
+            echo "DELTA_BROWSER_AUDIT_SHA256_END"
           else
             echo "browser-audit.json was not produced; inspect the preceding traceback."
           fi

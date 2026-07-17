@@ -1,0 +1,189 @@
+# Phase B Visual Integration
+
+**Date:** 2026-07-16
+**Branch:** `codex/p014-visual-phase-b`
+**Exact base:** `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa`
+**Initial integrated implementation:** `3a554e0e76522672efaf547b1d03e12cb4f3531b`
+**Final reviewed implementation:** `d637893a19cc33e57b8826c5ff8625bd196cb1d4`
+**Initial evidence commit:** `d40b14d3e202556d910955670a3c0b60087d8d71`
+**Draft pull request:** [#8](https://github.com/oguzkoran-max/delta.lemmata.app/pull/8)
+**Design source:** Git-retained Claude Code Phase A5.1 source package, original
+manifest, repository-safe derivative manifest, and redacted report under
+`provenance/evidence/P014/phase-a51-design-source/`
+
+## Scope
+
+Phase B maps the owner-selected A5.1 visual and accessibility contract onto the real
+Streamlit application. It does not replace the P006 `stylo` worker, alter the
+P007 corpus-health rules, add P011 stability claims, or invent a P012 FAIR run
+package.
+
+The integrated surfaces are:
+
+- beginner-oriented Entry with upload before extended teaching content;
+- purpose-aware Review with human-readable grouped issues and raw codes under
+  `Technical details`;
+- evidence-first Results with the complete Guided grid, accessible numerical
+  tables, a matrix-local heatmap, and an equal-domain MDS view;
+- a shared responsive design system for desktop, mobile, and 320 px reflow;
+- self-hosted Inter with licence and SHA-256 provenance.
+
+## Preserved Scientific Contract
+
+- Guided Mode remains 100, 300, 500, and 1000 MFW, zero culling, whole text,
+  Classic Delta, and fixed seed 20260713.
+- 500 MFW remains a pre-specified display reference, not a best result.
+- Every completed Guided comparison remains available; changing the result
+  selector changes display only and never reruns or rewrites the canonical
+  result record.
+- The distance matrix remains the authoritative evidence. Heatmap colours are
+  scaled within the selected matrix and must not be compared across cells.
+- Distances are displayed to six decimals while the canonical download retains
+  stored numerical values.
+- Nearest-neighbour ties use the recorded `1e-12` structural tolerance and
+  nearness is explicitly described as potentially non-mutual.
+- MDS axes have no literary meaning and apparent clusters may be projection
+  artefacts.
+- MFW ranking and Classic Delta standardisation are fitted on known reference
+  texts only; an unknown holdout is projected after that fitting basis is
+  frozen.
+- Authorship, authenticity, influence, intention, chronology, causation, and
+  probability claims remain outside this result surface.
+
+## A5.1 Constraints Resolved
+
+1. Inter is vendored as `InterVariable.woff2`; OFL text and the exact SHA-256
+   are retained beside it. No runtime font request is made.
+2. Purpose, corpus-format, and MFW choices use native Streamlit radio inputs
+   styled as stable cards. The MFW cards are one row on desktop and 2 x 2 on
+   mobile.
+3. Every view has one visible H1, a keyboard-activatable skip link, the real
+   Streamlit application section promoted to a `main` landmark, a footer, and a
+   single method boundary.
+4. Persistent text is at least 12 px. User-operated controls, including Vega
+   toolbar actions, have a minimum 44 x 44 px target.
+5. Wide numerical tables have named scroll regions and a visible instruction
+   above the table.
+6. The A5.1 scientific wording was reviewed against the current P006-P009
+   contracts. No future stability or FAIR-completeness language was imported.
+
+## Verification
+
+The final implementation source gate on macOS passed:
+
+- `./scripts/verify.sh`
+- 1,669 passed, one documented canonical-Linux-only skip;
+- 11,507 statements and 3,002 branches at 100% measured coverage;
+- formatting, Ruff, mypy, generated schemas, frozen P006 oracle records,
+  metadata, 109 provenance records, repository scan, and locked R versions.
+
+The production renderer was also inspected at 1440 x 1000, 390 x 844,
+375 x 844, and 320 x 800. Observed checks included no document overflow, one H1,
+one footer, loaded local Inter, 44 px result controls, one/two-row MFW layout,
+four visibly rendered comparison-status cards, and two nonblank SVG
+visualizations. Activating the skip link moved focus to the focusable content
+start immediately after the header while the Streamlit application section
+remained the single `main` landmark. Switching 500 to 1000 MFW changed the displayed distance matrix from
+`3.000000` to `4.000000` without changing the canonical download contract. The
+browser gate now requires both visual pixel evidence and changed matrix/MDS
+table digests, so a repaint alone cannot satisfy the MFW-change check.
+
+The MDS browser contract measures the actual Vega root plot frame rather than
+the outer component. At 320, 375, 390, 1280, and 1440 px viewports, the absolute
+width-height difference was respectively 0.390625, 0.78125, 1.125, 0.515625,
+and 1.046875 px, within the 2 px square tolerance, with no document overflow.
+The role legend remains available as accessible HTML outside the chart so it
+does not distort the data area.
+
+A local wheel build also confirmed that `InterVariable.woff2`, its OFL licence,
+and `VENDORED.md` are present in the distribution artifact. The font bytes in
+the wheel retain SHA-256
+`693b77d4f32ee9b8bfc995589b5fad5e99adf2832738661f5402f9978429a8e3`.
+
+The full local production browser audit reached the real worker boundary and
+failed closed with `P009_PREPARED_CORPUS_RESULT_NOT_AVAILABLE`. This is a
+documented noncanonical-host limitation: the closed worker environment requires
+`/opt/renv/cache`, which CI creates on Linux, while this macOS host does not have
+that system path. No partial scientific result was shown. This local failure is
+not a passing worker claim and must not be converted into one.
+
+The authoritative upload-to-R/`stylo`-to-results browser gate is canonical
+Linux push run `29541220413` at the exact Phase B commit. Verify job
+`87763699921` and container job `87763699936` passed. It recorded 1,670 tests,
+11,507 statements, 3,002 branches, 100% measured coverage, four complete and
+visible Guided result cells, two nonblank charts, no unexpected console message,
+and no external browser host. Parallel PR run `29541222417` also passed verify
+job `87763705842` and container job `87763705851`.
+
+The first independent scientific-method, accessibility, and FAIR reviews
+returned concrete remediation findings rather than final GO. Their conditional
+and NO-GO verdicts are retained under
+`provenance/evidence/P014/phase-b-exact-dfce029/independent-reviews/`.
+The remediation added immediate and periodic failed-job cleanup,
+purpose-conditioned exploratory chronology language, pre-run method disclosure,
+warning semantics, durable A5.1 source retention, cross-owner predecessor
+isolation, one-job-per-interaction FIFO execution, clean terminal restart,
+coherent queue status, computed-font checks, and named keyboard-scrollable table
+regions.
+
+The retained CI sequence is documented in
+`provenance/evidence/P014/phase-b-visual-integration-validation.md`. Earlier
+failed verify runs remain visible with their causes; no scientific parameter or
+result value was changed to obtain the passing run.
+
+A later evidence-only head exposed one additional CI-harness boundary. Exact-head
+push run `29542674659` passed, but PR run `29542676270` twice reached a terminal
+scientific result and checked the 1000-MFW option without receiving the updated
+semantic tables inside the audit's 15-second limit. The PR merge tree and branch
+tree were identical. Commit `483c7a017a374958e312247c69e4fe42e0010810`
+raises only this browser-audit wait to 60 seconds. It does not change Streamlit
+behavior, scientific configuration, result values, or exports. Both failed PR
+attempts remain visible in GitHub Actions.
+
+Runs `29543777510` and `29543779165` then tested the longer boundary at
+`971d9c0048c289654620d321272c95957dc1a7d6`. Both container jobs and PR verify
+passed, while push verify retained the checked control with unchanged semantic
+tables for the full 60 seconds. The problem was therefore the automated label
+interaction, not worker speed. Commit
+`15ce5dd532c5054191518ea292f5cb966338d068` uses the accessible native radio
+group's ArrowRight change event from checked 500 MFW to adjacent 1000 MFW.
+Twelve focused tests and Ruff passed. No application behavior, parameter,
+distance, chart datum, or export was changed.
+
+The final remediation implementation is exact commit
+`d637893a19cc33e57b8826c5ff8625bd196cb1d4`. Push run `29592151976` passed
+verify job `87923605718` and container job `87923605615`; pull-request run
+`29592158057` passed verify job `87923626171` and container job
+`87923628578`. Canonical Linux passed 1,726 tests, 11,692 statements, and 3,050
+branches at 100% measured coverage. Its content-free browser audit passed the
+distinct-owner FIFO failure/success sequence, exact-job projection, terminal
+payload cleanup, responsive viewport, semantic result selection, table, chart,
+and export gates. The retained JSON SHA-256 is
+`e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578`.
+
+Three independent exact-SHA reviews found no actionable P0-P3 issue and returned
+GO only for Phase B code and automated evidence closure. These are read-only
+agent reviews, not GitHub approval, participant testing, manual screen-reader
+testing, owner activation acceptance, FAIR completeness, or general scientific
+validation. The exact artifacts and historical failures are linked from
+`provenance/evidence/P014/phase-b-review-remediation.md`.
+
+## Deliberately Deferred
+
+- Cross-parameter stability labels and sensitivity summaries require P011
+  calculation and calibration; they are not inferred from completion status.
+- A complete FAIR run package remains P012 work.
+- MDS stress, residual, or eigenvalue diagnostics require a separately specified
+  and tested scientific contract.
+- Research Mode and the full three-purpose execution matrix remain outside this
+  visual integration.
+- General usability or teachability cannot be claimed from developer inspection.
+
+## Release Gate
+
+Phase B code and automated evidence are closed at exact commit `d637893`, but
+draft PR #8 remains unmerged. It must not be merged, deployed, or routed
+publicly without Oğuz Koran's separate decision. P014 stays `in-progress`:
+AC-05 remains pending at its complete deployment-profile criterion, and
+host-bound AC-08 through AC-10 remain pending. Live-host, Caddy, DNS, and public
+activation work remain outside this branch.

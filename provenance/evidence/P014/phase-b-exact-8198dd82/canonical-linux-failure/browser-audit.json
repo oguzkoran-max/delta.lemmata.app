@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "git_commit": "8198dd82a30af2f6c89301ab38189e1b1b0b4fe9",
+  "git_dirty": false,
+  "canonical_worker_platform": true,
+  "synthetic_inputs_only": true,
+  "failure_type": "RuntimeError",
+  "failure_message": "Real worker produced no P009 result UI: alerts=['check_circle\\n\\nThe exact Guided Mode grid is resolved and ready for your confirmation.', 'info\\n\\nThese comparisons describe relative stylistic proximity within this corpus. They do not prove authorship, authenticity, influence, intention, chronology, or causation.', 'progress_activity\\n\\nFinalizing analysis']; headings=['Review what Delta will calculate', 'Method boundary']",
+  "lifecycle_diagnostics": {
+    "available": true,
+    "job_count": 1,
+    "records": [
+      {
+        "execution_state": "terminal",
+        "terminal_outcome": "succeeded",
+        "scientific_result_present": true,
+        "scientific_result_confirmed": true,
+        "result_view_present": true,
+        "export_available": true,
+        "artifact_states": {
+          "input": "verified_absent",
+          "work": "verified_absent",
+          "result": "present",
+          "export": "present"
+        },
+        "operation_count": 9
+      }
+    ]
+  },
+  "terminal_payload_cleanup_pass": true,
+  "result": "failed"
+}

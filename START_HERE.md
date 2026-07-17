@@ -2,20 +2,45 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**Güncel aşama:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
+**2026-07-17 visual checkpoint:** Oğuz'un seçtiği Claude A5.1 tasarım sistemi
+`codex/p014-visual-phase-b` dalında gerçek Streamlit yüzeyine aktarıldı. İlk
+kanıtlı uygulama `3a554e0e76522672efaf547b1d03e12cb4f3531b`; final incelenen
+implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`; draft PR #8'dir.
+Exact commit'te push CI `29592151976` ve PR CI `29592158057` içindeki iki
+verify ve iki container işi yeşildir. Canonical Linux 1.726 test, 11.692
+statement, 3.050 branch ve yüzde 100 measured coverage ile geçti; içeriksiz
+browser JSON SHA-256 değeri
+`e2508e6152abd7a639323c6af47d69b29dae7affad3973709b645c65fc911578`'dir.
+Bilimsel-yöntem, erişilebilirlik ve FAIR/lifecycle denetimleri exact SHA için
+P0-P3 açık bulgu bırakmadan yalnız Phase B kod ve otomatik kanıt kapanışına GO
+verdi. Eski conditional/NO-GO kararları ve başarısız CI denemeleri silinmeden
+`provenance/evidence/P014/phase-b-exact-*/` altında korunur.
+P014 tek `in-progress` ticket'tır. P007-P009 doğrulanmış minimum-alpha
+dilimlerini koruyarak ertelenmiş tam-kapsam ve owner kapıları nedeniyle
+`blocked` durumundadır. Tam P014 hâlâ P012'ye bağlıdır. Merge, image
+publication, VPS, Caddy, DNS ve public activation için Oğuz'un ayrıca açık kararı
+gerekir. Önce `docs/development/phase-b-visual-integration.md`, sonra
+`SESSION_HANDOFF.md` okunur.
+**Güncel operasyonel iş:** Phase B kod/otomatik kanıt kapanışını review et. Oğuz
+açıkça karar vermeden draft PR #8'i merge etme, image yayımlama veya VPS/Caddy/
+DNS/public activation işi başlatma. P014 `in-progress`; AC-05'in tam deployment
+profili ölçütü ile host-bound AC-08-AC-10 pending kalır.
+**Aşağıdaki uzun aşama özeti tarihsel P014 gelişimini korur:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
 Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
 P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum
 sınırı yüzeyi `c5e39b0` exact commit'lerinde gerçek upload-to-R/stylo-to-result
 Linux browser, remote clean-clone ve canonical CI kapılarından geçti. P009 kanıt
 kaydı `RUN-20260715-0003`; kanıt-link commit'i `567d154` ve CI `29404000108`
 yeşildir. P008 tam üç amaç ve ilgili known/unknown matris, P009 ise dendrogram,
-Style Over Time tarih haritası ve geniş glossary için `in-progress` kalır;
+Style Over Time tarih haritası ve geniş glossary için ertelenmiş `blocked` kalır;
 Research Mode kilitlidir. Minimum P014 deployment paketi exact commit
 `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile Linux source,
 gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-request,
-runtime-inspection, denied-egress ve cleanup kapılarından geçti. P014-AC-01 ile
-P014-AC-07 passed; P014-AC-08 ile P014-AC-10 gerçek host inventory, Lemmata ile
-eşzamanlı load, restart/rollback ve Oğuz owner acceptance için pending'dir.
+runtime-inspection, denied-egress ve cleanup kapılarından geçti. Güncel ticket'ta
+P014-AC-01 ile P014-AC-04 ve P014-AC-06 ile P014-AC-07 passed; Phase B yaşam
+döngüsü exact `d637893` üzerinde yeniden doğrulandı, fakat tam deployment-profile
+ölçütü nedeniyle P014-AC-05 ve host-bound P014-AC-08 ile P014-AC-10
+pending'dir.
 Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` yeşildir. İlk read-only VPS
 preflight'i `RUN-20260715-0005` olarak saklandı: Lemmata sağlıklı, `8502` boş,
 fakat hostta desteklenen container runtime yoktur; yaklaşık 4 GiB RAM, sıfır swap
@@ -61,8 +86,9 @@ kullanır. Bu exact head için push CI `29487643303` tamamen geçti. Paralel PR 
 harness kapasite tablosunu dört satır oluşmadan okuduğu için iki hazırlık oracle'ı
 false kaldı. Working tree artık dört satırı bekler, iki kararlı tablo snapshot'ı
 ister ve gözlenen satırları kanıta yazar. Yedi helper, 159 ilgili test ve 1.658
-testlik full local verify yüzde 100 measured coverage ile yeşildir; replacement
-exact-head CI çifti beklenir. Caddy/DNS veya public activation yetkisi verilmedi.
+testlik full local verify yüzde 100 measured coverage ile yeşildir; bu tarihsel
+bekleme PR #7'nin `26947e1` normal merge commit'iyle tamamlandı. Caddy/DNS veya
+public activation yetkisi verilmedi.
 `HD-20260714-0002` ve ADR-0015 hedefi kabul eder; tarih hiçbir başarısız kapıyı
 geçersiz kılmaz.
 
@@ -169,6 +195,15 @@ Bu tez araştırma yönüdür; güçlü `reproducible` dili CE-11 ve CE-12 geçm
 
 ## 9. Şu Anda Ne Yapılacak?
 
+Güncel tek iş draft PR #8 için owner kararını hazırlamaktır. Final incelenen
+implementation `d637893a19cc33e57b8826c5ff8625bd196cb1d4`, superseding run
+`RUN-20260717-0002` ve kanıt
+`provenance/evidence/P014/phase-b-review-remediation.md` üzerinden incelenir.
+Claude Code A5.1 kaynak paketi, özgün manifesti ve repository-safe türev
+manifesti `provenance/evidence/P014/phase-a51-design-source/` altında kalıcıdır.
+Oğuz açıkça onaylamadan merge veya deployment yapılmaz. Phase B kapanışı P014
+ticket kapanışı değildir; AC-05 ve host-bound AC-08-AC-10 açık kalır.
+
 P004 complete durumundadır. Domain/CSV, Guided TXT ve ZIP, fail-closed rights,
 selectable Corpus Review, exact correction, hash-bound confirmation, exact-commit
 clean-clone ve GitHub CI kapıları geçti. Kapanış `RUN-20260712-0005`,
@@ -221,8 +256,8 @@ runtime yoktur. Host değiştirilmedi; AC-08 pending kaldı. PR #4 normal merge 
 `provenance/evidence/P014/immutable-image-publication.md`, exact green image'ı
 private GHCR'da immutable digest
 `sha256:596591039de86c39c976f984b5b22fc3fc040bd56a08c471cbb349aa6c84b4a2`
-ile bağlar; `latest` yayımlanmadı. Sıradaki iş canlı host için
-container-runtime/capacity kararını kaydetmektir. Ancak tekrarlanan preflight
-geçerse Delta-only kurulum, public TLS, Lemmata coexistence/load,
-restart-cleanup, rollback ve owner walkthrough sırasıyla uygulanır. Bu kapılar
-geçmeden DNS, Caddy veya public activation yapılmaz.
+ile bağlar; `latest` yayımlanmadı. Host hazırlık kararı ve PR #7'nin merge
+edilmesi canlı kurulum yetkisi değildir. Delta-only kurulum, public TLS,
+Lemmata coexistence/load, restart-cleanup, rollback ve owner walkthrough ayrı
+bir gelecekteki karar dizisidir. Bu kapılar ve açık owner kararı olmadan DNS,
+Caddy veya public activation yapılmaz.

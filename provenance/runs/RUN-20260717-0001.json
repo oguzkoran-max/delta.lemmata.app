@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260717-0001",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P014"
+  ],
+  "started_at_utc": "2026-07-16T23:03:03Z",
+  "ended_at_utc": "2026-07-16T23:08:20Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "3a554e0e76522672efaf547b1d03e12cb4f3531b",
+  "environment": {
+    "canonical_ci": {
+      "provider": "GitHub Actions",
+      "event": "push",
+      "os": "GitHub-hosted Ubuntu 24.04",
+      "architecture": "x86_64",
+      "python": "3.13.9",
+      "r": "4.5.2",
+      "stylo": "0.7.71",
+      "timezone": "UTC",
+      "run": "29541220413",
+      "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29541220413",
+      "verify_job": "87763699921",
+      "container_job": "87763699936",
+      "tests_passed": 1670,
+      "tests_skipped": 0,
+      "measured_statements": 11507,
+      "measured_branches": 3002,
+      "coverage_percent": 100,
+      "records_validated_before_this_record": 109,
+      "source_and_metadata_gate": "passed",
+      "installed_wheel_resource_gate": "passed",
+      "real_r_stylo_browser_gate": "passed",
+      "sbom_dependency_secret_gate": "passed",
+      "hardened_container_gate": "passed"
+    },
+    "parallel_pull_request_ci": {
+      "event": "pull_request",
+      "run": "29541222417",
+      "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29541222417",
+      "verify_job": "87763705842",
+      "container_job": "87763705851",
+      "result": "passed",
+      "boundary": "GitHub synthetic merge commit; exact source identity is established by the parallel push run."
+    },
+    "browser_audit": {
+      "synthetic_inputs_only": true,
+      "synthetic_document_count": 3,
+      "synthetic_candidate_feature_target": 1100,
+      "entry_review_viewports": [
+        "1440x1000",
+        "1280x900",
+        "390x844",
+        "375x844",
+        "320x800"
+      ],
+      "parameter_viewports": [
+        "1280x900",
+        "390x844",
+        "320x800"
+      ],
+      "result_viewports": [
+        "1440x1000",
+        "1280x900",
+        "390x844",
+        "375x844",
+        "320x800"
+      ],
+      "all_four_cells_complete": true,
+      "all_four_cells_visible": true,
+      "nonblank_visualizations_per_result_viewport": 2,
+      "semantic_result_change_500_to_1000_mfw": true,
+      "mds_square_tolerance_px": 2,
+      "maximum_observed_mds_width_height_difference_px": 1.125,
+      "horizontal_overflow": 0,
+      "small_targets": 0,
+      "unexpected_console_messages": 0,
+      "external_hosts_observed": 0,
+      "canonical_export_sha256": "eb6472eae8c855826a32354e973f2853e2bae93b9b9c3ae7b09c9ff510835886",
+      "result": "passed"
+    },
+    "retained_ci_attempts": [
+      {
+        "commit": "bdddff5b9387f49cb7d5966e6069648748c259fa",
+        "runs": [
+          "29537459996",
+          "29537500260"
+        ],
+        "status": "failed",
+        "reason": "The browser gate addressed Streamlit's hidden native radio input instead of the visible result card."
+      },
+      {
+        "commit": "698b4d99d2a964c8a195e90b8a3c7741c1f93a7c",
+        "runs": [
+          "29537966800",
+          "29537990646"
+        ],
+        "status": "failed",
+        "reason": "The browser gate exposed a 26-by-26 Vega action target and MDS frame rounding failures."
+      },
+      {
+        "commit": "b68a75930b07ae482d74b03bd1ee7a7164ff89bf",
+        "runs": [
+          "29539267537",
+          "29539270235"
+        ],
+        "status": "failed",
+        "reason": "The browser gate retained one 375-pixel MDS frame rounding failure."
+      },
+      {
+        "commit": "178a2dfbb217a52a94720cd8aceaee36464ac60e",
+        "runs": [
+          "29540004995",
+          "29540007009"
+        ],
+        "status": "failed",
+        "reason": "The push audit conflated normal select-input value scrolling with viewport overflow and searched for removed copy; the PR audit depended on a flaky Streamlit internal script-state signal after result selection."
+      },
+      {
+        "commit": "3a554e0e76522672efaf547b1d03e12cb4f3531b",
+        "runs": [
+          "29541220413",
+          "29541222417"
+        ],
+        "status": "passed",
+        "reason": "Stable semantic matrix and MDS digests, control-box geometry, visible result-card completion, source gates, and both container gates passed."
+      }
+    ]
+  },
+  "command": "GitHub Actions push CI 29541220413: ./scripts/bootstrap.sh; ./scripts/verify.sh; build and inspect the installed wheel; install Chromium; uv run python scripts/browser_audit_p009.py --output /tmp/delta-p009-browser-audit; ./scripts/generate_evidence.sh; in the parallel container job build the exact linux/amd64 image and run ./scripts/run_p014_runtime_gate.sh",
+  "exit_code": 0,
+  "configuration_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "3afb1061147036e3d5f42d5274d88102d4d529c0462453299def138fc582231f"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "0b3d557d89b314d1632b93ff4c2d2375be665040a62e699abfa8b36411d34491"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "c8c73cced2a10217702d2df55fc55a6af72046ea0f1dbb03e9f5b412e60b0f94"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "GitHub Actions Ubuntu 24.04 x86_64 checkout of exact commit 3a554e0e76522672efaf547b1d03e12cb4f3531b",
+    "command": "GitHub Actions push CI 29541220413: ./scripts/bootstrap.sh; ./scripts/verify.sh; build and inspect the installed wheel; install Chromium; uv run python scripts/browser_audit_p009.py --output /tmp/delta-p009-browser-audit; ./scripts/generate_evidence.sh; in the parallel container job build the exact linux/amd64 image and run ./scripts/run_p014_runtime_gate.sh",
+    "limitations": [
+      "The GitHub-hosted runner release is named but is not represented by an immutable runner image digest.",
+      "Synthetic texts validate the workflow and presentation contract but do not establish benchmark accuracy or a literary finding.",
+      "Automated geometry and keyboard assertions do not establish screen-reader conformance, general usability, ease, or teachability.",
+      "The external Claude A5.1 prototype package is locally hash-verified and referenced in the evidence Markdown but is not available inside the canonical CI checkout.",
+      "This run made no shared-VPS, Caddy, DNS, image-publication, or public-activation change."
+    ]
+  },
+  "supersedes": [],
+  "input_artifacts": [
+    {
+      "path": ".github/workflows/ci.yml",
+      "sha256": "3afb1061147036e3d5f42d5274d88102d4d529c0462453299def138fc582231f"
+    },
+    {
+      "path": "pyproject.toml",
+      "sha256": "0b3d557d89b314d1632b93ff4c2d2375be665040a62e699abfa8b36411d34491"
+    },
+    {
+      "path": "src/delta_lemmata/ui_theme.py",
+      "sha256": "c8c73cced2a10217702d2df55fc55a6af72046ea0f1dbb03e9f5b412e60b0f94"
+    },
+    {
+      "path": "src/delta_lemmata/webapp.py",
+      "sha256": "f09e66ad55ea2b7dfc45bd2dcae440ccfd39945dbee19ba6fc57080198aa3709"
+    },
+    {
+      "path": "scripts/browser_audit_p008.py",
+      "sha256": "f3a336aa0d34251a703e7bb5db8d3b4d683f653af522c1dac98b0e03da225f4c"
+    },
+    {
+      "path": "scripts/browser_audit_p009.py",
+      "sha256": "de0aeaeb2dc3d845836e2043af39c0e17c08e019b06fbdadbbc8e0b3f0f53926"
+    },
+    {
+      "path": "tests/test_browser_audit_helpers.py",
+      "sha256": "36b402ade1a6b8c021c270378d542c9a6c2bb3d6da02457369f30f08f2c59da4"
+    },
+    {
+      "path": "tests/test_phase_b_visual_contract.py",
+      "sha256": "e7fa98c1cde29e5dea31af18474197a02ab57fb958590f7eeb15b826541b486f"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P014/phase-b-visual-integration-validation.md",
+      "sha256": "4a0c67953bfc6995f3c0858f2bb056f9f635d7ee32fbdbf55e64ed77fdfdc4bf"
+    }
+  ],
+  "notes": "The exact implementation passed canonical push and synthetic-merge pull-request CI. Three separate local/agent scientific-method, accessibility, and release review passes returned GO but are not represented as GitHub reviews, participant tests, or owner activation acceptance. The Claude Code A5.1 source package remains outside the repository and is referenced with verified hashes in the evidence Markdown. No merge or deployment is authorised by this run."
+}

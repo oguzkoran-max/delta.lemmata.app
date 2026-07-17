@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "ticket_id": "P007",
   "title": "Deterministic Preprocessing and Corpus Health",
-  "status": "in-progress",
+  "status": "blocked",
   "opened_at_utc": "2026-07-14T18:37:57Z",
   "closed_at_utc": null,
   "objective": "Transform P003-validated literary text into deterministic, versioned, P006-ready whole-text counts; expose work independence, duplicate, overlap, edition, OCR, paratext, balance, and confound risks before calculation; and make a blocker-free, hash-bound P007 receipt the only public analysis-admission path without claiming automated corpus quality.",
@@ -272,5 +272,7 @@
       "evidence": "provenance/evidence/P007/corpus-health-diagnostics-validation.md"
     }
   ],
-  "blockers": []
+  "blockers": [
+    "The integrated owner walkthrough and final beginner-facing corpus-warning acceptance remain deferred while P014 is the single active implementation ticket; the validated minimum-alpha preparation slice remains available."
+  ]
 }

@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0.0",
+  "git_commit": "a5b94d5ffe36d18e6d16399ef0c8be7cb671dbdb",
+  "git_dirty": false,
+  "canonical_worker_platform": true,
+  "synthetic_inputs_only": true,
+  "failure_type": "KeyError",
+  "failure_message": "'uploader_context_pass'",
+  "lifecycle_diagnostics": {
+    "available": true,
+    "job_count": 1,
+    "records": [
+      {
+        "execution_state": "terminal",
+        "terminal_outcome": "succeeded",
+        "scientific_result_present": true,
+        "scientific_result_confirmed": true,
+        "result_view_present": true,
+        "export_available": true,
+        "artifact_states": {
+          "input": "verified_absent",
+          "work": "verified_absent",
+          "result": "present",
+          "export": "present"
+        },
+        "operation_count": 9
+      }
+    ]
+  },
+  "terminal_payload_cleanup_pass": true,
+  "result": "failed"
+}

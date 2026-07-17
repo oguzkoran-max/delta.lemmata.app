@@ -1,0 +1,320 @@
+{
+ "before": {
+  "entry@375": {
+   "browse_y": 1096,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "entry@390": {
+   "browse_y": 1096,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "entry@1440": {
+   "browse_y": 771,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "review@375": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "review@390": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "review@1440": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "results@375": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "results@390": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "results@1440": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "system@375": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": true,
+   "doc_width": 716,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "system@390": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": true,
+   "doc_width": 716,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "system@1440": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": false,
+   "has_footer": false,
+   "has_skip": false,
+   "native_radios": 0,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  }
+ },
+ "after": {
+  "entry@375": {
+   "browse_y": 740,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 7,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "entry@390": {
+   "browse_y": 740,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 7,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "entry@1440": {
+   "browse_y": 768,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 7,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": null
+  },
+  "review@375": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 3,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [
+    19,
+    19
+   ],
+   "mfw_grid_tracks": null
+  },
+  "review@390": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 3,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [
+    19,
+    19
+   ],
+   "mfw_grid_tracks": null
+  },
+  "review@1440": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 3,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [
+    19
+   ],
+   "mfw_grid_tracks": null
+  },
+  "results@375": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 4,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [
+    19,
+    19
+   ],
+   "mfw_grid_tracks": 3
+  },
+  "results@390": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 4,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [
+    19,
+    19
+   ],
+   "mfw_grid_tracks": 3
+  },
+  "results@1440": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 4,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [],
+   "mfw_grid_tracks": 3
+  },
+  "system@375": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 2,
+   "overflow": false,
+   "doc_width": 375,
+   "visible_scroll_note_heights": [
+    19,
+    19,
+    19,
+    19
+   ],
+   "mfw_grid_tracks": null
+  },
+  "system@390": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 2,
+   "overflow": false,
+   "doc_width": 390,
+   "visible_scroll_note_heights": [
+    19,
+    19,
+    19,
+    19
+   ],
+   "mfw_grid_tracks": null
+  },
+  "system@1440": {
+   "browse_y": null,
+   "h1_count": 1,
+   "has_main": true,
+   "has_footer": true,
+   "has_skip": true,
+   "native_radios": 2,
+   "overflow": false,
+   "doc_width": 1440,
+   "visible_scroll_note_heights": [
+    19
+   ],
+   "mfw_grid_tracks": null
+  }
+ }
+}

@@ -401,10 +401,20 @@ class JobJanitor:
         now: datetime,
         counters: dict[str, int],
     ) -> JobRecord:
-        if any(
+        context_present = any(
             job.artifacts.for_kind(kind).state is not CleanupState.VERIFIED_ABSENT
             for kind in (ArtifactKind.INPUT, ArtifactKind.WORK)
-        ):
+        )
+        projection_pending = job.scientific_result_confirmed and job.result_view is None
+        context_due = any(
+            status.delete_by_utc is not None and status.delete_by_utc <= now
+            for status in (
+                job.artifacts.for_kind(ArtifactKind.INPUT),
+                job.artifacts.for_kind(ArtifactKind.WORK),
+            )
+            if status.state is not CleanupState.VERIFIED_ABSENT
+        )
+        if context_present and (not projection_pending or context_due):
             report = self._clear_areas(job, (WorkspaceArea.INPUT, WorkspaceArea.WORK))
             counters["cleanup_attempts"] += 1
             self._record_deletion(

@@ -22,8 +22,10 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "header.stage.upload": "Secure intake",
     "header.stage.corpus": "Corpus setup",
     "header.stage.parameters": "Guided parameters",
+    "header.stage.evidence": "Evidence · Results",
     "header.version": "Version {version}",
     "header.build": "Build {build_id}",
+    "accessibility.skip_to_main": "Skip to main content",
     "sidebar.progress": "Experiment map · 2 of 4",
     "sidebar.progress_accessible": "Experiment map progress: step 2 of 4",
     "sidebar.step.purpose": "Purpose",
@@ -108,7 +110,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.eyebrow": "PARAMETERS · GUIDED MODE",
     "parameters.title": "Review what Delta will calculate",
     "parameters.body": (
-        "Guided Mode runs four pre-registered comparisons on the same documented corpus. "
+        "Guided Mode runs four pre-specified comparisons on the same documented corpus. "
         "Review the complete grid and its limits before starting the analysis."
     ),
     "parameters.mode.label": "Parameter mode",
@@ -141,9 +143,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.learn.title": "Understand these settings",
     "parameters.learn.mfw.title": "Most frequent words (MFW)",
     "parameters.learn.mfw.body": (
-        "MFW is the number of common word features compared across the corpus. A larger "
-        "number includes more vocabulary; it is not automatically more accurate. Delta "
-        "tests 100, 300, 500, and 1,000 so sensitivity stays visible."
+        "MFW is the number of common word features included. When an unknown holdout is "
+        "present, Delta ranks these features on the documented known reference texts before "
+        "projecting the unknown text. A larger number includes more vocabulary; it is not "
+        "automatically more accurate. Delta tests 100, 300, 500, and 1,000 so sensitivity "
+        "stays visible."
     ),
     "parameters.learn.culling.title": "Culling",
     "parameters.learn.culling.body": (
@@ -152,14 +156,16 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "parameters.learn.delta.title": "Classic Delta",
     "parameters.learn.delta.body": (
-        "Classic Delta standardizes word frequencies and measures the average distance "
-        "between texts. A smaller distance means relatively greater stylistic proximity "
-        "inside this corpus; it does not prove authorship."
+        "Classic Delta standardizes the selected word-frequency profiles against the frozen "
+        "fitting basis, which contains only known reference texts when an unknown holdout is "
+        "present. It then computes the mean absolute difference between each pair of profiles. "
+        "A smaller distance means relatively greater stylistic proximity inside this corpus; "
+        "it does not prove authorship."
     ),
     "parameters.learn.reference.title": "Why 500 MFW is the display reference",
     "parameters.learn.reference.body": (
-        "Delta uses 500 MFW as a fixed, reproducible visual anchor. It does not select the "
-        "most attractive result. The other three comparisons remain equally visible."
+        "Delta uses 500 MFW as a fixed display reference. It does not select the most "
+        "attractive result. The other three comparisons remain equally visible."
     ),
     "parameters.interpretive_boundary": (
         "These comparisons describe relative stylistic proximity within this corpus. They "
@@ -175,6 +181,18 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "parameters.run_error": (
         "Delta could not complete this bounded analysis safely. No partial result is presented."
     ),
+    "parameters.queue_wait.title": "Your analysis remains in the queue.",
+    "parameters.queue_wait.body": (
+        "Another analysis is still finishing. Wait a moment, then choose Run the four "
+        "comparisons again. Delta will continue this same job; you do not need to upload the "
+        "texts again."
+    ),
+    "parameters.status_reference": "Status reference: {code}",
+    "parameters.recovery.body": (
+        "This run has ended. Start over to create a new private corpus preparation and a new "
+        "analysis authority; Delta will not reuse the ended run."
+    ),
+    "parameters.recovery.start_over": "Start over with this research purpose",
     "parameters.configuration_error": (
         "The resolved parameter record no longer matches this documented corpus. Return to "
         "preparation and try again."
@@ -189,6 +207,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Every Guided Mode comparison remains visible. Choose a completed parameter cell to "
         "inspect its matrix and derived views; this changes the display only and never reruns "
         "the analysis."
+    ),
+    "results.run_details": (
+        "Run finished · {complete} of {total} comparisons produced matrices · run details"
     ),
     "results.partial": (
         "At least one comparison could not be completed. Delta keeps that cell visible instead "
@@ -209,44 +230,92 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "results.status.output": "Visible output",
     "results.selector": "View one completed comparison",
     "results.selector.option": "{mfw} MFW{reference}",
-    "results.selector.reference_suffix": " · display reference",
+    # Keep every selector card the same height; the reference role is explained below.
+    "results.selector.reference_suffix": "",
     "results.reference_note": (
-        "500 MFW opens first as a pre-registered visual reference. It is not selected as the "
-        "best or most convincing result."
+        "500 MFW opens first as the pre-specified display reference. It is not selected as "
+        "the best or most convincing result."
+    ),
+    "results.reference_unavailable_note": (
+        "500 MFW was unavailable, so the first completed pre-specified comparison opened. "
+        "This is a display fallback, not a best-result selection."
     ),
     "results.heatmap.title": "Distance heatmap",
     "results.heatmap.body": (
-        "Each square reports the Classic Delta distance between two documented texts. Lighter "
-        "values are smaller within this selected matrix."
+        "Each square reports the Classic Delta distance between two documented texts. The "
+        "white diagonal is each text compared with itself. Colours are scaled inside this "
+        "selected matrix only, so compare runs and parameter cells by their numbers rather "
+        "than by colour alone."
     ),
     "results.heatmap.x": "Compared text",
     "results.heatmap.y": "Reference text",
-    "results.matrix.title": "Exact distance matrix",
+    "results.method.title": "Method key",
+    "results.method.mfw.term": "Most frequent words (MFW)",
+    "results.method.mfw.definition": (
+        "The number of frequent-word features ranked from the known reference texts in the "
+        "frozen fitting basis; an unknown holdout does not alter that ranking."
+    ),
+    "results.method.delta.term": "Classic Delta",
+    "results.method.delta.definition": (
+        "The mean absolute difference between word-frequency profiles standardized with means "
+        "and standard deviations estimated from the known reference texts in the frozen fitting "
+        "basis; an unknown holdout is projected only after fitting."
+    ),
+    "results.method.smaller.term": "Smaller distance",
+    "results.method.smaller.definition": (
+        "Relatively greater proximity within this corpus and parameter cell."
+    ),
+    "results.method.threshold.term": "No universal threshold",
+    "results.method.threshold.definition": (
+        "A distance is not a general cut-off for sameness, difference, or authorship."
+    ),
+    "results.method.cell.term": "Selected comparison",
+    "results.method.cell.definition": (
+        "Changing MFW changes the displayed evidence; it does not rerun the analysis."
+    ),
+    "results.matrix.title": "Distance matrix",
     "results.matrix.body": (
         "The table is the accessible numerical counterpart of the heatmap. Distances are "
-        "symmetric and each text has distance zero from itself."
+        "symmetric and each text has distance zero from itself. Values are displayed to six "
+        "decimal places; the downloadable canonical record retains the stored numerical "
+        "values without this display rounding."
     ),
-    "results.matrix.label": "Exact Classic Delta distance matrix",
+    "results.matrix.label": "Classic Delta distance matrix",
     "results.neighbour.title": "Nearest neighbours, including ties",
     "results.neighbour.body": (
-        "For each text, Delta lists every text tied at the smallest distance in this selected "
-        "matrix. Equal minima are never broken arbitrarily."
+        "For each text, Delta lists the smallest distance in this selected matrix. Distances "
+        "differing by no more than 1e-12 are treated as tied and every tied neighbour remains "
+        "visible. Nearness need not be mutual: one text's nearest neighbour may itself be "
+        "nearest to another text."
     ),
-    "results.neighbour.label": "Nearest-neighbour table with exact ties",
+    "results.neighbour.label": "Nearest-neighbour table with tolerance-aware ties",
     "results.neighbour.document": "Text",
     "results.neighbour.neighbour": "Nearest text",
     "results.neighbour.distance": "Distance",
-    "results.neighbour.ties": "Tied minima",
+    "results.neighbour.ties": "Texts tied at this minimum",
+    "results.neighbour.no_tie": "1 text (no tie)",
+    "results.neighbour.tie_count": "{count} texts",
     "results.mds.title": "Two-dimensional proximity map",
     "results.mds.body": (
-        "Classical multidimensional scaling places texts so that their spacing approximates the "
-        "selected distance matrix in two dimensions."
+        "Classical multidimensional scaling places texts so their spacing approximates the "
+        "selected distance matrix in two dimensions. The matrix remains the authoritative "
+        "evidence: apparent clusters can be projection artefacts and must be checked against "
+        "the numerical distances."
     ),
     "results.mds.x": "MDS axis 1",
     "results.mds.y": "MDS axis 2",
-    "results.mds.coordinates": "Exact MDS coordinate table",
+    "results.mds.coordinates": "MDS coordinate table",
     "results.mds.document": "Text",
     "results.mds.role": "Analysis role",
+    "results.mds.guide.title": "How to read this map",
+    "results.mds.guide.body": (
+        "Use the map to locate patterns worth checking, then verify them in the distance "
+        "matrix. Axis direction and rotation have no literary meaning."
+    ),
+    "results.mds.guide.legend": "Analysis role legend",
+    "results.mds.guide.known": "Known reference text",
+    "results.mds.guide.unknown": "Unknown holdout",
+    "results.table_scroll": "Wide table: scroll sideways if columns are cut off.",
     "results.boundary.shows": "What this shows",
     "results.boundary.shows.body": (
         "Relative stylistic proximity among these documented texts under this exact parameter cell."
@@ -273,6 +342,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "purpose.use_label": "Why use it",
     "purpose.boundary_label": "Do not conclude",
     "purpose.text_proximity.label": "Compare Texts",
+    "purpose.text_proximity.summary": "Recurring language patterns across individual texts.",
     "purpose.text_proximity.question": (
         "Which texts show more similar recurring language patterns within this corpus?"
     ),
@@ -283,6 +353,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Nearer does not mean the same author, influence, intention, or authenticity."
     ),
     "purpose.group_comparison.label": "Compare Groups",
+    "purpose.group_comparison.summary": (
+        "Patterns across documented authors, genres, periods, or audiences."
+    ),
     "purpose.group_comparison.question": (
         "Do documented groups show different recurring stylistic patterns?"
     ),
@@ -293,6 +366,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Observed separation may reflect corpus balance, genre, period, source, or edition effects."
     ),
     "purpose.style_over_time.label": "Trace Style Over Time",
+    "purpose.style_over_time.summary": "One writer's dated works in sequence.",
     "purpose.style_over_time.question": (
         "How does one writer's stylistic position vary across dated independent works?"
     ),
@@ -325,17 +399,17 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "corpus.mode.label": "Corpus input format",
     "corpus.mode.text": "Individual TXT files",
     "corpus.mode.archive": "One ZIP archive",
-    "corpus.text_uploader": "Corpus texts (.txt)",
+    "corpus.text_uploader": "Corpus texts (.txt) · {purpose} · {mode}",
     "corpus.text_uploader_help": (
         "Add one or more plain-text files. Each file is validated independently "
         "and again as part of the complete batch."
     ),
-    "corpus.archive_uploader": "Corpus archive (.zip)",
+    "corpus.archive_uploader": "Corpus archive (.zip) · {purpose} · {mode}",
     "corpus.archive_uploader_help": (
         "Add one standard ZIP containing TXT files only. Nested archives, links, "
         "ambiguous paths, extra fields, encryption, and ZIP64 are rejected."
     ),
-    "corpus.metadata_uploader": "Optional metadata table (.csv)",
+    "corpus.metadata_uploader": "Optional metadata table (.csv) · {purpose} · {mode}",
     "corpus.metadata_uploader_help": (
         "This stage checks CSV structure and unsafe cells only. Column meaning, corpus "
         "matching, dates, groups, and rights are reviewed in the next stage."
@@ -490,10 +564,26 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Inspect blockers, chronology, rights, and the exact exportable inventory before "
         "any parameter configuration is allowed."
     ),
+    "review.selected_purpose": "Selected purpose: {purpose}",
+    "review.ready_for_purpose": "Ready for {purpose}: no blockers for this purpose.",
+    "review.exploratory_for_purpose": (
+        "Exploratory for {purpose}: the minimum design threshold is not met."
+    ),
     "review.ready": (
         "Corpus documentation has no blockers. Confirm this inventory to continue to "
         "computational preflight and parameter review."
     ),
+    "review.style_over_time_exploratory": (
+        "Delta can continue with this chronology only as exploratory analysis. This corpus "
+        "documents {works_label} and {points_label}; the minimum "
+        "design rule is six works and three points. Meeting that rule would still not prove "
+        "scientific sufficiency."
+    ),
+    "review.other_purposes_separate": (
+        "Readiness applies only to the selected purpose; another purpose requires its own review."
+    ),
+    "review.readiness_summary": "Corpus readiness summary",
+    "review.metrics_summary": "Documented corpus metrics",
     "review.blocked": (
         "Corpus documentation contains blockers. Return to Describe and correct them; "
         "no analysis state has been created."
@@ -505,6 +595,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "review.metric.blockers": "Blockers",
     "review.metric.warnings": "Warnings",
     "review.metric.rights": "Rights restrictions",
+    "review.metric.chronology_note": "3 needed for Style Over Time",
+    "review.metric.chronology_not_required": "Not required for the selected purpose",
+    "review.metric.documented": "Documented chronology",
+    "review.metric.rights_note": "Review the rights matrix",
+    "review.metric.none_documented": "None documented",
     "review.composition_title": "Corpus composition",
     "review.composition_body": (
         "Counts describe the metadata documented for this inventory. They do not measure "
@@ -538,7 +633,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "review.rights_body": (
         "These states reproduce the researcher's documentation; they are not legal approval."
     ),
+    "review.table_scroll": "Wide table: scroll sideways if columns are cut off.",
+    "review.technical_details": "Technical details",
     "review.issues_title": "Actionable corpus checks",
+    "review.issue_count": "{count} affected record(s)",
+    "review.issue_affected": "Affected",
     "review.issue_why": "Why it matters",
     "review.issue_fix": "How to correct it",
     "review.no_issues": "No corpus-documentation issues were reported.",

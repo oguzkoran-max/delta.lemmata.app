@@ -513,6 +513,16 @@ def test_fifo_claim_and_one_running_are_atomic_across_connections(tmp_path: Path
     )
     assert database_counts(database_file) == (3, 6)
 
+    assert (
+        primary.claim_next(
+            at_utc=NOW + timedelta(seconds=29),
+            operation_id=operation(29),
+            expected_job_id=staged[0].job_id,
+        )
+        is None
+    )
+    assert database_states(database_file).count(ExecutionState.QUEUED.value) == 3
+
     claimers = [make_store(database_file, factory), make_store(database_file, factory)]
     barrier = threading.Barrier(2)
 
@@ -550,7 +560,19 @@ def test_fifo_claim_and_one_running_are_atomic_across_connections(tmp_path: Path
         )
         == terminal
     )
-    second = primary.claim_next(at_utc=NOW + timedelta(seconds=33), operation_id=operation(33))
+    assert (
+        primary.claim_next(
+            at_utc=NOW + timedelta(seconds=33),
+            operation_id=operation(33),
+            expected_job_id=staged[2].job_id,
+        )
+        is None
+    )
+    second = primary.claim_next(
+        at_utc=NOW + timedelta(seconds=33),
+        operation_id=operation(34),
+        expected_job_id=staged[0].job_id,
+    )
     assert second is not None
     assert second.job_id == staged[0].job_id
     assert database_states(database_file).count(ExecutionState.RUNNING.value) == 1

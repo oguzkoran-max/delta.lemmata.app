@@ -37,10 +37,10 @@ Eski ayrıntılı brief docs/archive/CLAUDE-legacy-brief-2026-07-10.md içindedi
 ## Güncel Başlangıç
 
 P001-P006 bütün acceptance ölçütlerini kendi tanımlı sınırlarında geçerek
-tamamlanmıştır. P007 aktif Ticket'tır:
-`provenance/tickets/P007.json`. `HD-20260714-0001` ayrıntılı contract'ı kabul
-etmiş, ADR-0014 Accepted olmuştur; schema-first/tests-first implementation'a devam
-et. `HD-20260714-0002` ve ADR-0015, minimum P007-P009 ve P014 güvenlik dilimi
+tamamlanmıştır. P014 tek aktif Ticket'tır:
+`provenance/tickets/P014.json`. P007-P009 doğrulanmış minimum-alpha dilimlerini
+koruyarak ertelenmiş tam-kapsam ve owner kapıları nedeniyle `blocked`
+durumundadır. `HD-20260714-0002` ve ADR-0015, minimum P007-P009 ve P014 güvenlik dilimi
 geçerse 2026-07-17 Public-alpha hedefini kabul eder. Public alpha benchmark, nihai
 Pinokyo corpus'u, tam FAIR release, production doğrulaması veya final acceptance
 değildir.

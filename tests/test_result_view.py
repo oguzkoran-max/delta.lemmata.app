@@ -314,7 +314,7 @@ def test_parser_rejects_oversized_and_finite_domain_overflowing_payloads() -> No
     )
 
 
-def test_nearest_neighbours_preserve_exact_ties() -> None:
+def test_nearest_neighbours_preserve_ties_within_structural_tolerance() -> None:
     cell = _view().cells[0]
     rows = nearest_neighbours(cell)
 
@@ -326,6 +326,24 @@ def test_nearest_neighbours_preserve_exact_ties() -> None:
     )
     assert tuple(row.tie_count for row in rows) == (2, 2, 1, 1)
     assert tuple(row.distance for row in rows) == (1.0, 1.0, 1.0, 1.0)
+
+    matrix = cell.matrix
+    assert matrix is not None
+    near_tie = matrix.model_copy(
+        update={
+            "values": (
+                (0.0, 1.0, 1.0 + 5e-13),
+                (1.0, 0.0, 1.5),
+                (1.0 + 5e-13, 1.5, 0.0),
+            )
+        }
+    )
+    tolerance_rows = nearest_neighbours(cell.model_copy(update={"matrix": near_tie}))
+    assert tuple(row.neighbour_key for row in tolerance_rows if row.document_key == "D01") == (
+        "D02",
+        "D03",
+    )
+    assert tuple(row.tie_count for row in tolerance_rows if row.document_key == "D01") == (2, 2)
 
 
 def test_classical_mds_is_deterministic_centered_and_recovers_three_point_distances() -> None:

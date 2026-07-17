@@ -81,3 +81,15 @@ def test_ticket_and_run_links_must_be_reciprocal() -> None:
     assert "RUN-REVERSE-ONLY: Ticket does not link back to Run P001" in errors
     assert "RUN-MISSING-TICKET: unresolved Ticket P404" in errors
     assert all("RUN-VALID" not in error for error in errors)
+
+
+def test_only_one_ticket_may_be_in_progress() -> None:
+    tickets = {
+        "P007": {"status": "blocked"},
+        "P008": {"status": "in-progress"},
+        "P009": {"status": "in-progress"},
+    }
+
+    assert VALIDATE_RECORDS.active_ticket_errors(tickets) == ["multiple active tickets: P008, P009"]
+    tickets["P009"]["status"] = "blocked"
+    assert VALIDATE_RECORDS.active_ticket_errors(tickets) == []

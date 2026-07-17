@@ -302,8 +302,9 @@ P004 inventory identities and P005 process/workspace lifecycle.
 durumundadır. 2026-07-15'te kapalı çekirdek, private materialization, one-time
 READY admission, browser preparation ve ortak health projection teknik olarak
 uygulandı; exact-commit clean-clone ve Linux CI geçti. Ticket, Oğuz'un son
-prepared-state corpus-uyarı dili kabulü için `in-progress` kalır. Bu açık insan
-kapısı genel usability veya teachability testi değildir.
+prepared-state corpus-uyarı dili kabulü P014 sonrasına ertelendiği için `blocked`
+kalır. Bu açık insan kapısı genel usability veya teachability testi değildir;
+doğrulanmış minimum-alpha hazırlık dilimini geçersiz kılmaz.
 
 **Amaç:** Analizden önce corpus'un neye dönüştürüldüğünü, hangi riskleri taşıdığını ve analizin durması gerekip gerekmediğini görünür kılmak.
 
@@ -333,13 +334,14 @@ kapısı genel usability veya teachability testi değildir.
 
 ### P008: Guided and Research Workflows
 
-**Durum (2026-07-15):** `in-progress`. Public-alpha için gerekli dört hücreli
+**Durum (2026-07-17):** `blocked`. Public-alpha için gerekli dört hücreli
 Guided whole-text dilimi exact implementation `7e9a28e`, `RUN-20260715-0002`,
 canonical Linux CI `29388984019` ve remote clean-clone tekrarında geçti. Resolved
 config, one-time P007 READY admission, gerçek P006 execution ve desktop/mobile
 browser kapıları bağlıdır. Tam P008 kapanışı, üç araştırma amacı ile ilgili
 known/unknown scope matrisini ve insan-kabul edilmiş `research-grid-v1` preset'ini
-bekler; bu geniş kapsam minimum Public-alpha aktivasyonunu engellemez.
+bekler. P014 tek aktif ticket iken bu geniş kapsam bilinçli olarak ertelenmiştir;
+minimum-alpha kanıtı korunur.
 
 **Amaç:** Üç araştırma amacını R/Python kodu yazdırmadan, yöntemsel seçimleri saklamadan uçtan uca çalıştırmak.
 
@@ -370,14 +372,15 @@ bekler; bu geniş kapsam minimum Public-alpha aktivasyonunu engellemez.
 
 ### P009: Results, Explanations, and Interpretive Guardrails
 
-**Durum (2026-07-15):** `in-progress`. Public-alpha minimum dilimi exact commit
+**Durum (2026-07-17):** `blocked`. Public-alpha minimum dilimi exact commit
 `c5e39b0`, `RUN-20260715-0003` ve canonical Linux CI `29402396790` ile geçti.
 Export-backed completion, dört parameter-cell durumu, sabit 500-MFW reference,
 distance matrix heatmap'i, exact-tie nearest-neighbor tablosu ve tek work-level
 deterministic MDS haritası erişilebilir metin eşleri ve açık yorum sınırlarıyla
 bağlıdır. Kanıt-link commit'i `567d154`, CI `29404000108` içinde yeniden geçti.
 Dendrogram, Style Over Time'a özgü tarih haritası ve geniş glossary tam P009
-kapsamında açık kalır; bunlar minimum Public-alpha aktivasyonunu engellemez.
+kapsamında açık kalır. P014 tek aktif ticket iken bu genişleme ertelenmiştir;
+minimum-alpha sonuç/yorum sınırı kanıtı korunur.
 
 **Amaç:** Hesaplama sonuçlarını incelemeye elverişli, fakat yöntemin sınırlarını aşmayan bir workbench çıktısına dönüştürmek.
 
@@ -533,8 +536,10 @@ Tam P014 ve CE-14/CE-15 iddiaları P012 dahil normal bağımlılıklarını koru
 
 **2026-07-15 minimum-alpha checkpoint'i:** Versioned deployment package exact
 commit `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile geçti.
-Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` de yeşildir. P014-AC-01 ile
-P014-AC-07 CI sınırında passed'dir. `RUN-20260715-0005` read-only target-host
+Kanıt-link commit'i `dea9e67` ve PR CI `29424064991` de yeşildir. Bu tarihsel
+checkpoint'te P014-AC-01 ile P014-AC-07 CI sınırında passed'di; daha sonra Phase B
+yaşam döngüsü gerilemesi P014-AC-05'i exact-head yeniden doğrulamaya açtı.
+`RUN-20260715-0005` read-only target-host
 inventory'si Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat container runtime
 olmadığı için host değişikliği yapmadan exit `21` ile durdu; sıfır swap ve
 sınırsız Lemmata kaynak profili capacity kararını açık bırakır. PR #4 merge commit
@@ -545,8 +550,9 @@ olarak yayımlandı; `latest` oluşturulmadı. Registry kanıtı PR #5 ve main C
 `29429031944` ile yeşil `main`e alındı. `RUN-20260715-0007` ikinci read-only host
 gözleminde required cgroup controller'larını, boş pre-Docker firewall baseline'ını,
 sıfır memory pressure'ı, sıfır Lemmata restart'ını ve boş `8502`yi doğruladı.
-ADR-0018 same-VPS official Docker ve no-new-swap adayını fail-closed memory,
-network ve frozen yüzde 20 Lemmata p95 kapılarıyla önerir; owner kararı pending'dir.
+ADR-0018 same-VPS official Docker ve no-new-swap profilini fail-closed memory,
+network ve frozen yüzde 20 Lemmata p95 kapılarıyla bounded planlama kararı olarak
+kaydeder; bu karar kurulum, deployment veya public activation yetkisi vermez.
 Accepted post-preparation inventory, canlı TLS, Delta-Lemmata coexistence/load,
 restart cleanup, rollback ve owner acceptance henüz uygulanmadı; P014-AC-08 ile
 P014-AC-10 pending, ticket `in-progress` ve public activation kapalıdır.

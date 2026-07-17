@@ -144,11 +144,11 @@ def _audit_viewport(
     accepts = [file_inputs.nth(index).get_attribute("accept") for index in range(input_count)]
     uploader_labels = ("Corpus texts (.txt)", "Optional metadata table (.csv)")
     labels_visible = all(
-        page.get_by_text(label, exact=True).count() == 1 for label in uploader_labels
+        page.get_by_text(label, exact=False).count() == 1 for label in uploader_labels
     )
     labelled_regions = []
     for label in uploader_labels:
-        region = page.get_by_role("region", name=label, exact=True)
+        region = page.get_by_role("region", name=label, exact=False)
         labelled_regions.append(
             {
                 "label": label,
@@ -285,8 +285,11 @@ def _audit_interactions(
         path=str(output / "screenshots" / "interaction-rejected-text.png"), full_page=True
     )
 
-    page.get_by_role("radio", name="One ZIP archive", exact=True).click()
-    page.get_by_text("Corpus archive (.zip)", exact=True).wait_for()
+    text_mode = page.get_by_role("radio", name="Individual TXT files", exact=True)
+    text_mode.focus()
+    page.keyboard.press("ArrowRight")
+    page.get_by_role("radio", name="One ZIP archive", exact=True).wait_for(state="visible")
+    page.get_by_text("Corpus archive (.zip)", exact=False).wait_for()
     inputs = page.locator('input[type="file"]')
     zip_accept = inputs.nth(0).get_attribute("accept")
     inputs.nth(0).set_input_files(

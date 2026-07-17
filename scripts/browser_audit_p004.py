@@ -264,11 +264,11 @@ def _audit_viewport(
     page.goto(url, wait_until="networkidle")
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
     page.get_by_role("heading", name="Upload the research corpus", level=2).wait_for()
-    page.get_by_role("region", name="Corpus texts (.txt)", exact=True).wait_for()
+    page.get_by_role("region", name="Corpus texts (.txt)", exact=False).wait_for()
     geometry = _geometry(page)
     map_count = page.locator("nav.delta-map").count()
     active_step_count = page.locator("nav.delta-map [aria-current='step']").count()
-    uploader_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+    uploader_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=False)
     uploader_box = uploader_region.bounding_box() if uploader_region.count() == 1 else None
     uploader_top = None if uploader_box is None else uploader_box["y"]
     mobile = width <= 760
@@ -481,20 +481,20 @@ def _audit_guided_flow(
     page.goto(url, wait_until="networkidle")
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
 
-    proximity = page.get_by_role("radio", name="Compare Texts", exact=True)
+    proximity = page.get_by_role("radio", name="Compare Texts", exact=False)
     proximity.focus()
     page.keyboard.press("ArrowRight")
     page.keyboard.press("Space")
     page.wait_for_timeout(800)
     keyboard_selection_pass = (
-        page.get_by_role("radio", name="Compare Groups", exact=True).get_attribute("aria-checked")
+        page.get_by_role("radio", name="Compare Groups", exact=False).get_attribute("aria-checked")
         == "true"
     )
     page.keyboard.press("ArrowLeft")
     page.keyboard.press("Space")
     page.wait_for_timeout(800)
 
-    corpus_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+    corpus_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=False)
     corpus_region.locator('input[type="file"]').set_input_files(
         {"name": "one.txt", "mimeType": "text/plain", "buffer": b"one text"}
     )
@@ -506,7 +506,7 @@ def _audit_guided_flow(
         full_page=True,
     )
     continue_button.click()
-    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    page.get_by_role("heading", name="Describe what each text represents", level=1).wait_for()
     describe_file_inputs_removed = page.locator('input[type="file"]').count() == 0
     payload_absent_describe = "one text" not in page.locator("body").inner_text()
     describe_active_pass = (
@@ -528,7 +528,7 @@ def _audit_guided_flow(
         full_page=True,
     )
     page.get_by_role("button", name="Build corpus review", exact=True).click()
-    page.get_by_role("heading", name="Review the documented corpus", level=2).wait_for()
+    page.get_by_role("heading", name="Review the documented corpus", level=1).wait_for()
     review_ready_pass = (
         page.get_by_text("Corpus documentation has no blockers", exact=False).count() == 1
     )
@@ -761,7 +761,7 @@ def _audit_rights_correction_flow(
     page.goto(url, wait_until="networkidle")
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
 
-    corpus_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=True)
+    corpus_region = page.get_by_role("region", name="Corpus texts (.txt)", exact=False)
     corpus_region.locator('input[type="file"]').set_input_files(
         {
             "name": "rights-correction.txt",
@@ -771,7 +771,7 @@ def _audit_rights_correction_flow(
     )
     page.get_by_text("Intake checks passed · Uploads: 1", exact=False).wait_for()
     page.get_by_role("button", name="Continue to describe the corpus", exact=True).click()
-    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    page.get_by_role("heading", name="Describe what each text represents", level=1).wait_for()
     page.get_by_label("Primary author name", exact=True).fill("Delta Test Author")
     page.get_by_label("Bibliographic citation", exact=True).fill(
         "Synthetic fixture for the P004 rights-correction browser audit."
@@ -783,7 +783,7 @@ def _audit_rights_correction_flow(
     )
     page.keyboard.press("Escape")
     page.get_by_role("button", name="Build corpus review", exact=True).click()
-    page.get_by_role("heading", name="Review the documented corpus", level=2).wait_for()
+    page.get_by_role("heading", name="Review the documented corpus", level=1).wait_for()
 
     blocked_pass = (
         page.get_by_text("Corpus documentation contains blockers", exact=False).count() == 1
@@ -805,11 +805,11 @@ def _audit_rights_correction_flow(
     _choose_selectbox(
         page,
         "Metadata field to correct",
-        "Rights Correction · Rights · rights_status",
+        "Rights Correction · Rights · Rights Status",
     )
     page.keyboard.press("Escape")
     page.get_by_role("button", name="Edit selected field", exact=False).click()
-    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    page.get_by_role("heading", name="Describe what each text represents", level=1).wait_for()
     correction_target_pass = (
         page.get_by_text("Correction target: rights_status", exact=True).count() == 1
     )
@@ -826,7 +826,7 @@ def _audit_rights_correction_flow(
     )
     page.keyboard.press("Escape")
     page.get_by_role("button", name="Build corpus review", exact=True).click()
-    page.get_by_role("heading", name="Review the documented corpus", level=2).wait_for()
+    page.get_by_role("heading", name="Review the documented corpus", level=1).wait_for()
 
     corrected_pass = (
         page.get_by_text("Corpus documentation has no blockers", exact=False).count() == 1
@@ -891,8 +891,11 @@ def _audit_zip_flow(
     _observe_console(page, console_messages)
     page.goto(url, wait_until="networkidle")
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
-    page.get_by_role("radio", name="One ZIP archive", exact=True).click()
-    archive_region = page.get_by_role("region", name="Corpus archive (.zip)", exact=True)
+    text_mode = page.get_by_role("radio", name="Individual TXT files", exact=True)
+    text_mode.focus()
+    page.keyboard.press("ArrowRight")
+    page.get_by_role("radio", name="One ZIP archive", exact=True).wait_for(state="visible")
+    archive_region = page.get_by_role("region", name="Corpus archive (.zip)", exact=False)
     archive_region.locator('input[type="file"]').set_input_files(
         {
             "name": "collodi.zip",
@@ -920,7 +923,7 @@ def _audit_zip_flow(
     page.screenshot(path=str(output / "screenshots" / "zip-upload-ready.png"), full_page=True)
 
     continue_button.click()
-    page.get_by_role("heading", name="Describe what each text represents", level=2).wait_for()
+    page.get_by_role("heading", name="Describe what each text represents", level=1).wait_for()
     describe_work_count_pass = _wait_for_count(
         page,
         page.get_by_label("Primary author name", exact=True),
@@ -964,7 +967,7 @@ def _audit_zip_flow(
     sources.nth(1).press("Tab")
     page.get_by_text("Date accessed", exact=True).nth(1).wait_for()
     page.get_by_role("button", name="Build corpus review", exact=True).click()
-    page.get_by_role("heading", name="Review the documented corpus", level=2).wait_for()
+    page.get_by_role("heading", name="Review the documented corpus", level=1).wait_for()
     review_blocked_transparently_pass = (
         page.get_by_text("Corpus documentation contains blockers", exact=False).count() == 1
     )
