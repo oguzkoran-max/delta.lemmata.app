@@ -2,7 +2,7 @@
 
 **Güncellendi:** 2026-07-17
 
-**En yeni checkpoint: Phase B visual integration.** Claude Code'un onaylı A5.1
+**En yeni checkpoint: Phase B visual integration.** Claude Code'un owner-selected A5.1
 prototip sistemi exact base
 `26947e1f6843b2b4dc1d1b0cc552c0af808be3fa` üzerinden
 `codex/p014-visual-phase-b` dalındaki gerçek Streamlit Entry, Review,
@@ -30,22 +30,27 @@ push verify'da aynı durumu 60 saniye korudu; böylece salt yavaşlık açıklam
 reddedildi. `15ce5dd532c5054191518ea292f5cb966338d068`, checked 500-MFW yerel
 radyo öğesinden sağ okla 1000 MFW'ye geçen klavye change olayını kullanır.
 On iki focused test ve Ruff geçti; ürün ve bilimsel sözleşme değişmedi.
-Bilimsel-yöntem, erişilebilirlik ve release için üç ayrı local/agent review GO
-verdi; bunlar GitHub review'u, katılımcı testi veya owner activation kabulü
-değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
+Önceki üç review GO özeti kalıcı reviewer artefaktına bağlı olmadığı için geri
+çekildi. Son bilimsel-yöntem, erişilebilirlik ve FAIR denetimleri somut düzeltme
+bulguları verdi; düzeltmeler çalışma ağacında uygulandı ve exact-commit yeniden
+denetimi bekliyor. Bunlar GitHub review'u, katılımcı testi veya owner activation
+kabulü değildir. P011 sensitivity, tam P012 FAIR paketi, Pinokyo çalışması, genel
 usability ve public deployment hâlâ açık sınırdır.
 
-**Güncel operasyon kararı:** PR #8 taslak ve review-ready kalır. Claude Code
-limit yenilendiğinde A5.1 kaynak paketi, bu dosya, Phase B belgesi ve PR #8
-üzerinden doğrudan devam edebilir. Oğuz ayrıca karar vermeden merge, yeni image
-publication, VPS, Caddy, DNS veya public activation yapılmaz.
+**Güncel operasyon kararı:** PR #8 taslak kalır; düzeltme ağacı exact-commit tam
+doğrulama ve bağımsız yeniden denetim tamamlanmadan `review-ready` sayılmaz.
+Claude Code limit yenilendiğinde Git içinde saklanan A5.1 kaynak paketi, bu dosya,
+Phase B belgesi ve PR #8 üzerinden doğrudan devam edebilir. Oğuz ayrıca karar
+vermeden merge, yeni image publication, VPS, Caddy, DNS veya public activation
+yapılmaz.
 
 **Tarihsel ve genel aşama özeti:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; bütünleşik son
 owner walkthrough'u açıktır. P008'in dört hücreli Guided minimum-alpha yolu ve
 P009'un export-backed sonuç/yorum sınırı yüzeyi gerçek R/stylo worker,
 desktop/mobile/reflow browser, remote clean-clone ve canonical Linux CI
-kapılarından geçti. P008 tam üç amaç ve ilgili known/unknown browser matrisi,
-P009 ise tam görsel/glossary genişletmesi için `in-progress` kalır. Minimum P014
+kapılarından geçti. P007-P009, tam üç amaç ve ilgili known/unknown browser
+matrisi, owner walkthrough ve tam görsel/glossary genişletmesi için ertelenmiş
+`blocked` kalır. Minimum P014
 deployment paketi canonical Linux CI'da geçti; gerçek host inventory,
 coexistence/load, restart/rollback ve owner acceptance kapıları açıktır.
 İlk read-only host preflight'i Lemmata'yı sağlıklı ve `8502`yi boş buldu, fakat

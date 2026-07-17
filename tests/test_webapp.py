@@ -130,7 +130,7 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert "up to 24 documented combinations" in rendered
     assert "Guided Mode becomes available after corpus documentation" in rendered
     assert "Research Mode remains locked in this public alpha" in rendered
-    assert rendered.count('<nav class="delta-map"') == 1
+    assert rendered.count('<nav class="delta-map delta-map-upload"') == 1
     assert 'aria-current="step"' in rendered
     assert "Run analysis" not in rendered
     assert "dendrogram" not in rendered.lower()
@@ -152,6 +152,11 @@ def test_purpose_control_updates_desktop_and_mobile_guidance() -> None:
     assert rendered.count("Chronology alone does not establish") == 2
     assert 'class="delta-purpose-guide-desktop"' in rendered
     assert 'class="delta-purpose-guide-mobile"' in rendered
+    assert purpose.captions == [
+        "Recurring language patterns across individual texts.",
+        "Patterns across documented authors, genres, periods, or audiences.",
+        "One writer's dated works in sequence.",
+    ]
 
 
 def test_v01_upload_shell_has_no_locale_selector() -> None:
@@ -160,6 +165,21 @@ def test_v01_upload_shell_has_no_locale_selector() -> None:
     assert [control.label for control in app.radio] == [
         "What do you want to investigate?",
         "Corpus input format",
+    ]
+
+
+def test_invalid_corpus_input_mode_falls_back_to_individual_text_files() -> None:
+    webapp_module._runtime.clear()
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.session_state["corpus_input_mode"] = "not-a-supported-mode"
+
+    app.run()
+
+    mode = _by_label(app.radio, "Corpus input format")
+    assert mode.value == "text_files"
+    assert [uploader.label for uploader in app.file_uploader] == [
+        "Corpus texts (.txt)",
+        "Optional metadata table (.csv)",
     ]
 
 
@@ -302,11 +322,16 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
     assert len(app.exception) == 0
     assert [heading.value for heading in app.title] == ["Review the documented corpus"]
     assert [heading.value for heading in app.header] == ["Method boundary"]
-    assert any(
-        message.value == "Ready for Compare Texts: no blockers for this purpose."
-        for message in app.success
-    )
     rendered = unescape("\n".join(element.value for element in app.markdown))
+    assert "Ready for Compare Texts: no blockers for this purpose." in rendered
+    assert "Readiness applies only to the selected purpose" in rendered
+    assert "Trace Style Over Time" not in rendered
+    assert "3 needed for Style Over Time" not in rendered
+    assert "Not required for the selected purpose" in rendered
+    assert 'class="delta-readiness-band"' in rendered
+    assert 'aria-labelledby="delta-readiness-title"' in rendered
+    assert 'role="status"' not in rendered
+    assert 'class="delta-review-metrics"' in rendered
     assert [heading.value for heading in app.subheader] == [
         "Actionable corpus checks",
         "Metadata completeness matrix",
@@ -324,13 +349,7 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
     assert "Analysis Only" not in rendered
     assert "Permitted" in rendered
     assert "Prohibited" in rendered
-    assert [metric.label for metric in app.metric] == [
-        "Independent works",
-        "Chronology points",
-        "Blockers",
-        "Warnings",
-        "Rights restrictions",
-    ]
+    assert len(app.metric) == 0
     assert any("No stylometric analysis has run" in message.value for message in app.info)
     assert "one text" not in repr(app.session_state.filtered_state)
 

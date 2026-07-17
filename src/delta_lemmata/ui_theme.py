@@ -1369,8 +1369,6 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .st-key-corpus_stage,
 .st-key-describe_stage,
-.st-key-review_stage,
-.st-key-evidence_panel,
 .st-key-run_state {
   background: var(--delta-paper);
   border-radius: 6px;
@@ -2115,6 +2113,113 @@ div[data-testid="stMainBlockContainer"] h3 {
   font-size: 13px;
 }
 
+.delta-readiness-band {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 12px;
+  margin: 12px 0 16px;
+  padding: 14px 16px;
+  border: 1px solid #a9d8c6;
+  border-left: 4px solid var(--delta-teal);
+  border-radius: 6px;
+  background: var(--delta-mint-soft);
+}
+
+.delta-readiness-icon {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--delta-teal);
+  color: #ffffff;
+  font-weight: 800;
+}
+
+.delta-readiness-band.is-exploratory {
+  border-color: #d7bd76;
+  border-left-color: var(--delta-amber-text);
+  background: var(--delta-amber-soft);
+}
+
+.delta-readiness-band.is-exploratory .delta-readiness-icon {
+  background: var(--delta-amber-text);
+}
+
+.delta-readiness-band.is-exploratory .delta-readiness-copy strong,
+.delta-readiness-band.is-exploratory .delta-readiness-counts {
+  color: var(--delta-amber-text);
+}
+
+.delta-readiness-copy strong {
+  display: block;
+  color: var(--delta-teal-dark);
+  font-size: 14px;
+}
+
+.delta-readiness-copy p {
+  margin: 4px 0 0;
+  color: var(--delta-muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.delta-readiness-counts {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px 12px;
+  color: var(--delta-teal-dark);
+  font-size: 12px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.delta-review-metrics {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 22px;
+}
+
+.delta-review-metric {
+  display: flex;
+  min-width: 0;
+  min-height: 98px;
+  flex-direction: column;
+  padding: 12px;
+  border: 1px solid var(--delta-line);
+  border-top: 3px solid var(--delta-teal);
+  border-radius: 6px;
+  background: var(--delta-paper);
+}
+
+.delta-review-metric.is-warning {
+  border-top-color: var(--delta-amber-text);
+  background: #fffaf0;
+}
+
+.delta-review-metric.is-blocked {
+  border-top-color: var(--delta-coral-text);
+  background: #fff5f1;
+}
+
+.delta-review-metric span,
+.delta-review-metric small {
+  color: var(--delta-muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.delta-review-metric strong {
+  margin: 4px 0;
+  color: var(--delta-ink);
+  font-family: var(--delta-heading-font);
+  font-size: 26px;
+  line-height: 1;
+}
+
 .delta-purpose-guide {
   border: 1px solid var(--delta-line);
   border-radius: 6px;
@@ -2470,7 +2575,7 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry {
-    padding: 10px 0 2px;
+    padding: 4px 0 0;
   }
 
   .delta-entry h1 {
@@ -2479,13 +2584,36 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-lede {
+    margin-top: 4px;
     font-size: 14px !important;
-    line-height: 1.45;
+    line-height: 1.4;
   }
 
   .st-key-research_purpose [data-testid="stRadioGroup"] {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
+  }
+
+  .st-key-research_purpose label[data-testid="stRadioOption"]:last-child {
+    grid-column: 1 / -1;
+  }
+
+  .st-key-research_purpose [data-testid="stCaptionContainer"] {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+  }
+
+  .delta-header {
+    min-height: 56px;
+    padding: 8px 0;
+    margin-bottom: 6px;
   }
 
   .st-key-p009_result_cell_selector [data-testid="stRadioGroup"] {
@@ -2548,6 +2676,10 @@ div[data-testid="stMainBlockContainer"] h3 {
     margin-bottom: 12px;
   }
 
+  .delta-map-upload {
+    display: none;
+  }
+
   .st-key-corpus_stage {
     gap: 8px;
     padding: 14px;
@@ -2578,15 +2710,6 @@ div[data-testid="stMainBlockContainer"] h3 {
 
   .st-key-corpus_inputs {
     gap: 8px;
-  }
-
-  .st-key-corpus_inputs > .st-key-corpus_input_mode {
-    order: 2;
-  }
-
-  .st-key-corpus_inputs > [class*="st-key-corpus_text_files_"],
-  .st-key-corpus_inputs > [class*="st-key-corpus_archive_file_"] {
-    order: 1;
   }
 
   .delta-map-list {
@@ -2639,6 +2762,26 @@ div[data-testid="stMainBlockContainer"] h3 {
 
   .delta-context-strip p {
     margin-top: 4px;
+  }
+
+  .delta-readiness-band {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 12px;
+  }
+
+  .delta-readiness-counts {
+    grid-column: 2;
+    justify-content: flex-start;
+    white-space: normal;
+  }
+
+  .delta-review-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .delta-review-metric {
+    min-height: 92px;
   }
 
   .delta-method-key {

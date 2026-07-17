@@ -213,6 +213,17 @@ def reciprocal_ticket_run_errors(
     return errors
 
 
+def active_ticket_errors(tickets: dict[str, dict[str, Any]]) -> list[str]:
+    """Keep the work queue aligned with the one-active-ticket rule."""
+
+    active = sorted(
+        ticket_id for ticket_id, ticket in tickets.items() if ticket["status"] == "in-progress"
+    )
+    if len(active) <= 1:
+        return []
+    return [f"multiple active tickets: {', '.join(active)}"]
+
+
 def integrity_errors() -> list[str]:
     """Return cross-record and artifact-integrity failures."""
 
@@ -229,6 +240,7 @@ def integrity_errors() -> list[str]:
     }
     runs = {record["run_id"]: record for _, record in json_records(ROOT / "provenance" / "runs")}
     errors = reciprocal_ticket_run_errors(tickets, runs)
+    errors.extend(active_ticket_errors(tickets))
 
     for ticket_id, ticket in tickets.items():
         errors.extend(acceptance_evidence_errors(ticket_id, ticket))

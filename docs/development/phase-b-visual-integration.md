@@ -12,7 +12,7 @@
 
 ## Scope
 
-Phase B maps the approved A5.1 visual and accessibility contract onto the real
+Phase B maps the owner-selected A5.1 visual and accessibility contract onto the real
 Streamlit application. It does not replace the P006 `stylo` worker, alter the
 P007 corpus-health rules, add P011 stability claims, or invent a P012 FAIR run
 package.
@@ -114,10 +114,14 @@ visible Guided result cells, two nonblank charts, no unexpected console message,
 and no external browser host. Parallel PR run `29541222417` also passed verify
 job `87763705842` and container job `87763705851`.
 
-Independent scientific-method, accessibility, and release reviews returned GO
-after their remediation checks. These are local/agent reviews, not GitHub or
-participant reviews. The exact branch is CI-green and review-ready in draft PR
-#8; merge and deployment still require separate owner decisions.
+The latest independent scientific-method, accessibility, and FAIR reviews
+returned concrete remediation findings rather than final GO. The working tree
+now addresses those findings, including immediate and periodic failed-job
+cleanup, purpose-conditioned exploratory chronology language, pre-run method
+disclosure, warning semantics, and durable A5.1 source retention. Exact-commit
+re-review and fresh CI remain required. These are local/agent reviews, not
+GitHub or participant reviews; merge and deployment still require separate
+owner decisions.
 
 The retained CI sequence is documented in
 `provenance/evidence/P014/phase-b-visual-integration-validation.md`. Earlier
@@ -156,8 +160,9 @@ distance, chart datum, or export was changed.
 
 ## Release Gate
 
-Phase B is proposed for review in draft PR #8 after the exact implementation
-commit passed both push and pull-request verify/container jobs and three
-independent local/agent review passes. It must not be merged, deployed, or
-routed publicly without Oğuz Koran's separate decision. Live-host, Caddy, DNS,
-and public-activation work remain outside this branch.
+Phase B remains proposed for review in draft PR #8. The earlier implementation
+commit passed push and pull-request verify/container jobs, but the current
+remediation tree requires a new exact commit, independent re-review, and fresh
+push plus pull-request CI. It must not be merged, deployed, or routed publicly
+without Oğuz Koran's separate decision. Live-host, Caddy, DNS, and
+public-activation work remain outside this branch.

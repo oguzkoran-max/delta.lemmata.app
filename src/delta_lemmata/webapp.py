@@ -27,6 +27,7 @@ from delta_lemmata.corpus import (
     DateMode,
     DateValue,
     GuidedWorkInput,
+    IssueSeverity,
     MetadataCsvExportError,
     MetadataCsvImportResult,
     PurposeId,
@@ -335,7 +336,8 @@ def _render_stepper(stage: CorpusSubstage, *, evidence_active: bool) -> None:
         corpus_state = "sidebar.state.complete"
         parameter_state = "sidebar.state.complete"
     markup = (
-        '<nav class="delta-map" aria-label="Experiment progress">'
+        f'<nav class="delta-map delta-map-{stage.value}" '
+        'aria-label="Experiment progress">'
         '<ol class="delta-map-list">'
         + _map_row(1, "sidebar.step.purpose", "sidebar.state.complete")
         + _map_row(
@@ -769,6 +771,13 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
     generation = int(st.session_state.get(_UPLOAD_GENERATION_KEY, 0))
     pending_error_value = st.session_state.pop(_PENDING_ERROR_KEY, None)
     pending_error = None if pending_error_value is None else IntakeErrorCode(pending_error_value)
+    try:
+        mode = CorpusInputMode(
+            st.session_state.get("corpus_input_mode", CorpusInputMode.TEXT_FILES.value)
+        )
+    except (TypeError, ValueError):
+        mode = CorpusInputMode.TEXT_FILES
+        st.session_state["corpus_input_mode"] = mode.value
     with st.container(border=True, key="corpus_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("corpus.eyebrow"))}</div>',
@@ -783,8 +792,8 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         with st.container(key="corpus_inputs"):
             selected_mode = st.radio(
                 text("corpus.mode.label"),
-                options=[mode.value for mode in CorpusInputMode],
-                index=0,
+                options=[item.value for item in CorpusInputMode],
+                index=tuple(CorpusInputMode).index(mode),
                 format_func=_corpus_mode_label,
                 key="corpus_input_mode",
                 horizontal=True,
@@ -1847,13 +1856,133 @@ def _render_downloads(
         )
 
 
+def _review_issue_type_count(report: ValidationReport) -> int:
+    return len({issue.code for issue in report.issues if issue.severity is IssueSeverity.WARNING})
+
+
+def _review_readiness_detail(inventory: CorpusInventory, report: ValidationReport) -> str:
+    readiness = report.readiness
+    if inventory.purpose is PurposeId.STYLE_OVER_TIME and readiness.exploratory:
+        return text(
+            "review.style_over_time_exploratory",
+            works_label=_review_count_label(
+                readiness.independent_work_count,
+                "independent work",
+                "independent works",
+            ),
+            points_label=_review_count_label(
+                readiness.chronology_point_count,
+                "chronology point",
+                "chronology points",
+            ),
+        )
+    return " ".join((text("review.ready"), text("review.other_purposes_separate")))
+
+
+def _review_count_label(count: int, singular: str, plural: str) -> str:
+    return f"{count} {singular if count == 1 else plural}"
+
+
+def _render_review_readiness(
+    inventory: CorpusInventory,
+    report: ValidationReport,
+    purpose_label: str,
+) -> None:
+    readiness = report.readiness
+    if report.blocked:
+        st.error(text("review.blocked"), icon=":material/block:")
+    else:
+        exploratory = inventory.purpose is PurposeId.STYLE_OVER_TIME and readiness.exploratory
+        blocker_summary = _review_count_label(readiness.blocker_count, "blocker", "blockers")
+        warning_summary = _review_count_label(readiness.warning_count, "warning", "warnings")
+        rights_summary = _review_count_label(
+            readiness.rights_restriction_count, "rights limit", "rights limits"
+        )
+        band_state = " is-exploratory" if exploratory else ""
+        band_icon = "&#9888;" if exploratory else "&#10003;"
+        readiness_title = text(
+            "review.exploratory_for_purpose" if exploratory else "review.ready_for_purpose",
+            purpose=purpose_label,
+        )
+        st.markdown(
+            f'<section class="delta-readiness-band{band_state}" '
+            'aria-labelledby="delta-readiness-title">'
+            f'<span class="delta-readiness-icon" aria-hidden="true">{band_icon}</span>'
+            '<div class="delta-readiness-copy">'
+            '<strong id="delta-readiness-title">'
+            f"{_html(readiness_title)}</strong>"
+            f"<p>{_html(_review_readiness_detail(inventory, report))}</p></div>"
+            '<div class="delta-readiness-counts">'
+            f"<span>{_html(blocker_summary)}</span>"
+            f"<span>{_html(warning_summary)}</span>"
+            f"<span>{_html(rights_summary)}</span>"
+            "</div></section>",
+            unsafe_allow_html=True,
+        )
+
+    chronology_shortfall = (
+        inventory.purpose is PurposeId.STYLE_OVER_TIME and readiness.chronology_point_count < 3
+    )
+    if inventory.purpose is not PurposeId.STYLE_OVER_TIME:
+        chronology_note = text("review.metric.chronology_not_required")
+    elif chronology_shortfall:
+        chronology_note = text("review.metric.chronology_note")
+    else:
+        chronology_note = text("review.metric.documented")
+    warning_types = _review_issue_type_count(report)
+    rights_note = (
+        text("review.metric.rights_note")
+        if readiness.rights_restriction_count
+        else text("review.metric.none_documented")
+    )
+    tiles = (
+        ("review.metric.works", readiness.independent_work_count, "", ""),
+        (
+            "review.metric.chronology",
+            readiness.chronology_point_count,
+            chronology_note,
+            " is-warning" if chronology_shortfall else "",
+        ),
+        (
+            "review.metric.blockers",
+            readiness.blocker_count,
+            "",
+            " is-blocked" if readiness.blocker_count else "",
+        ),
+        (
+            "review.metric.warnings",
+            readiness.warning_count,
+            _review_count_label(warning_types, "issue type", "issue types"),
+            " is-warning" if readiness.warning_count else "",
+        ),
+        (
+            "review.metric.rights",
+            readiness.rights_restriction_count,
+            rights_note,
+            " is-warning" if readiness.rights_restriction_count else "",
+        ),
+    )
+    tile_markup = "".join(
+        f'<div class="delta-review-metric{state}">'
+        f"<span>{_html(text(label_key))}</span><strong>{value}</strong>"
+        + (f"<small>{_html(note)}</small>" if note else "")
+        + "</div>"
+        for label_key, value, note, state in tiles
+    )
+    st.markdown(
+        '<section class="delta-review-metrics" '
+        f'aria-label="{_html(text("review.metrics_summary"))}">{tile_markup}</section>',
+        unsafe_allow_html=True,
+    )
+
+
 def _render_review_stage() -> None:
     inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
     report = st.session_state.get(_FLOW_REPORT_KEY)
     if not isinstance(inventory, CorpusInventory) or not isinstance(report, ValidationReport):
         _clear_documentation_state(keep_purpose=True)
         st.rerun()
-    with st.container(border=True, key="review_stage"):
+    with st.container(key="review_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("review.eyebrow"))}</div>',
             unsafe_allow_html=True,
@@ -1875,21 +2004,7 @@ def _render_review_stage() -> None:
             st.error(text("review.projection_unavailable"), icon=":material/block:")
             st.info(text("review.analysis_locked"), icon=":material/lock:")
             return
-        if report.blocked:
-            st.error(text("review.blocked"), icon=":material/block:")
-        else:
-            st.success(
-                text("review.ready_for_purpose", purpose=purpose_label),
-                icon=":material/check_circle:",
-            )
-            st.caption(text("review.ready"))
-        readiness = report.readiness
-        first, second, third, fourth = st.columns(4)
-        first.metric(text("review.metric.works"), readiness.independent_work_count)
-        second.metric(text("review.metric.chronology"), readiness.chronology_point_count)
-        third.metric(text("review.metric.blockers"), readiness.blocker_count)
-        fourth.metric(text("review.metric.warnings"), readiness.warning_count)
-        st.metric(text("review.metric.rights"), readiness.rights_restriction_count)
+        _render_review_readiness(inventory, report, purpose_label)
         _render_issues(report, inventory)
         _render_completeness(projection)
         _render_timeline(projection)
@@ -2845,6 +2960,20 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
                     "title": text("results.heatmap.y"),
                 },
                 "color": color_encoding,
+                "stroke": {
+                    "condition": {
+                        "test": "datum.reference === datum.compared",
+                        "value": "#596762",
+                    },
+                    "value": "#d5ddda",
+                },
+                "strokeWidth": {
+                    "condition": {
+                        "test": "datum.reference === datum.compared",
+                        "value": 1.5,
+                    },
+                    "value": 0.5,
+                },
                 "tooltip": [
                     {"field": "reference_title", "type": "nominal", "title": "Text"},
                     {
@@ -3168,7 +3297,7 @@ def _render_parameters_stage() -> None:
     try:
         config = _resolve_session_workflow(inventory, annotations)
     except (ValidationError, ValueError):
-        with st.container(border=True, key="parameters_stage"):
+        with st.container(key="parameters_stage"):
             st.markdown(
                 f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
                 unsafe_allow_html=True,
@@ -3187,7 +3316,7 @@ def _render_parameters_stage() -> None:
     st.session_state[_FLOW_WORKFLOW_CONFIG_KEY] = config
     presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
     if getattr(presentation, "state_id", "") == "succeeded":
-        with st.container(border=True, key="evidence_panel"):
+        with st.container(key="evidence_panel"):
             try:
                 result_view = _runtime().prepared_corpora.result_view(
                     owner_key=_owner_key(),
@@ -3199,7 +3328,7 @@ def _render_parameters_stage() -> None:
             else:
                 _render_result_view(result_view)
         return
-    with st.container(border=True, key="parameters_stage"):
+    with st.container(key="parameters_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
             unsafe_allow_html=True,
@@ -3236,7 +3365,6 @@ def _render_parameters_stage() -> None:
         metric_columns[3].metric(text("parameters.metric.unit"), text("parameters.unit.whole"))
         _render_parameter_grid(config)
         st.caption(text("parameters.grid_caption"))
-        _render_parameter_explanations()
         st.info(text("parameters.interpretive_boundary"), icon=":material/info:")
         st.download_button(
             text("parameters.download_config"),
@@ -3245,6 +3373,7 @@ def _render_parameters_stage() -> None:
             mime="application/json",
             width="stretch",
         )
+        _render_parameter_explanations()
 
         if presentation is not None:
             state_id = getattr(presentation, "state_id", "")
@@ -3293,7 +3422,7 @@ def _render_parameters_stage() -> None:
                     config=preparation.config,
                     resolved_workflow_config=config,
                 )
-                runtime.analyses.run_next()
+                runtime.run_analysis_once()
                 verified = runtime.prepared_corpora.scientific_result(
                     owner_key=_owner_key(),
                     materialization_receipt=materialization,
@@ -3309,7 +3438,6 @@ def _render_parameters_stage() -> None:
                     materialization_receipt=materialization,
                     view=result_view,
                 )
-                runtime.maintain()
                 presentation = runtime.prepared_corpora.status(
                     owner_key=_owner_key(),
                     materialization_receipt=materialization,
@@ -3334,6 +3462,7 @@ def _render_setup(stage: CorpusSubstage) -> PurposeId:
             format_func=_purpose_label,
             key="research_purpose",
             horizontal=True,
+            captions=[text(f"purpose.{purpose.purpose_id}.summary") for purpose in PURPOSES],
         )
         purpose_spec = PURPOSE_BY_ID[selected]
         _render_purpose_guidance(purpose_spec)
@@ -3352,6 +3481,7 @@ def _render_setup(stage: CorpusSubstage) -> PurposeId:
             format_func=_purpose_label,
             key="research_purpose",
             horizontal=True,
+            captions=[text(f"purpose.{item.purpose_id}.summary") for item in PURPOSES],
             disabled=True,
         )
         st.radio(

@@ -330,6 +330,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "purpose.use_label": "Why use it",
     "purpose.boundary_label": "Do not conclude",
     "purpose.text_proximity.label": "Compare Texts",
+    "purpose.text_proximity.summary": "Recurring language patterns across individual texts.",
     "purpose.text_proximity.question": (
         "Which texts show more similar recurring language patterns within this corpus?"
     ),
@@ -340,6 +341,9 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Nearer does not mean the same author, influence, intention, or authenticity."
     ),
     "purpose.group_comparison.label": "Compare Groups",
+    "purpose.group_comparison.summary": (
+        "Patterns across documented authors, genres, periods, or audiences."
+    ),
     "purpose.group_comparison.question": (
         "Do documented groups show different recurring stylistic patterns?"
     ),
@@ -350,6 +354,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Observed separation may reflect corpus balance, genre, period, source, or edition effects."
     ),
     "purpose.style_over_time.label": "Trace Style Over Time",
+    "purpose.style_over_time.summary": "One writer's dated works in sequence.",
     "purpose.style_over_time.question": (
         "How does one writer's stylistic position vary across dated independent works?"
     ),
@@ -549,10 +554,24 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "review.selected_purpose": "Selected purpose: {purpose}",
     "review.ready_for_purpose": "Ready for {purpose}: no blockers for this purpose.",
+    "review.exploratory_for_purpose": (
+        "Exploratory for {purpose}: the minimum design threshold is not met."
+    ),
     "review.ready": (
         "Corpus documentation has no blockers. Confirm this inventory to continue to "
         "computational preflight and parameter review."
     ),
+    "review.style_over_time_exploratory": (
+        "Delta can continue with this chronology only as exploratory analysis. This corpus "
+        "documents {works_label} and {points_label}; the minimum "
+        "design rule is six works and three points. Meeting that rule would still not prove "
+        "scientific sufficiency."
+    ),
+    "review.other_purposes_separate": (
+        "Readiness applies only to the selected purpose; another purpose requires its own review."
+    ),
+    "review.readiness_summary": "Corpus readiness summary",
+    "review.metrics_summary": "Documented corpus metrics",
     "review.blocked": (
         "Corpus documentation contains blockers. Return to Describe and correct them; "
         "no analysis state has been created."
@@ -564,6 +583,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "review.metric.blockers": "Blockers",
     "review.metric.warnings": "Warnings",
     "review.metric.rights": "Rights restrictions",
+    "review.metric.chronology_note": "3 needed for Style Over Time",
+    "review.metric.chronology_not_required": "Not required for the selected purpose",
+    "review.metric.documented": "Documented chronology",
+    "review.metric.rights_note": "Review the rights matrix",
+    "review.metric.none_documented": "None documented",
     "review.composition_title": "Corpus composition",
     "review.composition_body": (
         "Counts describe the metadata documented for this inventory. They do not measure "

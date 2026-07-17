@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from threading import Event, Thread
 
 from delta_lemmata.analysis_orchestrator import AnalysisOrchestrator
 from delta_lemmata.clock import SystemClock
@@ -27,6 +28,8 @@ from delta_lemmata.stylo_job_runner import StyloJobRunner
 
 _SECRET_HEX = re.compile(r"[0-9a-fA-F]+\Z")
 _RUNTIME_PROFILES = frozenset({"development", "test", "production"})
+_MAINTENANCE_INTERVAL_SECONDS = 60.0
+_MAINTENANCE_JOIN_TIMEOUT_SECONDS = 5.0
 
 
 class WebRuntimeErrorCode(StrEnum):
@@ -58,6 +61,8 @@ class WebRuntime:
     analyses: AnalysisOrchestrator
     janitor: JobJanitor
     _temporary_directory: TemporaryDirectory[str] | None = field(default=None, repr=False)
+    _maintenance_stop: Event | None = field(default=None, repr=False)
+    _maintenance_thread: Thread | None = field(default=None, repr=False)
 
     def maintain(self) -> None:
         """Reconcile expired in-memory and durable work before new admission."""
@@ -74,8 +79,53 @@ class WebRuntime:
             rejection.__suppress_context__ = True
             raise rejection
 
+    def run_analysis_once(self) -> object:
+        """Run one queued analysis and always attempt terminal cleanup immediately."""
+
+        primary_failed = False
+        try:
+            return self.analyses.run_next()
+        except Exception:
+            primary_failed = True
+            raise
+        finally:
+            try:
+                self.maintain()
+            except WebRuntimeError:
+                if not primary_failed:
+                    raise
+
+    def start_periodic_maintenance(self) -> None:
+        """Start process-local cleanup that does not depend on browser traffic."""
+
+        if self._maintenance_thread is not None:
+            return
+        stop = Event()
+        thread = Thread(
+            target=self._maintenance_loop,
+            args=(stop,),
+            name="delta-job-maintenance",
+            daemon=True,
+        )
+        self._maintenance_stop = stop
+        self._maintenance_thread = thread
+        thread.start()
+
+    def _maintenance_loop(self, stop: Event) -> None:
+        while not stop.wait(_MAINTENANCE_INTERVAL_SECONDS):
+            try:
+                self.maintain()
+            except WebRuntimeError:
+                continue
+
     def close(self) -> None:
         """Release a development-only temporary root during deterministic tests."""
+
+        if self._maintenance_stop is not None and self._maintenance_thread is not None:
+            self._maintenance_stop.set()
+            self._maintenance_thread.join(timeout=_MAINTENANCE_JOIN_TIMEOUT_SECONDS)
+            self._maintenance_stop = None
+            self._maintenance_thread = None
 
         if self._temporary_directory is not None:
             self._temporary_directory.cleanup()
@@ -249,13 +299,26 @@ def build_web_runtime(environment: Mapping[str, str] | None = None) -> WebRuntim
         rejection.__cause__ = None
         rejection.__suppress_context__ = True
         raise rejection
-    return WebRuntime(
+    runtime = WebRuntime(
         materializations=materializations,
         prepared_corpora=prepared_corpora,
         analyses=analyses,
         janitor=janitor,
         _temporary_directory=temporary,
     )
+    if profile == "production":
+        maintenance_rejection: WebRuntimeError | None = None
+        try:
+            runtime.start_periodic_maintenance()
+        except Exception:
+            runtime.close()
+            maintenance_rejection = _error(WebRuntimeErrorCode.INITIALIZATION_FAILED)
+        if maintenance_rejection is not None:
+            maintenance_rejection.__context__ = None
+            maintenance_rejection.__cause__ = None
+            maintenance_rejection.__suppress_context__ = True
+            raise maintenance_rejection
+    return runtime
 
 
 __all__ = [

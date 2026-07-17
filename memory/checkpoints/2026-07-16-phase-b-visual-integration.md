@@ -31,8 +31,10 @@
   landmark; 320/375/390/1440 px have no horizontal overflow, the actual MDS
   plot frame is square within 2 px, and the built wheel contains the font, OFL
   licence, and provenance record with the expected SHA-256.
-- Review: three independent local/agent scientific-method, accessibility, and
-  release passes returned GO. They are not GitHub or participant reviews.
+- Review correction: the earlier three-GO summary was not linked to durable
+  review artefacts and is withdrawn. The latest scientific-method,
+  accessibility, and FAIR reviews returned remediation findings; exact-commit
+  re-review remains required after those fixes are frozen.
 - Local real-worker browser limit: closed worker requires canonical
   `/opt/renv/cache`; macOS run failed closed before a result and exposed no
   partial evidence. Canonical Linux CI must supply the authoritative browser

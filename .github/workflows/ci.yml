@@ -72,7 +72,12 @@ jobs:
         if: always()
         run: |
           if [[ -f /tmp/delta-p009-browser-audit/browser-audit.json ]]; then
-            python -m json.tool /tmp/delta-p009-browser-audit/browser-audit.json
+            echo "DELTA_BROWSER_AUDIT_JSON_BEGIN"
+            cat /tmp/delta-p009-browser-audit/browser-audit.json
+            echo "DELTA_BROWSER_AUDIT_JSON_END"
+            echo "DELTA_BROWSER_AUDIT_SHA256_BEGIN"
+            sha256sum /tmp/delta-p009-browser-audit/browser-audit.json
+            echo "DELTA_BROWSER_AUDIT_SHA256_END"
           else
             echo "browser-audit.json was not produced; inspect the preceding traceback."
           fi

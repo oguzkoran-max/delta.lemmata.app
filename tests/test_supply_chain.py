@@ -60,6 +60,16 @@ def test_p006_worker_capture_was_removed_after_publication() -> None:
     assert (ROOT / "provenance" / "evidence" / "P006" / "worker-capture-transport.json").is_file()
 
 
+def test_ci_prints_extractable_content_free_browser_evidence() -> None:
+    workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(encoding="utf-8")
+
+    assert "DELTA_BROWSER_AUDIT_JSON_BEGIN" in workflow
+    assert "DELTA_BROWSER_AUDIT_JSON_END" in workflow
+    assert "DELTA_BROWSER_AUDIT_SHA256_BEGIN" in workflow
+    assert "DELTA_BROWSER_AUDIT_SHA256_END" in workflow
+    assert "actions/upload-artifact" not in workflow
+
+
 def test_container_base_digest_matches_lock() -> None:
     dockerfile = (ROOT / "containers" / "Dockerfile").read_text(encoding="utf-8")
     lock = load_json(ROOT / "containers" / "base-images.lock.json")

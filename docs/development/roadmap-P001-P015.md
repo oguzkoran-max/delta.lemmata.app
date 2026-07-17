@@ -302,8 +302,9 @@ P004 inventory identities and P005 process/workspace lifecycle.
 durumundadır. 2026-07-15'te kapalı çekirdek, private materialization, one-time
 READY admission, browser preparation ve ortak health projection teknik olarak
 uygulandı; exact-commit clean-clone ve Linux CI geçti. Ticket, Oğuz'un son
-prepared-state corpus-uyarı dili kabulü için `in-progress` kalır. Bu açık insan
-kapısı genel usability veya teachability testi değildir.
+prepared-state corpus-uyarı dili kabulü P014 sonrasına ertelendiği için `blocked`
+kalır. Bu açık insan kapısı genel usability veya teachability testi değildir;
+doğrulanmış minimum-alpha hazırlık dilimini geçersiz kılmaz.
 
 **Amaç:** Analizden önce corpus'un neye dönüştürüldüğünü, hangi riskleri taşıdığını ve analizin durması gerekip gerekmediğini görünür kılmak.
 
@@ -333,13 +334,14 @@ kapısı genel usability veya teachability testi değildir.
 
 ### P008: Guided and Research Workflows
 
-**Durum (2026-07-15):** `in-progress`. Public-alpha için gerekli dört hücreli
+**Durum (2026-07-17):** `blocked`. Public-alpha için gerekli dört hücreli
 Guided whole-text dilimi exact implementation `7e9a28e`, `RUN-20260715-0002`,
 canonical Linux CI `29388984019` ve remote clean-clone tekrarında geçti. Resolved
 config, one-time P007 READY admission, gerçek P006 execution ve desktop/mobile
 browser kapıları bağlıdır. Tam P008 kapanışı, üç araştırma amacı ile ilgili
 known/unknown scope matrisini ve insan-kabul edilmiş `research-grid-v1` preset'ini
-bekler; bu geniş kapsam minimum Public-alpha aktivasyonunu engellemez.
+bekler. P014 tek aktif ticket iken bu geniş kapsam bilinçli olarak ertelenmiştir;
+minimum-alpha kanıtı korunur.
 
 **Amaç:** Üç araştırma amacını R/Python kodu yazdırmadan, yöntemsel seçimleri saklamadan uçtan uca çalıştırmak.
 
@@ -370,14 +372,15 @@ bekler; bu geniş kapsam minimum Public-alpha aktivasyonunu engellemez.
 
 ### P009: Results, Explanations, and Interpretive Guardrails
 
-**Durum (2026-07-15):** `in-progress`. Public-alpha minimum dilimi exact commit
+**Durum (2026-07-17):** `blocked`. Public-alpha minimum dilimi exact commit
 `c5e39b0`, `RUN-20260715-0003` ve canonical Linux CI `29402396790` ile geçti.
 Export-backed completion, dört parameter-cell durumu, sabit 500-MFW reference,
 distance matrix heatmap'i, exact-tie nearest-neighbor tablosu ve tek work-level
 deterministic MDS haritası erişilebilir metin eşleri ve açık yorum sınırlarıyla
 bağlıdır. Kanıt-link commit'i `567d154`, CI `29404000108` içinde yeniden geçti.
 Dendrogram, Style Over Time'a özgü tarih haritası ve geniş glossary tam P009
-kapsamında açık kalır; bunlar minimum Public-alpha aktivasyonunu engellemez.
+kapsamında açık kalır. P014 tek aktif ticket iken bu genişleme ertelenmiştir;
+minimum-alpha sonuç/yorum sınırı kanıtı korunur.
 
 **Amaç:** Hesaplama sonuçlarını incelemeye elverişli, fakat yöntemin sınırlarını aşmayan bir workbench çıktısına dönüştürmek.
 

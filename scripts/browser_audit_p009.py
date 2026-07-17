@@ -114,6 +114,21 @@ def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
         return {"available": False, "reason": "control_database_unreadable"}
 
 
+def _terminal_payload_cleanup_pass(diagnostics: dict[str, Any]) -> bool:
+    """Require every recorded terminal job to have no retained input or work payload."""
+
+    records = diagnostics.get("records")
+    if diagnostics.get("available") is not True or not isinstance(records, list) or not records:
+        return False
+    return all(
+        record.get("execution_state") == "terminal"
+        and record.get("artifact_states", {}).get("input") == "verified_absent"
+        and record.get("artifact_states", {}).get("work") == "verified_absent"
+        for record in records
+        if isinstance(record, dict)
+    ) and all(isinstance(record, dict) for record in records)
+
+
 def _write_failure_record(
     *,
     output: Path,
@@ -122,6 +137,7 @@ def _write_failure_record(
     canonical_platform: bool,
     error: Exception,
 ) -> None:
+    lifecycle = _lifecycle_diagnostics(output)
     record = {
         "schema_version": "1.0.0",
         "git_commit": commit,
@@ -130,7 +146,8 @@ def _write_failure_record(
         "synthetic_inputs_only": True,
         "failure_type": type(error).__name__,
         "failure_message": str(error),
-        "lifecycle_diagnostics": _lifecycle_diagnostics(output),
+        "lifecycle_diagnostics": lifecycle,
+        "terminal_payload_cleanup_pass": _terminal_payload_cleanup_pass(lifecycle),
         "result": "failed",
     }
     (output / "browser-audit.json").write_text(
@@ -381,6 +398,20 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
         mobile_guide_box = mobile_guide.bounding_box()
         if upload_box is None or upload_button_box is None or input_mode_box is None:
             raise RuntimeError(f"Entry controls are not measurable at {width}x{height}")
+        corpus_mode_dom_order_pass = page.evaluate(
+            """() => {
+                const scope = document.querySelector('.st-key-corpus_inputs');
+                const uploader = scope && scope.querySelector(
+                    '[class*="st-key-corpus_text_files_"], '
+                    + '[class*="st-key-corpus_archive_file_"]'
+                );
+                const mode = scope && scope.querySelector('.st-key-corpus_input_mode');
+                return Boolean(
+                    uploader && mode
+                    && (mode.compareDocumentPosition(uploader) & Node.DOCUMENT_POSITION_FOLLOWING)
+                );
+            }"""
+        )
         mobile = width <= 760
         if mobile:
             purpose_guide_layout_pass = (
@@ -389,9 +420,6 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 and mobile_guide_box is not None
                 and mobile_guide_box["y"] >= upload_box["y"] + upload_box["height"]
             )
-            corpus_mode_layout_pass = input_mode_box["y"] >= (
-                upload_box["y"] + upload_box["height"]
-            )
         else:
             purpose_guide_layout_pass = (
                 desktop_guide.is_visible()
@@ -399,7 +427,9 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 and desktop_guide_box is not None
                 and desktop_guide_box["y"] < upload_box["y"]
             )
-            corpus_mode_layout_pass = input_mode_box["y"] < upload_box["y"]
+        corpus_mode_layout_pass = upload_box["y"] >= (
+            input_mode_box["y"] + input_mode_box["height"]
+        )
         primary_action_max_y = _entry_primary_action_max_y(width, height)
         screenshot = output / "screenshots" / f"entry-{target}.png"
         page.screenshot(path=str(screenshot), full_page=True)
@@ -425,6 +455,7 @@ def _entry_viewports(page: Page, output: Path) -> tuple[dict[str, Any], ...]:
                 "primary_upload_action_pass": (upload_button_box["y"] <= primary_action_max_y),
                 "purpose_guide_layout_pass": purpose_guide_layout_pass,
                 "corpus_mode_layout_pass": corpus_mode_layout_pass,
+                "corpus_mode_dom_order_pass": corpus_mode_dom_order_pass,
                 "skip_target_pass": skip["target_pass"],
                 "skip_activation_pass": skip["activation_pass"],
                 "skip_bypass_pass": skip["bypass_pass"],
@@ -767,6 +798,7 @@ def _audit_flow(
             and item["primary_upload_action_pass"]
             and item["purpose_guide_layout_pass"]
             and item["corpus_mode_layout_pass"]
+            and item["corpus_mode_dom_order_pass"]
             and item["skip_target_pass"]
             and item["skip_activation_pass"]
             and item["skip_bypass_pass"]
@@ -872,6 +904,12 @@ def main() -> int:
                 console_messages: list[dict[str, str]] = []
                 flow = _audit_flow(browser, url, requests, console_messages, output)
                 browser.close()
+
+            lifecycle = _lifecycle_diagnostics(output)
+            flow["lifecycle"] = {
+                "terminal_payload_cleanup_pass": _terminal_payload_cleanup_pass(lifecycle),
+                "diagnostics": lifecycle,
+            }
 
             external_hosts = sorted(
                 {

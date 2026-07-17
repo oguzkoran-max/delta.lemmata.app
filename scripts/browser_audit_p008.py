@@ -489,6 +489,22 @@ def _audit_parameters(page: Page, output: Path) -> dict[str, Any]:
     page.screenshot(path=str(output / "screenshots" / "research-mode-locked.png"), full_page=True)
     page.get_by_role("radio", name="Guided", exact=True).click()
     table.wait_for()
+    explanation = page.locator("details").filter(has_text="Understand these settings").first
+    confirmation = page.get_by_role(
+        "checkbox",
+        name="I reviewed the four comparisons and their interpretation limits.",
+        exact=True,
+    )
+    current_run = page.get_by_role("button", name="Run the four comparisons", exact=False)
+    explanation_box = explanation.bounding_box()
+    confirmation_box = confirmation.bounding_box()
+    run_box = current_run.bounding_box()
+    method_disclosure_order = (
+        explanation_box is not None
+        and confirmation_box is not None
+        and run_box is not None
+        and explanation_box["y"] < confirmation_box["y"] < run_box["y"]
+    )
 
     filename, config = _download_json(page, "Download resolved parameter record")
     config_pass = (
@@ -541,6 +557,8 @@ def _audit_parameters(page: Page, output: Path) -> dict[str, Any]:
                 "Why 500 MFW is the display reference",
             )
         ),
+        "method_disclosure_open_pass": explanation.get_attribute("open") is not None,
+        "method_disclosure_order_pass": method_disclosure_order,
         "interpretive_boundary_pass": page.get_by_text(
             "These comparisons describe relative stylistic proximity", exact=False
         ).count()

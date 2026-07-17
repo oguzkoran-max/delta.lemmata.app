@@ -481,13 +481,13 @@ def _audit_guided_flow(
     page.goto(url, wait_until="networkidle")
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
 
-    proximity = page.get_by_role("radio", name="Compare Texts", exact=True)
+    proximity = page.get_by_role("radio", name="Compare Texts", exact=False)
     proximity.focus()
     page.keyboard.press("ArrowRight")
     page.keyboard.press("Space")
     page.wait_for_timeout(800)
     keyboard_selection_pass = (
-        page.get_by_role("radio", name="Compare Groups", exact=True).get_attribute("aria-checked")
+        page.get_by_role("radio", name="Compare Groups", exact=False).get_attribute("aria-checked")
         == "true"
     )
     page.keyboard.press("ArrowLeft")

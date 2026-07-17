@@ -2,32 +2,26 @@
 
 **Amaç:** Her yeni Codex veya Claude oturumunda minimum bağlamla doğru ticket'a başlamak.  
 **Kanonik kaynak değildir:** Çelişkide `DEVELOPMENT_CONTRACT.md` ve kabul edilmiş ADR'ler geçerlidir.  
-**2026-07-17 visual checkpoint:** Onaylı Claude A5.1 sistemi
-`codex/p014-visual-phase-b` dalında gerçek Streamlit yüzeyine entegre edildi.
-Exact implementation `3a554e0e76522672efaf547b1d03e12cb4f3531b`, draft PR
-#8'dir. Yerel full verify 1.669 pass, bir Linux-only skip, 11.507 statement +
-3.002 branch ve yüzde 100 measured coverage ile geçti. Canonical push CI
-`29541220413` ve PR CI `29541222417` içindeki iki verify ve iki container işi
-yeşildir; `RUN-20260717-0001` ve evidence commit
-`d40b14d3e202556d910955670a3c0b60087d8d71` kanıtı bağlar. Üç ayrı local/agent
-bilimsel-yöntem, erişilebilirlik ve release denetimi GO verdi, fakat bunlar owner
-veya katılımcı kabulü değildir. Merge/deploy yetkisi yoktur. Önce
-`docs/development/phase-b-visual-integration.md`, sonra `SESSION_HANDOFF.md`
-okunur.
-Son evidence-only head'in push kapısı geçerken PR kapısı, tamamlanmış sonucu
-yeniden çizen yavaş işçide 15 saniyelik audit bekleme sınırını iki kez aştı.
-`483c7a017a374958e312247c69e4fe42e0010810` yalnız bu kanıt bekleme süresini
-60 saniyeye çıkardı; ürün veya bilimsel hesap değişmedi. Güncel exact-head durumu
-için draft PR #8 kontrolleri esas alınır.
-`971d9c0048c289654620d321272c95957dc1a7d6` PR verify'da geçip push verify'da
-aynı durumda 60 saniye kaldığı için zamanlama-only açıklaması reddedildi.
-`15ce5dd532c5054191518ea292f5cb966338d068` görünür etiket otomasyonunu, checked
-500 MFW radyo öğesinden sağ okla 1000 MFW'ye geçen yerel klavye change olayıyla
-değiştirir; ürün ve bilimsel hesap yine değişmez.
-**Güncel operasyonel iş:** PR #8 Oğuz ve, limit yenilendiğinde, Claude Code
-tarafından incelenir. Bulgu aynı dalda kapatılır ve CI yeniden çalıştırılır.
-Oğuz'un açık kararı olmadan merge, image publication, VPS, Caddy, DNS veya
-public activation yoktur.
+**2026-07-17 visual checkpoint:** Oğuz'un seçtiği Claude A5.1 tasarım sistemi
+`codex/p014-visual-phase-b` dalında gerçek Streamlit yüzeyine aktarıldı. İlk
+kanıtlı uygulama `3a554e0e76522672efaf547b1d03e12cb4f3531b`; draft PR #8'dir.
+Sonraki tarayıcı-harness düzeltmeleri `15ce5dd532c5054191518ea292f5cb966338d068`
+ve A5.1 bulgu kapatma commit'i `816dba94eb64458a1fe42bf4ad7b76e63d04a8d4`
+üzerinden ilerledi. Bilimsel-yöntem, erişilebilirlik ve FAIR denetimleri nihai GO
+değil, yeni düzeltme bulguları verdi. Bu bulgular çalışma ağacında giderildi;
+failed-job cleanup, purpose-conditioned exploratory language, pre-run method
+disclosure, warning semantics, accessible uploader naming ve A5.1 kaynak
+paketinin Git içinde saklanması exact-commit yeniden denetimini bekliyor.
+P014 tek `in-progress` ticket'tır. P007-P009 doğrulanmış minimum-alpha
+dilimlerini koruyarak ertelenmiş tam-kapsam ve owner kapıları nedeniyle
+`blocked` durumundadır. Tam P014 hâlâ P012'ye bağlıdır. Merge, image
+publication, VPS, Caddy, DNS ve public activation için Oğuz'un ayrıca açık kararı
+gerekir. Önce `docs/development/phase-b-visual-integration.md`, sonra
+`SESSION_HANDOFF.md` okunur.
+**Güncel operasyonel iş:** Düzeltmeleri tek exact commit'te dondur; full verify,
+bağımsız exact-SHA bilimsel/erişilebilirlik/FAIR yeniden denetimi ve canonical
+Linux CI çalıştır. CI tarayıcı JSON'u ile SHA-256 özetini Git kanıtına bağlamadan
+review closure veya GO iddiası yazma.
 **Aşağıdaki uzun aşama özeti tarihsel P014 gelişimini korur:** P001-P006 tamamlandı. P007 teknik kapılardan geçti; yalnız
 Oğuz'un bütünleşik son uyarı dili ve prepared-state browser kabulü açıktır.
 P008'in dört hücreli Guided minimum-alpha akışı `7e9a28e`, P009'un sonuç ve yorum
@@ -35,7 +29,7 @@ sınırı yüzeyi `c5e39b0` exact commit'lerinde gerçek upload-to-R/stylo-to-re
 Linux browser, remote clean-clone ve canonical CI kapılarından geçti. P009 kanıt
 kaydı `RUN-20260715-0003`; kanıt-link commit'i `567d154` ve CI `29404000108`
 yeşildir. P008 tam üç amaç ve ilgili known/unknown matris, P009 ise dendrogram,
-Style Over Time tarih haritası ve geniş glossary için `in-progress` kalır;
+Style Over Time tarih haritası ve geniş glossary için ertelenmiş `blocked` kalır;
 Research Mode kilitlidir. Minimum P014 deployment paketi exact commit
 `7f26dbe`, `RUN-20260715-0004` ve canonical CI `29420509541` ile Linux source,
 gerçek R/stylo browser, hardened container stack, TLS/WebSocket, hostile-request,

@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "ticket_id": "P008",
   "title": "Guided and Research Workflows",
-  "status": "in-progress",
+  "status": "blocked",
   "opened_at_utc": "2026-07-15T01:47:22Z",
   "closed_at_utc": null,
   "objective": "Connect a P007-ready corpus to the validated P006 stylo engine through beginner-first, versioned, hash-bound, review-before-run workflows that require no user-written R, Python, or shell code while preserving parameter visibility, unknown isolation, one-time admission, typed partial failure, and later-ticket claim boundaries.",

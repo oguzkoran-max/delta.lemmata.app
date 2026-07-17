@@ -1,0 +1,39 @@
+A5.1 revizyonuna başlıyorum. Orijinal export dokunulmadan kalacak, yeni üretim ayrı klasörde. Önce 19 maddeyi kapsayan güncellenmiş tema modülünü yazıyorum.
+
+Heatmap'te bir hücre rengi ramp dışı görünüyor; büyüterek kontrol ediyorum.
+
+# Phase A5.1 Raporu: Odaklı Prototip Revizyonu
+
+Export hazır: `[owner-local export path redacted]` (25 dosya, `MANIFEST.sha256` 24/24 doğrulandı). Orijinal A5 exportu dokunulmamış halde duruyor (13 dosya). Depo temiz, HEAD birebir `2d6566ca0e04e790e1de950ca76655cd5655f45b`, branch yok, commit yok, Phase B başlatılmadı. Kabul viewport'larının üçü de üretildi ve ölçüldü (375×844, 390×844, 1440×1000).
+
+## 19 zorunlu maddenin karşılanması
+
+1. **Browse files mobilde 1096 → 740 px** (375 ve 390'da aynı, hedef ≤780). Mobil sıra artık: kısa intro → 3 amaç → kompakt adım göstergesi → upload paneli (Browse dropzone'un ilk öğesi). Rehber açıklama ve boş özet şeridi uploader'ın altına taşındı.
+2. Sakil kopyalar değişti. Amaç kartlarının alt yazıları artık soru değil tanım: "Compare recurring word patterns across individual texts." / "Compare texts grouped by author, genre, period, or audience." / "Explore one writer's dated works in sequence." Kanonik katalog soruları rehber blokta duruyor.
+3. Her sayfada tek gerçek H1. Girişte H1 sayfa manşeti ("Discover patterns in writing style."), upload başlığı H2'ye indi. Ölçüm: h1_count = 1, dört sayfada da.
+4. Review artık seçili amacı gösteriyor (başlığın altında "Selected purpose: Compare Texts" rozeti + soru) ve durum bandı amaca koşullu: "Ready for Compare Texts: no blockers for this purpose." artı Style Over Time'ın 0/3 kronoloji noktası nedeniyle desteklenmeyeceği notu. Yalnız P004/P007'nin bugün hesapladığı doğrulama olguları kullanıldı.
+5. Ham kodlar ve ham alan adları ana metinden çıktı. Her uyarı grubunun ve completeness matrisinin altında katlanır "Technical details" var (`META_CONFOUND_METADATA_UNKNOWN`, `first_publication` vb. artık yalnız orada). Görünür metin insancıl ("Areas: genre, audience, adaptation, collection, and source type").
+6. Kaydırma talimatı artık tablo ÜSTÜNDE kalıcı, normal akışta bir satır ("Wide table: scroll sideways for 4 more columns", ok ikonu ile). Kırpılan overlay çip kaldırıldı. Ölçüm: görünür yükseklik 4 px → 19 px, review'da 2, results'ta 2, system'de 4 satır. Tek satırlık script yalnız taşma yoksa gizliyor.
+7. Results kanıt-önce yeniden sıralandı: başarı bilgisi tek satırlık katlanır "run details" özetine indi, durum çipleri + MFW seçici hemen altında ve ısı haritası 1440×1000'de İLK ekranda görünüyor.
+8. MFW seçici mobilde 2×2: bounding box doğrulaması [14,661] [192,661] [14,713] [192,713], dördü de 44 px.
+9. Masaüstü boşluğu dolduruldu: ısı haritası + Method key ve MDS + "How to read this map" ikili kolon düzeninde.
+10. Method key eklendi: MFW, Classic Delta, küçük mesafenin anlamı, corpus göreliliği ve evrensel eşik yokluğu, beş kısa maddede.
+11. Isı haritası açıklaması genişledi: beyaz diyagonal (öz mesafe sıfır), renklerin yalnız bu matris içinde ölçeklendiği, matrisler veya koşular arası renk karşılaştırması yapılmaması ve sayısal karşılaştırma için alttaki matrise gidilmesi.
+12. "Exact distance matrix" → "Distance matrix", altına yuvarlama beyanı: ekranda 6 ondalık, indirilebilir kayıt tam hassasiyet.
+13. Komşu tablosu düzeltildi: sütun "Texts tied at this minimum", açıklama tie'ın kayıtlı sayısal tolerans içindeki eşit minimum olduğunu ve yakınlığın karşılıklı olmak zorunda olmadığını söylüyor.
+14. MDS uyarısı güçlendi: matris otoriter kanıttır, iki boyutlu kümeler projeksiyon artefaktı olabilir, her örüntü matris değerlerine karşı doğrulanmalı.
+15. Gerçek landmark'lar: `<main>`, `<footer>`, odakta görünen skip link, figure'lara erişilebilir adlar, amaç/mod/MFW/timeline seçimleri gerçek `<input type="radio">` + `<fieldset>`/`<legend>` ile (ok tuşları native çalışır), odak halkaları kırpılmıyor.
+16. Bütün butonlar ve seçim kartları minimum 44 px (küçük indirme butonları dahil), kalıcı en küçük yazı 12 px'e çıkarıldı (micro etiketler, adım durumları, rozetler).
+17. Kontrast denetimi düzeltildi: metin tablosu (17/17 ≥ 4.5:1) ve non-text tablosu ayrıldı. Temel kontrol sınırları için yeni `control-line` tokenı `#6f7d78` (kağıtta 4.29:1, tüm yüzeylerde ≥3:1), 9/9 non-text çifti geçiyor. Dekoratif panel sınırlarının SC 1.4.11 muafiyeti W3C referansıyla açıklandı. Uploader kesikli sınırı teal'e alındı (mint kesik çizgi 1.3:1 idi).
+18. `system.html` mobil taşması giderildi: belge genişliği 375'te 716 → 375, 390'da → 390.
+19. Font tedarik planı system sayfasında: Inter (rsms/inter, OFL 1.1, vendored woff2 + vendoring commit'inde SHA-256 kaydı) ve Source Sans 3 (Streamlit'in kendi paketi, yeni varlık yok, sürüm + lisans aynı kayıtta). İki aile de dış istek olmadan sunuluyor.
+
+## Teslimat içeriği
+
+Dört A5.1 HTML (kendi içinde, çevrimdışı, minimal satır içi etkileşim: native radio senkronu + taşma tespiti), 9 fold + 6 tam sayfa + design-system + contact-sheet PNG, `measurements.md` (önce/sonra tablosu) + `measurements.json`, `unresolved-constraints.md`, `MANIFEST.sha256`. P011 kararlılık etiketi veya P012 FAIR paketi hiçbir yerde uydurulmadı, hesap ve analiz mantığı yok.
+
+## Çözülmemiş kısıtlar (özet, tam metin dosyada)
+
+Inter bu makinede olmadığından başlıklar etiketli sistem stand-in'i ile çizildi. Streamlit widget DOM'u prototipteki saf HTML'den farklı olduğu için Phase B'de piksel geometrisi bütçeler içinde oynayabilir, erişilebilirlik sözleşmesi bağlayıcı. Results fixture verili numune olarak kalıyor, canlı doğrulama Linux CI kapısında. Isı haritası ölçeği, MDS aspect, komşu/tie dili ve boundary azaltması Codex bilimsel incelemesine işaretli. Fieldset'te `getComputedStyle` çözümsüz şablon döndürüyor, Phase B geometri oracle'ları bounding box üzerinden asserted olmalı.
+
+Duruyorum. Codex incelemenizi ve ardından yeni exact base commit + açık **BEGIN PHASE B** talimatını bekliyorum.

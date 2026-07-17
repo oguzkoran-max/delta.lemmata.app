@@ -18,6 +18,7 @@ from delta_lemmata.corpus import (
     CorpusInventory,
     DateMode,
     DateValue,
+    IssueSeverity,
     MetadataCsvExportError,
     MetadataCsvExportErrorCode,
     MetadataCsvImportResult,
@@ -180,6 +181,62 @@ def _fixture_import() -> tuple[ValidatedCorpusUnit, MetadataCsvImportResult]:
     return unit, result
 
 
+def test_review_readiness_detail_uses_the_general_ready_boundary() -> None:
+    inventory = SimpleNamespace(purpose=PurposeId.STYLE_OVER_TIME)
+    report = SimpleNamespace(
+        readiness=SimpleNamespace(
+            independent_work_count=6,
+            chronology_point_count=3,
+            exploratory=False,
+        )
+    )
+
+    detail = webapp_module._review_readiness_detail(inventory, report)
+
+    assert "Corpus documentation has no blockers" in detail
+    assert "Readiness applies only to the selected purpose" in detail
+    assert "requires at least six" not in detail
+
+
+def test_style_over_time_readiness_remains_available_but_explicitly_exploratory() -> None:
+    inventory = _fixture_inventory().model_copy(update={"purpose": PurposeId.STYLE_OVER_TIME})
+    app = _inject_review(run_app(), inventory)
+
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "Exploratory for Trace Style Over Time" in rendered
+    assert 'class="delta-readiness-band is-exploratory"' in rendered
+    assert "Delta can continue with this chronology only as exploratory analysis" in rendered
+    assert "1 independent work and 1 chronology point" in rendered
+    assert "Meeting that rule would still not prove scientific sufficiency" in rendered
+    assert "would not yet be supported" not in rendered
+    assert app.checkbox[0].disabled is False
+
+
+def test_style_over_time_marks_three_documented_chronology_points_as_documented() -> None:
+    inventory = _three_work_chronology_inventory().model_copy(
+        update={"purpose": PurposeId.STYLE_OVER_TIME}
+    )
+    app = _inject_review(run_app(), inventory)
+
+    rendered = "\n".join(item.value for item in app.markdown)
+    assert "3 chronology points" in rendered
+    assert "Documented" in rendered
+    assert "3 needed for Style Over Time" not in rendered
+
+
+def test_review_warning_type_count_excludes_blockers_and_information() -> None:
+    report = SimpleNamespace(
+        issues=(
+            SimpleNamespace(code="same-warning", severity=IssueSeverity.WARNING),
+            SimpleNamespace(code="same-warning", severity=IssueSeverity.WARNING),
+            SimpleNamespace(code="blocker", severity=IssueSeverity.BLOCKER),
+            SimpleNamespace(code="information", severity=IssueSeverity.INFORMATION),
+        )
+    )
+
+    assert webapp_module._review_issue_type_count(report) == 1
+
+
 def _inject_imported_describe(app: AppTest, purpose: PurposeId) -> AppTest:
     unit, imported = _fixture_import()
     app.session_state[webapp_module._FLOW_STAGE_KEY] = webapp_module.CorpusSubstage.DESCRIBE.value
@@ -287,6 +344,54 @@ def _two_work_inventory() -> CorpusInventory:
             "assets": (*inventory.assets, second_asset),
             "validated_files": (*inventory.validated_files, second_file),
             "rights": (*inventory.rights, second_rights),
+        }
+    )
+
+
+def _three_work_chronology_inventory() -> CorpusInventory:
+    inventory = _two_work_inventory()
+    third_work = inventory.works[0].model_copy(
+        update={
+            "work_id": "latest_work",
+            "title_original": "Latest work",
+            "first_publication": DateValue(mode=DateMode.EXACT, start_year=1910),
+        }
+    )
+    third_edition = inventory.editions[0].model_copy(
+        update={
+            "edition_id": "latest_edition",
+            "work_id": "latest_work",
+            "edition_date": DateValue(mode=DateMode.EXACT, start_year=1911),
+        }
+    )
+    third_source = inventory.sources[0].model_copy(
+        update={"source_id": "latest_source", "edition_id": "latest_edition"}
+    )
+    third_asset = inventory.assets[0].model_copy(
+        update={
+            "asset_id": "asset_latest",
+            "file_label": "latest.txt",
+            "content_sha256": "3" * 64,
+            "work_id": "latest_work",
+            "edition_id": "latest_edition",
+            "source_id": "latest_source",
+            "rights_asset_ids": ("asset_latest",),
+        }
+    )
+    third_file = inventory.validated_files[0].model_copy(
+        update={"file_label": "latest.txt", "content_sha256": "3" * 64}
+    )
+    third_rights = inventory.rights[0].model_copy(
+        update={"asset_id": "asset_latest", "source_id": "latest_source"}
+    )
+    return inventory.model_copy(
+        update={
+            "works": (*inventory.works, third_work),
+            "editions": (*inventory.editions, third_edition),
+            "sources": (*inventory.sources, third_source),
+            "assets": (*inventory.assets, third_asset),
+            "validated_files": (*inventory.validated_files, third_file),
+            "rights": (*inventory.rights, third_rights),
         }
     )
 
@@ -508,10 +613,9 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
     app.button(key="guided_build_review").click().run()
 
     assert _page_title(app) == "Review the documented corpus"
-    metrics = {metric.label: metric.value for metric in app.metric}
-    assert metrics["Independent works"] == "2"
     assert len(_by_label(app.radio, "Select a documented work on the chronology").options) == 2
     rendered = "\n".join(item.value for item in app.markdown)
+    assert "<span>Independent works</span><strong>2</strong>" in rendered
     assert rendered.count('data-row-key="work_') >= 2
     state = repr(app.session_state.filtered_state)
     assert "ZIP_CANARY_EARLY" not in state
@@ -1014,6 +1118,8 @@ def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(
 
     heatmap = charts[0]["spec"]
     heatmap_color = heatmap["layer"][0]["encoding"]["color"]
+    heatmap_stroke = heatmap["layer"][0]["encoding"]["stroke"]
+    heatmap_stroke_width = heatmap["layer"][0]["encoding"]["strokeWidth"]
     assert heatmap_color["scale"]["domain"] == [1.0, 2.0]
     assert heatmap_color["scale"]["type"] == "quantize"
     assert heatmap_color["scale"]["range"] == [
@@ -1024,6 +1130,20 @@ def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(
         "#297658",
         "#0a5443",
     ]
+    assert heatmap_stroke == {
+        "condition": {
+            "test": "datum.reference === datum.compared",
+            "value": "#596762",
+        },
+        "value": "#d5ddda",
+    }
+    assert heatmap_stroke_width == {
+        "condition": {
+            "test": "datum.reference === datum.compared",
+            "value": 1.5,
+        },
+        "value": 0.5,
+    }
     contrast_condition = heatmap["layer"][1]["encoding"]["color"]["condition"][1]
     assert float(contrast_condition["test"].removeprefix("datum.distance >= ")) == pytest.approx(
         1.0 + (4 / 6)
@@ -1138,6 +1258,7 @@ def test_heatmap_labels_are_contrasted_and_hidden_below_the_a51_cell_budget(
     spec = charts[0]["spec"]
     assert len(spec["layer"]) == 1
     assert spec["layer"][0]["encoding"]["tooltip"][-1]["field"] == "distance_label"
+    assert spec["layer"][0]["encoding"]["stroke"]["condition"]["value"] == "#596762"
 
 
 def test_research_parameter_mode_is_visibly_locked() -> None:
@@ -1254,13 +1375,16 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
         nonlocal maintenance_calls
         maintenance_calls += 1
 
+    def run_analysis_once() -> None:
+        analyses.run_next()
+        maintain()
+
     monkeypatch.setattr(
         webapp_module,
         "_runtime",
         lambda: SimpleNamespace(
             prepared_corpora=prepared,
-            analyses=analyses,
-            maintain=maintain,
+            run_analysis_once=run_analysis_once,
         ),
     )
     monkeypatch.setattr(

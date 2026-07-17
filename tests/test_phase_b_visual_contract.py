@@ -43,7 +43,9 @@ def test_phase_b_theme_uses_the_approved_a51_tokens_and_dimensions() -> None:
         ".delta-mds-legend {",
         ".delta-mds-unknown {",
         ".delta-purpose-guide-mobile {",
-        ".st-key-corpus_inputs > .st-key-corpus_input_mode {",
+        ".delta-readiness-band {",
+        ".delta-readiness-band.is-exploratory {",
+        ".delta-review-metrics {",
         '[data-testid="stVegaLiteChart"] details > summary',
         'button[data-testid="stBaseButton-elementToolbar"]',
     }
@@ -167,3 +169,17 @@ def test_review_and_results_expose_accessible_table_and_technical_detail_languag
     assert text("review.selected_purpose", purpose="Text proximity").startswith("Selected purpose:")
     assert text("results.title") == "Explore the relative distances"
     assert text("results.method.title") == "Method key"
+
+
+def test_parameter_method_explanation_precedes_confirmation_and_starts_exposed() -> None:
+    source = (ROOT / "src" / "delta_lemmata" / "webapp.py").read_text(encoding="utf-8")
+    parameters = source[source.index("def _render_parameters_stage") :]
+    explanation = parameters.index("_render_parameter_explanations()")
+    confirmation = parameters.index("confirmed = st.checkbox(")
+    run_control = parameters.index("run_clicked = st.button(")
+
+    assert explanation < confirmation < run_control
+    helper = source[
+        source.index("def _render_parameter_explanations") : source.index("def _result_descriptors")
+    ]
+    assert 'st.expander(text("parameters.learn.title"), expanded=True)' in helper

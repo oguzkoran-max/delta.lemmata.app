@@ -35,6 +35,7 @@ _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selectio
 _entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
 _semantic_result_parity = P009_BROWSER_AUDIT._semantic_result_parity
 _semantic_table_rows = P009_BROWSER_AUDIT._semantic_table_rows
+_terminal_payload_cleanup_pass = P009_BROWSER_AUDIT._terminal_payload_cleanup_pass
 
 
 class _Download:
@@ -527,3 +528,44 @@ def test_result_selection_rejects_unchanged_semantic_tables(
             before,
             attempts=2,
         )
+
+
+@pytest.mark.parametrize(
+    "diagnostics",
+    (
+        {"available": False},
+        {"available": True, "records": None},
+        {"available": True, "records": []},
+        {"available": True, "records": ["not-a-record"]},
+        {
+            "available": True,
+            "records": [
+                {
+                    "execution_state": "terminal",
+                    "artifact_states": {"input": "present", "work": "verified_absent"},
+                }
+            ],
+        },
+    ),
+)
+def test_terminal_payload_cleanup_rejects_incomplete_evidence(
+    diagnostics: dict[str, object],
+) -> None:
+    assert _terminal_payload_cleanup_pass(diagnostics) is False
+
+
+def test_terminal_payload_cleanup_accepts_only_terminal_verified_absence() -> None:
+    diagnostics = {
+        "available": True,
+        "records": [
+            {
+                "execution_state": "terminal",
+                "artifact_states": {
+                    "input": "verified_absent",
+                    "work": "verified_absent",
+                },
+            }
+        ],
+    }
+
+    assert _terminal_payload_cleanup_pass(diagnostics) is True

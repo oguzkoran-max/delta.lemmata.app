@@ -11,6 +11,7 @@ from delta_lemmata.corpus_materialization import CorpusMaterializationService
 from delta_lemmata.job_janitor import JobJanitor
 from delta_lemmata.prepared_corpus_service import PreparedCorpusService
 from delta_lemmata.web_runtime import (
+    WebRuntime,
     WebRuntimeError,
     WebRuntimeErrorCode,
     build_web_runtime,
@@ -94,7 +95,15 @@ def test_explicit_development_and_production_roots_build_without_being_owned_by_
     production_root = _private(tmp_path / "production")
     production = build_web_runtime(_production(production_root))
     assert production._temporary_directory is None
+    thread = production._maintenance_thread
+    assert thread is not None
+    assert thread.name == "delta-job-maintenance"
+    assert thread.daemon is True
+    assert thread.is_alive()
     production.close()
+    assert production._maintenance_stop is None
+    assert production._maintenance_thread is None
+    assert not thread.is_alive()
     assert production_root.is_dir()
 
 
@@ -182,6 +191,7 @@ def test_runtime_maps_unexpected_initialization_failures_and_cleans_temporary_ro
 ) -> None:
     created: list[Path] = []
     original = runtime_module.TemporaryDirectory
+    original_store = runtime_module.SQLiteJobStore
 
     def observed_temporary_directory(*args: object, **kwargs: object):
         directory = original(*args, **kwargs)
@@ -203,6 +213,21 @@ def test_runtime_maps_unexpected_initialization_failures_and_cleans_temporary_ro
         WebRuntimeErrorCode.INITIALIZATION_FAILED,
     )
     assert explicit_root.exists()
+    monkeypatch.setattr(runtime_module, "SQLiteJobStore", original_store)
+
+    class BrokenThread:
+        def __init__(self, **_kwargs: object) -> None:
+            pass
+
+        def start(self) -> None:
+            raise RuntimeError("private thread failure")
+
+        def join(self, *, timeout: float) -> None:
+            assert timeout == runtime_module._MAINTENANCE_JOIN_TIMEOUT_SECONDS
+
+    production_root = _private(tmp_path / "broken-thread")
+    monkeypatch.setattr(runtime_module, "Thread", BrokenThread)
+    _expect(_production(production_root), WebRuntimeErrorCode.INITIALIZATION_FAILED)
 
 
 def test_runtime_maintenance_is_content_free_and_startup_recovery_is_mandatory(
@@ -231,6 +256,102 @@ def test_runtime_maintenance_is_content_free_and_startup_recovery_is_mandatory(
 
     monkeypatch.setattr(runtime_module, "JobJanitor", BrokenJanitor)
     _expect({"DELTA_ENV": "test"}, WebRuntimeErrorCode.INITIALIZATION_FAILED)
+
+
+def test_analysis_run_always_attempts_immediate_terminal_maintenance() -> None:
+    events: list[str] = []
+
+    class Materializations:
+        @staticmethod
+        def reap_expired() -> None:
+            events.append("materializations")
+
+    class Analyses:
+        @staticmethod
+        def run_next() -> str:
+            events.append("analysis")
+            return "terminal"
+
+    class Janitor:
+        @staticmethod
+        def run_once() -> None:
+            events.append("janitor")
+
+    runtime = WebRuntime(
+        materializations=Materializations(),  # type: ignore[arg-type]
+        prepared_corpora=object(),  # type: ignore[arg-type]
+        analyses=Analyses(),  # type: ignore[arg-type]
+        janitor=Janitor(),  # type: ignore[arg-type]
+    )
+    assert runtime.run_analysis_once() == "terminal"
+    assert events == ["analysis", "materializations", "janitor"]
+
+    class FailedAnalyses:
+        @staticmethod
+        def run_next() -> None:
+            events.append("failed-analysis")
+            raise RuntimeError("primary failure")
+
+    class FailedMaintenance:
+        @staticmethod
+        def reap_expired() -> None:
+            events.append("failed-maintenance")
+            raise RuntimeError("private cleanup failure")
+
+    runtime.analyses = FailedAnalyses()  # type: ignore[assignment]
+    runtime.materializations = FailedMaintenance()  # type: ignore[assignment]
+    with pytest.raises(RuntimeError, match="primary failure"):
+        runtime.run_analysis_once()
+    assert events[-2:] == ["failed-analysis", "failed-maintenance"]
+
+    runtime.analyses = Analyses()  # type: ignore[assignment]
+    with pytest.raises(WebRuntimeError) as captured:
+        runtime.run_analysis_once()
+    assert captured.value.code is WebRuntimeErrorCode.MAINTENANCE_FAILED
+
+
+def test_periodic_maintenance_is_traffic_independent_and_idempotent() -> None:
+    maintenance_calls = 0
+    janitor_calls = 0
+
+    class Materializations:
+        @staticmethod
+        def reap_expired() -> None:
+            nonlocal maintenance_calls
+            maintenance_calls += 1
+            if maintenance_calls == 1:
+                raise RuntimeError("private first pass")
+
+    class Janitor:
+        @staticmethod
+        def run_once() -> None:
+            nonlocal janitor_calls
+            janitor_calls += 1
+
+    class BoundedStop:
+        waits = 0
+
+        def wait(self, interval: float) -> bool:
+            assert interval == runtime_module._MAINTENANCE_INTERVAL_SECONDS
+            self.waits += 1
+            return self.waits == 3
+
+    runtime = WebRuntime(
+        materializations=Materializations(),  # type: ignore[arg-type]
+        prepared_corpora=object(),  # type: ignore[arg-type]
+        analyses=object(),  # type: ignore[arg-type]
+        janitor=Janitor(),  # type: ignore[arg-type]
+    )
+    runtime._maintenance_loop(BoundedStop())  # type: ignore[arg-type]
+    assert maintenance_calls == 2
+    assert janitor_calls == 1
+
+    runtime.start_periodic_maintenance()
+    thread = runtime._maintenance_thread
+    runtime.start_periodic_maintenance()
+    assert runtime._maintenance_thread is thread
+    runtime.close()
+    assert thread is not None and not thread.is_alive()
 
 
 def test_absolute_noncanonical_root_is_rejected(tmp_path: Path) -> None:

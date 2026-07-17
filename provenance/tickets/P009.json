@@ -2,7 +2,7 @@
   "schema_version": "1.1.0",
   "ticket_id": "P009",
   "title": "Results, Explanations, and Interpretive Guardrails",
-  "status": "in-progress",
+  "status": "blocked",
   "opened_at_utc": "2026-07-15T04:56:12Z",
   "closed_at_utc": null,
   "objective": "Turn one owned, guardian-confirmed P006 scientific result into a strict, beginner-readable, downloadable, and accessible four-cell workbench view whose heatmap, nearest-neighbour table, and deterministic classical MDS map remain bound to exact validated distances and explicit interpretation limits.",
