@@ -257,7 +257,14 @@ def test_gateway_separates_static_boot_assets_from_dynamic_rate_budget() -> None
     assert "zone=delta_static_requests:1m rate=600r/m" in nginx
     assert "zone=delta_dynamic_requests burst=60 nodelay" in nginx
     assert "zone=delta_static_requests burst=120 nodelay" in nginx
-    assert "limit_conn_zone $delta_client_rate_key zone=delta_connections:1m" in nginx
+    assert "map $uri $delta_connection_key" in nginx
+    assert "limit_conn_zone $delta_connection_key zone=delta_connections:1m" in nginx
+    connection_map = nginx.split("map $uri $delta_connection_key", maxsplit=1)[1].split(
+        "}", maxsplit=1
+    )[0]
+    assert "default $delta_client_rate_key;" in connection_map
+    assert '~^/static/ "";' in connection_map
+    assert "limit_conn_zone $delta_client_rate_key" not in nginx
     assert "limit_conn_zone $binary_remote_addr" not in nginx
 
 
