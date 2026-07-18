@@ -14,6 +14,9 @@ is not used to work around it.
 - Preserves the validated public Host authority for Streamlit WebSockets and
   pins the external scheme to HTTPS because the gateway is reachable only
   through the host TLS route.
+- Keys request and connection budgets by Caddy's replaced `X-Forwarded-For`
+  value, with a socket-address fallback for direct loopback health probes, so
+  unrelated public visitors do not consume one shared Docker-bridge budget.
 - Gives Delta separate containers, environment files, secrets, runtime storage,
   labels, health checks, resource limits, and rollback controls.
 - Leaves the existing Lemmata application, service, environment, volume, secret,

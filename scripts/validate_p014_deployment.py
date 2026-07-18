@@ -429,13 +429,15 @@ def _validate_text_contracts() -> None:
         "server_name delta.lemmata.app;",
         "return 421;",
         "client_max_body_size 26m;",
+        "map $http_x_forwarded_for $delta_client_rate_key",
+        '"" $binary_remote_addr;',
         "map $uri $delta_dynamic_rate_key",
         "map $uri $delta_static_rate_key",
         "limit_req_zone $delta_dynamic_rate_key zone=delta_dynamic_requests:1m rate=120r/m;",
         "limit_req_zone $delta_static_rate_key zone=delta_static_requests:1m rate=600r/m;",
         "limit_req zone=delta_dynamic_requests burst=60 nodelay;",
         "limit_req zone=delta_static_requests burst=120 nodelay;",
-        "limit_conn_zone $binary_remote_addr",
+        "limit_conn_zone $delta_client_rate_key",
         "proxy_connect_timeout 5s;",
         "proxy_read_timeout 75s;",
         "proxy_set_header Host $http_host;",
@@ -453,7 +455,7 @@ def _validate_text_contracts() -> None:
     )
     _require(all(item in nginx for item in required_nginx), "P014_GATEWAY_POLICY_INCOMPLETE")
     _require(
-        '~^/static/ "";' in nginx and "~^/static/ $binary_remote_addr;" in nginx,
+        '~^/static/ "";' in nginx and "~^/static/ $delta_client_rate_key;" in nginx,
         "P014_GATEWAY_RATE_CLASSIFICATION_INCOMPLETE",
     )
     _require("$delta_forwarded_proto" not in nginx, "P014_GATEWAY_SCHEME_NOT_PINNED")
