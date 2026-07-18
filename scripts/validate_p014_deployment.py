@@ -433,11 +433,12 @@ def _validate_text_contracts() -> None:
         '"" $binary_remote_addr;',
         "map $uri $delta_dynamic_rate_key",
         "map $uri $delta_static_rate_key",
+        "map $uri $delta_connection_key",
         "limit_req_zone $delta_dynamic_rate_key zone=delta_dynamic_requests:1m rate=120r/m;",
         "limit_req_zone $delta_static_rate_key zone=delta_static_requests:1m rate=600r/m;",
         "limit_req zone=delta_dynamic_requests burst=60 nodelay;",
         "limit_req zone=delta_static_requests burst=120 nodelay;",
-        "limit_conn_zone $delta_client_rate_key",
+        "limit_conn_zone $delta_connection_key zone=delta_connections:1m;",
         "proxy_connect_timeout 5s;",
         "proxy_read_timeout 75s;",
         "proxy_set_header Host $http_host;",
@@ -457,6 +458,12 @@ def _validate_text_contracts() -> None:
     _require(
         '~^/static/ "";' in nginx and "~^/static/ $delta_client_rate_key;" in nginx,
         "P014_GATEWAY_RATE_CLASSIFICATION_INCOMPLETE",
+    )
+    _require(
+        "map $uri $delta_connection_key" in nginx
+        and "default $delta_client_rate_key;" in nginx
+        and "limit_conn_zone $delta_connection_key zone=delta_connections:1m;" in nginx,
+        "P014_GATEWAY_CONNECTION_CLASSIFICATION_INCOMPLETE",
     )
     _require("$delta_forwarded_proto" not in nginx, "P014_GATEWAY_SCHEME_NOT_PINNED")
     _require("/var/cache/nginx" not in nginx, "P014_GATEWAY_CACHE_PATH_FORBIDDEN")

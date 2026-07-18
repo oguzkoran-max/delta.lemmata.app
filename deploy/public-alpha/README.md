@@ -17,6 +17,9 @@ is not used to work around it.
 - Keys request and connection budgets by Caddy's replaced `X-Forwarded-For`
   value, with a socket-address fallback for direct loopback health probes, so
   unrelated public visitors do not consume one shared Docker-bridge budget.
+- Exempts Streamlit's parallel `/static/` JavaScript and CSS boot assets from
+  the concurrent-connection cap while retaining their separate bounded request
+  rate, preventing an accepted browser from receiving an incomplete white page.
 - Gives Delta separate containers, environment files, secrets, runtime storage,
   labels, health checks, resource limits, and rollback controls.
 - Leaves the existing Lemmata application, service, environment, volume, secret,
