@@ -458,6 +458,10 @@ def test_host_change_scripts_are_guarded_exact_and_syntactically_valid() -> None
     assert '"$ROLLBACK" --state-dir' in install
     assert "rollback-armed" in install + rollback
     assert "install-complete" in install + rollback
+    assert "--completed-install-removal" in rollback
+    assert "completed-removal-started" in rollback
+    assert "completed-removal-complete" in rollback
+    assert 'python3 "$HOST_GATE" pre-docker' in rollback
     for conflict in ("docker-compose", "docker-compose-v2", "docker-doc"):
         assert conflict in install
     assert "PACKAGE_ALLOWLIST" in rollback

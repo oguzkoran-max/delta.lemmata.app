@@ -19,9 +19,10 @@ RUNTIME_UNITS=(docker.socket docker.service containerd.service)
 STATE_DIR=
 OUTPUT=
 APPLY=0
+COMPLETED_INSTALL_REMOVAL=0
 
 usage() {
-  echo "usage: $0 --state-dir PATH --output PATH --apply" >&2
+  echo "usage: $0 --state-dir PATH --output PATH --apply [--completed-install-removal]" >&2
   exit 2
 }
 
@@ -135,6 +136,66 @@ query_package_status() {
     return 0
   fi
   fail "P014_DOCKER_ROLLBACK_PACKAGE_QUERY_FAILED:$package"
+}
+
+validate_completed_install_packages() {
+  local record="$STATE_DIR/installed-packages.txt"
+  [[ -s $record ]] || fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_RECORD_MISSING"
+
+  local seen=' '
+  local line
+  local package
+  local normalized
+  local version
+  local status
+  local current_version
+  while IFS= read -r line || [[ -n $line ]]; do
+    [[ $line == *=* ]] || fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_RECORD_INVALID"
+    package=${line%%=*}
+    version=${line#*=}
+    [[ $package =~ $PACKAGE_ALLOWLIST && -n $version ]] ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_RECORD_INVALID"
+    normalized=${package%%:*}
+    case " $seen " in
+      *" $normalized "*) fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_DUPLICATE:$normalized" ;;
+    esac
+    seen+="$normalized "
+    status=$(query_package_status "$package")
+    [[ $status == installed ]] ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_STATE_CHANGED:$package:$status"
+    if ! current_version=$(dpkg-query -W -f='${Version}' "$package" 2>/dev/null); then
+      fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_VERSION_QUERY_FAILED:$package"
+      return 1
+    fi
+    [[ $current_version == "$version" ]] ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_VERSION_CHANGED:$package"
+  done < "$record"
+
+  local expected
+  for expected in "${PACKAGE_NAMES[@]}"; do
+    case " $seen " in
+      *" $expected "*) ;;
+      *) fail "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_MISSING:$expected" ;;
+    esac
+  done
+}
+
+validate_transaction_state() {
+  [[ -d $STATE_DIR && -f $STATE_DIR/install-started && -f $STATE_DIR/pre-docker.json ]] ||
+    fail "P014_DOCKER_ROLLBACK_STATE_INVALID"
+  if [[ $COMPLETED_INSTALL_REMOVAL -eq 1 ]]; then
+    [[ -f $STATE_DIR/install-complete && -f $STATE_DIR/rollback-disarmed ]] ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_STATE_INVALID"
+    [[ ! -e $STATE_DIR/rollback-armed && ! -e $STATE_DIR/rollback-complete ]] ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_STATE_CONFLICT"
+    [[ ! -e $STATE_DIR/completed-removal-started &&
+      ! -e $STATE_DIR/completed-removal-complete ]] ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_ALREADY_ATTEMPTED"
+    return 0
+  fi
+  [[ -f $STATE_DIR/rollback-armed && ! -e $STATE_DIR/install-complete ]] ||
+    fail "P014_DOCKER_ROLLBACK_NOT_ARMED"
+  [[ ! -e $STATE_DIR/rollback-complete ]] || fail "P014_DOCKER_ROLLBACK_ALREADY_COMPLETE"
 }
 
 expected_hash() {
@@ -386,6 +447,7 @@ main() {
       --state-dir) STATE_DIR=${2:-}; shift 2 ;;
       --output) OUTPUT=${2:-}; shift 2 ;;
       --apply) APPLY=1; shift ;;
+      --completed-install-removal) COMPLETED_INSTALL_REMOVAL=1; shift ;;
       *) usage ;;
     esac
   done
@@ -394,12 +456,8 @@ main() {
   [[ $EUID -eq 0 ]] || fail "P014_DOCKER_ROLLBACK_REQUIRES_ROOT"
   [[ $STATE_DIR = /* && $OUTPUT = /* ]] || fail "P014_DOCKER_ROLLBACK_PATH_NOT_ABSOLUTE"
   [[ -x $HOST_GATE ]] || fail "P014_DOCKER_ROLLBACK_HOST_GATE_INVALID"
-  [[ -d $STATE_DIR && -f $STATE_DIR/install-started && -f $STATE_DIR/pre-docker.json ]] ||
-    fail "P014_DOCKER_ROLLBACK_STATE_INVALID"
-  [[ -f $STATE_DIR/rollback-armed && ! -e $STATE_DIR/install-complete ]] ||
-    fail "P014_DOCKER_ROLLBACK_NOT_ARMED"
   [[ ! -e $OUTPUT ]] || fail "P014_DOCKER_ROLLBACK_OUTPUT_EXISTS"
-  [[ ! -e $STATE_DIR/rollback-complete ]] || fail "P014_DOCKER_ROLLBACK_ALREADY_COMPLETE"
+  validate_transaction_state
   [[ -f $STATE_DIR/runtime-roots-owned ]] ||
     fail "P014_DOCKER_ROLLBACK_RUNTIME_OWNERSHIP_MISSING"
   local command
@@ -408,6 +466,9 @@ main() {
     iptables-restore iptables-save mv nft pgrep python3 rm rmdir sha256sum sysctl systemctl; do
     command -v "$command" >/dev/null || fail "P014_DOCKER_ROLLBACK_COMMAND_MISSING:$command"
   done
+  if [[ $COMPLETED_INSTALL_REMOVAL -eq 1 ]]; then
+    validate_completed_install_packages
+  fi
 
   # Validate every destructive input before changing packages, files, services, or rules.
   local forwarding_values
@@ -452,6 +513,12 @@ main() {
   if [[ $runtime_evidence -eq 1 ]]; then
     inspect_owned_runtime_before_cleanup "$STATE_DIR"
   fi
+  if [[ $COMPLETED_INSTALL_REMOVAL -eq 1 ]]; then
+    systemctl is-active --quiet docker.service ||
+      fail "P014_DOCKER_COMPLETED_REMOVAL_RUNTIME_NOT_ACTIVE"
+    inspect_docker_empty "$STATE_DIR"
+    touch "$STATE_DIR/completed-removal-started"
+  fi
 
   stop_runtime_units
   prove_runtime_stopped
@@ -486,7 +553,8 @@ main() {
     touch "$STATE_DIR/keyring-dir-removed"
   fi
 
-  # install-complete is forbidden above; these roots were absent before this armed transaction.
+  # These roots were absent before the recorded transaction. A completed-install
+  # removal additionally proves the runtime contains no image or container.
   rm -rf --one-file-system -- /var/lib/docker /var/lib/containerd
   touch "$STATE_DIR/runtime-roots-removed"
 
@@ -495,14 +563,21 @@ main() {
   sysctl -q -w "net.ipv6.conf.all.forwarding=$ipv6_forward"
   systemctl daemon-reload
 
-  python3 "$HOST_GATE" post-rollback \
-    --baseline "$STATE_DIR/pre-docker.json" \
-    --output "$OUTPUT" \
-    --samples 20
-
-  touch "$STATE_DIR/rollback-complete"
-  rm -f -- "$STATE_DIR/rollback-armed"
-  echo "p014-docker-rollback-ok"
+  if [[ $COMPLETED_INSTALL_REMOVAL -eq 1 ]]; then
+    python3 "$HOST_GATE" pre-docker \
+      --output "$OUTPUT" \
+      --samples 20
+    touch "$STATE_DIR/completed-removal-complete"
+    echo "p014-docker-completed-install-removal-ok"
+  else
+    python3 "$HOST_GATE" post-rollback \
+      --baseline "$STATE_DIR/pre-docker.json" \
+      --output "$OUTPUT" \
+      --samples 20
+    touch "$STATE_DIR/rollback-complete"
+    rm -f -- "$STATE_DIR/rollback-armed"
+    echo "p014-docker-rollback-ok"
+  fi
 }
 
 if [[ ${BASH_SOURCE[0]} == "$0" ]]; then

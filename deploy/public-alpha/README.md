@@ -156,6 +156,26 @@ original listeners, complete firewall hashes, Caddyfile hash, Lemmata process
 identity, health, latency budget, and no-Docker state. A successful installation
 disarms this destructive rollback before any Delta image is pulled.
 
+If a completed installation must be removed solely to refresh an expired
+pre-Docker measurement window, use the same exact operations commit with the
+explicit `--completed-install-removal` mode. This maintenance path accepts only
+the original completed/disarmed transaction, verifies that every installed
+Docker package still has its recorded version, refuses any image or container,
+preserves the original transaction markers, and writes separate
+`completed-removal-started` and `completed-removal-complete` evidence. Remove
+only rollout-owned images first; never use this mode on a shared or populated
+Docker runtime. Its output is a newly captured, accepted `pre-docker` baseline
+for the immediate reinstall; it does not compare against the expired baseline:
+
+```bash
+set -Eeuo pipefail
+scripts/p014_rollback_docker_ubuntu.sh \
+  --state-dir /root/p014-host-evidence/docker-change \
+  --output /root/p014-host-evidence/pre-docker-after-completed-removal.json \
+  --completed-install-removal \
+  --apply
+```
+
 The post-install gate reuses the installer's private APT list directory rather
 than consulting the host's unrelated default package index. If the accepted
 pre-Docker firewall snapshots were all empty, rollback captures the residual
