@@ -460,6 +460,95 @@ def test_partial_owned_stage_does_not_block_safe_cleanup(tmp_path: Path) -> None
     assert partial_stage.read_text(encoding="utf-8") == "partial"
 
 
+def _completed_install_state(root: Path) -> Path:
+    state = root / "state"
+    state.mkdir()
+    for marker in (
+        "install-started",
+        "pre-docker.json",
+        "install-complete",
+        "rollback-disarmed",
+    ):
+        (state / marker).touch()
+    return state
+
+
+def test_completed_install_removal_requires_explicit_mode_and_exact_markers(
+    tmp_path: Path,
+) -> None:
+    state = _completed_install_state(tmp_path)
+
+    default_mode = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; validate_transaction_state',
+        state,
+    )
+    maintenance_mode = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; COMPLETED_INSTALL_REMOVAL=1; validate_transaction_state',
+        state,
+    )
+    (state / "completed-removal-started").touch()
+    repeated_mode = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; COMPLETED_INSTALL_REMOVAL=1; validate_transaction_state',
+        state,
+    )
+
+    assert default_mode.returncode != 0
+    assert "P014_DOCKER_ROLLBACK_NOT_ARMED" in default_mode.stderr
+    assert maintenance_mode.returncode == 0, maintenance_mode.stderr
+    assert repeated_mode.returncode != 0
+    assert "P014_DOCKER_COMPLETED_REMOVAL_ALREADY_ATTEMPTED" in repeated_mode.stderr
+
+
+def test_completed_install_removal_requires_recorded_package_versions(tmp_path: Path) -> None:
+    state = _completed_install_state(tmp_path)
+    fake_bin = tmp_path / "bin"
+    fake_bin.mkdir()
+    packages = (
+        "docker-ce",
+        "docker-ce-cli",
+        "containerd.io",
+        "docker-buildx-plugin",
+        "docker-compose-plugin",
+    )
+    (state / "installed-packages.txt").write_text(
+        "".join(f"{package}=1.0\n" for package in packages),
+        encoding="utf-8",
+    )
+    _write_executable(
+        fake_bin / "dpkg-query",
+        "#!/bin/sh\n"
+        'case "$*" in\n'
+        "  *'${db:Status-Status}'*) printf 'installed' ;;\n"
+        "  *'${Version}'*) printf '1.0' ;;\n"
+        "  *) exit 2 ;;\n"
+        "esac\n",
+    )
+
+    accepted = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; validate_completed_install_packages',
+        state,
+        env={"PATH": f"{fake_bin}:{os.environ['PATH']}"},
+    )
+    (state / "installed-packages.txt").write_text(
+        "docker-ce=2.0\n" + "".join(f"{package}=1.0\n" for package in packages[1:]),
+        encoding="utf-8",
+    )
+    changed = _run_sourced(
+        ROLLBACK,
+        'STATE_DIR="$1"; validate_completed_install_packages',
+        state,
+        env={"PATH": f"{fake_bin}:{os.environ['PATH']}"},
+    )
+
+    assert accepted.returncode == 0, accepted.stderr
+    assert changed.returncode != 0
+    assert "P014_DOCKER_COMPLETED_REMOVAL_PACKAGE_VERSION_CHANGED:docker-ce" in changed.stderr
+
+
 def test_apt_calls_use_only_isolated_docker_source_configuration(tmp_path: Path) -> None:
     fake_bin = tmp_path / "bin"
     fake_bin.mkdir()
