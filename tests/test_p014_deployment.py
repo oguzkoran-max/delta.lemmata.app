@@ -245,14 +245,20 @@ def test_gateway_requires_every_nginx_temp_directory_in_bounded_tmpfs() -> None:
 
 def test_gateway_separates_static_boot_assets_from_dynamic_rate_budget() -> None:
     nginx = (ROOT / "deploy" / "public-alpha" / "nginx.conf").read_text(encoding="utf-8")
+    assert "map $http_x_forwarded_for $delta_client_rate_key" in nginx
+    assert "default $http_x_forwarded_for;" in nginx
+    assert '"" $binary_remote_addr;' in nginx
     assert "map $uri $delta_dynamic_rate_key" in nginx
     assert "map $uri $delta_static_rate_key" in nginx
+    assert "default $delta_client_rate_key;" in nginx
     assert '~^/static/ "";' in nginx
-    assert "~^/static/ $binary_remote_addr;" in nginx
+    assert "~^/static/ $delta_client_rate_key;" in nginx
     assert "zone=delta_dynamic_requests:1m rate=120r/m" in nginx
     assert "zone=delta_static_requests:1m rate=600r/m" in nginx
     assert "zone=delta_dynamic_requests burst=60 nodelay" in nginx
     assert "zone=delta_static_requests burst=120 nodelay" in nginx
+    assert "limit_conn_zone $delta_client_rate_key zone=delta_connections:1m" in nginx
+    assert "limit_conn_zone $binary_remote_addr" not in nginx
 
 
 def test_gateway_preserves_public_authority_and_pins_external_https() -> None:
