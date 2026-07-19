@@ -922,7 +922,15 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         ) from None
 
     chart_locator = page.locator('[data-testid="stVegaLiteChart"]')
-    chart_locator.nth(1).wait_for(timeout=15_000)
+    # Chart mounting after the final result rerun is the second CI-runner-speed
+    # flake point (observed twice on 2026-07-19): wait for Streamlit to go idle,
+    # then give slow shared runners more time. The assertion is unchanged — both
+    # visualizations must still appear.
+    try:
+        _wait_for_streamlit_idle(page, timeout_ms=20_000)
+    except PlaywrightTimeoutError:
+        pass
+    chart_locator.nth(1).wait_for(timeout=60_000)
     chart_evidence = tuple(
         _pixel_evidence(
             chart_locator.nth(index),
