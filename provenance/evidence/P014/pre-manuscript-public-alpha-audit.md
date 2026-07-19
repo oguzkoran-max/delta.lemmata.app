@@ -102,8 +102,11 @@ sentetik ResultViewV1 ile denetlendi: kare MDS grafiğinin Streamlit 360px
 slotunu taşırıp koordinat tablosunun altında unknown-holdout noktasını (D04)
 gizlediği bindirme bugı düzeltildi; heatmap/MDS etiketleri "sigla · başlık"
 biçimiyle tutarlılaştırıldı (pinli semantic tablolar ve canonical export
-değişmedi); mobil purpose-rehberi seçimin ardına taşındı; deploy README'deki
-sabit IP `DELTA_HOST` değişkenine çekildi (Düzeltme 7-8).
+değişmedi); deploy README'deki sabit IP `DELTA_HOST` değişkenine çekildi.
+Mobil rehber sırası denemesi P009 entry-viewport kapısının bunu açıkça
+sözleşmelediğini gösterince geri alındı (aksiyon-önce bilinçli karar);
+CI worker'ının aralıklı çökmesi ayrıca teşhis edildi ve gate'e fail-fast
+worker-crash teşhisi eklendi (Düzeltme 7-8 + handoff).
 - Header build SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda.
 - Review kenar çubuğundaki boş kolon aşamaya duyarlı "Preparation summary"
   ile dolduruldu (canlı sayaçlar + evidence listesi; ölü `evidence.*`

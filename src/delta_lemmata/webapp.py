@@ -3686,7 +3686,6 @@ def _render_setup(stage: CorpusSubstage) -> PurposeId:
         )
         purpose_spec = PURPOSE_BY_ID[selected]
         _render_purpose_guidance(purpose_spec)
-        _render_mobile_purpose_guidance(purpose_spec)
         return PurposeId(purpose_spec.purpose_id)
     purpose = PurposeId(st.session_state.get(_FLOW_PURPOSE_KEY, PurposeId.TEXT_PROXIMITY.value))
     input_mode = CorpusInputMode(
@@ -3751,6 +3750,7 @@ def main() -> None:
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
+            _render_mobile_purpose_guidance(PURPOSE_BY_ID[purpose.value])
             _render_stylometry_orientation()
             _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:

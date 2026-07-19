@@ -72,9 +72,12 @@ verildi, D04 artık görünür (turun en kritik bulgusu). (2) **Grafik etiket
 tutarlılığı** — heatmap eksenleri + MDS noktaları sigla (D01), tablolar başlık
 konuşuyordu; grafikler "D01 · Kısaltılmış Başlık" biçimine geçti
 (`_chart_axis_label`); pinli semantic tablolar ve canonical export DEĞİŞMEDİ.
-Ayrıca mobil purpose-rehberi upload kartının önüne taşındı (önceki açık bulgu
-kapandı) ve deploy README'sindeki sabit IP üç yerde `DELTA_HOST` değişkenine
-çekildi. Kanıt: design-review README Düzeltme 7-8 + before/after görseller.
+Deploy README'sindeki sabit IP üç yerde `DELTA_HOST` değişkenine çekildi.
+Mobil purpose-rehberi önce upload'ın önüne taşındı, sonra GERİ ALINDI: P009
+entry-viewport kapısı (`purpose_guide_layout_pass`) mobilde rehberin upload
+ALTINDA olmasını açıkça şart koşuyor — yerleşim denetlenmiş bilinçli karar
+(aksiyon-önce); "açık bulgu" kusur değil sözleşme olarak kapandı. Kanıt:
+design-review README Düzeltme 7-8 + before/after görseller.
 
 **P009 browser-gate flake sertleştirmesi (2026-07-19, aynı PR #15):** "Belgeli
 aralıklı flake" bu oturumda sıklaştı (3 push'ta 3 verify düşüşü, re-run'la

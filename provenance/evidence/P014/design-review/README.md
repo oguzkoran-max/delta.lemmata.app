@@ -192,9 +192,14 @@ Ek temizlik: `deploy/public-alpha/README.md` içindeki sabit sunucu IP'si üç
 yerde `DELTA_HOST` ortam değişkenine çekildi (repo public olduktan sonra
 gereksiz literal ifşayı kaldırır; prob semantiği değişmez).
 
-Mobil purpose-rehberi sırası da düzeltildi: `_render_mobile_purpose_guidance`
-çağrısı upload kartından sonra değil, seçimin hemen ardına taşındı (DOM
-ölçümü: rehber y=466 < kart y=528; önceki tur "açık bulgu"su kapandı).
+Mobil purpose-rehberi sırası önce seçimin ardına taşındı, sonra GERİ ALINDI:
+CI'daki P009 entry-viewport kapısı (`purpose_guide_layout_pass`) mobilde
+rehberin upload bölümünün ALTINDA olmasını açıkça şart koşuyor — yani mevcut
+yerleşim tesadüf değil, denetlenmiş bilinçli bir karar (mobilde aksiyon-önce
+ilkesi; rehber katlanır `<details>` olarak altta). Önceki turun "açık bulgu"su
+böylece "kusur değil, sözleşmeli tasarım kararı" olarak kapandı. Sözleşmeyi
+kendi tercihimle değiştirmek yerine yerleşim korundu; farklı bir mobil bilgi
+sırası istenirse bu owner kararıyla gate ile birlikte değişmeli.
 
 ## Doğrulama
 
