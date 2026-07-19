@@ -49,6 +49,33 @@ metinleri yeniden kullanıma alındı.
   "Awaiting corpus"), `screenshots/after-review-sidebar-1440.png` (works 3,
   warnings 12, rights 3, "Validated for intake").
 
+## Düzeltme 3 — Deney haritası (stepper) aktif adım göstergesi
+
+Sorun: Corpus aşamasında ilerleme haritasında aktif adımın (02 Corpus) teal üst
+göstergesi, kutunun gri üst kenar çizgisinin ÜSTÜNDE havada duruyordu; ayrıca
+Streamlit markdown listesinin `<li>` öğelerine uyguladığı stray `margin`
+(0.2rem) aktif satırı kaydırıyordu. Etiketler (COMPLETE / UPLOAD / LOCKED)
+çizgiye binmiş gibi görünüyordu (bk. `screenshots/before-stepper-1440.png`).
+
+Neden: Aktif satırın `border-top: 3px` göstergesi kutu kenarıyla çakışıyordu ve
+`.delta-map` kırpma (`overflow: hidden`) uygulamadığı için köşelerden taşıyordu.
+Streamlit'in `[data-testid] li` kuralı tek-class `.delta-map-row` margin
+sıfırlamasını specificity'de yeniyordu.
+
+Çözüm (A5.1 içinde):
+- `.delta-map` artık `overflow: hidden` ile göstergeyi yuvarlak çerçeveye kırpar.
+- Aktif adım göstergesi `border-top` yerine `box-shadow: inset 0 3px 0 0 teal`
+  oldu; layout'u kaydırmaz, çerçeve içinde flush durur.
+- Aktif hücreye `--delta-mint` wash verildi; teal aksan artık stray line değil,
+  ailenin mint=aktif diliyle tutarlı net bir "aktif sekme" olarak okunur.
+- Streamlit `<li>` margin'i daha spesifik `.delta-map-list .delta-map-row`
+  selector'uyla sıfırlandı; tüm hücreler çerçeveye hizalandı.
+- Kod: `src/delta_lemmata/ui_theme.py` (`.delta-map`, `.delta-map-list
+  .delta-map-row`, `.delta-map-row.is-active`)
+- Test: `tests/test_phase_b_visual_contract.py::test_experiment_map_active_step_reads_as_a_clean_tab`
+- Kanıt: `screenshots/before-stepper-1440.png`, `screenshots/after-stepper-1440.png`,
+  `screenshots/stepper-before-after-1440.png` (önce/sonra, 1440 desktop).
+
 ## Doğrulama
 
 `bash scripts/verify.sh` yeşil: ruff format/check, mypy, şema doğrulayıcılar,
