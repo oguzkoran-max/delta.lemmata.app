@@ -39,13 +39,17 @@ Delta ve LDA sağlıklı, dokunulmadı.
 
 **Canlı tasarım denetimi takibi (2026-07-19, aynı PR #15):** Owner isteğiyle
 canlı `delta.lemmata.app` uzman gözle incelendi (aile: `lemmata.app`,
-`lda.lemmata.app`). Üç tasarım fix (A5.1 içinde, deploy YOK): (1) header build
+`lda.lemmata.app`). Dört tasarım fix (A5.1 içinde, deploy YOK): (1) header build
 SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda; (2) review kenar
 çubuğundaki boş gri kolon aşamaya duyarlı "Preparation summary" ile dolduruldu
 (canlı sayaçlar works/blockers/warnings/rights ton renkli + evidence listesi);
 (3) deney haritası stepper aktif adım göstergesi düzeltildi (teal çizgi kutu
 kenarının üstünde havada duruyordu → overflow:hidden + inset teal aksan +
-mint wash + Streamlit li stray-margin sıfırlama, hücreler hizalandı).
+mint wash + Streamlit li stray-margin sıfırlama, hücreler hizalandı); (4) sidebar
+evidence satırları uniform stacked ledger'a çevrildi (yalnız "Parameter
+sensitivity" satırı dengesiz kırılıyordu). İkinci turda mobil boşluk/padding +
+header kenar adayları DOM ile ölçülüp gerçek sorun olmadığı doğrulandı, uydurma
+değişiklik yapılmadı.
 Bu, ertelenen CODE-DEAD-STRINGS'i kısmen kapatır (ölü `evidence.*` metinleri
 yeniden kullanıma alındı). +6 test, `verify.sh` yeşil (%100 coverage). Kanıt:
 `provenance/evidence/P014/design-review/` (before/after + manifest, stepper
