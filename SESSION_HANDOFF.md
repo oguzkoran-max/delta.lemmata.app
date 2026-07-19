@@ -2,36 +2,40 @@
 
 **Güncellendi:** 2026-07-18
 
-**En yeni checkpoint: Pre-manuscript public-alpha denetimi + düzeltmeler
-(draft, unmerged).** Claude Code, canlı public-alpha'yı makale öncesi yedi
-bağımsız mercekle (bilimsel yöntem, yeni-kullanıcı UX, görsel/responsive,
-erişilebilirlik, güvenlik/gizlilik/yaşam-döngüsü, FAIR/provenance, kod/test/ops)
-+ adversaryel sentezle denetledi. `claude/p014-pre-manuscript-audit` dalı
-origin/main `3cfe0713a7159fcbedb0c390e801698dd09ae77d`'den açıldı. Sonuç:
-**P0=0, P1=1, P2=4, P3=7**; karar **CONDITIONAL GO** (yalnız "makale tasarımına
-başlanabilir mi?" için; P011-P015 kapıları açık, gönderim-hazır iddiası yok).
+**En yeni checkpoint: Pre-manuscript public-alpha denetimi + düzeltmeler + Codex
+R1 (draft PR #15, unmerged).** Claude Code, canlı public-alpha'yı makale öncesi
+yedi bağımsız mercek + adversaryel sentezle denetledi. `claude/p014-pre-manuscript-audit`
+dalı origin/main `3cfe0713`'ten açıldı. Bağımsız Codex incelemesi sonrası
+düzeltilmiş sonuç: **P0=0, P1=0, P2=3 (2 fix + 1 makale-açığı), P3=7, +1
+savunma-derinliği (uygulandı)**; karar **CONDITIONAL GO** (yalnız "makale
+tasarımına başlanabilir mi?"; P011-P015 açık, gönderim-hazır iddiası yok).
 
-Düzeltilen (test eklenerek, canlıya deploy YOK): (1) **P1 SEC-XFF-01** — gateway
-rate/connection limitleri client-spoofable `X-Forwarded-For`'a anahtarlıydı;
-shipped `Caddyfile.delta.example` XFF'i replace etmiyordu. Caddy örneğine
-`header_up X-Forwarded-For {http.request.remote.host}` eklendi + validator/test
-contract-lock + README operatör notu. **Owner canlı merged Caddyfile'da bunu
-teyit etmeli.** (2) **P2 BARIS-INTAKE-01** — Barış canlıda `INGEST_INVALID_UTF8`
-alıp app'i takılmış sanıp yeniledi; hata mesajı 5 nedeni topluyor, "tekrar dene"
-demiyordu (repro: yenilemeye gerek yok). Neden-özel mesaj (UTF-8/markup) + retry
-yönlendirmesi eklendi. (3) **P2 UI-METRIC-TRUNC-01** — Parameters özet metrikleri
-masaüstünde "500 MF…"/"Whole t…" kırpıyordu; `ui_theme` wrap kuralı.
+Düzeltilen (test eklenerek, canlıya deploy YOK): (1) **P2 BARIS-INTAKE-01** —
+Barış canlıda `INGEST_INVALID_UTF8` alıp app'i takılmış sanıp yeniledi (repro:
+yenilemeye gerek yok). Neden-özel mesaj (UTF-8/markup) + **hata-sınıfına duyarlı**
+yönlendirme (kurtarılabilir → "başka dosya, yenileme yok"; iç/sistem hatası →
+"sistem hatası, sürerse yenile" — Codex R1). (2) **P2 UI-METRIC-TRUNC-01** —
+Parameters özet metrikleri masaüstünde "500 MF…"/"Whole t…" kırpıyordu; `ui_theme`
+wrap kuralı (375×844 dahil doğrulandı). (3) **Savunma-derinliği SEC-XFF-01** —
+Codex R1: Caddy varsayılanı istemci-verili XFF'i zaten yok sayar (boş
+`trusted_proxies`), yani P1 "vulnerability" DEĞİLDİ; açık `header_up X-Forwarded-For
+{http.request.remote.host}` pin'i savunma-derinliği olarak korundu +
+validator/test/README savunma-derinliği diline çekildi. **Owner canlı Caddyfile'da
+geniş `trusted_proxies` olmadığını + pin'i teyit etmeli.**
 
-Ertelenen: FAIR-PKG (P012), VIS-RAIL (owner görsel kararı), A11Y-HEADING (owner
-görsel), CODE-DEAD-STRINGS, ve 4 makale-açığı (P011/P012/P013/P015). Rapor:
+Ertelenen: FAIR-PKG (P012), VIS-RAIL (owner görsel), A11Y-HEADING (owner görsel),
+CODE-DEAD-STRINGS, 4 makale-açığı (P011/P012/P013/P015). Rapor:
 `provenance/evidence/P014/pre-manuscript-public-alpha-audit.md`; kanıt +
-önce/sonra görseller `provenance/evidence/P014/pre-manuscript-audit/`.
+önce/sonra + görünür red-mesajı + 375 metrik görselleri (SHA manifesti)
+`provenance/evidence/P014/pre-manuscript-audit/`.
 
-Fix commit'leri `0980833` (XFF), `02527cc` (intake), `ce89a5a` (metric). Yerel
-`./scripts/verify.sh` geçti (1737 passed, 1 skip, %100 coverage, records-ok=119,
-verify-ok); taze-klon kaynak testi geçti. Canonical Linux CI draft PR'da koşar.
-Bu kapanış merge/deployment/public-activation DEĞİLDİR; owner + Codex review
-bekler. Canlı Delta ve LDA sağlıklı (home 200, health ok), dokunulmadı.
+Uygulama (kod) final SHA `22e3e1d`; kanıt/rapor SHA bunun üstündeki doc commit'i
+(bilinçli ayrı). Yerel `./scripts/verify.sh` geçti (1738 passed, 1 skip, %100
+coverage, records-ok=119, verify-ok); taze-klon kaynak testi geçti. Canonical
+Linux CI draft PR #15'te koşar (ilk turda belgeli aralıklı P009 result-selector
+harness flake'i çıktı; identik push geçti, re-run yeşil). Bu kapanış
+merge/deployment/public-activation DEĞİLDİR; owner + Codex review bekler. Canlı
+Delta ve LDA sağlıklı, dokunulmadı.
 
 ---
 

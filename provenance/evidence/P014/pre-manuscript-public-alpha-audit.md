@@ -8,7 +8,8 @@
 
 - **Başlangıç SHA:** `3cfe0713a7159fcbedb0c390e801698dd09ae77d` (origin/main)
 - **Denetim dalı:** `claude/p014-pre-manuscript-audit` (origin/main'den açıldı)
-- **Bitiş SHA (düzeltmeler sonrası):** `ce89a5a5a655ee2725e7eb05bd2c8b951e08c3a9`
+- **Uygulama (kod düzeltmeleri) final SHA:** `22e3e1d4b3db8fb6fdade7a90be68ca20d085825` (son kod commit'i; Caddy savunma-derinliği, neden-özel + hata-sınıfına duyarlı intake yönlendirmesi, metrik wrap). Kod fix commit zinciri: `0980833` → `02527cc` → `ce89a5a` → (R1) XFF-reclassify → `22e3e1d`.
+- **Kanıt/rapor SHA:** bu belgeyi ve güncel görselleri ekleyen doc commit'i (bu commit uygulama SHA'sından SONRA gelir; PR #15'in nihai head'i). Uygulama SHA'sı ile kanıt SHA'sı bilinçli olarak ayrıdır: kod fix'leri ölçülebilir CI kapısından geçer, rapor/kanıt onun üstüne yazılır.
 - **Canlı Delta:** `https://delta.lemmata.app` — home HTTP 200, `/_stcore/health` = `ok`
 - **Aynı VPS'teki LDA:** `https://lda.lemmata.app` — home 200, health `ok` (yalnız read-only gözlem; değişmedi)
 - **Yerel doğrulama:** `./scripts/verify.sh` düzeltmeler öncesi ve sonrası geçti; taze klon kaynak testi yapıldı
@@ -18,28 +19,31 @@
 
 ## 2. Yönetici kararı
 
-**CONDITIONAL GO** — makale *tasarımına* başlanabilir.
+**CONDITIONAL GO** — makale *tasarımına* başlanabilir. P0/P1 blocker yok.
 
-Uygulama yüzeyi bilimsel olarak dürüst ve tutarlı; canlı altyapı sağlıklı ve güvenli başlıklarla korunuyor. Bu turda bulunan tek P1 (gateway rate-limit atlatma) ve iki masaüstü P2 kusuru bu dalda düzeltildi ve testlendi. Kalan açıkların tamamı P011/P012/P013/P015 için zaten *üretilecek* kanıt kalemleridir (makale tasarımının kendisi bunları üretecek). Bu karar yalnız "makale tasarımına başlayabilir miyiz?" sorusuna cevap verir; P011-P015 kapılarının tamamlandığını veya sürümün gönderime hazır olduğunu söylemez.
+Uygulama yüzeyi bilimsel olarak dürüst ve tutarlı; canlı altyapı sağlıklı ve güvenli başlıklarla korunuyor. Bu turdaki iki masaüstü/UX P2 kusuru düzeltildi ve testlendi; SEC-XFF kalemi bağımsız Codex incelemesi sonrası P1'den savunma-derinliğine indirildi (aşağıya bakınız) ve yine de uygulandı. Kalan açıkların tamamı P011/P012/P013/P015 için zaten *üretilecek* kanıt kalemleridir. Bu karar yalnız "makale tasarımına başlayabilir miyiz?" sorusuna cevap verir; P011-P015 kapılarının tamamlandığını veya sürümün gönderime hazır olduğunu söylemez.
 
 ## 3. Bulunan sorun sayıları
 
 | Ağırlık | Adet | Bu turda düzeltilen | Ertelenen |
 |---|---|---|---|
 | P0 (kullanılamaz/yanıltıcı) | 0 | 0 | 0 |
-| P1 (ana akış/güvenlik/ciddi erişilebilirlik) | 1 | **1** | 0 |
-| P2 (profesyonel kalite kaybı, yayın-engeli değil) | 4 | **3** | 1 (makale-açığı) |
+| P1 (ana akış/güvenlik/ciddi erişilebilirlik) | 0 | 0 | 0 |
+| P2 (profesyonel kalite kaybı, yayın-engeli değil) | 3 | **2** | 1 (makale-açığı) |
 | P3 (küçük cila / gelecek) | 7 | 0 | 7 |
+| Savunma-derinliği (kusur değil, uygulandı) | 1 | 1 (SEC-XFF) | 0 |
 
-P2 dörtten biri (FAIR paketi) bir kod kusuru değil, P012 teslimatıdır. Üç P2 gerçek kod/kopya kusuruydu ve düzeltildi.
+Üç P2'den ikisi (BARIS-INTAKE-01, UI-METRIC-TRUNC-01) gerçek UX kusuruydu ve düzeltildi; biri (FAIR paketi) kod kusuru değil, P012 teslimatıdır. SEC-XFF ayrı bir savunma-derinliği kalemidir (kanıtlanmış güvenlik açığı DEĞİL); yine de repo örneğine uygulandı.
+
+**Codex incelemesi düzeltmesi (SEC-XFF-01):** İlk raporda bu P1 "vulnerability" olarak sınıflanmıştı. Caddy'nin `reverse_proxy` varsayılanı istemci-verili `X-Forwarded-*` başlıklarını yok sayar (boş `trusted_proxies`), dolayısıyla shipped gateway varsayılan olarak spoof edilemez ve bulgu kanıtlanmış bir açık değildi. Açık `header_up` pin'i savunma-derinliği olarak korundu (ileride geniş bir `trusted_proxies` eklenirse de garanti sürsün). Yorum, README, validator kod adı (`P014_CADDY_FORWARDED_FOR_HARDENING_MISSING`) ve test adı buna göre düzeltildi.
 
 ## 4. Bulgu tablosu
 
 | ID | Ağırlık | Ekran | Kanıt | Kullanıcı etkisi | Düzeltme | Retest |
 |---|---|---|---|---|---|---|
-| **SEC-XFF-01** | P1 | Gateway (nginx + Caddy örneği) | `deploy/public-alpha/nginx.conf:27-52` rate/connection limitlerini `$http_x_forwarded_for` tam string'ine anahtarlıyor; shipped `Caddyfile.delta.example` XFF'i *replace* etmiyordu (Caddy istemci-verili değeri koruyup gerçek IP'yi ekliyor). | Saldırgan XFF önekini döndürerek per-client istek-hızı (120r/m) ve eşzamanlı bağlantı (20) limitlerini aşabilir; paylaşımlı VPS'te Lemmata'ya kaynak sıçraması riski. | Caddy örneğine `header_up X-Forwarded-For {http.request.remote.host}` eklendi (edge XFF'i gerçek client IP ile değiştirir); deployment validator + test contract-lock yaptı; README canlı merged Caddyfile için operatör notu aldı. | `test_caddy_example_replaces_forwarded_for_so_rate_limits_are_not_spoofable` + validator; 24/24 deployment testi geçti. **Owner canlı merged Caddyfile'da bu satırın (veya `trusted_proxies`) mevcut olduğunu teyit etmeli.** |
-| **BARIS-INTAKE-01** | P2 | Corpus · Upload (red durumu) | Canlı kullanıcı (Barış Yücesan) `INGEST_INVALID_UTF8` aldı; yerelde birebir üretildi. `corpus.error.text` tek mesajı beş nedeni topluyordu ("empty / not valid UTF-8 and NFC / unsafe controls / markup") ve yalnız teknik kod veriyordu; "tekrar dene" yönlendirmesi yoktu. Kullanıcı akışı bozuk sandı ve sayfayı yeniledi (oysa yenilemeye gerek yok — repro: red sonrası widget temizleniyor, yeni dosya yüklemek çalışıyor). | Uzman kullanıcı hangi sorunun olduğunu ve ne yapacağını anlayamadı; app'i takılmış sandı. | INVALID_UTF8 → "This file is not saved as UTF-8 text. Re-save it as plain UTF-8... and upload it again."; MARKUP_DOCUMENT → "...save it as a plain .txt file and upload it again."; her redde "You can choose another file and try again without reloading the page." satırı eklendi. | `test_common_beginner_rejections_get_cause_specific_guidance`, `test_every_intake_error_message_resolves_...`, güncellenen `test_invalid_upload_is_rejected_...`; repro görsel + metin doğrulandı. |
-| **UI-METRIC-TRUNC-01** | P2 | Parameters (Guided özet) | `screenshots/metric-clip-before-1280.png`: "Display reference" = "500 ..." ve "Analysis unit" = "Whole..." kırpık. Kaynak `webapp.py:3422-3426` dört `st.metric`'i dar kolonda; Streamlit değeri ellipsis'liyor. | 1280-1440px masaüstünde iki özet metriği okunmuyor; render hatası gibi görünüyor (değerler alttaki tabloda mevcut ama özet kırpık). | `ui_theme.py`'a aşamaya-özel kural: `.st-key-parameters_stage [data-testid="stMetricValue"]` ve alt düğümleri wrap eder (kırpma yerine iki satır). Başka metrikler etkilenmez. | `screenshots/metric-wrap-after-1280.png` / `-1440.png`: "500 MFW" ve "Whole text" tam okunuyor; DOM ölçümü `white-space: normal`, kırpma yok. |
+| **SEC-XFF-01** | Savunma-derinliği (P1 DEĞİL) | Gateway (nginx + Caddy örneği) | `deploy/public-alpha/nginx.conf:27-52` rate/connection limitlerini `$http_x_forwarded_for`'a anahtarlıyor. Caddy varsayılanı istemci-verili XFF'i yok sayar (boş `trusted_proxies`), dolayısıyla shipped gateway varsayılan olarak spoof edilemez — bu **kanıtlanmış açık değil**, savunma-derinliği fırsatı. | Doğrudan yok (varsayılan Caddy korur). Yalnızca operatör ileride geniş bir `trusted_proxies` ayarlarsa risk oluşur. | Savunma-derinliği olarak Caddy örneğine `header_up X-Forwarded-For {http.request.remote.host}` (gerçek client IP'ye pin) eklendi; validator + test contract-lock; README savunma-derinliği notu. | `test_caddy_example_pins_forwarded_for_as_defense_in_depth` + validator; 24/24 deployment testi geçti. **Owner canlı merged Caddyfile'da geniş bir `trusted_proxies` OLMADIĞINI ve pin'in bulunduğunu teyit etmeli.** |
+| **BARIS-INTAKE-01** | P2 (düzeltildi) | Corpus · Upload (red durumu) | Canlı kullanıcı (Barış Yücesan) `INGEST_INVALID_UTF8` aldı; yerelde birebir üretildi (`screenshots/intake-guidance-after-900.png`, `intake-guidance-clip-900.png`). `corpus.error.text` tek mesajı beş nedeni topluyordu ve yalnız teknik kod veriyordu; "tekrar dene" yönlendirmesi yoktu. Kullanıcı akışı bozuk sandı ve sayfayı yeniledi (repro: yenilemeye gerek yok — red sonrası widget temizleniyor, yeni dosya yüklemek çalışıyor). | Uzman kullanıcı hangi sorunun olduğunu ve ne yapacağını anlayamadı; app'i takılmış sandı. | INVALID_UTF8 ve MARKUP_DOCUMENT için neden-özel mesaj + eyleme dönük çözüm. Yönlendirme **hata sınıfına duyarlı**: kurtarılabilir kullanıcı-girdi hataları "başka dosya seç, yenileme gerekmez"; iç/workspace/cleanup hataları "sistem hatası... sürerse yenile" (Codex incelemesi düzeltmesi). | `test_common_beginner_rejections_...`, `test_recovery_guidance_separates_user_input_from_system_errors` (kurtarılabilir vs sistem, her iki dal), güncellenen `test_invalid_upload_...`; görsel red-mesajı ekranı doğrulandı. |
+| **UI-METRIC-TRUNC-01** | P2 (düzeltildi) | Parameters (Guided özet) | `screenshots/metric-clip-before-1280.png`: "Display reference" = "500 ..." ve "Analysis unit" = "Whole..." kırpık. Kaynak `webapp.py:3422-3426` dört `st.metric`'i dar kolonda; Streamlit değeri ellipsis'liyor. | 1280-1440px masaüstünde iki özet metriği okunmuyor; render hatası gibi görünüyor (değerler alttaki tabloda mevcut ama özet kırpık). | `ui_theme.py`'a aşamaya-özel kural: `.st-key-parameters_stage [data-testid="stMetricValue"]` ve alt düğümleri wrap eder (kırpma yerine iki satır). Başka metrikler etkilenmez. | Masaüstü `screenshots/metric-wrap-after-1280.png` / `-1440.png`: tam okunuyor; DOM `white-space: normal`, kırpma yok. Mobil `screenshots/metric-375x844.png` (375×844): dört değer dikey yığılıp tam görünüyor, sayfa taşması yok. |
 | FAIR-PKG-01 | P2 (makale-açığı) | Export yüzeyi | Tüm indirme butonları tek-artefakt JSON/CSV üretiyor; RO-Crate/.zenodo.json/DATA-SOURCES.csv/rights.json yok (CE-12 kapısı açık). | Yok (app doğru "FAIR-oriented" ve "reproducibility-oriented" fallback dilini kullanıyor). | Kod düzeltmesi DEĞİL — P012 teslimatı. Bölüm 7'de listelendi. | — |
 | VIS-RAIL-01 | P3 (owner-kararı) | Review/Parameters masaüstü | `webapp.py:3664` non-upload aşamaları `st.columns([1.8,0.8])` böler; 0.8 kolon yalnız Method-boundary kartını taşır; parametre gridinin 4. sütunu 1280px'de kaydırmaya düşer. | Masaüstü genişliğinin ~%31'i kısa bir kartla dolarken tablolar daralıyor. | A5.1 onaylı ray'a dokunur — **owner kararı**. Düzeltilmedi. | — |
 | A11Y-HEADING-01 | P3 | describe/review/prepare/results | `st.title` (h1) → `st.subheader` (h3), h2 atlanıyor (WCAG 1.3.1 başlık hiyerarşisi). Her görünümde tek H1 var (prob doğruladı), sorun yalnız seviye atlaması. | Ekran okuyucu gezintisinde başlık seviyesi atlaması. | Bölüm başlıklarını h2 yapmak + h3 boyutunu CSS'te korumak; dört görünümü ve görsel boyutu etkiler → görsel karar içerdiği için **owner onayına** bırakıldı. Düzeltilmedi. | — |
@@ -51,7 +55,7 @@ P2 dörtten biri (FAIR paketi) bir kod kusuru değil, P012 teslimatıdır. Üç 
 
 ## 5. Çalıştırılan testler ve sonuçları
 
-- `./scripts/verify.sh` (düzeltmeler sonrası): **1737 passed, 1 skipped** (belgeli macOS canonical-Linux R-worker skip), **%100 measured coverage** (11.693 statement, 3.050 branch), `metadata-ok`, `records-ok count=119`, `repository-scan-ok`, R-lock ok, `verify-ok`.
+- `./scripts/verify.sh` (tüm düzeltmeler + Codex R1 sonrası): **1738 passed, 1 skipped** (belgeli macOS canonical-Linux R-worker skip), **%100 measured coverage** (11.697 statement, 3.052 branch), `metadata-ok`, `records-ok count=119`, `repository-scan-ok`, R-lock ok, `verify-ok`.
 - Odaklı: `tests/test_p014_deployment.py` 24/24; `tests/test_intake_ui.py` (2 yeni test dahil); güncellenen `tests/test_webapp.py::test_invalid_upload_...`.
 - **Taze-klon kaynak testi:** `--no-hardlinks` klon (HEAD `ce89a5a`), format temiz, deployment validator OK, dokunulan 45 test klondan geçti.
 - Canlı read-only: home 200/`ok`, statik JS asset 200 (930KB — beyaz-ekran düzeltmesi çalışıyor), güvenlik başlıkları tam (CSP dış-host yok, X-Frame DENY, HSTS, no-referrer, COOP/CORP, Permissions-Policy), Server header sızmıyor, `via: Caddy`.
@@ -60,7 +64,7 @@ P2 dörtten biri (FAIR paketi) bir kod kusuru değil, P012 teslimatıdır. Üç 
 
 ## 6. Manuel yapılması gereken testler
 
-1. **Owner:** canlı merged `/etc/caddy/Caddyfile` `delta.lemmata.app` bloğunun `header_up X-Forwarded-For {http.request.remote.host}` (ya da `trusted_proxies`) içerdiğini teyit et; yoksa canlıya açılmadan ekle. SEC-XFF-01 repo örneğinde kapatıldı, canlı dosya repoda değil.
+1. **Owner (savunma-derinliği, blocker değil):** canlı merged `/etc/caddy/Caddyfile` `delta.lemmata.app` bloğunun (a) istemciyi güvenen geniş bir `trusted_proxies` İÇERMEDİĞİNİ (Caddy varsayılanı zaten korur) ve (b) örnekteki `header_up X-Forwarded-For {http.request.remote.host}` pin'ini içerdiğini teyit et. Canlı dosya repoda değil; repo örneği güncellendi.
 2. **Barış / manuel:** UTF-8 olmayan bir .txt yükleyip yeni yönlendirici mesajın göründüğünü ve yenilemeden yeni dosya yüklenebildiğini teyit et.
 3. **Erişilebilirlik:** Safari + VoiceOver ve/veya NVDA ile Entry/Review/Parameters gezintisi (otomatik kontrol yeterli değil).
 4. **Results/Export görseli:** canonical Linux ortamında bir kez insan gözüyle sonuç yüzeyi + export paketi kontrolü.
@@ -81,4 +85,4 @@ Bilimsel-yöntem merceği SIFIR bulgu verdi (doğrulayarak, varsayarak değil): 
 
 ## 9. Karar
 
-**CONDITIONAL GO** — makale tasarımına başlanabilir. Koşullar: (a) owner canlı Caddyfile'ın XFF'i replace ettiğini canlıya açılmadan teyit etmeli; (b) düzeltilen üç kusur PR review + green CI'dan geçmeli. Hiçbiri makale tasarımına başlamayı engellemez. P011-P015 kapıları AÇIK sınırlardır ve makalenin bu turda hazır olduğu iddia edilmez.
+**CONDITIONAL GO** — makale tasarımına başlanabilir. **P0/P1 blocker yok.** Koşullar: (a) owner canlı Caddyfile'da geniş bir `trusted_proxies` olmadığını ve XFF pin'inin bulunduğunu teyit etmeli (savunma-derinliği); (b) düzeltilen iki P2 + savunma-derinliği kalemi PR review + green CI'dan geçmeli. Hiçbiri makale tasarımına başlamayı engellemez. P011-P015 kapıları AÇIK sınırlardır ve makalenin bu turda hazır olduğu iddia edilmez.
