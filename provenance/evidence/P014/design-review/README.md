@@ -131,9 +131,8 @@ Bulgular ve düzeltmeler:
 - Kanıt: `screenshots/after-entry-typography-1440.png` (sonrası; min font 12px,
   561 kelime)
 
-Açık bulgu (değişiklik yapılmadı, owner kararı): mobilde purpose rehberi
-(`delta-purpose-guide-mobile`) DOM sırası gereği upload kartından SONRA
-görünüyor; rehberin karttan önce görünmesi için webapp render sırası değişmeli.
+(Önceki turda "açık bulgu" olarak bırakılan mobil rehber sırası, sonraki turda
+Düzeltme 8 kapsamında kapatıldı; aşağıya bakınız.)
 
 ## Düzeltme 6 — Sidebar sayaç tonlarında WCAG kontrastı + palet disiplini
 
@@ -145,6 +144,57 @@ kullanıyordu. İkisi de sistemin metin-katmanı token'larına çekildi:
 review metriklerinin kullandığı token'larla aynı.
 - Kod: `src/delta_lemmata/ui_theme.py` (`.delta-sidebar-metric-blocker`,
   `.delta-sidebar-metric-warning`)
+
+## Düzeltme 7 — MDS bindirme bugı: gizli kalan unknown-holdout noktası
+
+Sonuç ekranı denetimi (sentetik `ResultViewV1` ile lokal render, R worker
+gerekmeden): kare MDS grafiği CSS'i (`aspect-ratio: 60/61`,
+owner-onaylı A5.1) grafiği geniş yerleşimde ~691px'e büyütürken Streamlit'in
+yerleşim konteyneri `height=360` parametresinden 360px ayırıyordu. Grafik 331px
+taşıyor, koordinat tablosu grafiğin üstüne biniyor ve alt bölgedeki noktalar
+tablonun ARKASINDA kalıyordu. Sentetik senaryoda gizlenen nokta tam da
+**unknown holdout** (D04) idi; bilimsel görüntüde veri noktası saklanması bu
+turun en kritik bulgusudur. DOM ölçümü: grafik 691px, konteyner 360px,
+tablo-üstü < grafik-altı (bindirme); düzeltme sonrası konteyner 691px,
+bindirme yok, D04 elması görünür.
+
+Çözüm (A5.1 kare kararı korunarak): konteynere
+`.st-key-p009_mds_square .stElementContainer:has(...) { height: auto !important; }`
+eklendi; akış gerçek yüksekliği ayırıyor.
+- Kod: `src/delta_lemmata/ui_theme.py`
+- Kanıt: `screenshots/before-mds-overlap-1440.png` (tablo grafiğe binmiş,
+  D04 görünmez), `screenshots/after-mds-square-1440.png` (tam kare, D04
+  turuncu elmas görünür)
+
+## Düzeltme 8 — Grafik etiketlerinde sigla→başlık tutarlılığı
+
+Sonuç yüzeyleri iki dil konuşuyordu: matris tablosu + heatmap eksenleri +
+MDS nokta etiketleri sigla (D01..) kullanırken komşu ve koordinat tabloları
+başlık ("Early novel") kullanıyordu; ekranda görünür bir D01→başlık eşlemesi
+yoktu (yalnız hover tooltip). Gerçek 15+ metinlik korpusta matris/heatmap
+çözülemez olurdu.
+
+Çözüm (pinli sözleşmelere dokunmadan): heatmap eksen etiketleri ve MDS nokta
+etiketleri "D01 · Kısaltılmış Başlık" biçimine geçirildi
+(`_chart_axis_label`, 14 karakter kısaltma). Semantic tablolar (export-parity
+CI kapısının pinlediği matris=sigla, MDS/komşu=başlık düzeni) ve canonical
+export DEĞİŞMEDİ; yalnız grafik görüntü katmanı. Böylece sigla↔başlık
+eşlemesi grafiklerin kendisinde görünür hale geldi.
+- Kod: `src/delta_lemmata/webapp.py` (`_chart_axis_label`, `_render_heatmap`
+  iki katman, `_render_mds` veri + metin katmanı)
+- Testler: `tests/test_webapp_workflow.py`
+  (`test_chart_axis_label_pairs_key_with_a_truncated_clean_title`,
+  güncellenen `test_result_charts_bypass_pandas_string_inference`)
+- Kanıt: `screenshots/after-heatmap-labels-1440.png`,
+  `screenshots/after-mds-square-1440.png`
+
+Ek temizlik: `deploy/public-alpha/README.md` içindeki sabit sunucu IP'si üç
+yerde `DELTA_HOST` ortam değişkenine çekildi (repo public olduktan sonra
+gereksiz literal ifşayı kaldırır; prob semantiği değişmez).
+
+Mobil purpose-rehberi sırası da düzeltildi: `_render_mobile_purpose_guidance`
+çağrısı upload kartından sonra değil, seçimin hemen ardına taşındı (DOM
+ölçümü: rehber y=466 < kart y=528; önceki tur "açık bulgu"su kapandı).
 
 ## Doğrulama
 

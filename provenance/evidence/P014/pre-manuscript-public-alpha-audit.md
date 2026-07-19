@@ -97,7 +97,13 @@ doğrulandı (uydurma değişiklik yapılmadı). Üçüncü turda (owner sorusu)
 LDA + lemmata.app'e karşı computed-style tipografi ölçümü yapıldı: gövde LDA
 ile birebir aynı; mikro-etiketler 12px'e çekildi, giriş ekranındaki üçlü mesaj
 tekrarı temizlendi, sidebar sayaç tonları WCAG metin-token'larına alındı
-(ayrıntı: `design-review/README.md` Düzeltme 5-6).
+(ayrıntı: `design-review/README.md` Düzeltme 5-6). Dördüncü turda sonuç ekranı
+sentetik ResultViewV1 ile denetlendi: kare MDS grafiğinin Streamlit 360px
+slotunu taşırıp koordinat tablosunun altında unknown-holdout noktasını (D04)
+gizlediği bindirme bugı düzeltildi; heatmap/MDS etiketleri "sigla · başlık"
+biçimiyle tutarlılaştırıldı (pinli semantic tablolar ve canonical export
+değişmedi); mobil purpose-rehberi seçimin ardına taşındı; deploy README'deki
+sabit IP `DELTA_HOST` değişkenine çekildi (Düzeltme 7-8).
 - Header build SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda.
 - Review kenar çubuğundaki boş kolon aşamaya duyarlı "Preparation summary"
   ile dolduruldu (canlı sayaçlar + evidence listesi; ölü `evidence.*`

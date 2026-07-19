@@ -59,10 +59,22 @@ kademesi). Giriş ekranı 569 kelimeydi (LDA 190); kök neden "parametrelerden
 önce belgeleme" mesajının 3 kez tekrarıydı → hero'daki mükerrer cümle
 kaldırıldı (`setup.corpus_scope`), bilimsel çapa korundu; katalog envanteri
 (634 key) başka gerçek tekrar göstermedi, bilimsel açıklayıcılara dokunulmadı.
-Açık bulgu (owner kararı): mobilde purpose rehberi DOM sırası gereği upload
-kartından sonra görünüyor. Öz-denetim: sidebar sayaç tonları WCAG için
-metin-katmanı token'larına çekildi (amber 3.25:1 → amber-text 7.82:1; hardcoded
-#b42318 → coral-text).
+Öz-denetim: sidebar sayaç tonları WCAG için metin-katmanı token'larına çekildi
+(amber 3.25:1 → amber-text 7.82:1; hardcoded #b42318 → coral-text).
+
+**Sonuç ekranı turu (2026-07-19, aynı PR #15, repo artık PUBLIC):** Owner
+"Deltada kalalım" dedi; sonuç ekranı sentetik `ResultViewV1` ile lokal render
+edilip denetlendi (R worker gerekmeden). İki gerçek bulgu düzeltildi:
+(1) **MDS bindirme bugı** — kare grafik CSS'i konteynerin 360px'lik Streamlit
+slotunu 691px'e taşırıyor, koordinat tablosu grafiğe biniyor ve unknown-holdout
+noktası (D04) tablonun arkasında GİZLİ kalıyordu; konteynere height:auto
+verildi, D04 artık görünür (turun en kritik bulgusu). (2) **Grafik etiket
+tutarlılığı** — heatmap eksenleri + MDS noktaları sigla (D01), tablolar başlık
+konuşuyordu; grafikler "D01 · Kısaltılmış Başlık" biçimine geçti
+(`_chart_axis_label`); pinli semantic tablolar ve canonical export DEĞİŞMEDİ.
+Ayrıca mobil purpose-rehberi upload kartının önüne taşındı (önceki açık bulgu
+kapandı) ve deploy README'sindeki sabit IP üç yerde `DELTA_HOST` değişkenine
+çekildi. Kanıt: design-review README Düzeltme 7-8 + before/after görseller.
 
 **P009 browser-gate flake sertleştirmesi (2026-07-19, aynı PR #15):** "Belgeli
 aralıklı flake" bu oturumda sıklaştı (3 push'ta 3 verify düşüşü, re-run'la
