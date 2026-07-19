@@ -1031,7 +1031,7 @@ def test_result_charts_bypass_pandas_string_inference(
         "distance",
         "distance_label",
     ]
-    assert tables[1].column_names == ["key", "title", "display", "role", "x", "y"]
+    assert tables[1].column_names == ["key", "title", "role", "x", "y"]
     titles = {document.key: document.title for document in view.documents}
     expected_heatmap = [
         {
@@ -1053,9 +1053,6 @@ def test_result_charts_bypass_pandas_string_inference(
         {
             "key": point.document_key,
             "title": documents[point.document_key].title,
-            "display": webapp_module._chart_axis_label(
-                point.document_key, documents[point.document_key].title
-            ),
             "role": documents[point.document_key].role.value,
             "x": point.x,
             "y": point.y,

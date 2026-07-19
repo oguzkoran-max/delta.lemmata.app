@@ -3211,7 +3211,6 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         {
             "key": point.document_key,
             "title": documents[point.document_key].title,
-            "display": _chart_axis_label(point.document_key, documents[point.document_key].title),
             "role": documents[point.document_key].role.value,
             "x": point.x,
             "y": point.y,
@@ -3229,7 +3228,6 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         {
             "key": pa.array((value["key"] for value in values), type=pa.string()),
             "title": pa.array((value["title"] for value in values), type=pa.string()),
-            "display": pa.array((value["display"] for value in values), type=pa.string()),
             "role": pa.array((value["role"] for value in values), type=pa.string()),
             "x": pa.array((value["x"] for value in values), type=pa.float64()),
             "y": pa.array((value["y"] for value in values), type=pa.float64()),
@@ -3301,7 +3299,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
                         "type": "quantitative",
                         "scale": {"domain": shared_domain, "nice": False, "zero": False},
                     },
-                    "text": {"field": "display", "type": "nominal"},
+                    "text": {"field": "key", "type": "nominal"},
                 },
             },
         ],

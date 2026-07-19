@@ -100,9 +100,13 @@ tekrarı temizlendi, sidebar sayaç tonları WCAG metin-token'larına alındı
 (ayrıntı: `design-review/README.md` Düzeltme 5-6). Dördüncü turda sonuç ekranı
 sentetik ResultViewV1 ile denetlendi: kare MDS grafiğinin Streamlit 360px
 slotunu taşırıp koordinat tablosunun altında unknown-holdout noktasını (D04)
-gizlediği bindirme bugı düzeltildi; heatmap/MDS etiketleri "sigla · başlık"
-biçimiyle tutarlılaştırıldı (pinli semantic tablolar ve canonical export
-değişmedi); deploy README'deki sabit IP `DELTA_HOST` değişkenine çekildi.
+gizlediği bindirme bugı DOĞRULANDI; denenen CSS düzeltmesi CI'ın
+`mds_metric_aspect_pass` kare sözleşmesini bozduğu için geri alındı ve kusur
+ortak yeniden kalibrasyon isteyen AÇIK bulgu olarak kaydedildi. Heatmap
+eksenleri "sigla · başlık" biçimiyle tutarlılaştırıldı (MDS noktaları kare
+kalibrasyonu gereği sigla+tooltip kaldı; pinli semantic tablolar ve canonical
+export değişmedi); deploy README'deki sabit IP `DELTA_HOST` değişkenine
+çekildi.
 Mobil rehber sırası denemesi P009 entry-viewport kapısının bunu açıkça
 sözleşmelediğini gösterince geri alındı (aksiyon-önce bilinçli karar);
 CI worker'ının aralıklı çökmesi ayrıca teşhis edildi ve gate'e fail-fast

@@ -1210,12 +1210,6 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   aspect-ratio: 60 / 61;
 }
 
-/* The square chart grows past Streamlit's fixed 360px slot at wide layouts;
-   let the flow reserve the real height so the coordinate table never overlaps. */
-.st-key-p009_mds_square .stElementContainer:has([data-testid="stVegaLiteChart"]) {
-  height: auto !important;
-}
-
 .st-key-p009_mds_square [data-testid="stVegaLiteChart"] > div,
 .st-key-p009_mds_square [data-testid="stVegaLiteChart"] svg {
   width: 100% !important;

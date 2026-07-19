@@ -65,13 +65,17 @@ kaldırıldı (`setup.corpus_scope`), bilimsel çapa korundu; katalog envanteri
 **Sonuç ekranı turu (2026-07-19, aynı PR #15, repo artık PUBLIC):** Owner
 "Deltada kalalım" dedi; sonuç ekranı sentetik `ResultViewV1` ile lokal render
 edilip denetlendi (R worker gerekmeden). İki gerçek bulgu düzeltildi:
-(1) **MDS bindirme bugı** — kare grafik CSS'i konteynerin 360px'lik Streamlit
-slotunu 691px'e taşırıyor, koordinat tablosu grafiğe biniyor ve unknown-holdout
-noktası (D04) tablonun arkasında GİZLİ kalıyordu; konteynere height:auto
-verildi, D04 artık görünür (turun en kritik bulgusu). (2) **Grafik etiket
-tutarlılığı** — heatmap eksenleri + MDS noktaları sigla (D01), tablolar başlık
-konuşuyordu; grafikler "D01 · Kısaltılmış Başlık" biçimine geçti
-(`_chart_axis_label`); pinli semantic tablolar ve canonical export DEĞİŞMEDİ.
+(1) **MDS bindirme bugı (DOĞRULANDI, düzeltme ERTELENDİ)** — kare grafik CSS'i
+360px Streamlit slotunu ~691px'e taşırıyor, koordinat tablosu grafiğe biniyor
+ve unknown-holdout noktası (D04) tablonun ARKASINDA gizli kalıyor (bugün canlı
+kodda da böyle). Denenen konteyner height:auto fix'i bindirmeyi giderdi ama
+CI'ın `mds_metric_aspect_pass` kare sözleşmesini 1280 bandında bozdu; kare
+sözleşmesi + 360 slot + 60/61(.3) aspect sabitleri birlikte kalibre — kalıcı
+çözüm ortak yeniden kalibrasyon ister (owner kararı), deneme geri alındı.
+(2) **Grafik etiket tutarlılığı** — heatmap eksenleri "D01 · Kısaltılmış
+Başlık" oldu (`_chart_axis_label`); MDS nokta etiketleri de denendi ama uzun
+etiketler Vega autosize'da iç çerçeveyi daraltıp kare sözleşmesini bozduğu
+için sigla+tooltip'e geri alındı; pinli tablolar ve export DEĞİŞMEDİ.
 Deploy README'sindeki sabit IP üç yerde `DELTA_HOST` değişkenine çekildi.
 Mobil purpose-rehberi önce upload'ın önüne taşındı, sonra GERİ ALINDI: P009
 entry-viewport kapısı (`purpose_guide_layout_pass`) mobilde rehberin upload
