@@ -196,11 +196,11 @@ footer,
 }
 
 .delta-sidebar-metric-blocker {
-  color: #b42318 !important;
+  color: var(--delta-coral-text) !important;
 }
 
 .delta-sidebar-metric-warning {
-  color: var(--delta-amber) !important;
+  color: var(--delta-amber-text) !important;
 }
 
 .delta-sidebar-evidence {
@@ -215,7 +215,7 @@ footer,
   display: block;
   margin-bottom: 0.2rem;
   color: var(--delta-tertiary);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
   text-transform: uppercase;
   letter-spacing: 0;
@@ -234,7 +234,7 @@ footer,
 
 .delta-sidebar-evidence-row small {
   color: var(--delta-muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   text-align: left;
 }
 
@@ -351,7 +351,7 @@ footer,
 
 .delta-eyebrow {
   color: var(--delta-teal);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
   text-transform: uppercase;
   margin: 0 0 0.35rem;
@@ -611,7 +611,7 @@ footer,
 
 .delta-method-number {
   color: var(--delta-teal-dark);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -676,7 +676,7 @@ footer,
   display: block;
   margin-bottom: 0.2rem;
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
 }
 
@@ -775,7 +775,7 @@ footer,
 
 .delta-field-label {
   color: var(--delta-muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 0.2rem;
@@ -837,7 +837,7 @@ footer,
 
 .delta-map-state {
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
@@ -998,7 +998,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .delta-timeline-detail dt {
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -1166,7 +1166,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .delta-result-cell-mfw {
   color: currentColor;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
 }
@@ -1436,7 +1436,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .delta-issue-code {
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -1967,7 +1967,7 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-scope {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     line-height: 1.3;
   }
 

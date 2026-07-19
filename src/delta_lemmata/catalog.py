@@ -63,10 +63,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "how often common words recur. Delta compares texts, groups, and change over time "
         "without writing R or Python."
     ),
-    "setup.corpus_scope": (
-        "Every comparison is relative to your corpus. Delta documents the texts before "
-        "method settings appear."
-    ),
+    "setup.corpus_scope": ("Every comparison is relative to your corpus."),
     "setup.trace.kicker": "WHAT STYLOMETRY NOTICES",
     "setup.trace.title": "Small choices become visible when they repeat.",
     "setup.trace.body": ("Delta compares patterns across documented texts, not isolated words."),
