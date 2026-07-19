@@ -912,6 +912,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         elif display_outcome.error_code is not None:
             st.error(text("corpus.error.title"), icon=":material/gpp_bad:")
             st.caption(text(INTAKE_ERROR_MESSAGE_KEYS[display_outcome.error_code]))
+            st.caption(text("corpus.error.retry"))
             st.caption(text("corpus.error.reference", code=display_outcome.error_code.value))
         else:
             if display_outcome.corpus_ready:

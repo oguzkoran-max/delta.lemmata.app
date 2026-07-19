@@ -449,6 +449,15 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "A text is empty, not valid UTF-8 and NFC, contains unsafe controls, or appears "
         "to be markup rather than plain text."
     ),
+    "corpus.error.text_utf8": (
+        "This file is not saved as UTF-8 text. Re-save it as plain UTF-8 (in most editors, "
+        "'Save As' and choose UTF-8 encoding) and upload it again."
+    ),
+    "corpus.error.text_markup": (
+        "This looks like a markup or document file, such as HTML, XML, or a word processor "
+        "export, rather than plain text. Save it as a plain .txt file and upload it again."
+    ),
+    "corpus.error.retry": ("You can choose another file and try again without reloading the page."),
     "corpus.error.csv": (
         "The metadata table is malformed or contains a formula, markup, newline, or "
         "path-like cell that is unsafe to retain or export."

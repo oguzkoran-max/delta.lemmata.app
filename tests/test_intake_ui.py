@@ -33,6 +33,29 @@ def test_intake_ui_contracts_cover_every_mode_and_error() -> None:
     assert set(INTAKE_ERROR_MESSAGE_KEYS) == set(IntakeErrorCode)
 
 
+def test_every_intake_error_message_resolves_to_a_nonempty_catalog_string() -> None:
+    from delta_lemmata.catalog import text
+
+    for message_key in INTAKE_ERROR_MESSAGE_KEYS.values():
+        assert text(message_key).strip()
+    assert text("corpus.error.retry").strip()
+
+
+def test_common_beginner_rejections_get_cause_specific_guidance() -> None:
+    from delta_lemmata.catalog import text
+
+    # A wrong-encoding TXT and a markup/document file are the two rejections a
+    # non-developer actually hits; each must name its cause and how to fix it,
+    # not a single lumped message.
+    assert INTAKE_ERROR_MESSAGE_KEYS[IntakeErrorCode.INVALID_UTF8] == "corpus.error.text_utf8"
+    assert INTAKE_ERROR_MESSAGE_KEYS[IntakeErrorCode.MARKUP_DOCUMENT] == "corpus.error.text_markup"
+    utf8_message = text("corpus.error.text_utf8")
+    markup_message = text("corpus.error.text_markup")
+    assert "UTF-8" in utf8_message and "again" in utf8_message
+    assert "plain .txt" in markup_message and "again" in markup_message
+    assert utf8_message != markup_message != text("corpus.error.text")
+
+
 def test_empty_outcome_is_payload_free_and_not_ready() -> None:
     upload = BrowserUpload("work.txt", b"SECRET_PAYLOAD", "text/plain")
     assert "SECRET_PAYLOAD" not in repr(upload)
