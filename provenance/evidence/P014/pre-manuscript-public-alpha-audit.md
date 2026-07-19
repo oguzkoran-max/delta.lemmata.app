@@ -86,3 +86,19 @@ Bilimsel-yöntem merceği SIFIR bulgu verdi (doğrulayarak, varsayarak değil): 
 ## 9. Karar
 
 **CONDITIONAL GO** — makale tasarımına başlanabilir. **P0/P1 blocker yok.** Koşullar: (a) owner canlı Caddyfile'da geniş bir `trusted_proxies` olmadığını ve XFF pin'inin bulunduğunu teyit etmeli (savunma-derinliği); (b) düzeltilen iki P2 + savunma-derinliği kalemi PR review + green CI'dan geçmeli. Hiçbiri makale tasarımına başlamayı engellemez. P011-P015 kapıları AÇIK sınırlardır ve makalenin bu turda hazır olduğu iddia edilmez.
+
+## 10. Canlı tasarım denetimi takibi (2026-07-19)
+
+Denetim sonrası canlı `delta.lemmata.app` uzman gözle incelendi ve aile
+siteleriyle (`lemmata.app`, `lda.lemmata.app`) görsel tutarlılık için iki
+tasarım düzeltmesi uygulandı; A5.1 sistemi içinde kalındı.
+- Header build SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda.
+- Review kenar çubuğundaki boş kolon aşamaya duyarlı "Preparation summary"
+  ile dolduruldu (canlı sayaçlar + evidence listesi; ölü `evidence.*`
+  metinleri yeniden kullanıma alındı).
+
+Yeni özellik/runtime AI/login/analytics yok; Classic Delta/MFW/önişleme/yorum
+sınırları değişmedi. Kanıt: `provenance/evidence/P014/design-review/`
+(before/after görseller + `MANIFEST.sha256`). Testler +5, `verify.sh` yeşil,
+%100 kapsam. Commit'ler `be5ccf3` (kod+test) ve `3b3a460` (kanıt), PR #15
+(draft) üzerinde; canlı sunucuya dağıtım yapılmadı.

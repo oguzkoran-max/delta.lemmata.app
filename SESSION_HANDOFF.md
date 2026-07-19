@@ -1,6 +1,6 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-18
+**Güncellendi:** 2026-07-19
 
 **En yeni checkpoint: Pre-manuscript public-alpha denetimi + düzeltmeler + Codex
 R1 (draft PR #15, unmerged).** Claude Code, canlı public-alpha'yı makale öncesi
@@ -36,6 +36,18 @@ Linux CI draft PR #15'te koşar (ilk turda belgeli aralıklı P009 result-select
 harness flake'i çıktı; identik push geçti, re-run yeşil). Bu kapanış
 merge/deployment/public-activation DEĞİLDİR; owner + Codex review bekler. Canlı
 Delta ve LDA sağlıklı, dokunulmadı.
+
+**Canlı tasarım denetimi takibi (2026-07-19, aynı PR #15):** Owner isteğiyle
+canlı `delta.lemmata.app` uzman gözle incelendi (aile: `lemmata.app`,
+`lda.lemmata.app`). İki tasarım fix (A5.1 içinde, deploy YOK): (1) header build
+SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda; (2) review kenar
+çubuğundaki boş gri kolon aşamaya duyarlı "Preparation summary" ile dolduruldu
+(canlı sayaçlar works/blockers/warnings/rights ton renkli + evidence listesi).
+Bu, ertelenen CODE-DEAD-STRINGS'i kısmen kapatır (ölü `evidence.*` metinleri
+yeniden kullanıma alındı). +5 test, `verify.sh` yeşil (1743 passed, %100
+coverage). Kanıt: `provenance/evidence/P014/design-review/` (before/after +
+manifest). Commit'ler `be5ccf3` (kod+test), `3b3a460` (kanıt); doc güncellemesi
+üstüne eklenir. PR #15 hâlâ draft/unmerged.
 
 ---
 
