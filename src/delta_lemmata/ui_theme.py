@@ -2373,6 +2373,19 @@ div[data-testid="stMainBlockContainer"] h3 {
   display: none !important;
 }
 
+/* The Guided parameter summary shows four metrics in a narrow column; let the
+   short text values ("500 MFW", "Whole text") wrap instead of clipping to an
+   ellipsis on standard desktop widths. Streamlit applies the ellipsis on a
+   nested node inside the value, so override the value and every descendant. */
+.st-key-parameters_stage [data-testid="stMetricValue"],
+.st-key-parameters_stage [data-testid="stMetricValue"] * {
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere;
+  text-overflow: clip !important;
+  max-width: none !important;
+}
+
 [data-testid="stFileUploaderDropzone"] {
   min-height: 120px;
   border: 2px dashed var(--delta-teal);
