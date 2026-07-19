@@ -276,6 +276,17 @@ def test_gateway_preserves_public_authority_and_pins_external_https() -> None:
     assert "$delta_forwarded_proto" not in nginx
 
 
+def test_caddy_example_pins_forwarded_for_as_defense_in_depth() -> None:
+    # Caddy already ignores client-supplied X-Forwarded-* by default (empty
+    # trusted_proxies), so the gateway's per-client rate and connection limits
+    # are not spoofable out of the box. Keep the explicit pin as defense-in-depth
+    # so the guarantee survives a future broader trusted_proxies policy.
+    caddy = (ROOT / "deploy" / "public-alpha" / "Caddyfile.delta.example").read_text(
+        encoding="utf-8"
+    )
+    assert "header_up X-Forwarded-For {http.request.remote.host}" in caddy
+
+
 def test_gateway_rejects_writable_nginx_cache_mount() -> None:
     compose = copy.deepcopy(
         VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")

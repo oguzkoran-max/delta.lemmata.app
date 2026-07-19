@@ -45,6 +45,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.guide.question": "Choose a research question",
     "sidebar.guide.corpus": "Upload and document the texts",
     "sidebar.guide.parameters": "Review parameters before analysis",
+    "sidebar.summary_title": "Preparation summary",
     "sidebar.parameters_title": "Why parameters come later",
     "sidebar.parameters_body": (
         "Stylometric settings depend on the size and structure of your corpus. "
@@ -62,10 +63,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "how often common words recur. Delta compares texts, groups, and change over time "
         "without writing R or Python."
     ),
-    "setup.corpus_scope": (
-        "Every comparison is relative to your corpus. Delta documents the texts before "
-        "method settings appear."
-    ),
+    "setup.corpus_scope": ("Every comparison is relative to your corpus."),
     "setup.trace.kicker": "WHAT STYLOMETRY NOTICES",
     "setup.trace.title": "Small choices become visible when they repeat.",
     "setup.trace.body": ("Delta compares patterns across documented texts, not isolated words."),
@@ -448,6 +446,19 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "corpus.error.text": (
         "A text is empty, not valid UTF-8 and NFC, contains unsafe controls, or appears "
         "to be markup rather than plain text."
+    ),
+    "corpus.error.text_utf8": (
+        "This file is not saved as UTF-8 text. Re-save it as plain UTF-8 (in most editors, "
+        "'Save As' and choose UTF-8 encoding) and upload it again."
+    ),
+    "corpus.error.text_markup": (
+        "This looks like a markup or document file, such as HTML, XML, or a word processor "
+        "export, rather than plain text. Save it as a plain .txt file and upload it again."
+    ),
+    "corpus.error.retry": ("You can choose another file and try again without reloading the page."),
+    "corpus.error.retry_system": (
+        "This was a system error, not a problem with your file. Try again in a moment; "
+        "if it keeps happening, reload the page."
     ),
     "corpus.error.csv": (
         "The metadata table is malformed or contains a formula, markup, newline, or "

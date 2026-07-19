@@ -47,10 +47,10 @@ INTAKE_ERROR_MESSAGE_KEYS = {
     IntakeErrorCode.ROLE_MISMATCH: "corpus.error.role",
     IntakeErrorCode.MIME_MISMATCH: "corpus.error.role",
     IntakeErrorCode.TYPE_MISMATCH: "corpus.error.role",
-    IntakeErrorCode.INVALID_UTF8: "corpus.error.text",
+    IntakeErrorCode.INVALID_UTF8: "corpus.error.text_utf8",
     IntakeErrorCode.NON_NFC: "corpus.error.text",
     IntakeErrorCode.CONTROL_CHARACTER: "corpus.error.text",
-    IntakeErrorCode.MARKUP_DOCUMENT: "corpus.error.text",
+    IntakeErrorCode.MARKUP_DOCUMENT: "corpus.error.text_markup",
     IntakeErrorCode.TEXT_EMPTY: "corpus.error.text",
     IntakeErrorCode.TEXT_LIMIT: "corpus.error.limit",
     IntakeErrorCode.CSV_INVALID: "corpus.error.csv",
@@ -68,6 +68,19 @@ INTAKE_ERROR_MESSAGE_KEYS = {
     IntakeErrorCode.CLEANUP_FAILED: "corpus.error.internal",
     IntakeErrorCode.INTERNAL_ID: "corpus.error.internal",
 }
+
+
+def intake_recovery_guidance_key(code: IntakeErrorCode) -> str:
+    """Return the recovery-guidance catalog key for a rejected upload.
+
+    A recoverable user-input rejection (wrong encoding, format, or limit)
+    tells the user to choose another file without reloading. An internal,
+    workspace, or cleanup fault is a system error, not a problem with the
+    file, so it gets system-error guidance instead.
+    """
+    if INTAKE_ERROR_MESSAGE_KEYS[code] == "corpus.error.internal":
+        return "corpus.error.retry_system"
+    return "corpus.error.retry"
 
 
 @dataclass(frozen=True, slots=True)

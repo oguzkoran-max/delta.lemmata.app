@@ -125,7 +125,7 @@ footer,
 .delta-sidebar-parameters p {
   margin: 0;
   color: var(--delta-muted) !important;
-  font-size: 0.88rem;
+  font-size: 0.9375rem;
   line-height: 1.5;
 }
 
@@ -158,6 +158,84 @@ footer,
   margin-bottom: 0.35rem;
   color: var(--delta-teal) !important;
   font-size: 0.88rem;
+}
+
+.delta-sidebar-summary {
+  margin-top: 1.1rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--delta-line);
+  border-radius: 8px;
+  background: var(--delta-paper);
+}
+
+.delta-sidebar-summary-title {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--delta-ink) !important;
+  font-size: 0.9rem;
+}
+
+.delta-sidebar-metrics {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.delta-sidebar-metric {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.84rem;
+  color: var(--delta-muted);
+}
+
+.delta-sidebar-metric b {
+  color: var(--delta-ink);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+.delta-sidebar-metric-blocker {
+  color: var(--delta-coral-text) !important;
+}
+
+.delta-sidebar-metric-warning {
+  color: var(--delta-amber-text) !important;
+}
+
+.delta-sidebar-evidence {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--delta-soft-line);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.delta-sidebar-evidence-head {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--delta-tertiary);
+  font-size: 0.75rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.delta-sidebar-evidence-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.delta-sidebar-evidence-row span {
+  color: var(--delta-ink);
+  font-size: 0.82rem;
+}
+
+.delta-sidebar-evidence-row small {
+  color: var(--delta-muted);
+  font-size: 0.75rem;
+  text-align: left;
 }
 
 .delta-progress {
@@ -273,7 +351,7 @@ footer,
 
 .delta-eyebrow {
   color: var(--delta-teal);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
   text-transform: uppercase;
   margin: 0 0 0.35rem;
@@ -282,8 +360,8 @@ footer,
 .delta-entry {
   position: relative;
   overflow: hidden;
-  margin: 0 0 1rem;
-  padding: 1.4rem 2rem 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 1.7rem 2rem 1.05rem;
   border-top: 1px solid var(--delta-mint-strong);
   border-bottom: 1px solid var(--delta-mint-strong);
   background: var(--delta-mint);
@@ -317,7 +395,7 @@ footer,
   max-width: 720px;
   margin: 0.75rem 0 0;
   color: var(--delta-ink);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.5;
 }
 
@@ -325,7 +403,7 @@ footer,
   max-width: 720px;
   margin: 0.35rem 0 0;
   color: var(--delta-muted);
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   line-height: 1.45;
 }
 
@@ -533,7 +611,7 @@ footer,
 
 .delta-method-number {
   color: var(--delta-teal-dark);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 800;
   font-variant-numeric: tabular-nums;
 }
@@ -598,7 +676,7 @@ footer,
   display: block;
   margin-bottom: 0.2rem;
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 750;
 }
 
@@ -697,7 +775,7 @@ footer,
 
 .delta-field-label {
   color: var(--delta-muted);
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   margin-bottom: 0.2rem;
@@ -734,17 +812,30 @@ footer,
 }
 
 .delta-map-row {
+  position: relative;
   display: grid;
-  grid-template-columns: 28px 1fr auto;
-  gap: 0.65rem;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
+  gap: 0.7rem;
   align-items: center;
   min-height: 36px;
-  padding: 0 0.75rem;
-  border-right: 1px solid var(--delta-line);
+  padding: 0 1.05rem;
 }
 
-.delta-map-row:last-child {
-  border-right: 0;
+/* Inset divider: shorter than the row so it reads as a separator, never as a
+   trailing glyph after the uppercase state label ("COMPLETE|" -> "COMPLETEI"). */
+.delta-map-row::after {
+  content: "";
+  position: absolute;
+  top: 26%;
+  right: 0;
+  bottom: 26%;
+  width: 1px;
+  background: var(--delta-line);
+}
+
+.delta-map-row:last-child::after {
+  display: none;
 }
 
 .delta-map-number {
@@ -759,7 +850,7 @@ footer,
 
 .delta-map-state {
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   text-transform: uppercase;
 }
 
@@ -920,7 +1011,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .delta-timeline-detail dt {
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -1088,7 +1179,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .delta-result-cell-mfw {
   color: currentColor;
-  font-size: 0.74rem;
+  font-size: 0.75rem;
   font-weight: 750;
   font-variant-numeric: tabular-nums;
 }
@@ -1358,7 +1449,7 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
 
 .delta-issue-code {
   color: var(--delta-muted);
-  font-size: 0.72rem;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -1596,20 +1687,22 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-map-row {
-    grid-template-columns: 24px 1fr auto;
+    grid-template-columns: auto auto auto;
     min-height: 38px;
     padding: 0;
     border-bottom: 1px solid var(--delta-line);
   }
 
   .delta-map-row:nth-child(odd) {
-    padding-right: 0.5rem;
-    border-right: 1px solid var(--delta-line);
+    padding-right: 0.85rem;
   }
 
   .delta-map-row:nth-child(even) {
-    padding-left: 0.5rem;
-    border-right: 0;
+    padding-left: 0.85rem;
+  }
+
+  .delta-map-row:nth-child(even)::after {
+    display: none;
   }
 
   .delta-map-row:nth-last-child(-n + 2) {
@@ -1810,8 +1903,8 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-lede {
-    font-size: 0.875rem;
-    line-height: 1.36;
+    font-size: 0.9375rem;
+    line-height: 1.4;
   }
 
   .delta-entry-scope {
@@ -1884,12 +1977,12 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-lede {
-    font-size: 0.875rem;
-    line-height: 1.4;
+    font-size: 0.9375rem;
+    line-height: 1.42;
   }
 
   .delta-entry-scope {
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     line-height: 1.3;
   }
 
@@ -2074,18 +2167,21 @@ div[data-testid="stMainBlockContainer"] h3 {
 }
 
 .delta-map {
-  min-height: 46px;
-  margin: 16px 0 20px;
+  min-height: 52px;
+  margin: 24px 0 22px;
   padding: 0;
+  overflow: hidden;
 }
 
-.delta-map-row {
-  min-height: 46px;
-  border-top: 3px solid transparent;
+.delta-map-list .delta-map-row {
+  min-height: 52px;
+  margin: 0;
+  padding: 0 1.05rem;
 }
 
 .delta-map-row.is-active {
-  border-top-color: var(--delta-teal);
+  background: var(--delta-mint);
+  box-shadow: inset 0 3px 0 0 var(--delta-teal);
 }
 
 .delta-context-strip {
@@ -2371,6 +2467,19 @@ div[data-testid="stMainBlockContainer"] h3 {
 
 .st-key-persisted_upload_choices {
   display: none !important;
+}
+
+/* The Guided parameter summary shows four metrics in a narrow column; let the
+   short text values ("500 MFW", "Whole text") wrap instead of clipping to an
+   ellipsis on standard desktop widths. Streamlit applies the ellipsis on a
+   nested node inside the value, so override the value and every descendant. */
+.st-key-parameters_stage [data-testid="stMetricValue"],
+.st-key-parameters_stage [data-testid="stMetricValue"] * {
+  white-space: normal !important;
+  overflow: visible !important;
+  overflow-wrap: anywhere;
+  text-overflow: clip !important;
+  max-width: none !important;
 }
 
 [data-testid="stFileUploaderDropzone"] {
@@ -2781,6 +2890,10 @@ div[data-testid="stMainBlockContainer"] h3 {
     padding: 4px 14px;
     border: 0;
     border-top: 3px solid var(--delta-teal);
+  }
+
+  .delta-map-row.is-active::after {
+    display: none;
   }
 
   .delta-map-row.is-active .delta-map-number::after {

@@ -82,6 +82,7 @@ from delta_lemmata.intake_ui import (
     BrowserUpload,
     CorpusInputMode,
     IntakeOutcome,
+    intake_recovery_guidance_key,
     validate_browser_uploads,
     visit_browser_corpus_payloads,
 )
@@ -252,7 +253,10 @@ def _render_header(
 ) -> None:
     _render_main_landmark_bridge()
     version = text("header.version", version=health["version"])
-    build = text("header.build", build_id=health["build_id"])
+    build_id_full = str(health["build_id"])
+    build_id_short = build_id_full if len(build_id_full) <= 12 else build_id_full[:12]
+    build = text("header.build", build_id=build_id_short)
+    build_full = text("header.build", build_id=build_id_full)
     release_alpha = _html(text("header.release_public_alpha"))
     release_experimental = _html(text("header.release_experimental"))
     if evidence_active:
@@ -285,7 +289,9 @@ def _render_header(
             <div class="delta-build-status">
               <span class="delta-dot"></span>{_html(stage_label)}
             </div>
-            <div class="delta-build-meta">{_html(version)} · {_html(build)}</div>
+            <div class="delta-build-meta" title="{_html(build_full)}">
+              {_html(version)} · {_html(build)}
+            </div>
           </div>
         </div>
         """,
@@ -373,6 +379,62 @@ def _render_stepper(stage: CorpusSubstage, *, evidence_active: bool) -> None:
     st.markdown(markup, unsafe_allow_html=True)
 
 
+def _sidebar_readiness_counts() -> tuple[dict[str, int], bool]:
+    """Read the live corpus readiness from session state for the sidebar summary."""
+
+    report = st.session_state.get(_FLOW_REPORT_KEY)
+    if isinstance(report, ValidationReport):
+        readiness = report.readiness
+        return (
+            {
+                "works": readiness.independent_work_count,
+                "blockers": readiness.blocker_count,
+                "warnings": readiness.warning_count,
+                "rights": readiness.rights_restriction_count,
+            },
+            True,
+        )
+    return ({"works": 0, "blockers": 0, "warnings": 0, "rights": 0}, False)
+
+
+def _render_sidebar_summary() -> None:
+    counts, has_corpus = _sidebar_readiness_counts()
+    metric_rows = "".join(
+        '<div class="delta-sidebar-metric">'
+        f"<span>{_html(text(label_key))}</span>"
+        f'<b class="delta-sidebar-metric-{tone}">{counts[value_key]}</b></div>'
+        for label_key, value_key, tone in (
+            ("review.metric.works", "works", "plain"),
+            ("review.metric.blockers", "blockers", "blocker" if counts["blockers"] else "plain"),
+            ("review.metric.warnings", "warnings", "warning" if counts["warnings"] else "plain"),
+            ("review.metric.rights", "rights", "plain"),
+        )
+    )
+    corpus_state_key = "evidence.corpus_validated" if has_corpus else "evidence.corpus_state"
+    evidence_rows = "".join(
+        '<div class="delta-sidebar-evidence-row">'
+        f"<span>{_html(text(name_key))}</span>"
+        f"<small>{_html(text(state_key))}</small></div>"
+        for name_key, state_key in (
+            ("evidence.corpus", corpus_state_key),
+            ("evidence.parameters", "evidence.parameters_state"),
+            ("evidence.limits", "evidence.limits_state"),
+            ("evidence.run", "evidence.run_state"),
+        )
+    )
+    st.markdown(
+        '<section class="delta-sidebar-summary" role="region" '
+        'aria-labelledby="delta-sidebar-summary-title">'
+        '<strong class="delta-sidebar-summary-title" id="delta-sidebar-summary-title">'
+        f"{_html(text('sidebar.summary_title'))}</strong>"
+        f'<div class="delta-sidebar-metrics">{metric_rows}</div>'
+        '<div class="delta-sidebar-evidence">'
+        f'<span class="delta-sidebar-evidence-head">{_html(text("evidence.title"))}</span>'
+        f"{evidence_rows}</div></section>",
+        unsafe_allow_html=True,
+    )
+
+
 def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
     with st.sidebar:
         badge_key = (
@@ -400,6 +462,7 @@ def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
             "</div></section>",
             unsafe_allow_html=True,
         )
+        _render_sidebar_summary()
         with st.expander(text("build.title"), icon=":material/info:"):
             st.markdown(f"**{text('build.readiness_label')}**")
             st.caption(text("build.readiness_value"))
@@ -912,6 +975,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         elif display_outcome.error_code is not None:
             st.error(text("corpus.error.title"), icon=":material/gpp_bad:")
             st.caption(text(INTAKE_ERROR_MESSAGE_KEYS[display_outcome.error_code]))
+            st.caption(text(intake_recovery_guidance_key(display_outcome.error_code)))
             st.caption(text("corpus.error.reference", code=display_outcome.error_code.value))
         else:
             if display_outcome.corpus_ready:
@@ -2927,6 +2991,15 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
 _HEATMAP_TEXT_MAX_DOCUMENTS = 6
 
 
+def _chart_axis_label(key: str, title: str, *, limit: int = 14) -> str:
+    """Pair the compact document key with a truncated title so charts stay decodable."""
+
+    cleaned = " ".join(title.split())
+    if len(cleaned) > limit:
+        cleaned = cleaned[: limit - 1].rstrip() + "…"
+    return f"{key} · {cleaned}"
+
+
 def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
     matrix = cell.matrix
     if matrix is None:
@@ -2936,15 +3009,17 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
         {
             "reference": row_key,
             "reference_title": titles[row_key],
+            "reference_display": _chart_axis_label(row_key, titles[row_key]),
             "compared": column_key,
             "compared_title": titles[column_key],
+            "compared_display": _chart_axis_label(column_key, titles[column_key]),
             "distance": float(distance),
             "distance_label": _distance_label(distance),
         }
         for row_key, row in zip(matrix.document_keys, matrix.values, strict=True)
         for column_key, distance in zip(matrix.document_keys, row, strict=True)
     ]
-    order = list(matrix.document_keys)
+    order = [_chart_axis_label(key, titles[key]) for key in matrix.document_keys]
     off_diagonal_distances = tuple(
         float(distance)
         for row_index, row in enumerate(matrix.values)
@@ -2992,9 +3067,15 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "reference_title": pa.array(
                 (value["reference_title"] for value in values), type=pa.string()
             ),
+            "reference_display": pa.array(
+                (value["reference_display"] for value in values), type=pa.string()
+            ),
             "compared": pa.array((value["compared"] for value in values), type=pa.string()),
             "compared_title": pa.array(
                 (value["compared_title"] for value in values), type=pa.string()
+            ),
+            "compared_display": pa.array(
+                (value["compared_display"] for value in values), type=pa.string()
             ),
             "distance": pa.array((value["distance"] for value in values), type=pa.float64()),
             "distance_label": pa.array(
@@ -3007,13 +3088,13 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "mark": {"type": "rect", "cornerRadius": 3},
             "encoding": {
                 "x": {
-                    "field": "compared",
+                    "field": "compared_display",
                     "type": "ordinal",
                     "sort": order,
                     "title": text("results.heatmap.x"),
                 },
                 "y": {
-                    "field": "reference",
+                    "field": "reference_display",
                     "type": "ordinal",
                     "sort": order,
                     "title": text("results.heatmap.y"),
@@ -3054,8 +3135,8 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             {
                 "mark": {"type": "text", "fontSize": 12},
                 "encoding": {
-                    "x": {"field": "compared", "type": "ordinal", "sort": order},
-                    "y": {"field": "reference", "type": "ordinal", "sort": order},
+                    "x": {"field": "compared_display", "type": "ordinal", "sort": order},
+                    "y": {"field": "reference_display", "type": "ordinal", "sort": order},
                     "text": {"field": "distance_label", "type": "nominal"},
                     "color": {
                         "condition": [

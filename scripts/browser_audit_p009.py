@@ -11,6 +11,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+import time
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from io import BytesIO
@@ -31,11 +32,13 @@ from browser_audit_p008 import (
     _observe_console,
     _synthetic_corpus,
     _wait_for_health,
+    _wait_for_streamlit_idle,
     _wait_until_enabled,
     _word,
 )
 from PIL import Image
 from playwright.sync_api import Browser, Locator, Page, sync_playwright
+from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
 
 from delta_lemmata.job_store import SQLiteJobStore
 from delta_lemmata.result_view import ResultCellV1, classical_mds
@@ -143,6 +146,47 @@ def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
         return {"available": True, "job_count": len(records), "records": records}
     except (json.JSONDecodeError, OSError, sqlite3.Error, TypeError):
         return {"available": False, "reason": "control_database_unreadable"}
+
+
+def _wait_for_result_charts(
+    chart_locator: Locator,
+    output: Path,
+    *,
+    timeout_seconds: float = 60.0,
+) -> None:
+    """Wait for both result charts, failing fast when the live job dies first.
+
+    A chart that never appears has two very different causes: slow mounting on a
+    loaded runner (worth waiting out) and a worker that ended without a result
+    (waiting is pointless and hides the real failure). Poll the content-free
+    lifecycle store between short visibility waits: the newest job is the one
+    this browser flow started, so a non-succeeded terminal outcome there turns a
+    mute 60-second timeout into an immediate, named worker failure.
+    """
+
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        try:
+            chart_locator.nth(1).wait_for(timeout=2_000)
+        except PlaywrightTimeoutError:
+            pass
+        else:
+            return
+        diagnostics = _lifecycle_diagnostics(output)
+        records = diagnostics.get("records") or []
+        live = records[-1] if isinstance(records, list) and records else {}
+        outcome = live.get("terminal_outcome") if isinstance(live, dict) else None
+        if outcome not in (None, "succeeded"):
+            raise RuntimeError(
+                f"P009_WORKER_TERMINAL_{str(outcome).upper()}: the live job ended "
+                f"'{outcome}' before the result charts appeared; "
+                f"diagnostics={diagnostics!r}"
+            )
+    raise RuntimeError(
+        "P009_RESULT_CHARTS_TIMEOUT: both result charts did not become visible "
+        f"within {timeout_seconds:.0f}s while the live job reported "
+        f"diagnostics={_lifecycle_diagnostics(output)!r}"
+    )
 
 
 def _terminal_payload_cleanup_pass(diagnostics: dict[str, Any]) -> bool:
@@ -446,6 +490,55 @@ def _wait_for_result_selection_update(
         "Result selection did not produce a stable semantic-table update: "
         f"checked={target_radio.is_checked()!r}; before={semantic_before!r}; "
         f"latest={latest!r}"
+    )
+
+
+def _select_next_result_and_wait_for_change(
+    page: Page,
+    reference_radio: Locator,
+    target_radio: Locator,
+    semantic_before: dict[str, dict[str, Any]],
+    output: Path,
+    *,
+    max_cycles: int = 8,
+    settle_attempts: int = 40,
+) -> tuple[dict[str, dict[str, Any]], str]:
+    """Drive the native-keyboard result switch until the tables actually change.
+
+    A keyboard event dispatched into the native Streamlit radio can occasionally
+    fail to trigger the server rerun that recomputes the 1000 MFW result, leaving
+    the target checked while the semantic tables still show 500 MFW (a harness
+    event-delivery race, not a user-facing defect). Re-issue the same native
+    keyboard sequence, waiting for Streamlit to go idle each cycle, until the
+    user-visible tables change. The change requirement is never relaxed: if the
+    tables never change, this still fails and captures the stuck state.
+    """
+
+    last_error: RuntimeError | None = None
+    for cycle in range(max_cycles):
+        if cycle == 0:
+            _choose_next_result_option(page, reference_radio)
+        else:
+            _retry_next_result_option(page, reference_radio, target_radio)
+        try:
+            _wait_for_streamlit_idle(page, timeout_ms=20_000)
+        except PlaywrightTimeoutError:
+            pass
+        try:
+            semantic_after = _wait_for_result_selection_update(
+                page, target_radio, semantic_before, attempts=settle_attempts
+            )
+        except RuntimeError as error:
+            last_error = error
+            continue
+        path = "native-keyboard" if cycle == 0 else f"native-keyboard-retry-{cycle}"
+        return semantic_after, path
+    screenshot = output / "screenshots" / "result-selection-stuck.png"
+    page.screenshot(path=str(screenshot), full_page=True)
+    raise RuntimeError(
+        "Result selection did not produce a stable semantic-table update after "
+        f"{max_cycles} native-keyboard cycles; screenshot={screenshot.name}; "
+        f"last_error={last_error!r}"
     )
 
 
@@ -871,7 +964,11 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         ) from None
 
     chart_locator = page.locator('[data-testid="stVegaLiteChart"]')
-    chart_locator.nth(1).wait_for(timeout=15_000)
+    try:
+        _wait_for_streamlit_idle(page, timeout_ms=20_000)
+    except PlaywrightTimeoutError:
+        pass
+    _wait_for_result_charts(chart_locator, output)
     chart_evidence = tuple(
         _pixel_evidence(
             chart_locator.nth(index),
@@ -914,24 +1011,13 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
     if target_option.count() != 1:
         raise RuntimeError("Expected exactly one visible 1000 MFW result card")
     target_radio = selector.get_by_role("radio", name="1000 MFW", exact=True)
-    _choose_next_result_option(page, reference_radio)
-    selection_path = "native-keyboard"
-    try:
-        semantic_after = _wait_for_result_selection_update(
-            page,
-            target_radio,
-            semantic_before,
-            attempts=75,
-        )
-    except RuntimeError:
-        _retry_next_result_option(page, reference_radio, target_radio)
-        semantic_after = _wait_for_result_selection_update(
-            page,
-            target_radio,
-            semantic_before,
-            attempts=525,
-        )
-        selection_path = "native-keyboard-bounded-retry"
+    semantic_after, selection_path = _select_next_result_and_wait_for_change(
+        page,
+        reference_radio,
+        target_radio,
+        semantic_before,
+        output,
+    )
     parity_after = _semantic_result_parity(page, exported, 1000)
     page.get_by_role("heading", name="Distance heatmap", level=3, exact=True).wait_for()
     changed_chart_evidence = tuple(

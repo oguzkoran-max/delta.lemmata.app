@@ -16,5 +16,12 @@ delta.lemmata.app {
         header_up Host delta.lemmata.app
         header_up X-Forwarded-Host delta.lemmata.app
         header_up X-Forwarded-Proto https
+        # Defense-in-depth: pin X-Forwarded-For to the real client address.
+        # Caddy already ignores client-supplied X-Forwarded-* by default (its
+        # trusted_proxies list is empty), so the gateway's per-client rate and
+        # connection limits are not spoofable out of the box. Setting it here
+        # makes that trust explicit and keeps it even if a broader
+        # trusted_proxies policy is ever added.
+        header_up X-Forwarded-For {http.request.remote.host}
     }
 }

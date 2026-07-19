@@ -56,6 +56,17 @@ def test_phase_b_theme_uses_the_approved_a51_tokens_and_dimensions() -> None:
     assert "grid-template-columns: repeat(2, minmax(0, 1fr));" in APP_CSS
 
 
+def test_experiment_map_active_step_reads_as_a_clean_tab() -> None:
+    # The active step is a mint-washed tab with an inset teal top accent, clipped
+    # to the rounded frame — not a teal line floating on the frame's top border.
+    assert "  padding: 0;\n  overflow: hidden;\n}" in APP_CSS
+    assert (
+        "  background: var(--delta-mint);\n  box-shadow: inset 0 3px 0 0 var(--delta-teal);"
+    ) in APP_CSS
+    # neutralise the Streamlit markdown list-item margin so cells align to the frame
+    assert ".delta-map-list .delta-map-row {" in APP_CSS
+
+
 def test_inter_is_self_hosted_with_recorded_provenance_and_no_runtime_font_request() -> None:
     assert FONT.is_file()
     assert FONT_LICENSE.is_file()
@@ -139,6 +150,66 @@ def test_skip_target_is_a_separate_focusable_content_anchor(
         evidence_active=False,
     )
     assert 'href="#delta-content-start"' in render.call_args.args[0]
+
+
+def test_header_shows_a_short_build_and_keeps_the_full_sha_in_the_title(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    render = Mock()
+    monkeypatch.setattr(webapp_module.st, "markdown", render)
+    monkeypatch.setattr(webapp_module.st, "html", Mock())
+    full_sha = "25fc2cadbba2147db6c7767e802088706a305f28"
+
+    webapp_module._render_header(
+        {"version": "0.0.0", "build_id": full_sha},
+        webapp_module.CorpusSubstage.UPLOAD,
+        evidence_active=False,
+    )
+
+    markup = "".join(str(call.args[0]) for call in render.call_args_list)
+    title_attr = f'title="Build {full_sha}"'
+    assert title_attr in markup
+    visible = markup.replace(title_attr, "")
+    assert f"Build {full_sha[:12]}" in visible
+    assert full_sha not in visible
+
+
+def test_sidebar_summary_flags_live_blockers_and_warnings(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    render = Mock()
+    monkeypatch.setattr(webapp_module.st, "markdown", render)
+    monkeypatch.setattr(
+        webapp_module,
+        "_sidebar_readiness_counts",
+        lambda: ({"works": 6, "blockers": 2, "warnings": 4, "rights": 1}, True),
+    )
+
+    webapp_module._render_sidebar_summary()
+
+    markup = render.call_args.args[0]
+    assert 'class="delta-sidebar-metric-blocker">2<' in markup
+    assert 'class="delta-sidebar-metric-warning">4<' in markup
+    assert text("evidence.corpus_validated") in markup
+
+
+def test_sidebar_summary_stays_neutral_until_a_corpus_is_validated(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    render = Mock()
+    monkeypatch.setattr(webapp_module.st, "markdown", render)
+    monkeypatch.setattr(
+        webapp_module,
+        "_sidebar_readiness_counts",
+        lambda: ({"works": 0, "blockers": 0, "warnings": 0, "rights": 0}, False),
+    )
+
+    webapp_module._render_sidebar_summary()
+
+    markup = render.call_args.args[0]
+    assert "delta-sidebar-metric-blocker" not in markup
+    assert "delta-sidebar-metric-warning" not in markup
+    assert text("evidence.corpus_state") in markup
 
 
 def test_results_copy_matches_the_scientific_display_contract() -> None:

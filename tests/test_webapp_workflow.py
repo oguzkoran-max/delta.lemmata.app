@@ -182,6 +182,39 @@ def _fixture_import() -> tuple[ValidatedCorpusUnit, MetadataCsvImportResult]:
     return unit, result
 
 
+def test_sidebar_readiness_counts_track_the_validated_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = validate_inventory(_fixture_inventory())
+    monkeypatch.setattr(
+        webapp_module.st,
+        "session_state",
+        {webapp_module._FLOW_REPORT_KEY: report},
+        raising=False,
+    )
+
+    counts, has_corpus = webapp_module._sidebar_readiness_counts()
+
+    assert has_corpus is True
+    assert counts == {
+        "works": report.readiness.independent_work_count,
+        "blockers": report.readiness.blocker_count,
+        "warnings": report.readiness.warning_count,
+        "rights": report.readiness.rights_restriction_count,
+    }
+
+
+def test_sidebar_readiness_counts_default_to_zero_without_a_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(webapp_module.st, "session_state", {}, raising=False)
+
+    counts, has_corpus = webapp_module._sidebar_readiness_counts()
+
+    assert has_corpus is False
+    assert counts == {"works": 0, "blockers": 0, "warnings": 0, "rights": 0}
+
+
 def test_review_readiness_detail_uses_the_general_ready_boundary() -> None:
     inventory = SimpleNamespace(purpose=PurposeId.STYLE_OVER_TIME)
     report = SimpleNamespace(
@@ -961,6 +994,14 @@ def test_result_helpers_reject_missing_ready_bindings_and_unavailable_matrices()
         webapp_module._render_heatmap(unavailable, view)
 
 
+def test_chart_axis_label_pairs_key_with_a_truncated_clean_title() -> None:
+    assert webapp_module._chart_axis_label("D01", "Early work") == "D01 · Early work"
+    assert (
+        webapp_module._chart_axis_label("D02", "  A very   long descriptive title  ")
+        == "D02 · A very long d…"
+    )
+
+
 def test_result_charts_bypass_pandas_string_inference(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -983,22 +1024,23 @@ def test_result_charts_bypass_pandas_string_inference(
     assert tables[0].column_names == [
         "reference",
         "reference_title",
+        "reference_display",
         "compared",
         "compared_title",
+        "compared_display",
         "distance",
         "distance_label",
     ]
     assert tables[1].column_names == ["key", "title", "role", "x", "y"]
+    titles = {document.key: document.title for document in view.documents}
     expected_heatmap = [
         {
             "reference": row_key,
-            "reference_title": next(
-                document.title for document in view.documents if document.key == row_key
-            ),
+            "reference_title": titles[row_key],
+            "reference_display": webapp_module._chart_axis_label(row_key, titles[row_key]),
             "compared": column_key,
-            "compared_title": next(
-                document.title for document in view.documents if document.key == column_key
-            ),
+            "compared_title": titles[column_key],
+            "compared_display": webapp_module._chart_axis_label(column_key, titles[column_key]),
             "distance": float(distance),
             "distance_label": f"{float(distance):.6f}",
         }

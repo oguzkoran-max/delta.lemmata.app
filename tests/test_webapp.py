@@ -220,7 +220,8 @@ def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
     rendered = unescape("\n".join(element.value for element in app.markdown))
     captions = "\n".join(element.value for element in app.caption)
     visible_failure = "\n".join((rendered, captions, *(message.value for message in app.error)))
-    assert "not valid UTF-8 and NFC" in captions
+    assert "This file is not saved as UTF-8 text" in captions
+    assert "try again without reloading the page" in captions
     assert "Rejection reference: INGEST_INVALID_UTF8" in captions
     assert "SECRET_PAYLOAD" not in visible_failure
     assert "secret-label.txt" not in visible_failure

@@ -1,6 +1,129 @@
 # Delta Session Handoff
 
-**Güncellendi:** 2026-07-17
+**Güncellendi:** 2026-07-19
+
+**En yeni checkpoint: Pre-manuscript public-alpha denetimi + düzeltmeler + Codex
+R1 (draft PR #15, unmerged).** Claude Code, canlı public-alpha'yı makale öncesi
+yedi bağımsız mercek + adversaryel sentezle denetledi. `claude/p014-pre-manuscript-audit`
+dalı origin/main `3cfe0713`'ten açıldı. Bağımsız Codex incelemesi sonrası
+düzeltilmiş sonuç: **P0=0, P1=0, P2=3 (2 fix + 1 makale-açığı), P3=7, +1
+savunma-derinliği (uygulandı)**; karar **CONDITIONAL GO** (yalnız "makale
+tasarımına başlanabilir mi?"; P011-P015 açık, gönderim-hazır iddiası yok).
+
+Düzeltilen (test eklenerek, canlıya deploy YOK): (1) **P2 BARIS-INTAKE-01** —
+Barış canlıda `INGEST_INVALID_UTF8` alıp app'i takılmış sanıp yeniledi (repro:
+yenilemeye gerek yok). Neden-özel mesaj (UTF-8/markup) + **hata-sınıfına duyarlı**
+yönlendirme (kurtarılabilir → "başka dosya, yenileme yok"; iç/sistem hatası →
+"sistem hatası, sürerse yenile" — Codex R1). (2) **P2 UI-METRIC-TRUNC-01** —
+Parameters özet metrikleri masaüstünde "500 MF…"/"Whole t…" kırpıyordu; `ui_theme`
+wrap kuralı (375×844 dahil doğrulandı). (3) **Savunma-derinliği SEC-XFF-01** —
+Codex R1: Caddy varsayılanı istemci-verili XFF'i zaten yok sayar (boş
+`trusted_proxies`), yani P1 "vulnerability" DEĞİLDİ; açık `header_up X-Forwarded-For
+{http.request.remote.host}` pin'i savunma-derinliği olarak korundu +
+validator/test/README savunma-derinliği diline çekildi. **Owner canlı Caddyfile'da
+geniş `trusted_proxies` olmadığını + pin'i teyit etmeli.**
+
+Ertelenen: FAIR-PKG (P012), VIS-RAIL (owner görsel), A11Y-HEADING (owner görsel),
+CODE-DEAD-STRINGS, 4 makale-açığı (P011/P012/P013/P015). Rapor:
+`provenance/evidence/P014/pre-manuscript-public-alpha-audit.md`; kanıt +
+önce/sonra + görünür red-mesajı + 375 metrik görselleri (SHA manifesti)
+`provenance/evidence/P014/pre-manuscript-audit/`.
+
+Uygulama (kod) final SHA `22e3e1d`; kanıt/rapor SHA bunun üstündeki doc commit'i
+(bilinçli ayrı). Yerel `./scripts/verify.sh` geçti (1738 passed, 1 skip, %100
+coverage, records-ok=119, verify-ok); taze-klon kaynak testi geçti. Canonical
+Linux CI draft PR #15'te koşar (ilk turda belgeli aralıklı P009 result-selector
+harness flake'i çıktı; identik push geçti, re-run yeşil). Bu kapanış
+merge/deployment/public-activation DEĞİLDİR; owner + Codex review bekler. Canlı
+Delta ve LDA sağlıklı, dokunulmadı.
+
+**Canlı tasarım denetimi takibi (2026-07-19, aynı PR #15):** Owner isteğiyle
+canlı `delta.lemmata.app` uzman gözle incelendi (aile: `lemmata.app`,
+`lda.lemmata.app`). Dört tasarım fix (A5.1 içinde, deploy YOK): (1) header build
+SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda; (2) review kenar
+çubuğundaki boş gri kolon aşamaya duyarlı "Preparation summary" ile dolduruldu
+(canlı sayaçlar works/blockers/warnings/rights ton renkli + evidence listesi);
+(3) deney haritası stepper aktif adım göstergesi düzeltildi (teal çizgi kutu
+kenarının üstünde havada duruyordu → overflow:hidden + inset teal aksan +
+mint wash + Streamlit li stray-margin sıfırlama, hücreler hizalandı); (4) sidebar
+evidence satırları uniform stacked ledger'a çevrildi (yalnız "Parameter
+sensitivity" satırı dengesiz kırılıyordu). İkinci turda mobil boşluk/padding +
+header kenar adayları DOM ile ölçülüp gerçek sorun olmadığı doğrulandı, uydurma
+değişiklik yapılmadı.
+
+**Tipografi + metin-yükü turu (2026-07-19, aynı PR #15):** Owner sorusu
+üzerine canlı LDA + lemmata.app + lokal Delta computed-style ile ölçüldü. Gövde
+LDA ile birebir aynı (16px Source Sans); mikro-etiketler 11.5px'ten 12px'e
+(0.72/0.74→0.75rem, 11 kural) çekildi (LDA min 13.6px; 12px sistemin mevcut
+kademesi). Giriş ekranı 569 kelimeydi (LDA 190); kök neden "parametrelerden
+önce belgeleme" mesajının 3 kez tekrarıydı → hero'daki mükerrer cümle
+kaldırıldı (`setup.corpus_scope`), bilimsel çapa korundu; katalog envanteri
+(634 key) başka gerçek tekrar göstermedi, bilimsel açıklayıcılara dokunulmadı.
+Öz-denetim: sidebar sayaç tonları WCAG için metin-katmanı token'larına çekildi
+(amber 3.25:1 → amber-text 7.82:1; hardcoded #b42318 → coral-text).
+
+**Sonuç ekranı turu (2026-07-19, aynı PR #15, repo artık PUBLIC):** Owner
+"Deltada kalalım" dedi; sonuç ekranı sentetik `ResultViewV1` ile lokal render
+edilip denetlendi (R worker gerekmeden). İki gerçek bulgu düzeltildi:
+(1) **MDS bindirme bugı (DOĞRULANDI, düzeltme ERTELENDİ)** — kare grafik CSS'i
+360px Streamlit slotunu ~691px'e taşırıyor, koordinat tablosu grafiğe biniyor
+ve unknown-holdout noktası (D04) tablonun ARKASINDA gizli kalıyor (bugün canlı
+kodda da böyle). Denenen konteyner height:auto fix'i bindirmeyi giderdi ama
+CI'ın `mds_metric_aspect_pass` kare sözleşmesini 1280 bandında bozdu; kare
+sözleşmesi + 360 slot + 60/61(.3) aspect sabitleri birlikte kalibre — kalıcı
+çözüm ortak yeniden kalibrasyon ister (owner kararı), deneme geri alındı.
+(2) **Grafik etiket tutarlılığı** — heatmap eksenleri "D01 · Kısaltılmış
+Başlık" oldu (`_chart_axis_label`); MDS nokta etiketleri de denendi ama uzun
+etiketler Vega autosize'da iç çerçeveyi daraltıp kare sözleşmesini bozduğu
+için sigla+tooltip'e geri alındı; pinli tablolar ve export DEĞİŞMEDİ.
+Deploy README'sindeki sabit IP üç yerde `DELTA_HOST` değişkenine çekildi.
+Mobil purpose-rehberi önce upload'ın önüne taşındı, sonra GERİ ALINDI: P009
+entry-viewport kapısı (`purpose_guide_layout_pass`) mobilde rehberin upload
+ALTINDA olmasını açıkça şart koşuyor — yerleşim denetlenmiş bilinçli karar
+(aksiyon-önce); "açık bulgu" kusur değil sözleşme olarak kapandı. Kanıt:
+design-review README Düzeltme 7-8 + before/after görseller.
+
+**P014-D2 turu (2026-07-19, aynı PR #15):** Owner canlı ekran görüntüleriyle
+"karışık his + küçük yazı + COMPLETEI yanılsaması" bildirdi; profesyonel
+prompt'a çevrilip işlendi. (1) Stepper: iki-class padding (0→17px etiket-ayraç
+boşluğu, Streamlit emotion li'yi yener) + %26 inset ::after ayraç; mobil ≤760
+bantları uyumlandı. İkinci geri bildirimle hücre yerleşimi: 1fr kolonu adı
+sola/durumu sağa itiyordu → auto-auto-auto + justify-content:center ile
+küme hücrede ortalandı ("01 Purpose COMPLETE" tek grup). (2) Okuma tipografisi: lede 17px, scope 14.4px,
+sidebar 15px, mobil lede 15px; mobil fold sözleşmesi ölçülerek doğrulandı
+(663.7/707.3 ≤ 780). (3) Dikey ritim: hero + stepper marjları. Not: owner'ın
+gördüğü canlı build eski (uzun SHA dahil PR'da düzeltilmiş durumda).
+
+**P009 browser-gate flake sertleştirmesi (2026-07-19, aynı PR #15):** "Belgeli
+aralıklı flake" bu oturumda sıklaştı (3 push'ta 3 verify düşüşü, re-run'la
+geçiyordu). Log arkeolojisi iki AYRI kırılgan nokta gösterdi: (a) 500→1000 MFW
+native-keyboard seçimi bazen Streamlit rerun'ı tetiklemiyor (radio checked,
+semantic tablolar 500'de takılı) → `_select_next_result_and_wait_for_change`:
+aynı dizi, her turda idle bekleyerek, tablolar değişene kadar max 8 tur; takılı
+durum screenshot'la yakalanır (`b68f5dc`, +3 unit test). (b) "Grafik gelmedi"
+timeout'ları (08:26, 09:52, 12:03×2): İLK teşhis "grafik mount'u yavaş runner'da
+15s'e sığmıyor" idi ve 60s+idle verildi (`979af9e`); 12:03 çifte düşüşün kanıt
+JSON'u bu teşhisi ÇÜRÜTTÜ — audit lifecycle kaydında canlı işin
+`terminal_outcome: "crashed"` olduğu görüldü (08:26'da da aynı imza).
+Yani mod, R worker'ın CI'da ARALIKLI ÇÖKMESİ; grafik hiç gelmeyeceği için
+timeout büyütmek çare değildi. Düzeltme: `_wait_for_result_charts` fail-fast
+teşhisi — grafik beklerken store'daki canlı iş terminal-olmuş ve succeeded
+değilse anında `P009_WORKER_TERMINAL_<OUTCOME>` hatası (+3 unit test); 60s+idle
+sağlamlık olarak kaldı. Hiçbir assert gevşetilmedi (tablolar değişmeli, iki
+grafik şart, export-parity aynı). AÇIK İZ: worker crash'inin kök nedeni
+belirsiz; CRASHED = sinyalle ölüm (negatif dönüş kodu) ve baş şüpheli
+`stylo-worker-limits-v1.json` içindeki 1 GiB RLIMIT_AS'in R+stylo sanal adres
+alanı için dar kalması (ASLR/arena varyansı aralıklılığı açıklar). Kalıcı çözüm
+adayı: limit profilini v2 ile büyütmek (owner kararı; sinyal numarası
+content-free ProcessResult'ta tutulmuyor, şema değişikliği ister).
+Bu, ertelenen CODE-DEAD-STRINGS'i kısmen kapatır (ölü `evidence.*` metinleri
+yeniden kullanıma alındı). +6 test, `verify.sh` yeşil (%100 coverage). Kanıt:
+`provenance/evidence/P014/design-review/` (before/after + manifest, stepper
+önce/sonra dahil). Header+sidebar commit'leri `be5ccf3` (kod+test), `3b3a460`
+(kanıt); stepper fix ayrı commit; doc güncellemesi üstüne eklenir. PR #15 hâlâ
+draft/unmerged.
+
+---
 
 **En yeni checkpoint: Phase B main image publication.** Claude Code'un
 owner-selected A5.1 prototip sistemiyle kapanan Phase B, PR #8 üzerinden normal

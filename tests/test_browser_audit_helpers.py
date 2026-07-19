@@ -34,6 +34,8 @@ _geometry = BROWSER_AUDIT._geometry
 _choose_next_result_option = P009_BROWSER_AUDIT._choose_next_result_option
 _retry_next_result_option = P009_BROWSER_AUDIT._retry_next_result_option
 _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
+_select_next_result_and_wait_for_change = P009_BROWSER_AUDIT._select_next_result_and_wait_for_change
+_wait_for_result_charts = P009_BROWSER_AUDIT._wait_for_result_charts
 _entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
 _preload_missing_distinct_owner_job = P009_BROWSER_AUDIT._preload_missing_distinct_owner_job
 _semantic_result_parity = P009_BROWSER_AUDIT._semantic_result_parity
@@ -658,3 +660,171 @@ def test_terminal_payload_cleanup_accepts_only_terminal_verified_absence() -> No
     }
 
     assert _terminal_payload_cleanup_pass(diagnostics) is True
+
+
+class _StuckStatePage:
+    """Fake page that records full-page screenshot requests."""
+
+    def __init__(self) -> None:
+        self.screenshots: list[tuple[str, bool]] = []
+
+    def screenshot(self, *, path: str, full_page: bool = False) -> None:
+        self.screenshots.append((path, full_page))
+
+
+def _patch_result_switch_helpers(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    outcomes: list[Any],
+    calls: list[str],
+) -> None:
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT, "_choose_next_result_option", lambda _p, _r: calls.append("choose")
+    )
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT, "_retry_next_result_option", lambda _p, _r, _t: calls.append("retry")
+    )
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT, "_wait_for_streamlit_idle", lambda _p, **_k: calls.append("idle")
+    )
+    stream = iter(outcomes)
+
+    def _fake_wait(_page: Any, _target: Any, _before: Any, **_kwargs: Any) -> Any:
+        item = next(stream)
+        if isinstance(item, Exception):
+            raise item
+        return item
+
+    monkeypatch.setattr(P009_BROWSER_AUDIT, "_wait_for_result_selection_update", _fake_wait)
+
+
+def test_result_switch_returns_on_the_first_native_cycle(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+    changed = {"MDS coordinate table": {"sha256": "new", "row_count": 3}}
+    _patch_result_switch_helpers(monkeypatch, outcomes=[changed], calls=calls)
+
+    observed, path = _select_next_result_and_wait_for_change(
+        cast(Page, object()),
+        cast(Locator, object()),
+        cast(Locator, object()),
+        {"MDS coordinate table": {"sha256": "old", "row_count": 3}},
+        tmp_path,
+    )
+
+    assert observed == changed
+    assert path == "native-keyboard"
+    assert calls == ["choose", "idle"]
+
+
+def test_result_switch_reissues_native_keyboard_until_tables_change(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+    changed = {"MDS coordinate table": {"sha256": "new", "row_count": 3}}
+    _patch_result_switch_helpers(
+        monkeypatch, outcomes=[RuntimeError("still 500 MFW"), changed], calls=calls
+    )
+
+    observed, path = _select_next_result_and_wait_for_change(
+        cast(Page, object()),
+        cast(Locator, object()),
+        cast(Locator, object()),
+        {"MDS coordinate table": {"sha256": "old", "row_count": 3}},
+        tmp_path,
+    )
+
+    assert observed == changed
+    assert path == "native-keyboard-retry-1"
+    assert calls == ["choose", "idle", "retry", "idle"]
+
+
+def test_result_switch_fails_and_captures_the_stuck_state(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    calls: list[str] = []
+    _patch_result_switch_helpers(monkeypatch, outcomes=[RuntimeError("no change")] * 3, calls=calls)
+    (tmp_path / "screenshots").mkdir()
+    page = _StuckStatePage()
+
+    with pytest.raises(RuntimeError, match="did not produce a stable semantic-table update after"):
+        _select_next_result_and_wait_for_change(
+            cast(Page, page),
+            cast(Locator, object()),
+            cast(Locator, object()),
+            {"MDS coordinate table": {"sha256": "old", "row_count": 3}},
+            tmp_path,
+            max_cycles=3,
+        )
+
+    assert calls == ["choose", "idle", "retry", "idle", "retry", "idle"]
+    assert len(page.screenshots) == 1
+    assert page.screenshots[0][0].endswith("result-selection-stuck.png")
+    assert page.screenshots[0][1] is True
+
+
+class _ChartLocator:
+    """Fake chart locator whose nth(1) visibility follows a scripted sequence."""
+
+    def __init__(self, outcomes: list[bool]) -> None:
+        self._outcomes = outcomes
+        self.calls = 0
+
+    def nth(self, index: int) -> _ChartLocator:
+        assert index == 1
+        return self
+
+    def wait_for(self, *, timeout: float) -> None:
+        visible = self._outcomes[min(self.calls, len(self._outcomes) - 1)]
+        self.calls += 1
+        if not visible:
+            raise PlaywrightTimeoutError("second chart not visible")
+
+
+def test_result_chart_wait_returns_once_both_charts_are_visible(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_lifecycle_diagnostics",
+        lambda _output: {"available": True, "records": [{"terminal_outcome": None}]},
+    )
+    locator = _ChartLocator([False, True])
+
+    _wait_for_result_charts(cast(Locator, locator), tmp_path, timeout_seconds=30.0)
+
+    assert locator.calls == 2
+
+
+def test_result_chart_wait_fails_fast_when_the_live_job_crashes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    diagnostics = {
+        "available": True,
+        "records": [
+            {"terminal_outcome": "succeeded"},
+            {"terminal_outcome": "crashed", "scientific_result_present": False},
+        ],
+    }
+    monkeypatch.setattr(P009_BROWSER_AUDIT, "_lifecycle_diagnostics", lambda _output: diagnostics)
+    locator = _ChartLocator([False])
+
+    with pytest.raises(RuntimeError, match="P009_WORKER_TERMINAL_CRASHED"):
+        _wait_for_result_charts(cast(Locator, locator), tmp_path, timeout_seconds=30.0)
+
+    assert locator.calls == 1
+
+
+def test_result_chart_wait_reports_a_diagnosed_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_lifecycle_diagnostics",
+        lambda _output: {"available": True, "records": [{"terminal_outcome": None}]},
+    )
+    locator = _ChartLocator([False])
+
+    with pytest.raises(RuntimeError, match="P009_RESULT_CHARTS_TIMEOUT"):
+        _wait_for_result_charts(cast(Locator, locator), tmp_path, timeout_seconds=0.0)
