@@ -472,6 +472,14 @@ def _validate_text_contracts() -> None:
     _require(caddy.count("delta.lemmata.app {") == 1, "P014_CADDY_HOST_INVALID")
     _require("reverse_proxy 127.0.0.1:8502" in caddy, "P014_CADDY_UPSTREAM_INVALID")
     _require("Strict-Transport-Security" in caddy, "P014_CADDY_TLS_HEADER_MISSING")
+    # The gateway keys its per-client rate/connection limits on X-Forwarded-For,
+    # so the trusted edge must replace (not append) that header with the real
+    # client address; otherwise a client-supplied value survives and defeats the
+    # limits. Contract-lock the replacement directive in the shipped example.
+    _require(
+        "header_up X-Forwarded-For {http.request.remote.host}" in caddy,
+        "P014_CADDY_FORWARDED_FOR_NOT_REPLACED",
+    )
 
     service = (DEPLOYMENT / "delta-public-alpha.service").read_text(encoding="utf-8")
     _require("WorkingDirectory=/opt/delta-public-alpha/current" in service, "P014_UNIT_ROOT")

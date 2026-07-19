@@ -276,6 +276,17 @@ def test_gateway_preserves_public_authority_and_pins_external_https() -> None:
     assert "$delta_forwarded_proto" not in nginx
 
 
+def test_caddy_example_replaces_forwarded_for_so_rate_limits_are_not_spoofable() -> None:
+    # The gateway keys its per-client request-rate and connection limits on
+    # X-Forwarded-For. The trusted edge must therefore REPLACE that header with
+    # the real client address; if it merely appended, a client-supplied value
+    # would survive and let an attacker rotate the header to bypass the limits.
+    caddy = (ROOT / "deploy" / "public-alpha" / "Caddyfile.delta.example").read_text(
+        encoding="utf-8"
+    )
+    assert "header_up X-Forwarded-For {http.request.remote.host}" in caddy
+
+
 def test_gateway_rejects_writable_nginx_cache_mount() -> None:
     compose = copy.deepcopy(
         VALIDATOR._load_compose(ROOT / "deploy" / "public-alpha" / "compose.yml")

@@ -527,6 +527,14 @@ First save a timestamped root-only copy and hash of the complete active Caddyfil
 Merge `Caddyfile.delta.example` into the observed host structure; do not replace
 the existing file blindly and do not change the Lemmata site block.
 
+The gateway keys its per-client request-rate and connection limits on
+`X-Forwarded-For`, so the merged live `delta.lemmata.app` site block must keep the
+example's `header_up X-Forwarded-For {http.request.remote.host}` line (or an
+equivalent `trusted_proxies` policy) so the edge REPLACES, not appends, that
+header with the real client address. Without it a client-supplied
+`X-Forwarded-For` survives to the gateway and lets an attacker rotate the header
+to bypass the rate and connection limits on the shared host.
+
 ```bash
 set -Eeuo pipefail
 set -a

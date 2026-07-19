@@ -16,5 +16,10 @@ delta.lemmata.app {
         header_up Host delta.lemmata.app
         header_up X-Forwarded-Host delta.lemmata.app
         header_up X-Forwarded-Proto https
+        # Replace, not append, X-Forwarded-For with the real client address.
+        # The gateway keys its per-client request-rate and connection limits on
+        # this header; without this line a client-supplied X-Forwarded-For would
+        # survive and let an attacker rotate the header to bypass those limits.
+        header_up X-Forwarded-For {http.request.remote.host}
     }
 }
