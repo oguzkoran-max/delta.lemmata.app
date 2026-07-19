@@ -50,6 +50,20 @@ evidence satırları uniform stacked ledger'a çevrildi (yalnız "Parameter
 sensitivity" satırı dengesiz kırılıyordu). İkinci turda mobil boşluk/padding +
 header kenar adayları DOM ile ölçülüp gerçek sorun olmadığı doğrulandı, uydurma
 değişiklik yapılmadı.
+
+**P009 browser-gate flake sertleştirmesi (2026-07-19, aynı PR #15):** "Belgeli
+aralıklı flake" bu oturumda sıklaştı (3 push'ta 3 verify düşüşü, re-run'la
+geçiyordu). Log arkeolojisi iki AYRI kırılgan nokta gösterdi: (a) 500→1000 MFW
+native-keyboard seçimi bazen Streamlit rerun'ı tetiklemiyor (radio checked,
+semantic tablolar 500'de takılı) → `_select_next_result_and_wait_for_change`:
+aynı dizi, her turda idle bekleyerek, tablolar değişene kadar max 8 tur; takılı
+durum screenshot'la yakalanır (`b68f5dc`, +3 unit test). (b) Sonuç UI'ı sonrası
+ikinci Vega-Lite (MDS) grafiğinin mount beklemesi 15s'te dardı (aynı satırdan 2
+düşüş) → idle + 60s (`979af9e`). Hiçbir assert gevşetilmedi (tablolar değişmeli,
+iki grafik şart, export-parity aynı). Corpus 1100 özellikli olduğundan 500≠1000
+MFW gerçekten farklı; "değişmeli" şartı geçerli. Sertleştirme sonrası ilk push
+(979af9e) her iki CI run'ında ilk denemede yeşil (bugün ilki; tek push kanıt
+değil, sonraki push'larla izlenir).
 Bu, ertelenen CODE-DEAD-STRINGS'i kısmen kapatır (ölü `evidence.*` metinleri
 yeniden kullanıma alındı). +6 test, `verify.sh` yeşil (%100 coverage). Kanıt:
 `provenance/evidence/P014/design-review/` (before/after + manifest, stepper
