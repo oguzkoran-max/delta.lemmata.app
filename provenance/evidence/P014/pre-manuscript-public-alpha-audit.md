@@ -90,10 +90,14 @@ Bilimsel-yöntem merceği SIFIR bulgu verdi (doğrulayarak, varsayarak değil): 
 ## 10. Canlı tasarım denetimi takibi (2026-07-19)
 
 Denetim sonrası canlı `delta.lemmata.app` uzman gözle incelendi ve aile
-siteleriyle (`lemmata.app`, `lda.lemmata.app`) görsel tutarlılık için dört
+siteleriyle (`lemmata.app`, `lda.lemmata.app`) görsel tutarlılık için altı
 tasarım düzeltmesi uygulandı; A5.1 sistemi içinde kalındı. İkinci turda mobil
 boşluk/padding ve header kenar adayları DOM ile ölçülüp gerçek sorun olmadığı
-doğrulandı (uydurma değişiklik yapılmadı).
+doğrulandı (uydurma değişiklik yapılmadı). Üçüncü turda (owner sorusu) canlı
+LDA + lemmata.app'e karşı computed-style tipografi ölçümü yapıldı: gövde LDA
+ile birebir aynı; mikro-etiketler 12px'e çekildi, giriş ekranındaki üçlü mesaj
+tekrarı temizlendi, sidebar sayaç tonları WCAG metin-token'larına alındı
+(ayrıntı: `design-review/README.md` Düzeltme 5-6).
 - Header build SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda.
 - Review kenar çubuğundaki boş kolon aşamaya duyarlı "Preparation summary"
   ile dolduruldu (canlı sayaçlar + evidence listesi; ölü `evidence.*`

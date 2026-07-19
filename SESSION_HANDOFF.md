@@ -51,6 +51,19 @@ sensitivity" satırı dengesiz kırılıyordu). İkinci turda mobil boşluk/padd
 header kenar adayları DOM ile ölçülüp gerçek sorun olmadığı doğrulandı, uydurma
 değişiklik yapılmadı.
 
+**Tipografi + metin-yükü turu (2026-07-19, aynı PR #15):** Owner sorusu
+üzerine canlı LDA + lemmata.app + lokal Delta computed-style ile ölçüldü. Gövde
+LDA ile birebir aynı (16px Source Sans); mikro-etiketler 11.5px'ten 12px'e
+(0.72/0.74→0.75rem, 11 kural) çekildi (LDA min 13.6px; 12px sistemin mevcut
+kademesi). Giriş ekranı 569 kelimeydi (LDA 190); kök neden "parametrelerden
+önce belgeleme" mesajının 3 kez tekrarıydı → hero'daki mükerrer cümle
+kaldırıldı (`setup.corpus_scope`), bilimsel çapa korundu; katalog envanteri
+(634 key) başka gerçek tekrar göstermedi, bilimsel açıklayıcılara dokunulmadı.
+Açık bulgu (owner kararı): mobilde purpose rehberi DOM sırası gereği upload
+kartından sonra görünüyor. Öz-denetim: sidebar sayaç tonları WCAG için
+metin-katmanı token'larına çekildi (amber 3.25:1 → amber-text 7.82:1; hardcoded
+#b42318 → coral-text).
+
 **P009 browser-gate flake sertleştirmesi (2026-07-19, aynı PR #15):** "Belgeli
 aralıklı flake" bu oturumda sıklaştı (3 push'ta 3 verify düşüşü, re-run'la
 geçiyordu). Log arkeolojisi iki AYRI kırılgan nokta gösterdi: (a) 500→1000 MFW
