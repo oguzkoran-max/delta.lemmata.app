@@ -35,6 +35,7 @@ _choose_next_result_option = P009_BROWSER_AUDIT._choose_next_result_option
 _retry_next_result_option = P009_BROWSER_AUDIT._retry_next_result_option
 _wait_for_result_selection_update = P009_BROWSER_AUDIT._wait_for_result_selection_update
 _select_next_result_and_wait_for_change = P009_BROWSER_AUDIT._select_next_result_and_wait_for_change
+_wait_for_result_charts = P009_BROWSER_AUDIT._wait_for_result_charts
 _entry_primary_action_max_y = P009_BROWSER_AUDIT._entry_primary_action_max_y
 _preload_missing_distinct_owner_job = P009_BROWSER_AUDIT._preload_missing_distinct_owner_job
 _semantic_result_parity = P009_BROWSER_AUDIT._semantic_result_parity
@@ -761,3 +762,69 @@ def test_result_switch_fails_and_captures_the_stuck_state(
     assert len(page.screenshots) == 1
     assert page.screenshots[0][0].endswith("result-selection-stuck.png")
     assert page.screenshots[0][1] is True
+
+
+class _ChartLocator:
+    """Fake chart locator whose nth(1) visibility follows a scripted sequence."""
+
+    def __init__(self, outcomes: list[bool]) -> None:
+        self._outcomes = outcomes
+        self.calls = 0
+
+    def nth(self, index: int) -> _ChartLocator:
+        assert index == 1
+        return self
+
+    def wait_for(self, *, timeout: float) -> None:
+        visible = self._outcomes[min(self.calls, len(self._outcomes) - 1)]
+        self.calls += 1
+        if not visible:
+            raise PlaywrightTimeoutError("second chart not visible")
+
+
+def test_result_chart_wait_returns_once_both_charts_are_visible(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_lifecycle_diagnostics",
+        lambda _output: {"available": True, "records": [{"terminal_outcome": None}]},
+    )
+    locator = _ChartLocator([False, True])
+
+    _wait_for_result_charts(cast(Locator, locator), tmp_path, timeout_seconds=30.0)
+
+    assert locator.calls == 2
+
+
+def test_result_chart_wait_fails_fast_when_the_live_job_crashes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    diagnostics = {
+        "available": True,
+        "records": [
+            {"terminal_outcome": "succeeded"},
+            {"terminal_outcome": "crashed", "scientific_result_present": False},
+        ],
+    }
+    monkeypatch.setattr(P009_BROWSER_AUDIT, "_lifecycle_diagnostics", lambda _output: diagnostics)
+    locator = _ChartLocator([False])
+
+    with pytest.raises(RuntimeError, match="P009_WORKER_TERMINAL_CRASHED"):
+        _wait_for_result_charts(cast(Locator, locator), tmp_path, timeout_seconds=30.0)
+
+    assert locator.calls == 1
+
+
+def test_result_chart_wait_reports_a_diagnosed_timeout(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setattr(
+        P009_BROWSER_AUDIT,
+        "_lifecycle_diagnostics",
+        lambda _output: {"available": True, "records": [{"terminal_outcome": None}]},
+    )
+    locator = _ChartLocator([False])
+
+    with pytest.raises(RuntimeError, match="P009_RESULT_CHARTS_TIMEOUT"):
+        _wait_for_result_charts(cast(Locator, locator), tmp_path, timeout_seconds=0.0)

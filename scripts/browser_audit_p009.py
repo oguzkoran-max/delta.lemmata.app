@@ -11,6 +11,7 @@ import os
 import sqlite3
 import subprocess
 import sys
+import time
 from contextlib import closing
 from datetime import UTC, datetime, timedelta
 from io import BytesIO
@@ -145,6 +146,47 @@ def _lifecycle_diagnostics(output: Path) -> dict[str, Any]:
         return {"available": True, "job_count": len(records), "records": records}
     except (json.JSONDecodeError, OSError, sqlite3.Error, TypeError):
         return {"available": False, "reason": "control_database_unreadable"}
+
+
+def _wait_for_result_charts(
+    chart_locator: Locator,
+    output: Path,
+    *,
+    timeout_seconds: float = 60.0,
+) -> None:
+    """Wait for both result charts, failing fast when the live job dies first.
+
+    A chart that never appears has two very different causes: slow mounting on a
+    loaded runner (worth waiting out) and a worker that ended without a result
+    (waiting is pointless and hides the real failure). Poll the content-free
+    lifecycle store between short visibility waits: the newest job is the one
+    this browser flow started, so a non-succeeded terminal outcome there turns a
+    mute 60-second timeout into an immediate, named worker failure.
+    """
+
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        try:
+            chart_locator.nth(1).wait_for(timeout=2_000)
+        except PlaywrightTimeoutError:
+            pass
+        else:
+            return
+        diagnostics = _lifecycle_diagnostics(output)
+        records = diagnostics.get("records") or []
+        live = records[-1] if isinstance(records, list) and records else {}
+        outcome = live.get("terminal_outcome") if isinstance(live, dict) else None
+        if outcome not in (None, "succeeded"):
+            raise RuntimeError(
+                f"P009_WORKER_TERMINAL_{str(outcome).upper()}: the live job ended "
+                f"'{outcome}' before the result charts appeared; "
+                f"diagnostics={diagnostics!r}"
+            )
+    raise RuntimeError(
+        "P009_RESULT_CHARTS_TIMEOUT: both result charts did not become visible "
+        f"within {timeout_seconds:.0f}s while the live job reported "
+        f"diagnostics={_lifecycle_diagnostics(output)!r}"
+    )
 
 
 def _terminal_payload_cleanup_pass(diagnostics: dict[str, Any]) -> bool:
@@ -922,15 +964,11 @@ def _run_and_audit_results(page: Page, output: Path, canary: str) -> dict[str, A
         ) from None
 
     chart_locator = page.locator('[data-testid="stVegaLiteChart"]')
-    # Chart mounting after the final result rerun is the second CI-runner-speed
-    # flake point (observed twice on 2026-07-19): wait for Streamlit to go idle,
-    # then give slow shared runners more time. The assertion is unchanged — both
-    # visualizations must still appear.
     try:
         _wait_for_streamlit_idle(page, timeout_ms=20_000)
     except PlaywrightTimeoutError:
         pass
-    chart_locator.nth(1).wait_for(timeout=60_000)
+    _wait_for_result_charts(chart_locator, output)
     chart_evidence = tuple(
         _pixel_evidence(
             chart_locator.nth(index),

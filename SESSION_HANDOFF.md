@@ -82,13 +82,22 @@ geçiyordu). Log arkeolojisi iki AYRI kırılgan nokta gösterdi: (a) 500→1000
 native-keyboard seçimi bazen Streamlit rerun'ı tetiklemiyor (radio checked,
 semantic tablolar 500'de takılı) → `_select_next_result_and_wait_for_change`:
 aynı dizi, her turda idle bekleyerek, tablolar değişene kadar max 8 tur; takılı
-durum screenshot'la yakalanır (`b68f5dc`, +3 unit test). (b) Sonuç UI'ı sonrası
-ikinci Vega-Lite (MDS) grafiğinin mount beklemesi 15s'te dardı (aynı satırdan 2
-düşüş) → idle + 60s (`979af9e`). Hiçbir assert gevşetilmedi (tablolar değişmeli,
-iki grafik şart, export-parity aynı). Corpus 1100 özellikli olduğundan 500≠1000
-MFW gerçekten farklı; "değişmeli" şartı geçerli. Sertleştirme sonrası ilk push
-(979af9e) her iki CI run'ında ilk denemede yeşil (bugün ilki; tek push kanıt
-değil, sonraki push'larla izlenir).
+durum screenshot'la yakalanır (`b68f5dc`, +3 unit test). (b) "Grafik gelmedi"
+timeout'ları (08:26, 09:52, 12:03×2): İLK teşhis "grafik mount'u yavaş runner'da
+15s'e sığmıyor" idi ve 60s+idle verildi (`979af9e`); 12:03 çifte düşüşün kanıt
+JSON'u bu teşhisi ÇÜRÜTTÜ — audit lifecycle kaydında canlı işin
+`terminal_outcome: "crashed"` olduğu görüldü (08:26'da da aynı imza).
+Yani mod, R worker'ın CI'da ARALIKLI ÇÖKMESİ; grafik hiç gelmeyeceği için
+timeout büyütmek çare değildi. Düzeltme: `_wait_for_result_charts` fail-fast
+teşhisi — grafik beklerken store'daki canlı iş terminal-olmuş ve succeeded
+değilse anında `P009_WORKER_TERMINAL_<OUTCOME>` hatası (+3 unit test); 60s+idle
+sağlamlık olarak kaldı. Hiçbir assert gevşetilmedi (tablolar değişmeli, iki
+grafik şart, export-parity aynı). AÇIK İZ: worker crash'inin kök nedeni
+belirsiz; CRASHED = sinyalle ölüm (negatif dönüş kodu) ve baş şüpheli
+`stylo-worker-limits-v1.json` içindeki 1 GiB RLIMIT_AS'in R+stylo sanal adres
+alanı için dar kalması (ASLR/arena varyansı aralıklılığı açıklar). Kalıcı çözüm
+adayı: limit profilini v2 ile büyütmek (owner kararı; sinyal numarası
+content-free ProcessResult'ta tutulmuyor, şema değişikliği ister).
 Bu, ertelenen CODE-DEAD-STRINGS'i kısmen kapatır (ölü `evidence.*` metinleri
 yeniden kullanıma alındı). +6 test, `verify.sh` yeşil (%100 coverage). Kanıt:
 `provenance/evidence/P014/design-review/` (before/after + manifest, stepper
