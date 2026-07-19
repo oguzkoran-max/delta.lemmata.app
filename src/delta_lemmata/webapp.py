@@ -82,6 +82,7 @@ from delta_lemmata.intake_ui import (
     BrowserUpload,
     CorpusInputMode,
     IntakeOutcome,
+    intake_recovery_guidance_key,
     validate_browser_uploads,
     visit_browser_corpus_payloads,
 )
@@ -912,7 +913,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         elif display_outcome.error_code is not None:
             st.error(text("corpus.error.title"), icon=":material/gpp_bad:")
             st.caption(text(INTAKE_ERROR_MESSAGE_KEYS[display_outcome.error_code]))
-            st.caption(text("corpus.error.retry"))
+            st.caption(text(intake_recovery_guidance_key(display_outcome.error_code)))
             st.caption(text("corpus.error.reference", code=display_outcome.error_code.value))
         else:
             if display_outcome.corpus_ready:

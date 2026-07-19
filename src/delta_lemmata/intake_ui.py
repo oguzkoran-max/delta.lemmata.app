@@ -70,6 +70,19 @@ INTAKE_ERROR_MESSAGE_KEYS = {
 }
 
 
+def intake_recovery_guidance_key(code: IntakeErrorCode) -> str:
+    """Return the recovery-guidance catalog key for a rejected upload.
+
+    A recoverable user-input rejection (wrong encoding, format, or limit)
+    tells the user to choose another file without reloading. An internal,
+    workspace, or cleanup fault is a system error, not a problem with the
+    file, so it gets system-error guidance instead.
+    """
+    if INTAKE_ERROR_MESSAGE_KEYS[code] == "corpus.error.internal":
+        return "corpus.error.retry_system"
+    return "corpus.error.retry"
+
+
 @dataclass(frozen=True, slots=True)
 class BrowserUpload:
     """One browser upload held only for the duration of validation."""

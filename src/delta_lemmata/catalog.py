@@ -458,6 +458,10 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "export, rather than plain text. Save it as a plain .txt file and upload it again."
     ),
     "corpus.error.retry": ("You can choose another file and try again without reloading the page."),
+    "corpus.error.retry_system": (
+        "This was a system error, not a problem with your file. Try again in a moment; "
+        "if it keeps happening, reload the page."
+    ),
     "corpus.error.csv": (
         "The metadata table is malformed or contains a formula, markup, newline, or "
         "path-like cell that is unsafe to retain or export."

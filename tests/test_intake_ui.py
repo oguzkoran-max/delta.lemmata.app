@@ -56,6 +56,36 @@ def test_common_beginner_rejections_get_cause_specific_guidance() -> None:
     assert utf8_message != markup_message != text("corpus.error.text")
 
 
+def test_recovery_guidance_separates_user_input_from_system_errors() -> None:
+    from delta_lemmata.catalog import text
+    from delta_lemmata.intake_ui import intake_recovery_guidance_key
+
+    # Recoverable user-input rejections invite trying another file without a
+    # reload; internal/workspace/cleanup faults must not, because the file is
+    # not the problem.
+    for recoverable in (
+        IntakeErrorCode.INVALID_UTF8,
+        IntakeErrorCode.MARKUP_DOCUMENT,
+        IntakeErrorCode.UPLOAD_LIMIT,
+        IntakeErrorCode.ARCHIVE_UNSAFE_PATH,
+    ):
+        assert intake_recovery_guidance_key(recoverable) == "corpus.error.retry"
+    for system_fault in (
+        IntakeErrorCode.WORKSPACE_INVALID,
+        IntakeErrorCode.EXTRACTION_FAILED,
+        IntakeErrorCode.CLEANUP_FAILED,
+        IntakeErrorCode.INTERNAL_ID,
+    ):
+        assert intake_recovery_guidance_key(system_fault) == "corpus.error.retry_system"
+    # Every intake error resolves to one of the two guidance strings.
+    for code in IntakeErrorCode:
+        assert text(intake_recovery_guidance_key(code)).strip()
+    reload_message = text("corpus.error.retry")
+    system_message = text("corpus.error.retry_system")
+    assert "without reloading" in reload_message
+    assert "system error" in system_message and reload_message != system_message
+
+
 def test_empty_outcome_is_payload_free_and_not_ready() -> None:
     upload = BrowserUpload("work.txt", b"SECRET_PAYLOAD", "text/plain")
     assert "SECRET_PAYLOAD" not in repr(upload)
