@@ -83,6 +83,25 @@ ALTINDA olmasını açıkça şart koşuyor — yerleşim denetlenmiş bilinçli
 (aksiyon-önce); "açık bulgu" kusur değil sözleşme olarak kapandı. Kanıt:
 design-review README Düzeltme 7-8 + before/after görseller.
 
+**CANLI DEPLOY (2026-07-19 akşam, owner onayıyla):** PR #15 main'e merge
+edildi (`31e0978`, 21 commit), main CI yeşil, `p014-publish-image` dispatch ile
+GHCR digest `sha256:80836f17...` yayınlandı (repo public ama GHCR paketi
+private; sunucuda geçici login→pull→logout yapıldı, kalıcı kimlik yok).
+Sunucuda immutable release `/opt/delta-public-alpha/releases/31e0978...` kuruldu
+(rollout scripti: env+unit yedekli, otomatik rollback trap'li) → rollout-ok,
+app+gateway healthy, build-id=31e0978, localhost+delta+lda health ok. Koşul (a)
+kapandı: canlı Caddy'de geniş trusted_proxies YOK + `header_up X-Forwarded-For
+{http.request.remote.host}` pin'i EKLENDİ (yedek: /root/Caddyfile.pre-xffpin-*),
+caddy validate+reload sonrası iki site healthy. Harici 8502 red probu doğrulandı
+(loopback-only). Canlı görsel teyit: header "Build 31e09782ba07" kısa, yeni
+stepper/sidebar/tipografi canlıda. YENİ AÇIK BULGU (kapasite): nginx
+`worker_connections 128` + upstream keepalive 4, tek istemcilik probe
+fırtınasında bile doldu ve lazy-load JS chunk'ları 502 alıp sayfayı boş
+bıraktı; birkaç eşzamanlı gerçek kullanıcı aynı etkiyi üretebilir. Öneri:
+worker_connections'ı (ör. 1024) ve upstream keepalive'ı büyütüp yeni release
+ile yayınlamak (owner kararı). Eski release'ler + yedekler rollback için
+sunucuda duruyor.
+
 **P014-D2 turu (2026-07-19, aynı PR #15):** Owner canlı ekran görüntüleriyle
 "karışık his + küçük yazı + COMPLETEI yanılsaması" bildirdi; profesyonel
 prompt'a çevrilip işlendi. (1) Stepper: iki-class padding (0→17px etiket-ayraç
