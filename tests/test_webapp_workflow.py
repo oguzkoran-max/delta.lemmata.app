@@ -182,6 +182,39 @@ def _fixture_import() -> tuple[ValidatedCorpusUnit, MetadataCsvImportResult]:
     return unit, result
 
 
+def test_sidebar_readiness_counts_track_the_validated_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    report = validate_inventory(_fixture_inventory())
+    monkeypatch.setattr(
+        webapp_module.st,
+        "session_state",
+        {webapp_module._FLOW_REPORT_KEY: report},
+        raising=False,
+    )
+
+    counts, has_corpus = webapp_module._sidebar_readiness_counts()
+
+    assert has_corpus is True
+    assert counts == {
+        "works": report.readiness.independent_work_count,
+        "blockers": report.readiness.blocker_count,
+        "warnings": report.readiness.warning_count,
+        "rights": report.readiness.rights_restriction_count,
+    }
+
+
+def test_sidebar_readiness_counts_default_to_zero_without_a_report(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(webapp_module.st, "session_state", {}, raising=False)
+
+    counts, has_corpus = webapp_module._sidebar_readiness_counts()
+
+    assert has_corpus is False
+    assert counts == {"works": 0, "blockers": 0, "warnings": 0, "rights": 0}
+
+
 def test_review_readiness_detail_uses_the_general_ready_boundary() -> None:
     inventory = SimpleNamespace(purpose=PurposeId.STYLE_OVER_TIME)
     report = SimpleNamespace(

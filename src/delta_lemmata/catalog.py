@@ -45,6 +45,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "sidebar.guide.question": "Choose a research question",
     "sidebar.guide.corpus": "Upload and document the texts",
     "sidebar.guide.parameters": "Review parameters before analysis",
+    "sidebar.summary_title": "Preparation summary",
     "sidebar.parameters_title": "Why parameters come later",
     "sidebar.parameters_body": (
         "Stylometric settings depend on the size and structure of your corpus. "

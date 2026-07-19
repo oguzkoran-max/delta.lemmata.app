@@ -160,6 +160,85 @@ footer,
   font-size: 0.88rem;
 }
 
+.delta-sidebar-summary {
+  margin-top: 1.1rem;
+  padding: 0.85rem 0.9rem;
+  border: 1px solid var(--delta-line);
+  border-radius: 8px;
+  background: var(--delta-paper);
+}
+
+.delta-sidebar-summary-title {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--delta-ink) !important;
+  font-size: 0.9rem;
+}
+
+.delta-sidebar-metrics {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.delta-sidebar-metric {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.84rem;
+  color: var(--delta-muted);
+}
+
+.delta-sidebar-metric b {
+  color: var(--delta-ink);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+}
+
+.delta-sidebar-metric-blocker {
+  color: #b42318 !important;
+}
+
+.delta-sidebar-metric-warning {
+  color: var(--delta-amber) !important;
+}
+
+.delta-sidebar-evidence {
+  margin-top: 0.8rem;
+  padding-top: 0.7rem;
+  border-top: 1px solid var(--delta-soft-line);
+  display: grid;
+  gap: 0.3rem;
+}
+
+.delta-sidebar-evidence-head {
+  display: block;
+  margin-bottom: 0.2rem;
+  color: var(--delta-tertiary);
+  font-size: 0.72rem;
+  font-weight: 750;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
+.delta-sidebar-evidence-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.delta-sidebar-evidence-row span {
+  color: var(--delta-ink);
+  font-size: 0.82rem;
+}
+
+.delta-sidebar-evidence-row small {
+  color: var(--delta-muted);
+  font-size: 0.74rem;
+  text-align: right;
+}
+
 .delta-progress {
   width: 100%;
   height: 8px;

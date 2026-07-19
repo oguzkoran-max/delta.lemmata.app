@@ -253,7 +253,10 @@ def _render_header(
 ) -> None:
     _render_main_landmark_bridge()
     version = text("header.version", version=health["version"])
-    build = text("header.build", build_id=health["build_id"])
+    build_id_full = str(health["build_id"])
+    build_id_short = build_id_full if len(build_id_full) <= 12 else build_id_full[:12]
+    build = text("header.build", build_id=build_id_short)
+    build_full = text("header.build", build_id=build_id_full)
     release_alpha = _html(text("header.release_public_alpha"))
     release_experimental = _html(text("header.release_experimental"))
     if evidence_active:
@@ -286,7 +289,9 @@ def _render_header(
             <div class="delta-build-status">
               <span class="delta-dot"></span>{_html(stage_label)}
             </div>
-            <div class="delta-build-meta">{_html(version)} · {_html(build)}</div>
+            <div class="delta-build-meta" title="{_html(build_full)}">
+              {_html(version)} · {_html(build)}
+            </div>
           </div>
         </div>
         """,
@@ -374,6 +379,62 @@ def _render_stepper(stage: CorpusSubstage, *, evidence_active: bool) -> None:
     st.markdown(markup, unsafe_allow_html=True)
 
 
+def _sidebar_readiness_counts() -> tuple[dict[str, int], bool]:
+    """Read the live corpus readiness from session state for the sidebar summary."""
+
+    report = st.session_state.get(_FLOW_REPORT_KEY)
+    if isinstance(report, ValidationReport):
+        readiness = report.readiness
+        return (
+            {
+                "works": readiness.independent_work_count,
+                "blockers": readiness.blocker_count,
+                "warnings": readiness.warning_count,
+                "rights": readiness.rights_restriction_count,
+            },
+            True,
+        )
+    return ({"works": 0, "blockers": 0, "warnings": 0, "rights": 0}, False)
+
+
+def _render_sidebar_summary() -> None:
+    counts, has_corpus = _sidebar_readiness_counts()
+    metric_rows = "".join(
+        '<div class="delta-sidebar-metric">'
+        f"<span>{_html(text(label_key))}</span>"
+        f'<b class="delta-sidebar-metric-{tone}">{counts[value_key]}</b></div>'
+        for label_key, value_key, tone in (
+            ("review.metric.works", "works", "plain"),
+            ("review.metric.blockers", "blockers", "blocker" if counts["blockers"] else "plain"),
+            ("review.metric.warnings", "warnings", "warning" if counts["warnings"] else "plain"),
+            ("review.metric.rights", "rights", "plain"),
+        )
+    )
+    corpus_state_key = "evidence.corpus_validated" if has_corpus else "evidence.corpus_state"
+    evidence_rows = "".join(
+        '<div class="delta-sidebar-evidence-row">'
+        f"<span>{_html(text(name_key))}</span>"
+        f"<small>{_html(text(state_key))}</small></div>"
+        for name_key, state_key in (
+            ("evidence.corpus", corpus_state_key),
+            ("evidence.parameters", "evidence.parameters_state"),
+            ("evidence.limits", "evidence.limits_state"),
+            ("evidence.run", "evidence.run_state"),
+        )
+    )
+    st.markdown(
+        '<section class="delta-sidebar-summary" role="region" '
+        'aria-labelledby="delta-sidebar-summary-title">'
+        '<strong class="delta-sidebar-summary-title" id="delta-sidebar-summary-title">'
+        f"{_html(text('sidebar.summary_title'))}</strong>"
+        f'<div class="delta-sidebar-metrics">{metric_rows}</div>'
+        '<div class="delta-sidebar-evidence">'
+        f'<span class="delta-sidebar-evidence-head">{_html(text("evidence.title"))}</span>'
+        f"{evidence_rows}</div></section>",
+        unsafe_allow_html=True,
+    )
+
+
 def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
     with st.sidebar:
         badge_key = (
@@ -401,6 +462,7 @@ def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
             "</div></section>",
             unsafe_allow_html=True,
         )
+        _render_sidebar_summary()
         with st.expander(text("build.title"), icon=":material/info:"):
             st.markdown(f"**{text('build.readiness_label')}**")
             st.caption(text("build.readiness_value"))
