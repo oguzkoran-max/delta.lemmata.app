@@ -90,12 +90,16 @@ Bilimsel-yöntem merceği SIFIR bulgu verdi (doğrulayarak, varsayarak değil): 
 ## 10. Canlı tasarım denetimi takibi (2026-07-19)
 
 Denetim sonrası canlı `delta.lemmata.app` uzman gözle incelendi ve aile
-siteleriyle (`lemmata.app`, `lda.lemmata.app`) görsel tutarlılık için iki
+siteleriyle (`lemmata.app`, `lda.lemmata.app`) görsel tutarlılık için üç
 tasarım düzeltmesi uygulandı; A5.1 sistemi içinde kalındı.
 - Header build SHA'sı 12 karaktere kısaltıldı, tam SHA `title` ipucunda.
 - Review kenar çubuğundaki boş kolon aşamaya duyarlı "Preparation summary"
   ile dolduruldu (canlı sayaçlar + evidence listesi; ölü `evidence.*`
   metinleri yeniden kullanıma alındı).
+- Deney haritası (stepper) aktif adım göstergesi düzeltildi: teal üst çizgi kutu
+  kenarının üstünde havada duruyordu; `overflow: hidden` + inset teal aksan +
+  `--delta-mint` wash ile net "aktif sekme"ye çevrildi, Streamlit `<li>` stray
+  margin'i sıfırlandı, hücreler hizalandı.
 
 Yeni özellik/runtime AI/login/analytics yok; Classic Delta/MFW/önişleme/yorum
 sınırları değişmedi. Kanıt: `provenance/evidence/P014/design-review/`
