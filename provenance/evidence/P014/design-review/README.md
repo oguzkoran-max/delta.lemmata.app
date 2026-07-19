@@ -76,6 +76,27 @@ sıfırlamasını specificity'de yeniyordu.
 - Kanıt: `screenshots/before-stepper-1440.png`, `screenshots/after-stepper-1440.png`,
   `screenshots/stepper-before-after-1440.png` (önce/sonra, 1440 desktop).
 
+## Düzeltme 4 — Sidebar evidence satırları uniform stacked ledger
+
+Sorun: Düzeltme 2'nin evidence listesinde yalnız "Parameter sensitivity /
+Awaiting configuration" satırı, ikisi de uzun olduğu için ~200px kolonda çift
+satıra kırılıyor, diğer üç satır tek satır kalıyordu; ledger dengesiz
+görünüyordu (DOM ölçümü: bu satır 42px, diğerleri 21px).
+
+Çözüm: `.delta-sidebar-evidence-row` yan-yana (`space-between`) yerine dikey
+stack (`flex-direction: column`) oldu; her madde adı üstte (ink), durumu altta
+(muted, sola hizalı). Tüm satırlar uniform iki satır, tutarlı ritim. Satırlar
+arası boşluk 0.5rem'e çıkarıldı ki çiftler ayrışsın. Etiket/durum metinleri
+kısaltılmadı (anlam korundu).
+- Kod: `src/delta_lemmata/ui_theme.py` (`.delta-sidebar-evidence`,
+  `.delta-sidebar-evidence-row`)
+- Kanıt: `screenshots/sidebar-evidence-before-after-1440.png`
+
+Not: Aynı turda mobil (purpose→corpus boşluğu, upload kartı iç padding) ve mobil
+header kenar boşluğu adayları DOM ile ölçüldü ve gerçek sorun olmadığı görüldü
+(kart padding-top yalnız 14px; header sağ boşluk 14px standart); değişiklik
+yapılmadı.
+
 ## Doğrulama
 
 `bash scripts/verify.sh` yeşil: ruff format/check, mypy, şema doğrulayıcılar,
