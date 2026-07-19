@@ -994,6 +994,14 @@ def test_result_helpers_reject_missing_ready_bindings_and_unavailable_matrices()
         webapp_module._render_heatmap(unavailable, view)
 
 
+def test_chart_axis_label_pairs_key_with_a_truncated_clean_title() -> None:
+    assert webapp_module._chart_axis_label("D01", "Early work") == "D01 · Early work"
+    assert (
+        webapp_module._chart_axis_label("D02", "  A very   long descriptive title  ")
+        == "D02 · A very long d…"
+    )
+
+
 def test_result_charts_bypass_pandas_string_inference(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -1016,22 +1024,23 @@ def test_result_charts_bypass_pandas_string_inference(
     assert tables[0].column_names == [
         "reference",
         "reference_title",
+        "reference_display",
         "compared",
         "compared_title",
+        "compared_display",
         "distance",
         "distance_label",
     ]
-    assert tables[1].column_names == ["key", "title", "role", "x", "y"]
+    assert tables[1].column_names == ["key", "title", "display", "role", "x", "y"]
+    titles = {document.key: document.title for document in view.documents}
     expected_heatmap = [
         {
             "reference": row_key,
-            "reference_title": next(
-                document.title for document in view.documents if document.key == row_key
-            ),
+            "reference_title": titles[row_key],
+            "reference_display": webapp_module._chart_axis_label(row_key, titles[row_key]),
             "compared": column_key,
-            "compared_title": next(
-                document.title for document in view.documents if document.key == column_key
-            ),
+            "compared_title": titles[column_key],
+            "compared_display": webapp_module._chart_axis_label(column_key, titles[column_key]),
             "distance": float(distance),
             "distance_label": f"{float(distance):.6f}",
         }
@@ -1044,6 +1053,9 @@ def test_result_charts_bypass_pandas_string_inference(
         {
             "key": point.document_key,
             "title": documents[point.document_key].title,
+            "display": webapp_module._chart_axis_label(
+                point.document_key, documents[point.document_key].title
+            ),
             "role": documents[point.document_key].role.value,
             "x": point.x,
             "y": point.y,

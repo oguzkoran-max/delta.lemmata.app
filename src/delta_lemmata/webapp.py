@@ -2991,6 +2991,15 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
 _HEATMAP_TEXT_MAX_DOCUMENTS = 6
 
 
+def _chart_axis_label(key: str, title: str, *, limit: int = 14) -> str:
+    """Pair the compact document key with a truncated title so charts stay decodable."""
+
+    cleaned = " ".join(title.split())
+    if len(cleaned) > limit:
+        cleaned = cleaned[: limit - 1].rstrip() + "…"
+    return f"{key} · {cleaned}"
+
+
 def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
     matrix = cell.matrix
     if matrix is None:
@@ -3000,15 +3009,17 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
         {
             "reference": row_key,
             "reference_title": titles[row_key],
+            "reference_display": _chart_axis_label(row_key, titles[row_key]),
             "compared": column_key,
             "compared_title": titles[column_key],
+            "compared_display": _chart_axis_label(column_key, titles[column_key]),
             "distance": float(distance),
             "distance_label": _distance_label(distance),
         }
         for row_key, row in zip(matrix.document_keys, matrix.values, strict=True)
         for column_key, distance in zip(matrix.document_keys, row, strict=True)
     ]
-    order = list(matrix.document_keys)
+    order = [_chart_axis_label(key, titles[key]) for key in matrix.document_keys]
     off_diagonal_distances = tuple(
         float(distance)
         for row_index, row in enumerate(matrix.values)
@@ -3056,9 +3067,15 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "reference_title": pa.array(
                 (value["reference_title"] for value in values), type=pa.string()
             ),
+            "reference_display": pa.array(
+                (value["reference_display"] for value in values), type=pa.string()
+            ),
             "compared": pa.array((value["compared"] for value in values), type=pa.string()),
             "compared_title": pa.array(
                 (value["compared_title"] for value in values), type=pa.string()
+            ),
+            "compared_display": pa.array(
+                (value["compared_display"] for value in values), type=pa.string()
             ),
             "distance": pa.array((value["distance"] for value in values), type=pa.float64()),
             "distance_label": pa.array(
@@ -3071,13 +3088,13 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "mark": {"type": "rect", "cornerRadius": 3},
             "encoding": {
                 "x": {
-                    "field": "compared",
+                    "field": "compared_display",
                     "type": "ordinal",
                     "sort": order,
                     "title": text("results.heatmap.x"),
                 },
                 "y": {
-                    "field": "reference",
+                    "field": "reference_display",
                     "type": "ordinal",
                     "sort": order,
                     "title": text("results.heatmap.y"),
@@ -3118,8 +3135,8 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             {
                 "mark": {"type": "text", "fontSize": 12},
                 "encoding": {
-                    "x": {"field": "compared", "type": "ordinal", "sort": order},
-                    "y": {"field": "reference", "type": "ordinal", "sort": order},
+                    "x": {"field": "compared_display", "type": "ordinal", "sort": order},
+                    "y": {"field": "reference_display", "type": "ordinal", "sort": order},
                     "text": {"field": "distance_label", "type": "nominal"},
                     "color": {
                         "condition": [
@@ -3194,6 +3211,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         {
             "key": point.document_key,
             "title": documents[point.document_key].title,
+            "display": _chart_axis_label(point.document_key, documents[point.document_key].title),
             "role": documents[point.document_key].role.value,
             "x": point.x,
             "y": point.y,
@@ -3211,6 +3229,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         {
             "key": pa.array((value["key"] for value in values), type=pa.string()),
             "title": pa.array((value["title"] for value in values), type=pa.string()),
+            "display": pa.array((value["display"] for value in values), type=pa.string()),
             "role": pa.array((value["role"] for value in values), type=pa.string()),
             "x": pa.array((value["x"] for value in values), type=pa.float64()),
             "y": pa.array((value["y"] for value in values), type=pa.float64()),
@@ -3282,7 +3301,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
                         "type": "quantitative",
                         "scale": {"domain": shared_domain, "nice": False, "zero": False},
                     },
-                    "text": {"field": "key", "type": "nominal"},
+                    "text": {"field": "display", "type": "nominal"},
                 },
             },
         ],
@@ -3667,6 +3686,7 @@ def _render_setup(stage: CorpusSubstage) -> PurposeId:
         )
         purpose_spec = PURPOSE_BY_ID[selected]
         _render_purpose_guidance(purpose_spec)
+        _render_mobile_purpose_guidance(purpose_spec)
         return PurposeId(purpose_spec.purpose_id)
     purpose = PurposeId(st.session_state.get(_FLOW_PURPOSE_KEY, PurposeId.TEXT_PROXIMITY.value))
     input_mode = CorpusInputMode(
@@ -3731,7 +3751,6 @@ def main() -> None:
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
-            _render_mobile_purpose_guidance(PURPOSE_BY_ID[purpose.value])
             _render_stylometry_orientation()
             _render_parameter_orientation()
         elif stage is CorpusSubstage.DESCRIBE:
