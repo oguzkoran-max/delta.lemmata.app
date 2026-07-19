@@ -208,7 +208,7 @@ footer,
   padding-top: 0.7rem;
   border-top: 1px solid var(--delta-soft-line);
   display: grid;
-  gap: 0.3rem;
+  gap: 0.5rem;
 }
 
 .delta-sidebar-evidence-head {
@@ -223,9 +223,8 @@ footer,
 
 .delta-sidebar-evidence-row {
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.6rem;
+  flex-direction: column;
+  gap: 1px;
 }
 
 .delta-sidebar-evidence-row span {
@@ -236,7 +235,7 @@ footer,
 .delta-sidebar-evidence-row small {
   color: var(--delta-muted);
   font-size: 0.74rem;
-  text-align: right;
+  text-align: left;
 }
 
 .delta-progress {
