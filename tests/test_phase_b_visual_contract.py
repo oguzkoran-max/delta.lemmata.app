@@ -56,6 +56,17 @@ def test_phase_b_theme_uses_the_approved_a51_tokens_and_dimensions() -> None:
     assert "grid-template-columns: repeat(2, minmax(0, 1fr));" in APP_CSS
 
 
+def test_experiment_map_active_step_reads_as_a_clean_tab() -> None:
+    # The active step is a mint-washed tab with an inset teal top accent, clipped
+    # to the rounded frame — not a teal line floating on the frame's top border.
+    assert "  padding: 0;\n  overflow: hidden;\n}" in APP_CSS
+    assert (
+        "  background: var(--delta-mint);\n  box-shadow: inset 0 3px 0 0 var(--delta-teal);"
+    ) in APP_CSS
+    # neutralise the Streamlit markdown list-item margin so cells align to the frame
+    assert ".delta-map-list .delta-map-row {" in APP_CSS
+
+
 def test_inter_is_self_hosted_with_recorded_provenance_and_no_runtime_font_request() -> None:
     assert FONT.is_file()
     assert FONT_LICENSE.is_file()

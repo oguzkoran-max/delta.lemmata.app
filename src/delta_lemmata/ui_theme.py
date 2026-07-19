@@ -2153,18 +2153,20 @@ div[data-testid="stMainBlockContainer"] h3 {
 }
 
 .delta-map {
-  min-height: 46px;
+  min-height: 52px;
   margin: 16px 0 20px;
   padding: 0;
+  overflow: hidden;
 }
 
-.delta-map-row {
-  min-height: 46px;
-  border-top: 3px solid transparent;
+.delta-map-list .delta-map-row {
+  min-height: 52px;
+  margin: 0;
 }
 
 .delta-map-row.is-active {
-  border-top-color: var(--delta-teal);
+  background: var(--delta-mint);
+  box-shadow: inset 0 3px 0 0 var(--delta-teal);
 }
 
 .delta-context-strip {
