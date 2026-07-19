@@ -198,8 +198,9 @@ machine or network:
 
 ```bash
 set -Eeuo pipefail
+: "${DELTA_HOST:?Set DELTA_HOST to the server public IP or DNS name}"
 if curl --fail --show-error --max-time 5 \
-  http://178.105.95.119:8502/_stcore/health; then
+  "http://${DELTA_HOST}:8502/_stcore/health"; then
   echo "P014_POST_DOCKER_EXTERNAL_8502_REACHABLE" >&2
   exit 1
 fi
@@ -238,11 +239,12 @@ produced the immutable image, then transfer only that archive:
 ```bash
 set -Eeuo pipefail
 : "${SOURCE_SHA:?Set SOURCE_SHA to the exact 40-character green commit}"
+: "${DELTA_HOST:?Set DELTA_HOST to the server public IP or DNS name}"
 [[ $SOURCE_SHA =~ ^[0-9a-f]{40}$ ]]
 git archive --format=tar --output /tmp/delta-release.tar "$SOURCE_SHA"
 sha256sum /tmp/delta-release.tar
 scp -i ~/.ssh/lemmata_oracle /tmp/delta-release.tar \
-  root@178.105.95.119:/root/delta-release.tar
+  root@"${DELTA_HOST}":/root/delta-release.tar
 ```
 
 On the host, refuse an existing release, extract it as root, and switch
@@ -503,8 +505,9 @@ port must fail because `8502` is loopback-only:
 
 ```bash
 set -Eeuo pipefail
+: "${DELTA_HOST:?Set DELTA_HOST to the server public IP or DNS name}"
 if curl --fail --show-error --max-time 5 \
-  http://178.105.95.119:8502/_stcore/health; then
+  "http://${DELTA_HOST}:8502/_stcore/health"; then
   echo "P014_EXTERNAL_8502_REACHABLE" >&2
   exit 1
 fi
