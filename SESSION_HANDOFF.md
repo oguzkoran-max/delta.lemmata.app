@@ -86,8 +86,10 @@ design-review README Düzeltme 7-8 + before/after görseller.
 **P014-D2 turu (2026-07-19, aynı PR #15):** Owner canlı ekran görüntüleriyle
 "karışık his + küçük yazı + COMPLETEI yanılsaması" bildirdi; profesyonel
 prompt'a çevrilip işlendi. (1) Stepper: iki-class padding (0→17px etiket-ayraç
-boşluğu, Streamlit emotion li'yi yener) + %26 inset ::after ayraç; 2x2 ve
-mobil bantlar uyumlandı. (2) Okuma tipografisi: lede 17px, scope 14.4px,
+boşluğu, Streamlit emotion li'yi yener) + %26 inset ::after ayraç; mobil ≤760
+bantları uyumlandı. İkinci geri bildirimle hücre yerleşimi: 1fr kolonu adı
+sola/durumu sağa itiyordu → auto-auto-auto + justify-content:center ile
+küme hücrede ortalandı ("01 Purpose COMPLETE" tek grup). (2) Okuma tipografisi: lede 17px, scope 14.4px,
 sidebar 15px, mobil lede 15px; mobil fold sözleşmesi ölçülerek doğrulandı
 (663.7/707.3 ≤ 780). (3) Dikey ritim: hero + stepper marjları. Not: owner'ın
 gördüğü canlı build eski (uzun SHA dahil PR'da düzeltilmiş durumda).

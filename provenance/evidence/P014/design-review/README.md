@@ -221,8 +221,13 @@ Uygulanan (A5.1 içinde, ölçümle):
 1. Stepper ayracı: hücre yatay padding'i 0.75rem→1.05rem (Streamlit emotion
    `li` kuralına yenilmemesi için iki-class kurala taşındı) ve tam-boy
    `border-right` yerine %26 inset `::after` ayracı — ayraç artık harf gibi
-   okunamaz. Ölçüm: etiket→ayraç boşluğu 0px → 17px. 2x2 (761-1320) ve mobil
-   bantları uyumlandı (çift satırda ayraç yok, mobil aktif satırda yok).
+   okunamaz. Ölçüm: etiket→ayraç boşluğu 0px → 17px. Mobil ≤760 bantları
+   uyumlandı (upload-dışı aşamaların 2x2 ızgarasında çift sütunda ayraç yok;
+   mobil aktif satırda ayraç yok). İkinci owner geri bildirimiyle hücre içi
+   yerleşim de düzeltildi: `1fr` kolonu adı sola, durumu sağ uca itiyordu
+   (Purpose ↔ COMPLETE arası ölü boşluk); kolonlar `auto auto auto` +
+   `justify-content: center` ile kümelenip hücrede ortalandı — "01 Purpose
+   COMPLETE" tek okunur grup (bk. after-stepper-centered-1500.png).
 2. Okuma tipografisi: hero lede 16→17px, hero scope 13.8→14.4px, sidebar
    gövde 14.1→15px, mobil lede 14→15px. Mobil fold sözleşmesi ölçüldü:
    upload butonu y=663.7 (390w) / 707.3 (375w), bütçe ≤780 — geçer.

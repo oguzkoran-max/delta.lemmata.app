@@ -814,8 +814,9 @@ footer,
 .delta-map-row {
   position: relative;
   display: grid;
-  grid-template-columns: 28px 1fr auto;
-  gap: 0.65rem;
+  grid-template-columns: auto auto auto;
+  justify-content: center;
+  gap: 0.7rem;
   align-items: center;
   min-height: 36px;
   padding: 0 1.05rem;
@@ -1686,7 +1687,7 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-map-row {
-    grid-template-columns: 24px 1fr auto;
+    grid-template-columns: auto auto auto;
     min-height: 38px;
     padding: 0;
     border-bottom: 1px solid var(--delta-line);
