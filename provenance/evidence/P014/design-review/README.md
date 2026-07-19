@@ -209,6 +209,30 @@ böylece "kusur değil, sözleşmeli tasarım kararı" olarak kapandı. Sözleş
 kendi tercihimle değiştirmek yerine yerleşim korundu; farklı bir mobil bilgi
 sırası istenirse bu owner kararıyla gate ile birlikte değişmeli.
 
+## Düzeltme 9 (P014-D2) — Stepper ayraç boşluğu, okuma tipografisi, dikey ritim
+
+Owner geri bildirimi (canlı ekran görüntüleriyle): sayfa ilk açılışta karışık,
+yazılar küçük algılanıyor; stepper'da hücre ayracı durum etiketine bitişik
+("COMPLETE|" → "COMPLETEI" yanılsaması). Not: owner'ın gördüğü canlı build
+ESKİ; PR #15'teki kısa-SHA düzeltmesi henüz deploy edilmediği için header'daki
+40 karakterlik hash da bu izlenime katkıda bulunuyor.
+
+Uygulanan (A5.1 içinde, ölçümle):
+1. Stepper ayracı: hücre yatay padding'i 0.75rem→1.05rem (Streamlit emotion
+   `li` kuralına yenilmemesi için iki-class kurala taşındı) ve tam-boy
+   `border-right` yerine %26 inset `::after` ayracı — ayraç artık harf gibi
+   okunamaz. Ölçüm: etiket→ayraç boşluğu 0px → 17px. 2x2 (761-1320) ve mobil
+   bantları uyumlandı (çift satırda ayraç yok, mobil aktif satırda yok).
+2. Okuma tipografisi: hero lede 16→17px, hero scope 13.8→14.4px, sidebar
+   gövde 14.1→15px, mobil lede 14→15px. Mobil fold sözleşmesi ölçüldü:
+   upload butonu y=663.7 (390w) / 707.3 (375w), bütçe ≤780 — geçer.
+3. Dikey ritim: hero bloğu marj/padding artırıldı (0.75→1.05rem alt,
+   1.4→1.7rem üst, alt marj 1→1.5rem), stepper üst marjı 16→24px; bloklar
+   arası nefes arttı, renk/radius sistemine dokunulmadı.
+- Kod: `src/delta_lemmata/ui_theme.py`
+- Kanıt: `screenshots/after-stepper-divider-1500.png` (COMPLETE | 02 net),
+  `screenshots/after-entry-d2-1500.png` (tam sayfa, yeni ritim)
+
 ## Doğrulama
 
 `bash scripts/verify.sh` yeşil: ruff format/check, mypy, şema doğrulayıcılar,

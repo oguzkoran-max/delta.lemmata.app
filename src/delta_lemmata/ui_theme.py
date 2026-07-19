@@ -125,7 +125,7 @@ footer,
 .delta-sidebar-parameters p {
   margin: 0;
   color: var(--delta-muted) !important;
-  font-size: 0.88rem;
+  font-size: 0.9375rem;
   line-height: 1.5;
 }
 
@@ -360,8 +360,8 @@ footer,
 .delta-entry {
   position: relative;
   overflow: hidden;
-  margin: 0 0 1rem;
-  padding: 1.4rem 2rem 0.75rem;
+  margin: 0 0 1.5rem;
+  padding: 1.7rem 2rem 1.05rem;
   border-top: 1px solid var(--delta-mint-strong);
   border-bottom: 1px solid var(--delta-mint-strong);
   background: var(--delta-mint);
@@ -395,7 +395,7 @@ footer,
   max-width: 720px;
   margin: 0.75rem 0 0;
   color: var(--delta-ink);
-  font-size: 1rem;
+  font-size: 1.0625rem;
   line-height: 1.5;
 }
 
@@ -403,7 +403,7 @@ footer,
   max-width: 720px;
   margin: 0.35rem 0 0;
   color: var(--delta-muted);
-  font-size: 0.86rem;
+  font-size: 0.9rem;
   line-height: 1.45;
 }
 
@@ -812,17 +812,29 @@ footer,
 }
 
 .delta-map-row {
+  position: relative;
   display: grid;
   grid-template-columns: 28px 1fr auto;
   gap: 0.65rem;
   align-items: center;
   min-height: 36px;
-  padding: 0 0.75rem;
-  border-right: 1px solid var(--delta-line);
+  padding: 0 1.05rem;
 }
 
-.delta-map-row:last-child {
-  border-right: 0;
+/* Inset divider: shorter than the row so it reads as a separator, never as a
+   trailing glyph after the uppercase state label ("COMPLETE|" -> "COMPLETEI"). */
+.delta-map-row::after {
+  content: "";
+  position: absolute;
+  top: 26%;
+  right: 0;
+  bottom: 26%;
+  width: 1px;
+  background: var(--delta-line);
+}
+
+.delta-map-row:last-child::after {
+  display: none;
 }
 
 .delta-map-number {
@@ -1681,13 +1693,15 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-map-row:nth-child(odd) {
-    padding-right: 0.5rem;
-    border-right: 1px solid var(--delta-line);
+    padding-right: 0.85rem;
   }
 
   .delta-map-row:nth-child(even) {
-    padding-left: 0.5rem;
-    border-right: 0;
+    padding-left: 0.85rem;
+  }
+
+  .delta-map-row:nth-child(even)::after {
+    display: none;
   }
 
   .delta-map-row:nth-last-child(-n + 2) {
@@ -1888,8 +1902,8 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-lede {
-    font-size: 0.875rem;
-    line-height: 1.36;
+    font-size: 0.9375rem;
+    line-height: 1.4;
   }
 
   .delta-entry-scope {
@@ -1962,8 +1976,8 @@ div[data-testid="stMainBlockContainer"] h3 {
   }
 
   .delta-entry-lede {
-    font-size: 0.875rem;
-    line-height: 1.4;
+    font-size: 0.9375rem;
+    line-height: 1.42;
   }
 
   .delta-entry-scope {
@@ -2153,7 +2167,7 @@ div[data-testid="stMainBlockContainer"] h3 {
 
 .delta-map {
   min-height: 52px;
-  margin: 16px 0 20px;
+  margin: 24px 0 22px;
   padding: 0;
   overflow: hidden;
 }
@@ -2161,6 +2175,7 @@ div[data-testid="stMainBlockContainer"] h3 {
 .delta-map-list .delta-map-row {
   min-height: 52px;
   margin: 0;
+  padding: 0 1.05rem;
 }
 
 .delta-map-row.is-active {
@@ -2874,6 +2889,10 @@ div[data-testid="stMainBlockContainer"] h3 {
     padding: 4px 14px;
     border: 0;
     border-top: 3px solid var(--delta-teal);
+  }
+
+  .delta-map-row.is-active::after {
+    display: none;
   }
 
   .delta-map-row.is-active .delta-map-number::after {

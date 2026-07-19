@@ -83,6 +83,15 @@ ALTINDA olmasını açıkça şart koşuyor — yerleşim denetlenmiş bilinçli
 (aksiyon-önce); "açık bulgu" kusur değil sözleşme olarak kapandı. Kanıt:
 design-review README Düzeltme 7-8 + before/after görseller.
 
+**P014-D2 turu (2026-07-19, aynı PR #15):** Owner canlı ekran görüntüleriyle
+"karışık his + küçük yazı + COMPLETEI yanılsaması" bildirdi; profesyonel
+prompt'a çevrilip işlendi. (1) Stepper: iki-class padding (0→17px etiket-ayraç
+boşluğu, Streamlit emotion li'yi yener) + %26 inset ::after ayraç; 2x2 ve
+mobil bantlar uyumlandı. (2) Okuma tipografisi: lede 17px, scope 14.4px,
+sidebar 15px, mobil lede 15px; mobil fold sözleşmesi ölçülerek doğrulandı
+(663.7/707.3 ≤ 780). (3) Dikey ritim: hero + stepper marjları. Not: owner'ın
+gördüğü canlı build eski (uzun SHA dahil PR'da düzeltilmiş durumda).
+
 **P009 browser-gate flake sertleştirmesi (2026-07-19, aynı PR #15):** "Belgeli
 aralıklı flake" bu oturumda sıklaştı (3 push'ta 3 verify düşüşü, re-run'la
 geçiyordu). Log arkeolojisi iki AYRI kırılgan nokta gösterdi: (a) 500→1000 MFW
