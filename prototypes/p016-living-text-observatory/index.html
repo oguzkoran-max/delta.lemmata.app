@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delta — Discover patterns in writing style</title>
+<meta name="description" content="A scholar-led, uncertainty-aware stylometry workbench for literary and digital-humanities research. Public alpha, experimental.">
+<meta name="delta-workbench-url" content="https://delta.lemmata.app">
+<link rel="stylesheet" href="assets/styles.css">
+<script defer src="assets/narrative.js"></script>
+</head>
+<body>
+<a class="p016-skip" href="#main">Skip to content</a>
+
+<header class="p016-header" id="top">
+  <div class="p016-header-inner">
+    <a class="p016-brand" href="#top">
+      <span class="p016-mark" aria-hidden="true">Δ</span>
+      <span class="p016-brand-text"><strong>Delta</strong><small>A Lemmata stylometry workbench</small></span>
+    </a>
+    <nav class="p016-nav" aria-label="Primary">
+      <details class="p016-nav-details" open>
+        <summary>Menu</summary>
+        <ul>
+          <li><a href="#observe">How Delta works</a></li>
+          <li><a href="#parameters">Method</a></li>
+          <li><a href="#uncertainty">Limits</a></li>
+          <li><a href="#record">Documentation</a></li>
+        </ul>
+      </details>
+      <a class="p016-cta" data-workbench href="https://delta.lemmata.app">Open the workbench</a>
+    </nav>
+  </div>
+</header>
+
+<main id="main">
+
+<!-- S1 HERO -->
+<section class="p016-hero" aria-labelledby="p016-h1">
+  <div class="p016-hero-inner">
+    <div class="p016-hero-copy">
+      <p class="p016-status"><span class="p016-pill p016-pill-mint">Public alpha</span><span class="p016-pill p016-pill-amber">Experimental</span></p>
+      <h1 id="p016-h1">Discover patterns in writing style.</h1>
+      <p class="p016-lede">A scholar-led, uncertainty-aware stylometry workbench for literary and digital-humanities research.</p>
+      <p class="p016-support">Run supported stylometric workflows without first learning or writing R or Python code. Delta keeps corpus choices, parameters, and limitations visible.</p>
+      <p class="p016-actions">
+        <a class="p016-cta p016-cta-lg" data-workbench href="https://delta.lemmata.app">Open the workbench</a>
+        <a class="p016-cta-ghost" href="#observe">See how Delta works</a>
+      </p>
+    </div>
+    <div class="p016-hero-field">
+      <svg aria-hidden="true" viewBox="0 0 560 380" xmlns="http://www.w3.org/2000/svg" role="presentation" focusable="false">
+        <g class="p016-drift p016-drift-a" fill="none" stroke="currentColor" stroke-linecap="round">
+          <path d="M40 40h52M40 64h84M40 88h36M40 112h68M40 136h48M40 160h76M40 184h30M40 208h60" stroke-width="6" opacity=".28"/>
+          <circle cx="140" cy="40" r="3" opacity=".5"/><circle cx="104" cy="88" r="3" opacity=".5"/><circle cx="120" cy="136" r="3" opacity=".5"/>
+        </g>
+        <g class="p016-drift p016-drift-b" fill="none" stroke="currentColor" stroke-linecap="round">
+          <path d="M470 52h-58M470 76h-38M470 100h-72M470 124h-44M470 148h-64M470 172h-32M470 196h-56" stroke-width="6" opacity=".22"/>
+          <circle cx="404" cy="76" r="3" opacity=".5"/><circle cx="430" cy="148" r="3" opacity=".5"/>
+        </g>
+        <g class="p016-field-grid" stroke="currentColor">
+          <g stroke-width="6" stroke-linecap="round">
+            <path d="M180 258h28M216 258h44M268 258h20M296 258h36M340 258h24"/>
+            <path d="M180 286h40M228 286h24M260 286h48M316 286h20M344 286h30"/>
+            <path d="M180 314h20M208 314h52M268 314h32M308 314h24M340 314h36"/>
+          </g>
+          <g fill="currentColor" stroke="none">
+            <circle cx="376" cy="258" r="3.4"/><circle cx="384" cy="286" r="3.4"/><circle cx="386" cy="314" r="3.4"/>
+          </g>
+        </g>
+      </svg>
+      <p class="p016-caption">Conceptual illustration · not an analysis result</p>
+    </div>
+  </div>
+</section>
+
+<!-- S2 OBSERVE -->
+<section class="p016-section" id="observe" aria-labelledby="h-observe">
+  <div class="p016-grid">
+    <div class="p016-copy p016-reveal">
+      <p class="p016-eyebrow">Observe</p>
+      <h2 id="h-observe">Style leaves traces.</h2>
+      <p>Stylometry observes recurring, measurable patterns in language use, such as how often common words recur. It does not read meaning, topics, or intent.</p>
+    </div>
+    <figure class="p016-visual p016-reveal">
+      <svg viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" class="p016-observe-field">
+        <g class="p016-chips">
+          <g><rect x="20" y="30" rx="6" width="84" height="34"/><rect x="116" y="30" rx="6" width="56" height="34"/><rect x="184" y="30" rx="6" width="102" height="34"/><rect x="298" y="30" rx="6" width="64" height="34"/><rect x="374" y="30" rx="6" width="92" height="34"/><circle cx="492" cy="47" r="5"/><rect x="512" y="30" rx="6" width="70" height="34"/></g>
+          <g><rect x="20" y="92" rx="6" width="64" height="34"/><rect x="96" y="92" rx="6" width="96" height="34"/><circle cx="216" cy="109" r="5"/><rect x="236" y="92" rx="6" width="78" height="34"/><rect x="326" y="92" rx="6" width="58" height="34"/><rect x="396" y="92" rx="6" width="108" height="34"/><rect x="516" y="92" rx="6" width="66" height="34"/></g>
+          <g><rect x="20" y="154" rx="6" width="96" height="34"/><rect x="128" y="154" rx="6" width="60" height="34"/><rect x="200" y="154" rx="6" width="84" height="34"/><circle cx="312" cy="171" r="5"/><rect x="332" y="154" rx="6" width="92" height="34"/><rect x="436" y="154" rx="6" width="72" height="34"/><rect x="520" y="154" rx="6" width="62" height="34"/></g>
+        </g>
+        <g class="p016-ticks" stroke-linecap="round"><path d="M24 212h592" opacity=".25"/><path d="M60 206v12M148 206v12M236 206v12M324 206v12M412 206v12M500 206v12M588 206v12"/></g>
+      </svg>
+      <figcaption class="p016-caption">Conceptual workflow · not an analysis result</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- S3 CORPUS -->
+<section class="p016-section p016-section-paper" id="corpus" aria-labelledby="h-corpus">
+  <div class="p016-grid">
+    <div class="p016-copy p016-reveal">
+      <p class="p016-eyebrow">Corpus</p>
+      <h2 id="h-corpus">A corpus is already an argument.</h2>
+      <p>Genre, date, edition, audience, source, rights, and OCR shape what a comparison can mean. Delta asks you to document texts before any analysis.</p>
+      <p class="p016-note-amber">Unknown values stay visible and block public export.</p>
+    </div>
+    <div class="p016-visual p016-reveal">
+      <ul class="p016-ledger-cards">
+        <li>
+          <strong>Early novel</strong>
+          <dl><div><dt>Date</dt><dd>1857</dd></div><div><dt>Genre</dt><dd>Novel</dd></div><div><dt>Audience</dt><dd>Adult</dd></div><div><dt>Edition</dt><dd>First printing</dd></div><div><dt>Source</dt><dd>Library scan</dd></div><div><dt>Rights</dt><dd>Verified open</dd></div></dl>
+        </li>
+        <li>
+          <strong>Middle novel</strong>
+          <dl><div><dt>Date</dt><dd>1874</dd></div><div><dt>Genre</dt><dd>Novel</dd></div><div><dt>Audience</dt><dd>Young readers</dd></div><div><dt>Edition</dt><dd>Second edition</dd></div><div><dt>Source</dt><dd>Born-digital</dd></div><div><dt>Rights</dt><dd>Analysis only</dd></div></dl>
+        </li>
+        <li>
+          <strong>Late novel</strong>
+          <dl><div><dt>Date</dt><dd>1889</dd></div><div><dt>Genre</dt><dd>Novel</dd></div><div><dt>Audience</dt><dd>Adult</dd></div><div><dt>Edition</dt><dd>Modern reprint</dd></div><div><dt>Source</dt><dd>OCR, unreviewed</dd></div><div><dt>Rights</dt><dd class="p016-unknown">Unknown</dd></div></dl>
+        </li>
+      </ul>
+      <p class="p016-caption">Illustrative documentation records · synthetic titles, no real corpus</p>
+    </div>
+  </div>
+</section>
+
+<!-- S4 PARAMETERS -->
+<section class="p016-section" id="parameters" aria-labelledby="h-parameters">
+  <div class="p016-stack">
+    <div class="p016-copy p016-copy-center p016-reveal">
+      <p class="p016-eyebrow">Parameters</p>
+      <h2 id="h-parameters">One setting is not evidence.</h2>
+      <p>Guided comparisons run 100, 300, 500, and 1,000 most-frequent-word settings together. 500 MFW opens first as a pre-specified display reference — not a best or optimal setting.</p>
+    </div>
+    <ul class="p016-lenses p016-reveal" aria-label="Four most-frequent-word settings">
+      <li><span class="p016-lens-label">100 MFW</span><svg viewBox="0 0 160 72" aria-hidden="true" focusable="false"><g class="p016-lens-dots" data-density="1"><circle cx="24" cy="24" r="3"/><circle cx="64" cy="40" r="3"/><circle cx="104" cy="22" r="3"/><circle cx="136" cy="48" r="3"/><circle cx="44" cy="56" r="3"/></g></svg></li>
+      <li><span class="p016-lens-label">300 MFW</span><svg viewBox="0 0 160 72" aria-hidden="true" focusable="false"><g class="p016-lens-dots"><circle cx="20" cy="20" r="3"/><circle cx="52" cy="44" r="3"/><circle cx="84" cy="26" r="3"/><circle cx="116" cy="50" r="3"/><circle cx="140" cy="30" r="3"/><circle cx="36" cy="58" r="3"/><circle cx="100" cy="58" r="3"/><circle cx="68" cy="14" r="3"/></g></svg></li>
+      <li><span class="p016-lens-label">500 MFW</span><svg viewBox="0 0 160 72" aria-hidden="true" focusable="false"><g class="p016-lens-dots"><circle cx="18" cy="18" r="3"/><circle cx="44" cy="38" r="3"/><circle cx="70" cy="22" r="3"/><circle cx="96" cy="46" r="3"/><circle cx="122" cy="26" r="3"/><circle cx="144" cy="52" r="3"/><circle cx="32" cy="56" r="3"/><circle cx="84" cy="60" r="3"/><circle cx="110" cy="12" r="3"/><circle cx="58" cy="12" r="3"/></g></svg></li>
+      <li><span class="p016-lens-label">1,000 MFW</span><svg viewBox="0 0 160 72" aria-hidden="true" focusable="false"><g class="p016-lens-dots"><circle cx="16" cy="16" r="3"/><circle cx="38" cy="34" r="3"/><circle cx="60" cy="18" r="3"/><circle cx="82" cy="42" r="3"/><circle cx="104" cy="22" r="3"/><circle cx="126" cy="48" r="3"/><circle cx="146" cy="28" r="3"/><circle cx="28" cy="54" r="3"/><circle cx="72" cy="58" r="3"/><circle cx="94" cy="62" r="3"/><circle cx="118" cy="10" r="3"/><circle cx="50" cy="10" r="3"/><circle cx="140" cy="62" r="3"/></g></svg></li>
+    </ul>
+    <p class="p016-caption p016-copy-center">All four settings stay visible together · none is marked best</p>
+  </div>
+</section>
+
+<!-- S5 EVIDENCE -->
+<section class="p016-section p016-section-paper" id="evidence" aria-labelledby="h-evidence">
+  <div class="p016-grid">
+    <div class="p016-copy p016-reveal">
+      <p class="p016-eyebrow">Evidence</p>
+      <h2 id="h-evidence">Distance is a relation, not a verdict.</h2>
+      <p>Nearer means more similar measured patterns inside this corpus and this setting. The numerical distance matrix is the primary evidence; the heatmap is a rendering of that matrix, and the MDS projection is derived from it.</p>
+      <p class="p016-note-muted">Axes have no literary meaning; apparent clusters can be projection artefacts.</p>
+    </div>
+    <figure class="p016-visual p016-reveal">
+      <div class="p016-evidence-stack">
+        <svg viewBox="0 0 200 150" aria-hidden="true" focusable="false" class="p016-schematic"><g class="p016-matrix-cells"><rect x="34" y="10" width="156" height="130" rx="6"/><g class="p016-matrix-grid"><path d="M34 42h156M34 74h156M34 106h156M73 10v130M112 10v130M151 10v130"/></g><g class="p016-matrix-dots"><circle cx="53" cy="26" r="2.4"/><circle cx="92" cy="26" r="2.4"/><circle cx="131" cy="26" r="2.4"/><circle cx="170" cy="26" r="2.4"/><circle cx="53" cy="58" r="2.4"/><circle cx="92" cy="58" r="2.4"/><circle cx="131" cy="58" r="2.4"/><circle cx="170" cy="58" r="2.4"/><circle cx="53" cy="90" r="2.4"/><circle cx="92" cy="90" r="2.4"/><circle cx="131" cy="90" r="2.4"/><circle cx="170" cy="90" r="2.4"/><circle cx="53" cy="122" r="2.4"/><circle cx="92" cy="122" r="2.4"/><circle cx="131" cy="122" r="2.4"/><circle cx="170" cy="122" r="2.4"/></g><g class="p016-matrix-labels"><path d="M8 22h18M8 54h18M8 86h18M8 118h18"/></g></g></svg>
+        <svg viewBox="0 0 200 150" aria-hidden="true" focusable="false" class="p016-schematic"><g class="p016-heat"><rect x="34" y="10" width="39" height="32.5" class="h0"/><rect x="73" y="10" width="39" height="32.5" class="h2"/><rect x="112" y="10" width="39" height="32.5" class="h3"/><rect x="151" y="10" width="39" height="32.5" class="h1"/><rect x="34" y="42.5" width="39" height="32.5" class="h2"/><rect x="73" y="42.5" width="39" height="32.5" class="h0"/><rect x="112" y="42.5" width="39" height="32.5" class="h1"/><rect x="151" y="42.5" width="39" height="32.5" class="h2"/><rect x="34" y="75" width="39" height="32.5" class="h3"/><rect x="73" y="75" width="39" height="32.5" class="h1"/><rect x="112" y="75" width="39" height="32.5" class="h0"/><rect x="151" y="75" width="39" height="32.5" class="h3"/><rect x="34" y="107.5" width="39" height="32.5" class="h1"/><rect x="73" y="107.5" width="39" height="32.5" class="h2"/><rect x="112" y="107.5" width="39" height="32.5" class="h3"/><rect x="151" y="107.5" width="39" height="32.5" class="h0"/><g class="p016-matrix-labels"><path d="M8 26h18M8 58h18M8 91h18M8 123h18"/></g></g></svg>
+        <svg viewBox="0 0 200 150" aria-hidden="true" focusable="false" class="p016-schematic"><g class="p016-mds"><rect x="34" y="10" width="156" height="130" rx="6"/><path class="p016-mds-axes" d="M34 140V10M34 140h156"/><circle cx="78" cy="44" r="5"/><circle cx="120" cy="78" r="5"/><circle cx="160" cy="56" r="5"/><circle cx="62" cy="119" r="5"/></g></svg>
+      </div>
+      <figcaption class="p016-caption">Structural schematics · no result values · colour scale is local to the selected matrix</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- S6 UNCERTAINTY -->
+<section class="p016-section" id="uncertainty" aria-labelledby="h-uncertainty">
+  <div class="p016-stack">
+    <div class="p016-copy p016-copy-center p016-reveal">
+      <p class="p016-eyebrow">Uncertainty</p>
+      <h2 id="h-uncertainty">Keep what changes visible.</h2>
+      <p>A persuasive picture can still be sensitive to corpus composition, parameters, and projection. Delta keeps all four comparisons and every corpus warning side by side — there is no winner-takes-all view and no confidence score.</p>
+    </div>
+    <ul class="p016-mini-lenses p016-reveal" aria-hidden="true">
+      <li><svg viewBox="0 0 84 64" focusable="false"><rect x="10" y="8" width="64" height="48" rx="5"/><g class="p016-mini-dots"><circle cx="26" cy="24" r="2.2"/><circle cx="48" cy="38" r="2.2"/><circle cx="62" cy="20" r="2.2"/></g></svg><span>100</span></li>
+      <li><svg viewBox="0 0 84 64" focusable="false"><rect x="10" y="8" width="64" height="48" rx="5"/><g class="p016-mini-dots"><circle cx="22" cy="20" r="2.2"/><circle cx="40" cy="34" r="2.2"/><circle cx="58" cy="22" r="2.2"/><circle cx="30" cy="46" r="2.2"/><circle cx="64" cy="42" r="2.2"/></g></svg><span>300</span></li>
+      <li><svg viewBox="0 0 84 64" focusable="false"><rect x="10" y="8" width="64" height="48" rx="5"/><g class="p016-mini-dots"><circle cx="20" cy="18" r="2.2"/><circle cx="34" cy="32" r="2.2"/><circle cx="50" cy="20" r="2.2"/><circle cx="62" cy="38" r="2.2"/><circle cx="28" cy="46" r="2.2"/><circle cx="46" cy="48" r="2.2"/><circle cx="66" cy="26" r="2.2"/></g></svg><span>500</span></li>
+      <li><svg viewBox="0 0 84 64" focusable="false"><rect x="10" y="8" width="64" height="48" rx="5"/><g class="p016-mini-dots"><circle cx="18" cy="16" r="2.2"/><circle cx="30" cy="30" r="2.2"/><circle cx="44" cy="18" r="2.2"/><circle cx="56" cy="34" r="2.2"/><circle cx="68" cy="22" r="2.2"/><circle cx="24" cy="44" r="2.2"/><circle cx="42" cy="46" r="2.2"/><circle cx="60" cy="48" r="2.2"/><circle cx="70" cy="42" r="2.2"/></g></svg><span>1,000</span></li>
+    </ul>
+    <p class="p016-boundary p016-reveal">Do not conclude: nearer does not mean the same author, influence, intention, or authenticity.</p>
+  </div>
+</section>
+
+<!-- S7 RECORD -->
+<section class="p016-section p016-section-paper" id="record" aria-labelledby="h-record">
+  <div class="p016-grid">
+    <div class="p016-copy p016-reveal">
+      <p class="p016-eyebrow">Record</p>
+      <h2 id="h-record">Take the record, not just the picture.</h2>
+      <p>Delta is designed to preserve the corpus description, method settings, numerical outputs, rights summary, and declared interpretation limits of every run as a FAIR-oriented record.</p>
+      <p class="p016-note-muted">R stylo is the canonical analysis engine.</p>
+    </div>
+    <div class="p016-visual p016-reveal">
+      <ol class="p016-run-ledger">
+        <li><span>Run reference</span><em>kept</em></li>
+        <li><span>Corpus documentation</span><em>kept</em></li>
+        <li><span>Parameter summary</span><em>kept</em></li>
+        <li><span>Matrix output</span><em>kept</em></li>
+        <li><span>Rights summary</span><em>kept</em></li>
+        <li><span>Interpretation boundary</span><em>kept</em></li>
+        <li><span>Export record</span><em>kept</em></li>
+      </ol>
+      <p class="p016-caption">Run-record structure · design intent, illustrative</p>
+    </div>
+  </div>
+</section>
+
+<!-- S8 FINAL CTA -->
+<section class="p016-final" id="start" aria-labelledby="h-start">
+  <div class="p016-stack">
+    <h2 id="h-start">Bring your corpus. Keep the choices visible.</h2>
+    <ul class="p016-paths p016-reveal">
+      <li><strong>Compare Texts</strong><span>Recurring language patterns across individual texts.</span></li>
+      <li><strong>Compare Groups</strong><span>Patterns across documented authors, genres, periods, or audiences.</span></li>
+      <li><strong>Trace Style Over Time</strong><span>One writer's dated works in sequence.</span></li>
+    </ul>
+    <p class="p016-actions p016-actions-center">
+      <a class="p016-cta p016-cta-lg" data-workbench href="https://delta.lemmata.app">Open the workbench</a>
+    </p>
+    <p class="p016-status p016-status-center"><span class="p016-pill p016-pill-mint">Public alpha</span><span class="p016-pill p016-pill-amber">Experimental</span></p>
+  </div>
+</section>
+
+</main>
+
+<footer class="p016-footer">
+  <p>Designed to remove R and Python coding from supported workflows. Method knowledge and interpretation remain the researcher's responsibility.</p>
+  <p class="p016-footer-links"><a data-workbench href="https://delta.lemmata.app">Open the workbench</a><a href="#observe">How Delta works</a><a href="#uncertainty">Limits</a></p>
+</footer>
+
+</body>
+</html>
