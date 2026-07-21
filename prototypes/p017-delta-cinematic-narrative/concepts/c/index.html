@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="delta-workbench-url" content="https://delta.lemmata.app/">
+<title>Delta — Concept C · Archive to Signal</title>
+<style>
+@font-face{font-family:"Fraunces";src:url("../../assets/fonts/Fraunces-Variable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"FrauncesIt";src:url("../../assets/fonts/Fraunces-Italic-Variable.woff2") format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:"InterVar";src:url("../../assets/fonts/InterVariable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --void:#070E0C;--forest:#0C1714;--ivory:#F2EDE0;--bone:#CFC9B4;--muted:#93A29A;
+  --emerald:#1FA97C;--mint:#5DCAA5;--copper:#C57B4A;--hair:rgba(242,237,224,.14);
+  --sans:"InterVar",ui-sans-serif,system-ui,sans-serif;--disp:"Fraunces",Georgia,serif;
+  --p:0.7;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--void);color:var(--ivory);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.skip{position:absolute;left:-9999px;top:0;background:var(--emerald);color:#06110D;padding:10px 18px;z-index:99;font-weight:600}
+.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+
+.hd{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:22px clamp(20px,4vw,56px)}
+.hd .wm{display:inline-flex;align-items:center;gap:12px;text-decoration:none;min-height:44px}
+.hd .wm .mk{width:30px;height:30px;background:var(--emerald);color:#06110D;display:grid;place-items:center;font-weight:700;font-size:15px;border-radius:6px}
+.hd .wm .tx{font-weight:650}
+.hd .cta{font-size:13.5px;font-weight:600;text-decoration:none;border:1px solid var(--hair);padding:11px 18px;border-radius:6px;display:inline-flex;align-items:center;min-height:44px;background:rgba(7,14,12,.55)}
+.hd .cta:hover{border-color:var(--mint);color:var(--mint)}
+
+/* ---------- pinned scene ---------- */
+.scene{height:250vh;position:relative;--sc:clamp(0,calc(var(--p)*1.75),1)}
+.pin{position:sticky;top:0;height:100vh;overflow:hidden}
+.pin::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(1000px 760px at 24% 46%, rgba(233,226,206,.05), transparent 55%),
+  radial-gradient(900px 600px at 86% 30%, rgba(31,169,124,.08), transparent 60%),
+  linear-gradient(180deg,var(--void),var(--forest) 140%)}
+
+/* stage: full-bleed layered svg */
+.stagewrap{position:absolute;inset:0}
+.layer{position:absolute;inset:0}
+.layer svg{position:absolute;left:0;top:50%;transform:translateY(-50%);height:min(92vh,860px);width:auto;max-width:none}
+.measured{clip-path:inset(0 0 calc(100% - var(--sc)*100%) 0)}
+.scan{position:absolute;left:0;right:34%;top:calc(6% + var(--sc)*86%);height:1px;z-index:3;
+  background:linear-gradient(90deg,transparent,var(--emerald) 8%,var(--mint) 92%,transparent);
+  box-shadow:0 0 18px rgba(31,169,124,.6);
+  opacity:clamp(0,calc((0.97 - var(--sc))*7),1)}
+
+/* copy overlapping the boundary */
+.copy{position:absolute;z-index:6;left:clamp(40%,44vw,48%);top:16%;max-width:620px;display:grid;padding-right:clamp(20px,4vw,56px)}
+.state{grid-area:1/1}
+.stateA{opacity:clamp(0,calc((0.42 - var(--p))*4.2),1)}
+.stateB{opacity:clamp(0,calc((var(--p) - 0.5)*4),1);transform:translateY(calc((1 - clamp(0,calc((var(--p) - 0.5)*4),1))*18px))}
+.eyebrow{font-size:11.5px;letter-spacing:.22em;font-weight:650;color:var(--mint);text-transform:uppercase;display:flex;gap:10px;align-items:center;margin-bottom:24px}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--emerald)}
+h1{font-family:var(--disp);font-variation-settings:"opsz" 144,"WONK" 1;font-weight:470;font-size:clamp(54px,6.6vw,100px);line-height:.99;letter-spacing:-.012em;margin-left:-14vw;margin-bottom:28px;text-shadow:0 2px 40px rgba(7,14,12,.8)}
+h1 em{font-family:"FrauncesIt","Fraunces",Georgia,serif;font-style:italic;color:var(--bone)}
+.lede{font-size:clamp(15.5px,1.2vw,18px);color:var(--bone);max-width:46ch;margin-bottom:32px}
+.ctas{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-bottom:24px}
+.btn{background:var(--emerald);color:#06110D;font-weight:650;font-size:15px;text-decoration:none;padding:15px 26px;border-radius:6px;display:inline-flex;align-items:center;min-height:48px}
+.btn:hover{background:var(--mint)}
+.ghost{font-size:14.5px;color:var(--bone);text-decoration:none;border-bottom:1px solid var(--hair);padding:4px 2px;min-height:44px;display:inline-flex;align-items:center}
+.ghost:hover{color:var(--mint);border-color:var(--mint)}
+.status{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+
+/* documented ledger (rows, not cards) */
+.h2{font-family:var(--disp);font-variation-settings:"opsz" 120;font-weight:500;font-size:clamp(36px,3.6vw,58px);line-height:1.04;letter-spacing:-.008em;margin-left:-10vw;margin-bottom:16px;text-shadow:0 2px 40px rgba(7,14,12,.8)}
+.sup{color:var(--bone);max-width:50ch;margin-bottom:26px;font-size:15.5px}
+.ledger{list-style:none;max-width:440px}
+.ledger li{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:11px 0;border-bottom:1px solid var(--hair);font-size:12px;letter-spacing:.16em;font-weight:650;color:var(--bone);
+  opacity:clamp(0,calc((var(--p) - var(--t))*4),1);
+  transform:translateX(calc((1 - clamp(0,calc((var(--p) - var(--t))*4),1))*16px))}
+.ledger li .v{font-weight:400;letter-spacing:.04em;color:var(--muted);font-size:12.5px}
+.ledger li.cu,.ledger li.cu .v{color:var(--copper)}
+.ledger li.cu{border-bottom-color:rgba(197,123,74,.5)}
+
+.cap{position:absolute;left:clamp(20px,4vw,56px);bottom:3.5vh;z-index:6;font-size:11.5px;color:var(--muted);letter-spacing:.06em}
+.cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:6;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:10.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;opacity:clamp(0,calc((0.12 - var(--p))*9),1)}
+.cue::before{content:"";width:1px;height:44px;background:linear-gradient(180deg,transparent,var(--mint))}
+
+/* ---------- outro ---------- */
+.outro{position:relative;padding:16vh clamp(20px,4vw,56px) 12vh;text-align:center}
+.outro h2{font-family:var(--disp);font-variation-settings:"opsz" 132;font-weight:470;font-size:clamp(34px,3.6vw,54px);letter-spacing:-.008em;margin-bottom:18px}
+.outro p{color:var(--bone);max-width:52ch;margin:0 auto 34px}
+footer{padding:40px clamp(20px,4vw,56px) 56px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+footer .bd{max-width:64ch}
+
+/* ---------- mobile art direction ---------- */
+@media (max-width:900px){
+  .scene{height:200vh}
+  .layer svg{height:64vh;top:40%;left:-16vw}
+  .scan{right:8%}
+  .copy{left:20px;right:20px;top:auto;bottom:9vh;max-width:none;padding-right:0}
+  h1{margin-left:0;font-size:clamp(46px,12.5vw,68px)}
+  .h2{margin-left:0}
+  .lede{font-size:15px;max-width:none}
+  .ledger{max-width:none}
+  .ledger li{padding:9px 0;font-size:11px}
+  .cap{bottom:2vh}
+}
+@media (prefers-reduced-motion:reduce){:root{--p:.7}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hd">
+  <a class="wm" href="https://delta.lemmata.app/"><span class="mk" aria-hidden="true">Δ</span><span class="tx">Delta</span></a>
+  <a class="cta" href="https://delta.lemmata.app/" data-workbench>Open the workbench</a>
+</header>
+
+<main id="main">
+<section class="scene" data-scene aria-label="Every text leaves a trace — the archive becomes measured evidence">
+  <div class="pin">
+    <div class="stagewrap" aria-hidden="true">
+      <!-- tactile archive layer -->
+      <div class="layer tactile">
+        <svg viewBox="0 0 900 780" role="presentation" focusable="false">
+          <defs>
+            <filter id="pgrain" x="-10%" y="-10%" width="120%" height="120%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.5" numOctaves="3" stitchTiles="stitch" result="n"/>
+              <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.90  0 0 0 0 0.86  0 0 0 0 0.74  0 0 0 0.16 0"/>
+            </filter>
+            <filter id="psoft" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="14"/></filter>
+            <linearGradient id="rake" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" stop-color="#F2EDE0" stop-opacity=".30"/><stop offset=".3" stop-color="#F2EDE0" stop-opacity=".08"/><stop offset="1" stop-color="#F2EDE0" stop-opacity="0"/>
+            </linearGradient>
+            <linearGradient id="pageLum" x1="0" y1="0" x2=".7" y2="1">
+              <stop offset="0" stop-color="#F2EDE0" stop-opacity=".14"/><stop offset="1" stop-color="#F2EDE0" stop-opacity="0"/>
+            </linearGradient>
+            <path id="pg" d="M0 0 H448 c8 44 -10 96 2 148 c9 62 -7 118 3 178 c7 68 -5 136 1 208 L455 610 Q452 616 446 616 H0 Z"/>
+          </defs>
+
+          <ellipse cx="330" cy="712" rx="300" ry="30" fill="#000" opacity=".55" filter="url(#psoft)"/>
+
+          <!-- promise of signal, right side -->
+          <g stroke="#F2EDE0" stroke-opacity=".16" stroke-width="1">
+            <line x1="560" y1="216" x2="872" y2="216"/><line x1="560" y1="284" x2="872" y2="284"/>
+            <line x1="560" y1="352" x2="872" y2="352"/><line x1="560" y1="420" x2="872" y2="420"/>
+          </g>
+          <g stroke="#1FA97C" stroke-opacity=".35" stroke-width="1">
+            <line x1="540" y1="388" x2="880" y2="388"/>
+            <line x1="620" y1="382" x2="620" y2="394"/><line x1="700" y1="382" x2="700" y2="394"/>
+            <line x1="780" y1="382" x2="780" y2="394"/><line x1="860" y1="382" x2="860" y2="394"/>
+          </g>
+          <g transform="translate(648 556)" stroke="#1FA97C" stroke-opacity=".14" stroke-width=".7">
+            <path d="M0 0 H236 M0 22 H236 M0 44 H236 M0 66 H236 M0 88 H236"/>
+            <path d="M0 0 V88 M47 0 V88 M94 0 V88 M141 0 V88 M188 0 V88 M236 0 V88"/>
+          </g>
+
+          <!-- back pages: dark opaque paper, edge-lit -->
+          <g transform="translate(56 84) rotate(-2.4 230 300)">
+            <use href="#pg" fill="#10160F" fill-opacity=".96"/>
+            <use href="#pg" fill="none" stroke="#F2EDE0" stroke-opacity=".2"/>
+          </g>
+          <g transform="translate(84 58) rotate(-.7 230 300)">
+            <use href="#pg" fill="#131A12" fill-opacity=".96"/>
+            <use href="#pg" fill="none" stroke="#F2EDE0" stroke-opacity=".24"/>
+          </g>
+          <g transform="translate(108 92) rotate(1.5 230 300)">
+            <use href="#pg" fill="#161D15" fill-opacity=".97"/>
+            <use href="#pg" fill="none" stroke="#F2EDE0" stroke-opacity=".28"/>
+          </g>
+
+          <!-- front page -->
+          <g transform="translate(132 70) rotate(-.5 230 300)">
+            <use href="#pg" fill="#1B2218" fill-opacity=".98"/>
+            <rect x="0" y="0" width="452" height="240" fill="url(#pageLum)"/>
+            <rect x="0" y="0" width="96" height="616" fill="url(#rake)"/>
+            <use href="#pg" filter="url(#pgrain)" opacity=".85"/>
+            <use href="#pg" fill="none" stroke="#F2EDE0" stroke-opacity=".5" stroke-width="1.3"/>
+            <!-- ruled baselines -->
+            <g stroke="#F2EDE0" stroke-opacity=".3" stroke-width="1">
+              <line x1="44" y1="120" x2="404" y2="120"/><line x1="44" y1="156" x2="392" y2="156"/>
+              <line x1="44" y1="192" x2="408" y2="192"/><line x1="44" y1="228" x2="386" y2="228"/>
+              <line x1="44" y1="264" x2="400" y2="264"/><line x1="44" y1="300" x2="396" y2="300"/>
+              <line x1="44" y1="336" x2="406" y2="336"/><line x1="44" y1="372" x2="380" y2="372"/>
+              <line x1="44" y1="408" x2="402" y2="408"/><line x1="44" y1="444" x2="394" y2="444"/>
+              <line x1="44" y1="480" x2="400" y2="480"/><line x1="44" y1="516" x2="372" y2="516"/>
+            </g>
+            <!-- ink marginalia (abstract) -->
+            <g stroke="#C57B4A" stroke-opacity=".65" fill="none" stroke-width="1.6" stroke-linecap="round">
+              <path d="M424 150 q10 4 0 10 l0 74 q-10 4 0 10"/>
+              <path d="M60 231 q60 6 118 1"/>
+              <path d="M228 375 q40 5 84 -2 q20 -3 34 2"/>
+            </g>
+            <g stroke="#F2EDE0" stroke-opacity=".4" fill="none" stroke-width="1.3" stroke-linecap="round">
+              <path d="M418 300 l14 0 M425 293 l0 14"/>
+              <path d="M60 520 q30 8 62 2"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+
+      <!-- measured layer: same geometry, analytical rendering; revealed by the scan -->
+      <div class="layer measured">
+        <svg viewBox="0 0 900 780" role="presentation" focusable="false">
+          <g transform="translate(132 70) rotate(-.5 230 300)">
+            <use href="#pg" fill="#0C1714" fill-opacity=".55"/>
+            <use href="#pg" fill="none" stroke="#1FA97C" stroke-opacity=".5" stroke-width="1.2"/>
+          </g>
+          <!-- baselines straighten and extend into signal -->
+          <g stroke="#1FA97C" stroke-opacity=".55" stroke-width="1">
+            <line x1="176" y1="190" x2="872" y2="190"/><line x1="176" y1="226" x2="872" y2="226"/>
+            <line x1="176" y1="262" x2="872" y2="262"/><line x1="176" y1="298" x2="872" y2="298"/>
+            <line x1="176" y1="334" x2="872" y2="334"/><line x1="176" y1="370" x2="872" y2="370"/>
+            <line x1="176" y1="406" x2="872" y2="406"/><line x1="176" y1="442" x2="872" y2="442"/>
+            <line x1="176" y1="478" x2="872" y2="478"/><line x1="176" y1="514" x2="872" y2="514"/>
+          </g>
+          <!-- interval ticks -->
+          <g stroke="#5DCAA5" stroke-opacity=".7" stroke-width="1">
+            <line x1="600" y1="184" x2="600" y2="520"/>
+            <line x1="664" y1="184" x2="664" y2="520" stroke-opacity=".35"/>
+            <line x1="728" y1="184" x2="728" y2="520" stroke-opacity=".35"/>
+            <line x1="792" y1="184" x2="792" y2="520" stroke-opacity=".35"/>
+            <line x1="856" y1="184" x2="856" y2="520" stroke-opacity=".35"/>
+          </g>
+          <!-- matrix corner -->
+          <g transform="translate(648 556)">
+            <g stroke="#1FA97C" stroke-opacity=".4" stroke-width=".7">
+              <path d="M0 0 H236 M0 22 H236 M0 44 H236 M0 66 H236 M0 88 H236"/>
+              <path d="M0 0 V88 M47 0 V88 M94 0 V88 M141 0 V88 M188 0 V88 M236 0 V88"/>
+            </g>
+            <g fill="#5DCAA5">
+              <circle cx="23" cy="11" r="2.4" opacity=".9"/><circle cx="70" cy="33" r="2.4" opacity=".55"/>
+              <circle cx="117" cy="55" r="2.4" opacity=".75"/><circle cx="164" cy="11" r="2.4" opacity=".4"/>
+              <circle cx="211" cy="77" r="2.4" opacity=".65"/>
+            </g>
+          </g>
+          <!-- copper annotation preserved in the measured world -->
+          <g stroke="#C57B4A" stroke-opacity=".8" fill="none" stroke-width="1.4">
+            <path d="M556 220 q10 4 0 10 l0 42 q-10 4 0 10"/>
+          </g>
+        </svg>
+      </div>
+
+      <div class="scan"></div>
+    </div>
+
+    <div class="copy">
+      <div class="state stateA">
+        <p class="eyebrow">Delta · A Lemmata stylometry workbench</p>
+        <h1>Every text leaves a&nbsp;<em>trace.</em></h1>
+        <p class="lede">A scholar-led, uncertainty-aware stylometry workbench for literary and digital-humanities research. Corpus choices, parameters, and limitations stay visible.</p>
+        <p class="ctas"><a class="btn" href="https://delta.lemmata.app/" data-workbench>Open the workbench</a><a class="ghost" href="#outro">See how it works</a></p>
+        <p class="status">Public alpha · Experimental</p>
+      </div>
+      <div class="state stateB">
+        <h2 class="h2">A corpus is already an argument.</h2>
+        <p class="sup">Genre, date, edition, audience, source, rights, and OCR shape what a comparison can mean. Delta asks you to document texts before any analysis.</p>
+        <ul class="ledger" aria-hidden="true">
+          <li style="--t:.52"><span>GENRE</span><span class="v">documented</span></li>
+          <li style="--t:.56"><span>DATE · EDITION</span><span class="v">documented</span></li>
+          <li style="--t:.60"><span>AUDIENCE · SOURCE</span><span class="v">documented</span></li>
+          <li class="cu" style="--t:.64"><span>RIGHTS</span><span class="v">unknown — stays visible, blocks public export</span></li>
+          <li style="--t:.68"><span>OCR</span><span class="v">documented</span></li>
+        </ul>
+      </div>
+    </div>
+
+    <p class="cap">Conceptual visualisation · not an analysis result</p>
+  </div>
+  <p class="cue">Scroll · the archive is scanned</p>
+</section>
+
+<section class="outro" id="outro">
+  <h2>Bring your corpus. Keep the choices visible.</h2>
+  <p>The numerical distance matrix is the primary evidence; the heatmap and the MDS projection are renderings of the same matrix.</p>
+  <p><a class="btn" href="https://delta.lemmata.app/" data-workbench>Open the workbench</a></p>
+  <p class="status" style="margin-top:22px">Public alpha · Experimental</p>
+</section>
+</main>
+
+<footer>
+  <p class="bd">Nearer means more similar measured patterns inside this corpus and this setting. It does not mean the same author, influence, intention, or authenticity.</p>
+  <p>Delta · Lemmata</p>
+</footer>
+
+<script>
+(function(){
+  var de=document.documentElement;de.classList.add('js');
+  var rm=matchMedia('(prefers-reduced-motion: reduce)');
+  var scene=document.querySelector('[data-scene]');
+  if(!scene||rm.matches){de.style.setProperty('--p','0.7');return;}
+  var tick=false;
+  function paint(){tick=false;
+    var r=scene.getBoundingClientRect(),span=r.height-innerHeight;
+    var p=span>0?Math.min(1,Math.max(0,-r.top/span)):0;
+    de.style.setProperty('--p',p.toFixed(4));}
+  addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(paint);}},{passive:true});
+  addEventListener('resize',function(){if(!tick){tick=true;requestAnimationFrame(paint);}},{passive:true});
+  paint();
+})();
+</script>
+</body>
+</html>

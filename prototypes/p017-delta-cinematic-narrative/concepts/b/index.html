@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="delta-workbench-url" content="https://delta.lemmata.app/">
+<title>Delta — Concept B · Typographic X-Ray</title>
+<style>
+@font-face{font-family:"Fraunces";src:url("../../assets/fonts/Fraunces-Variable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+@font-face{font-family:"FrauncesIt";src:url("../../assets/fonts/Fraunces-Italic-Variable.woff2") format("woff2");font-weight:100 900;font-style:italic;font-display:swap}
+@font-face{font-family:"InterVar";src:url("../../assets/fonts/InterVariable.woff2") format("woff2");font-weight:100 900;font-style:normal;font-display:swap}
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --void:#070E0C;--forest:#0C1714;--ivory:#F2EDE0;--bone:#CFC9B4;--muted:#8FA098;
+  --emerald:#1FA97C;--mint:#5DCAA5;--copper:#C57B4A;--hair:rgba(242,237,224,.14);
+  --sans:"InterVar",ui-sans-serif,system-ui,sans-serif;--disp:"Fraunces",Georgia,serif;
+  --p:0.66;
+}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--void);color:var(--ivory);font-family:var(--sans);font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased;
+  background-image:repeating-linear-gradient(90deg,transparent 0 139px,rgba(242,237,224,.045) 139px 140px)}
+a{color:inherit}
+.skip{position:absolute;left:-9999px;top:0;background:var(--emerald);color:#06110D;padding:10px 18px;z-index:99;font-weight:600}
+.skip:focus{left:0}
+:focus-visible{outline:3px solid var(--mint);outline-offset:3px}
+
+.hd{position:fixed;inset:0 0 auto 0;z-index:20;display:flex;justify-content:space-between;align-items:center;padding:22px clamp(20px,4vw,56px)}
+.hd .wm{display:inline-flex;align-items:center;gap:12px;text-decoration:none;min-height:44px}
+.hd .wm .mk{width:30px;height:30px;background:var(--emerald);color:#06110D;display:grid;place-items:center;font-weight:700;font-size:15px;border-radius:6px}
+.hd .wm .tx{font-weight:650}
+.hd .cta{font-size:13.5px;font-weight:600;text-decoration:none;border:1px solid var(--hair);padding:11px 18px;border-radius:6px;display:inline-flex;align-items:center;min-height:44px;background:rgba(7,14,12,.55)}
+.hd .cta:hover{border-color:var(--mint);color:var(--mint)}
+
+/* ---------- pinned scene ---------- */
+.scene{height:240vh;position:relative}
+.pin{position:sticky;top:0;height:100vh;overflow:hidden;padding:0 clamp(16px,3vw,48px)}
+.pin::before{content:"";position:absolute;inset:0;pointer-events:none;background:
+  radial-gradient(1200px 620px at 50% 10%, rgba(31,169,124,.07), transparent 60%),
+  linear-gradient(180deg,var(--void),var(--forest) 130%)}
+
+.eyebrow{position:absolute;top:96px;left:clamp(20px,4vw,56px);font-size:11.5px;letter-spacing:.22em;font-weight:650;color:var(--mint);text-transform:uppercase;display:flex;gap:10px;align-items:center;z-index:5;opacity:clamp(0,calc((0.4 - var(--p))*4),1)}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--emerald)}
+
+/* the phrase */
+.phrase{position:absolute;left:0;right:0;top:50%;z-index:2;
+  transform:translateY(calc(-54% + var(--p)*-15vh)) scale(calc(1 - var(--p)*.2));
+  transform-origin:8% 0;
+  font-family:var(--disp);font-weight:560;line-height:.9;letter-spacing:-.015em;
+  font-variation-settings:"opsz" 144,"WONK" 1;color:var(--ivory)}
+.phrase .ln{display:block;font-size:clamp(96px,13.2vw,206px);white-space:nowrap;line-height:.86}
+.l1{margin-left:6vw}
+.l2{margin-left:13vw;font-size:clamp(120px,16.8vw,262px);font-weight:600}
+.l3{margin-left:-.4vw;letter-spacing:-.02em}
+.l4{margin-left:30vw}
+.l4 em{font-family:"FrauncesIt","Fraunces",Georgia,serif;font-style:italic;font-variation-settings:"opsz" 144}
+/* x-ray fill */
+.xray{
+  background:repeating-linear-gradient(180deg,
+    rgba(31,169,124,.98) 0 4px, transparent 4px 11px,
+    rgba(93,202,165,.92) 11px 14px, transparent 14px 25px,
+    rgba(242,237,224,.55) 25px 26px, transparent 26px 37px);
+  background-size:100% 210px;
+  background-position:0 calc(var(--p)*-150px);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  -webkit-text-stroke:1.5px rgba(242,237,224,.62)}
+/* right measurement rail fills the calm zone */
+.rail{position:absolute;right:clamp(28px,5vw,72px);top:16%;bottom:30%;width:1px;background:linear-gradient(180deg,transparent,rgba(242,237,224,.22) 12%,rgba(242,237,224,.22) 88%,transparent);z-index:1}
+.rail i{position:absolute;right:-5px;width:11px;height:1px;background:rgba(93,202,165,.6)}
+.rail i:nth-child(1){top:9%}.rail i:nth-child(2){top:27%}.rail i:nth-child(3){top:45%}
+.rail i:nth-child(4){top:63%}.rail i:nth-child(5){top:81%}
+.half{position:relative;color:var(--ivory)}
+/* baseline measurement hairline */
+.base{position:absolute;left:0;right:0;top:calc(50% + 2vh);height:1px;background:linear-gradient(90deg,transparent,rgba(31,169,124,.55) 12%,rgba(31,169,124,.55) 88%,transparent);z-index:1}
+
+/* hero copy chip + CTA */
+.chip{position:absolute;left:clamp(20px,4vw,56px);bottom:7vh;max-width:400px;z-index:5;opacity:clamp(0,calc((0.4 - var(--p))*4),1)}
+.chip p{font-size:15.5px;color:var(--bone);margin-bottom:16px}
+.status{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
+.ctas{position:absolute;right:clamp(20px,4vw,56px);bottom:7vh;z-index:5;display:flex;gap:16px;align-items:center;opacity:clamp(0,calc((0.4 - var(--p))*4),1)}
+.btn{background:var(--emerald);color:#06110D;font-weight:650;font-size:15px;text-decoration:none;padding:15px 26px;border-radius:6px;display:inline-flex;align-items:center;min-height:48px}
+.btn:hover{background:var(--mint)}
+.cue{position:absolute;left:50%;bottom:26px;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:10px;font-size:10.5px;letter-spacing:.26em;color:var(--muted);text-transform:uppercase;opacity:clamp(0,calc((0.12 - var(--p))*9),1)}
+.cue::before{content:"";width:1px;height:44px;background:linear-gradient(180deg,transparent,var(--mint))}
+
+/* revealed axis state */
+.reveal{position:absolute;left:clamp(20px,4vw,56px);right:clamp(20px,4vw,56px);bottom:9vh;z-index:4;
+  opacity:clamp(0,calc((var(--p) - .52)*3.6),1);
+  transform:translateY(calc((1 - clamp(0,calc((var(--p) - .52)*3.6),1))*26px))}
+.reveal h2{font-family:var(--disp);font-variation-settings:"opsz" 120;font-weight:500;font-size:clamp(30px,3.2vw,50px);letter-spacing:-.008em;margin-bottom:12px}
+.reveal .sup{color:var(--bone);max-width:58ch;margin-bottom:34px;font-size:15.5px}
+.axis{position:relative;height:96px}
+.axis::before{content:"";position:absolute;left:0;right:0;top:64px;height:1px;background:var(--emerald)}
+.stop{position:absolute;top:0;width:120px;margin-left:-60px;text-align:center}
+.s1{left:11%}.s2{left:37%}.s3{left:63%}.s4{left:89%}
+.stop .bands{height:40px;display:flex;flex-direction:column;justify-content:flex-end;gap:3px;margin-bottom:10px}
+.stop .bands i{display:block;height:2px;background:var(--mint);opacity:.85;margin:0 auto}
+.stop .bands i:nth-child(1){width:26px}.stop .bands i:nth-child(2){width:40px}.stop .bands i:nth-child(3){width:32px}
+.s2 .bands i:nth-child(1){width:34px}.s2 .bands i:nth-child(2){width:28px}.s2 .bands i:nth-child(3){width:42px}
+.s3 .bands i:nth-child(1){width:30px}.s3 .bands i:nth-child(2){width:44px}.s3 .bands i:nth-child(3){width:26px}
+.s4 .bands i:nth-child(1){width:42px}.s4 .bands i:nth-child(2){width:30px}.s4 .bands i:nth-child(3){width:36px}
+.stop .tick{width:1px;height:12px;background:var(--emerald);margin:0 auto 8px}
+.stop .lb{font-size:12px;font-weight:650;letter-spacing:.08em;color:var(--ivory);font-variant-numeric:tabular-nums}
+.stop .un{font-size:10px;letter-spacing:.18em;color:var(--muted)}
+.axnote{margin-top:18px;font-size:12px;color:var(--muted);letter-spacing:.05em}
+
+/* ---------- outro ---------- */
+.outro{position:relative;padding:16vh clamp(20px,4vw,56px) 12vh;text-align:center}
+.outro h2{font-family:var(--disp);font-variation-settings:"opsz" 132;font-weight:470;font-size:clamp(34px,3.6vw,54px);letter-spacing:-.008em;margin-bottom:18px}
+.outro p{color:var(--bone);max-width:52ch;margin:0 auto 34px}
+.outro .btn{margin:0 auto}
+footer{padding:40px clamp(20px,4vw,56px) 56px;border-top:1px solid var(--hair);display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:13px}
+footer .bd{max-width:64ch}
+
+/* ---------- mobile art direction: 5-line recomposition ---------- */
+@media (max-width:900px){
+  .scene{height:200vh}
+  .phrase{top:44%;transform:translateY(calc(-50% + var(--p)*-11vh)) scale(calc(1 - var(--p)*.14))}
+  .phrase .ln{font-size:clamp(64px,17.5vw,120px)}
+  .l1{margin-left:2vw}.l2{margin-left:14vw}.l3{margin-left:-2vw}
+  .l4{margin-left:0;display:flex;flex-direction:column}
+  .l4 .a{margin-left:34vw}.l4 .b{margin-left:8vw}
+  .chip{bottom:15vh;max-width:none;right:20px}
+  .chip p{font-size:14.5px}
+  .ctas{bottom:5vh;left:20px;right:auto}
+  .reveal{bottom:6vh}
+  .reveal .sup{font-size:14px}
+  .axis .stop{width:80px;margin-left:-40px}
+  .s1{left:9%}.s2{left:36%}.s3{left:63%}.s4{left:90%}
+}
+@media (prefers-reduced-motion:reduce){:root{--p:.66}}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="hd">
+  <a class="wm" href="https://delta.lemmata.app/"><span class="mk" aria-hidden="true">Δ</span><span class="tx">Delta</span></a>
+  <a class="cta" href="https://delta.lemmata.app/" data-workbench>Open the workbench</a>
+</header>
+
+<main id="main">
+<section class="scene" data-scene aria-label="Every text leaves a trace — style is measured in common words">
+  <div class="pin">
+    <p class="eyebrow">Delta · A Lemmata stylometry workbench</p>
+    <div class="base" aria-hidden="true"></div>
+    <div class="rail" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+
+    <h1 class="phrase" data-wght>
+      <span class="ln l1">Every</span>
+      <span class="ln l2 xray">text</span>
+      <span class="ln l3">leaves</span>
+      <span class="ln l4"><span class="a">a&nbsp;</span><em class="b">trace.</em></span>
+    </h1>
+
+    <div class="chip">
+      <p>A scholar-led, uncertainty-aware stylometry workbench for literary and digital-humanities research. Corpus choices, parameters, and limitations stay visible.</p>
+      <p class="status">Public alpha · Experimental</p>
+    </div>
+    <p class="ctas"><a class="btn" href="https://delta.lemmata.app/" data-workbench>Open the workbench</a></p>
+
+    <div class="reveal">
+      <h2>One setting is not evidence.</h2>
+      <p class="sup">Guided comparisons run 100, 300, 500, and 1,000 most-frequent-word settings together. 500 MFW opens first as a pre-specified display reference — not a best or optimal setting.</p>
+      <div class="axis" aria-hidden="true">
+        <div class="stop s1"><div class="bands"><i></i><i></i><i></i></div><div class="tick"></div><div class="lb">100</div><div class="un">MFW</div></div>
+        <div class="stop s2"><div class="bands"><i></i><i></i><i></i></div><div class="tick"></div><div class="lb">300</div><div class="un">MFW</div></div>
+        <div class="stop s3"><div class="bands"><i></i><i></i><i></i></div><div class="tick"></div><div class="lb">500</div><div class="un">MFW</div></div>
+        <div class="stop s4"><div class="bands"><i></i><i></i><i></i></div><div class="tick"></div><div class="lb">1,000</div><div class="un">MFW</div></div>
+      </div>
+      <p class="axnote">All four settings stay visible together · none is marked best · conceptual visualisation, not an analysis result</p>
+    </div>
+  </div>
+  <p class="cue">Scroll · the letters open</p>
+</section>
+
+<section class="outro">
+  <h2>Bring your corpus. Keep the choices visible.</h2>
+  <p>Stylometry observes recurring, measurable patterns in language use, such as how often common words recur. It does not read meaning, topics, or intent.</p>
+  <p><a class="btn" href="https://delta.lemmata.app/" data-workbench>Open the workbench</a></p>
+  <p class="status" style="margin-top:22px">Public alpha · Experimental</p>
+</section>
+</main>
+
+<footer>
+  <p class="bd">Nearer means more similar measured patterns inside this corpus and this setting. It does not mean the same author, influence, intention, or authenticity.</p>
+  <p>Delta · Lemmata</p>
+</footer>
+
+<script>
+(function(){
+  var de=document.documentElement;de.classList.add('js');
+  var rm=matchMedia('(prefers-reduced-motion: reduce)');
+  var scene=document.querySelector('[data-scene]');
+  var ph=document.querySelector('[data-wght]');
+  if(!scene||rm.matches){de.style.setProperty('--p','0.66');
+    if(ph)ph.style.fontVariationSettings='"opsz" 144,"WONK" 1,"wght" 430';return;}
+  var tick=false;
+  function paint(){tick=false;
+    var r=scene.getBoundingClientRect(),span=r.height-innerHeight;
+    var p=span>0?Math.min(1,Math.max(0,-r.top/span)):0;
+    de.style.setProperty('--p',p.toFixed(4));
+    if(ph)ph.style.fontVariationSettings='"opsz" 144,"WONK" 1,"wght" '+(600-p*230).toFixed(0);}
+  addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(paint);}},{passive:true});
+  addEventListener('resize',function(){if(!tick){tick=true;requestAnimationFrame(paint);}},{passive:true});
+  paint();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,107 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P017",
+  "title": "Delta cinematic narrative rebuild (The Living Corpus) — concept sprint and owner-gated implementation",
+  "status": "blocked",
+  "opened_at_utc": "2026-07-21T17:20:00Z",
+  "closed_at_utc": null,
+  "objective": "Rebuild the /how-delta-works/ narrative's visual layer from scratch as a premium cinematic scroll experience with one persistent corpus protagonist, preserving verified scientific claims, product boundaries, accessibility semantics, the workbench CTA destination, and production safety; nothing is deployed without separate explicit owner approval.",
+  "scope": [
+    "Three-direction rendered creative sprint (Living Corpus Monolith / Typographic X-Ray / Archive to Signal) under prototypes/p017-delta-cinematic-narrative/concepts/ with self-hosted OFL display typography",
+    "Anonymous contact sheets and independent blind critic scorecards under provenance/evidence/P017/concept-sprint/",
+    "Hard owner checkpoint: direction selection (A/B/C/hybrid) before full-page implementation",
+    "After selection: scroll-driven state-machine narrative (Acts I-VI), >=3 serious visual iterations with 13-position sheets and independent critics, tracked browser harness, scientific/a11y/perf verification"
+  ],
+  "non_goals": [
+    "Merging to main, pushing, deploying, or changing production DNS/Caddy/nginx/container/systemd/TLS configuration in this ticket",
+    "Weakening any scientific contract (R stylo canonical basis, equal MFW settings, matrix-primary hierarchy, MDS axis meaninglessness, proximity non-conclusions, alpha status)",
+    "Purchases, subscriptions, credit top-ups, or accepting new commercial terms for image/motion generation",
+    "Modifying the live P016 deployment or the workbench during the concept phase"
+  ],
+  "dependencies": [
+    "P016"
+  ],
+  "claim_ids": [
+    "CE-01",
+    "CE-02",
+    "CE-08",
+    "CE-12",
+    "CE-13"
+  ],
+  "threat_ids": [
+    "SEC-13",
+    "SEC-14",
+    "EPI-08",
+    "EPI-13"
+  ],
+  "decision_ids": [],
+  "prompt_event_ids": [],
+  "commit_ids": [],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "Anthropic Claude Code"
+  ],
+  "supplemental_evidence": [
+    "prompts/P017-delta-cinematic-narrative.md",
+    "provenance/evidence/P017/concept-sprint/visual-diagnosis.md",
+    "provenance/evidence/P017/concept-sprint/directions.md",
+    "provenance/evidence/P017/concept-sprint/blind-critic-scorecards.md",
+    "provenance/evidence/P017/concept-sprint/contact-sheet-desktop.png",
+    "provenance/evidence/P017/concept-sprint/contact-sheet-mobile.png"
+  ],
+  "acceptance": [
+    {
+      "id": "P017-AC-01",
+      "criterion": "Three genuinely different directions are delivered as rendered HTML compositions (desktop 1440x1000 hero, mobile 390x844 hero, desktop scroll-transition state each) with anonymous contact sheets and at least three independent blind critic scorecards.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P017/concept-sprint/contact-sheet-desktop.png",
+        "provenance/evidence/P017/concept-sprint/blind-critic-scorecards.md"
+      ]
+    },
+    {
+      "id": "P017-AC-02",
+      "criterion": "Owner selects the creative direction (A/B/C or hybrid) at the hard checkpoint before full-page implementation begins.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P017-AC-03",
+      "criterion": "Final page: one persistent protagonist transformed by a continuous reversible scroll state machine across Acts I-VI; fade-up is not the primary storytelling device; mobile and reduced-motion are independently art-directed; no scientific denylist violation.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P017-AC-04",
+      "criterion": "Visual acceptance rubric passes (median independent score >=90/100, no major creative category below 8.5/10, no generic-SaaS verdict, no unresolved P0/P1) with all scorecards preserved, and the page is visibly superior to P016 in side-by-side captures.",
+      "status": "pending",
+      "evidence": []
+    },
+    {
+      "id": "P017-AC-05",
+      "criterion": "Tracked in-repo browser harness passes the full state/viewport matrix; workbench regression gates stay green; final state is NOT DEPLOYED - OWNER APPROVAL REQUIRED.",
+      "status": "pending",
+      "evidence": []
+    }
+  ],
+  "changed_files": [
+    "prompts/P017-delta-cinematic-narrative.md",
+    "prototypes/p017-delta-cinematic-narrative/",
+    "provenance/evidence/P017/",
+    "provenance/tickets/P017.json"
+  ],
+  "commands": [
+    {
+      "command": "python p017_concepts.py (Playwright: 3 concepts x desktop hero/transition + mobile hero over loopback http.server, anonymous contact sheets)",
+      "exit_code": 0,
+      "result": "9 state captures + 2 contact sheets produced; fonts self-hosted (Fraunces OFL 67388B + italic 81704B + vendored InterVariable 352240B); concept HTML 13.3-20.1 KB inline each; blind panel verdict A>B>C, unanimous hybrid A+B greenlight",
+      "evidence": "provenance/evidence/P017/concept-sprint/blind-critic-scorecards.md"
+    }
+  ],
+  "blockers": [
+    "Hard owner checkpoint: awaiting direction selection (A/B/C/hybrid) mandated by the P017 brief before implementation may start",
+    "Single-active-ticket rule: P014 remains in-progress on main; P017 stays blocked until selection and P014 closure"
+  ]
+}
