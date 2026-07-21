@@ -14,7 +14,6 @@ import sys
 from pathlib import Path
 from typing import Any
 
-
 MFW_GRID = (100, 300, 500, 1000)
 MATRIX_TOLERANCE = 1e-6
 STRUCTURAL_TOLERANCE = 1e-12
@@ -133,6 +132,13 @@ def sha_manifest(folder: Path) -> None:
         if path.is_file() and path.name != "SHA256SUMS":
             rows.append(f"{sha256_file(path)}  {path.name}")
     (folder / "SHA256SUMS").write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+
+def normalize_evidence_permissions(folder: Path) -> None:
+    """Make container-produced evidence readable by the host packager."""
+    paths = [folder, *sorted(folder.rglob("*"))]
+    for path in paths:
+        path.chmod(0o755 if path.is_dir() else 0o644)
 
 
 def main() -> int:
@@ -349,6 +355,7 @@ def main() -> int:
     }
     write_json(output / "comparison_summary.json", overall)
     sha_manifest(raw_dir)
+    normalize_evidence_permissions(output)
     if not overall["all_mfw_pass"]:
         raise RuntimeError("literary-parity-threshold-failure")
     print("literary_parity=pass")
