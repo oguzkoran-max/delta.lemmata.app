@@ -49,7 +49,10 @@
     "provenance/evidence/P017/concept-sprint/directions.md",
     "provenance/evidence/P017/concept-sprint/blind-critic-scorecards.md",
     "provenance/evidence/P017/concept-sprint/contact-sheet-desktop.png",
-    "provenance/evidence/P017/concept-sprint/contact-sheet-mobile.png"
+    "provenance/evidence/P017/concept-sprint/contact-sheet-mobile.png",
+    "provenance/evidence/P017/state-machine.md",
+    "provenance/evidence/P017/score-history.md",
+    "tests/p017/harness.py"
   ],
   "acceptance": [
     {
@@ -64,14 +67,19 @@
     {
       "id": "P017-AC-02",
       "criterion": "Owner selects the creative direction (A/B/C or hybrid) at the hard checkpoint before full-page implementation begins.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P017/score-history.md"
+      ]
     },
     {
       "id": "P017-AC-03",
       "criterion": "Final page: one persistent protagonist transformed by a continuous reversible scroll state machine across Acts I-VI; fade-up is not the primary storytelling device; mobile and reduced-motion are independently art-directed; no scientific denylist violation.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P017/state-machine.md",
+        "provenance/evidence/P017/iterations/it-7/report.json"
+      ]
     },
     {
       "id": "P017-AC-04",
@@ -82,8 +90,11 @@
     {
       "id": "P017-AC-05",
       "criterion": "Tracked in-repo browser harness passes the full state/viewport matrix; workbench regression gates stay green; final state is NOT DEPLOYED - OWNER APPROVAL REQUIRED.",
-      "status": "pending",
-      "evidence": []
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P017/iterations/it-7/report.json",
+        "provenance/evidence/P017/score-history.md"
+      ]
     }
   ],
   "changed_files": [
@@ -98,10 +109,17 @@
       "exit_code": 0,
       "result": "9 state captures + 2 contact sheets produced; fonts self-hosted (Fraunces OFL 67388B + italic 81704B + vendored InterVariable 352240B); concept HTML 13.3-20.1 KB inline each; blind panel verdict A>B>C, unanimous hybrid A+B greenlight",
       "evidence": "provenance/evidence/P017/concept-sprint/blind-critic-scorecards.md"
+    },
+    {
+      "command": "python3 tests/p017/harness.py --iteration 7 (tracked harness: 13 desktop positions, 5 widths, RM/no-JS/keyboard, reverse+fast scroll, mid-refresh, resize, denylist, video walkthrough)",
+      "exit_code": 0,
+      "result": "LCP 156 ms, CLS 0, 6 same-origin requests, 0 third-party, 0 console errors, 0 overflow and 0 sub-44px targets at 1440/1280/1024/390/320, denylist 0, p reversible (0.0000 roundtrip/fast-jump), mid-refresh recovery, RM/no-JS parity 2843 chars",
+      "evidence": "provenance/evidence/P017/iterations/it-7/report.json"
     }
   ],
   "blockers": [
-    "Hard owner checkpoint: awaiting direction selection (A/B/C/hybrid) mandated by the P017 brief before implementation may start",
-    "Single-active-ticket rule: P014 remains in-progress on main; P017 stays blocked until selection and P014 closure"
+    "Visual acceptance rubric not passed: final blind medians 72.5/72.7 vs the >=90 bar (scorecards preserved in score-history.md); remaining P1 themes: mobile film-edit, transition lighting",
+    "Owner decision required: one more full craft round vs accept-and-approve vs park; nothing is deployed (NOT DEPLOYED - OWNER APPROVAL REQUIRED)",
+    "Single-active-ticket rule: P014 remains in-progress on main"
   ]
 }
