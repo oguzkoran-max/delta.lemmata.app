@@ -173,6 +173,16 @@ jobs:
             > /tmp/evidence/oracle.stdout 2> /tmp/evidence/oracle.stderr
           test -s /tmp/oracle/direct-oracle.json
 
+      - name: Normalize raw evidence permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 16 --memory 64m --cpus 1 \
+            -v /tmp/worker:/worker:rw -v /tmp/oracle:/oracle:rw \
+            "$IMAGE" chmod 0644 \
+            "/worker/$RESULT_COMPONENT" /oracle/direct-oracle.json
+
       - name: Validate semantics and compare all four MFW levels
         shell: bash
         run: |
