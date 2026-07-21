@@ -102,6 +102,19 @@ worker_connections'ı (ör. 1024) ve upstream keepalive'ı büyütüp yeni relea
 ile yayınlamak (owner kararı). Eski release'ler + yedekler rollback için
 sunucuda duruyor.
 
+**P016 LIVING TEXT OBSERVATORY (2026-07-20, CANLI):** Owner talimatıyla
+("tüm süreci sen üstlen, devreye alalım") scroll-anlatı sayfası Option C ile
+yayında: **https://delta.lemmata.app/how-delta-works/** (Caddy handle_path +
+308 redir; workbench root'ta değişmeden; nginx/container/DNS dokunulmadı;
+rollback: /root/Caddyfile.pre-p016-narrative). Prototip + 12 kanıt dosyası +
+5-rol bağımsız panel (çözümsüz P0/P1 yok) + owner rötuş turu (renk canlılığı,
+okuma-ilerleme çizgisi, stagger, embed dayanıklılığı) main'e merge edildi
+(`39689d0`); Ticket P016 complete (AC-01..05 passed). Ölçümler: LCP 124ms,
+CLS 0, 41.9KB, 3. taraf 0, 6 genişlikte ihlal 0, no-JS/RM parite. Not: panel
+token bütçesi aşıldı (~552k vs 160k, adversarial-review'da beyanlı); manuel
+VoiceOver yapılmadı (beyanlı). Açık öneri: workbench header'ına "How Delta
+works" linki (ayrı küçük release) + gateway kapasite release'i.
+
 **P014-D2 turu (2026-07-19, aynı PR #15):** Owner canlı ekran görüntüleriyle
 "karışık his + küçük yazı + COMPLETEI yanılsaması" bildirdi; profesyonel
 prompt'a çevrilip işlendi. (1) Stepper: iki-class padding (0→17px etiket-ayraç

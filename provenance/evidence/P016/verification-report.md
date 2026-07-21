@@ -11,7 +11,7 @@ Test date: 2026-07-20 (local machine; shared-runner numbers will differ).
 | CLS | 0 | ≤0.1 | PASS |
 | DOMContentLoaded | 122 ms | — | info |
 | Requests | 3 (html+css+js) | minimal | PASS |
-| Transfer (uncompressed) | 41,861 B total (html 18,634 / css 19,278 / js 3,949) | <500 KB | PASS (×12 headroom) |
+| Transfer (uncompressed) | 41,861 B total (html 18,532 / css 18,772 / js 4,557) | <500 KB | PASS (×12 headroom) |
 | Third-party origins | 0 | 0 | PASS |
 | Failed requests | 0 | 0 | PASS |
 | Console errors/warnings | 0 | 0 | PASS |

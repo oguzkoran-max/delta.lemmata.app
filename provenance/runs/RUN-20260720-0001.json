@@ -1,0 +1,73 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260720-0001",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P016"
+  ],
+  "started_at_utc": "2026-07-20T17:50:00Z",
+  "ended_at_utc": "2026-07-20T18:20:00Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "eacc3e2e1d789950a770451887c9fe85f23c0c73",
+  "environment": {
+    "host": "owner macOS workstation (Playwright Chromium over loopback http.server) plus the production VPS for post-deploy endpoint checks",
+    "notes": "narrative is static; no workbench container or R worker involved"
+  },
+  "command": "P016 verification harness (six viewports, reduced-motion, no-JS, keyboard, scroll-state, network-origin, transfer-size, LCP/CLS) against the exact prototype tree; then Option C production deployment with SHA-identical file upload, backed-up Caddyfile transform, caddy validate, reload, and external endpoint verification (narrative 200, slashless 308, asset 200, workbench and LDA health ok).",
+  "exit_code": 0,
+  "input_artifacts": [
+    {
+      "path": "prototypes/p016-living-text-observatory/index.html",
+      "sha256": "9c4ffcc5a9b29f981f13dfec80c33d50bafaddbd82b77f6c4f1aa1d2529caac7"
+    },
+    {
+      "path": "prototypes/p016-living-text-observatory/assets/styles.css",
+      "sha256": "ac986961cb4da528793fe63caca2c0c900a06c71b8e7bd0492a4b23fed51231a"
+    },
+    {
+      "path": "prototypes/p016-living-text-observatory/assets/narrative.js",
+      "sha256": "6a5699a3f8551e609e03dfe710f03b8b4e665966deb83b5c163b2c2a5b899fb8"
+    },
+    {
+      "path": "prompts/P016-living-text-observatory-prototype.md",
+      "sha256": "a458beebbc4efb17bfd17f5f31b05c8e797c52e67ca83798e0411839d48352db"
+    },
+    {
+      "path": "provenance/evidence/P016/adr-proposal-routing.md",
+      "sha256": "c6f2ff525afd23f9d73527f768dafaa4fa1f246c8e0d699126bad2e3884ca04a"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P016/browser-report.json",
+      "sha256": "dc75cb1150c29715abeaa6440ba48f744d5a411584cb591c930e006a793d61a9"
+    },
+    {
+      "path": "provenance/evidence/P016/deployment-option-c.md",
+      "sha256": "7fefdc9854609fb60ea067de05ec9fee766a309026e89ed145f9fbde41c32768"
+    }
+  ],
+  "notes": "Measured, not estimated: LCP 124 ms, CLS 0, 41,861-byte total transfer, zero third-party origins, zero console errors, zero overflow and zero sub-44px targets at all six audited widths, no-JS/reduced-motion parity. Deployment verified live at https://delta.lemmata.app/how-delta-works/ with the workbench and LDA untouched and healthy; rollback backup retained on the host.",
+  "configuration_artifacts": [
+    {
+      "path": "prompts/P016-living-text-observatory-prototype.md",
+      "sha256": "a458beebbc4efb17bfd17f5f31b05c8e797c52e67ca83798e0411839d48352db"
+    },
+    {
+      "path": "provenance/evidence/P016/adr-proposal-routing.md",
+      "sha256": "c6f2ff525afd23f9d73527f768dafaa4fa1f246c8e0d699126bad2e3884ca04a"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Repository root on the owner workstation for the browser harness; the production VPS via SSH for the deployment and endpoint checks",
+    "command": "P016 verification harness (six viewports, reduced-motion, no-JS, keyboard, scroll-state, network-origin, transfer-size, LCP/CLS) against the exact prototype tree; then Option C production deployment with SHA-identical file upload, backed-up Caddyfile transform, caddy validate, reload, and external endpoint verification (narrative 200, slashless 308, asset 200, workbench and LDA health ok).",
+    "limitations": [
+      "The Playwright harness script lives in the session scratchpad rather than the repository.",
+      "Production endpoint checks require owner SSH access and live DNS/TLS.",
+      "A third party can replay the measurements against the committed prototype tree and the public URL, but not byte-identically re-run the recorded session."
+    ]
+  },
+  "supersedes": []
+}

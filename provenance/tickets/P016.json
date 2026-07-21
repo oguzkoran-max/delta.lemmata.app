@@ -2,9 +2,9 @@
   "schema_version": "1.1.0",
   "ticket_id": "P016",
   "title": "Living Text Observatory scroll-narrative prototype (local-only design exploration)",
-  "status": "blocked",
+  "status": "complete",
   "opened_at_utc": "2026-07-20T17:45:00Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-20T19:35:00Z",
   "objective": "Design and verify an isolated, local-only, code-native scroll-narrative entry-experience prototype for Delta without changing the workbench, its scientific contracts, or production routing, and deliver an architecture decision proposal for a possible future integration.",
   "scope": [
     "Isolated static prototype (semantic HTML, scoped CSS, minimal dependency-free JS, inline SVG) under prototypes/p016-living-text-observatory/",
@@ -33,12 +33,21 @@
     "EPI-08",
     "EPI-13"
   ],
-  "decision_ids": [],
-  "prompt_event_ids": [],
-  "commit_ids": [
-    "83e7a31"
+  "decision_ids": [
+    "HD-20260720-0001"
   ],
-  "run_ids": [],
+  "prompt_event_ids": [
+    "PE-20260720-0001"
+  ],
+  "commit_ids": [
+    "83e7a31",
+    "98dcc9d",
+    "eacc3e2",
+    "39689d03d7bf9045afe39f6eee2fabc21c16cf6e"
+  ],
+  "run_ids": [
+    "RUN-20260720-0001"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": [
@@ -50,7 +59,8 @@
     "provenance/evidence/P016/verification-report.md",
     "provenance/evidence/P016/adversarial-review.md",
     "provenance/evidence/P016/adr-proposal-routing.md",
-    "provenance/evidence/P016/MANIFEST.sha256"
+    "provenance/evidence/P016/MANIFEST.sha256",
+    "provenance/evidence/P016/deployment-option-c.md"
   ],
   "acceptance": [
     {
@@ -92,8 +102,9 @@
     {
       "id": "P016-AC-05",
       "criterion": "Owner reviews the prototype and the routing ADR and records an explicit integration decision (publish under Option C, adopt another option, or archive).",
-      "status": "pending",
+      "status": "passed",
       "evidence": [
+        "provenance/evidence/P016/deployment-option-c.md",
         "provenance/evidence/P016/adr-proposal-routing.md"
       ]
     }
@@ -120,7 +131,5 @@
       "evidence": "provenance/evidence/P016/browser-report.json"
     }
   ],
-  "blockers": [
-    "P016-AC-05: owner integration decision on the routing ADR (publish under Option C, adopt another option, or archive) is pending; single-active-ticket rule keeps P014 as the sole in-progress ticket"
-  ]
+  "blockers": []
 }
