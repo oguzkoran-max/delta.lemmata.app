@@ -1,0 +1,126 @@
+{
+  "schema_version": "1.1.0",
+  "ticket_id": "P016",
+  "title": "Living Text Observatory scroll-narrative prototype (local-only design exploration)",
+  "status": "blocked",
+  "opened_at_utc": "2026-07-20T17:45:00Z",
+  "closed_at_utc": null,
+  "objective": "Design and verify an isolated, local-only, code-native scroll-narrative entry-experience prototype for Delta without changing the workbench, its scientific contracts, or production routing, and deliver an architecture decision proposal for a possible future integration.",
+  "scope": [
+    "Isolated static prototype (semantic HTML, scoped CSS, minimal dependency-free JS, inline SVG) under prototypes/p016-living-text-observatory/",
+    "Creative direction, storyboard, design tokens, claim-evidence map, asset manifest, routing ADR proposal, measured browser verification, and independent five-role review under provenance/evidence/P016/",
+    "Configurable workbench CTA via meta tag; defaults to the production workbench root"
+  ],
+  "non_goals": [
+    "Merging to main, pushing, deploying, or changing production DNS/Caddy/nginx/container/systemd/TLS configuration",
+    "Revoking the P002/P004 direct-workbench decision (P016 is a reversible proposal)",
+    "Paid Higgsfield or any external asset generation; runtime third-party requests; new dependencies or fonts",
+    "Changing the scientific pipeline, catalog copy, tests, coverage, or any workbench behaviour"
+  ],
+  "dependencies": [
+    "P014"
+  ],
+  "claim_ids": [
+    "CE-01",
+    "CE-02",
+    "CE-08",
+    "CE-12",
+    "CE-13"
+  ],
+  "threat_ids": [
+    "SEC-13",
+    "SEC-14",
+    "EPI-08",
+    "EPI-13"
+  ],
+  "decision_ids": [],
+  "prompt_event_ids": [],
+  "commit_ids": [
+    "83e7a31"
+  ],
+  "run_ids": [],
+  "human_owner": "Oğuz Koran",
+  "acceptance_owner": "Oğuz Koran",
+  "implementation_agents": [
+    "Anthropic Claude Code"
+  ],
+  "supplemental_evidence": [
+    "prompts/P016-living-text-observatory-prototype.md",
+    "provenance/evidence/P016/baseline-audit.md",
+    "provenance/evidence/P016/verification-report.md",
+    "provenance/evidence/P016/adversarial-review.md",
+    "provenance/evidence/P016/adr-proposal-routing.md",
+    "provenance/evidence/P016/MANIFEST.sha256"
+  ],
+  "acceptance": [
+    {
+      "id": "P016-AC-01",
+      "criterion": "Prototype is fully isolated: no workbench file, selector, test, or behaviour changes; full verify.sh remains green with identical totals to the pre-P016 baseline.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P016/baseline-audit.md",
+        "provenance/evidence/P016/verification-report.md"
+      ]
+    },
+    {
+      "id": "P016-AC-02",
+      "criterion": "Every public sentence on the prototype is licensed by the claim-evidence map; the site/manuscript denylist yields zero positive violations; Public alpha and Experimental remain visible; 500 MFW is framed only as a pre-specified display reference.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P016/claim-evidence-map.md",
+        "provenance/evidence/P016/verification-report.md"
+      ]
+    },
+    {
+      "id": "P016-AC-03",
+      "criterion": "Measured verification passes: zero horizontal overflow and zero sub-44px targets at 1440/1280/1024/390/375/320; zero console errors; zero third-party origins; no-JS and reduced-motion render the complete narrative; CTA visible in the first viewport.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P016/browser-report.json",
+        "provenance/evidence/P016/screenshots/p016-1440x1000.png",
+        "provenance/evidence/P016/screenshots/p016-320x800.png"
+      ]
+    },
+    {
+      "id": "P016-AC-04",
+      "criterion": "Five independent review roles report no unresolved P0/P1 after adjudication.",
+      "status": "passed",
+      "evidence": [
+        "provenance/evidence/P016/adversarial-review.md"
+      ]
+    },
+    {
+      "id": "P016-AC-05",
+      "criterion": "Owner reviews the prototype and the routing ADR and records an explicit integration decision (publish under Option C, adopt another option, or archive).",
+      "status": "pending",
+      "evidence": [
+        "provenance/evidence/P016/adr-proposal-routing.md"
+      ]
+    }
+  ],
+  "changed_files": [
+    "prototypes/p016-living-text-observatory/index.html",
+    "prototypes/p016-living-text-observatory/assets/styles.css",
+    "prototypes/p016-living-text-observatory/assets/narrative.js",
+    "prompts/P016-living-text-observatory-prototype.md",
+    "provenance/evidence/P016/",
+    "provenance/tickets/P016.json"
+  ],
+  "commands": [
+    {
+      "command": "bash scripts/verify.sh",
+      "exit_code": 0,
+      "result": "1751 passed, 1 skipped; 11718 statements / 3056 branches at 100% measured coverage; schemas, 120 provenance records, repository scan, and R locks green; totals identical to the pre-P016 baseline (zero workbench regression)",
+      "evidence": "provenance/evidence/P016/verification-report.md"
+    },
+    {
+      "command": "python p016_harness.py (local Playwright verification harness over loopback http.server)",
+      "exit_code": 0,
+      "result": "LCP 104 ms, CLS 0, 3 requests / 37,614 bytes total, zero third-party origins, zero console errors, zero horizontal overflow and zero sub-44px targets at 1440/1280/1024/390/375/320, no-JS and reduced-motion full-content parity (3,521 chars), one-way reveal persistence under fast/reverse scroll",
+      "evidence": "provenance/evidence/P016/browser-report.json"
+    }
+  ],
+  "blockers": [
+    "P016-AC-05: owner integration decision on the routing ADR (publish under Option C, adopt another option, or archive) is pending; single-active-ticket rule keeps P014 as the sole in-progress ticket"
+  ]
+}
