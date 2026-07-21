@@ -108,6 +108,39 @@ jobs:
           fi
           test -s "/tmp/worker/$RESULT_COMPONENT"
 
+      - name: Probe frozen R environment
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /r-tmp:rw,exec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001 \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m \
+            -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e TZ=UTC -e TMPDIR=/r-tmp \
+            "$IMAGE" Rscript --vanilla -e '
+              tryCatch({
+                cat("r-probe-version:", as.character(getRversion()), "\n")
+                cat("r-probe-tmpdir:", tempdir(), "\n")
+                mounts <- readLines("/proc/mounts", warn = FALSE)
+                cat("r-probe-mount:", mounts[grepl(" /r-tmp ", mounts, fixed = TRUE)], "\n")
+                executable <- file.path(Sys.getenv("TMPDIR"), "delta-r-exec-probe")
+                writeLines(c("#!/bin/sh", "exit 0"), executable)
+                Sys.chmod(executable, mode = "0700")
+                status <- system2(executable)
+                cat("r-probe-exec-status:", status, "\n")
+                if (!identical(status, 0L)) stop("temporary executable probe failed")
+                Sys.setenv(RENV_PROJECT = "/opt/delta")
+                source("/opt/delta/renv/activate.R")
+                cat("r-probe-libraries:", paste(.libPaths(), collapse = "|"), "\n")
+                cat("r-probe-jsonlite:", as.character(utils::packageVersion("jsonlite")), "\n")
+                cat("r-probe-stylo:", as.character(utils::packageVersion("stylo")), "\n")
+              }, error = function(error) {
+                message("r-probe-error: ", conditionMessage(error))
+                quit(save = "no", status = 1L, runLast = FALSE)
+              })'
+
       - name: Upload worker failure diagnostics
         if: failure()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
