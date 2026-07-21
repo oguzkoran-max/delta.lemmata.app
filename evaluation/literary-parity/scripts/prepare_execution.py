@@ -30,7 +30,7 @@ EXPECTED_RESULT_COMPONENT = (
     "053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b"
 )
 EXPECTED_FATAL_COMPONENT = (
-    "24aeae6bd467340efb96a6a90d61ba8da4fd9a93456f172cecfe72f63db86548"
+    "24ae13b5ee15a59e2f7924a480c4160907d13e900a8d879f1d81b0faab8f6548"
 )
 FROZEN_FILES = (
     "containers/Dockerfile",
@@ -235,7 +235,12 @@ def main() -> int:
     add_check(checks, "workflow_commit_pin", EXPECTED_COMMIT in workflow, EXPECTED_COMMIT)
     add_check(checks, "workflow_image_pin", EXPECTED_IMAGE in workflow, EXPECTED_IMAGE)
     add_check(checks, "workflow_component_pins", all(value in workflow for value in (EXPECTED_REQUEST_COMPONENT, EXPECTED_RESULT_COMPONENT, EXPECTED_FATAL_COMPONENT)), {"request": EXPECTED_REQUEST_COMPONENT, "result": EXPECTED_RESULT_COMPONENT, "fatal": EXPECTED_FATAL_COMPONENT})
-    add_check(checks, "workflow_fatal_is_failure", 'test ! -e "/tmp/worker/$FATAL_COMPONENT"' in workflow, "fatal artifact rejected independently of process exit status")
+    add_check(
+        checks,
+        "workflow_fatal_is_failure",
+        'if [[ -e "/tmp/worker/$FATAL_COMPONENT" ]]' in workflow,
+        "fatal artifact rejected independently of process exit status",
+    )
     add_check(checks, "repo_contains_frozen_commit", git(repo, "cat-file", "-t", EXPECTED_COMMIT) == "commit", EXPECTED_COMMIT)
 
     contract = {

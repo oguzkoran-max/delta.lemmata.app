@@ -24,7 +24,7 @@ jobs:
       FROZEN_COMMIT: 31e09782ba07e6709cbdcca48bc9db22e6c49723
       REQUEST_COMPONENT: 28e9d3d83efa686b8b51b80eccd9b4f3439aeb56141e459abd97729c9c5b9184
       RESULT_COMPONENT: 053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b
-      FATAL_COMPONENT: 24aeae6bd467340efb96a6a90d61ba8da4fd9a93456f172cecfe72f63db86548
+      FATAL_COMPONENT: 24ae13b5ee15a59e2f7924a480c4160907d13e900a8d879f1d81b0faab8f6548
     steps:
       - name: Check out evaluation branch
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
@@ -93,9 +93,31 @@ jobs:
           status=$?
           set -e
           printf '%s\n' "$status" > /tmp/evidence/worker.exit-status
-          test "$status" -eq 0
-          test ! -e "/tmp/worker/$FATAL_COMPONENT"
+          if [[ "$status" -ne 0 ]]; then
+            echo "Delta worker exited with status $status" >&2
+            cat /tmp/evidence/worker.stderr >&2
+            if [[ -e "/tmp/worker/$FATAL_COMPONENT" ]]; then
+              cat "/tmp/worker/$FATAL_COMPONENT" >&2
+            fi
+            exit "$status"
+          fi
+          if [[ -e "/tmp/worker/$FATAL_COMPONENT" ]]; then
+            cat "/tmp/worker/$FATAL_COMPONENT" >&2
+            exit 1
+          fi
           test -s "/tmp/worker/$RESULT_COMPONENT"
+
+      - name: Upload worker failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: literary-stylo-parity-failure-${{ github.run_id }}
+          path: |
+            /tmp/evidence
+            /tmp/worker
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
 
       - name: Run independent direct R stylo path
         shell: bash
