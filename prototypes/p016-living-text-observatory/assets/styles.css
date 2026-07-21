@@ -29,6 +29,11 @@ p { margin: 0 0 1em; max-width: 62ch; }
 
 [id] { scroll-margin-top: 84px; }
 
+/* Reading progress (position feedback; hidden until JS, harmless without) */
+.p016-progress { position: fixed; top: 0; left: 0; right: 0; height: 2px; z-index: 70; background: transparent; pointer-events: none; }
+.p016-progress span { display: block; height: 100%; width: 0; background: var(--teal); }
+.p016-js .p016-progress span { transition: width .12s linear; }
+
 /* Skip link */
 .p016-skip {
   position: absolute; left: 16px; top: -48px; z-index: 60; padding: 10px 16px;
@@ -46,6 +51,7 @@ p { margin: 0 0 1em; max-width: 62ch; }
   position: sticky; top: 0; z-index: 50; background: var(--forest);
   color: var(--paper); border-bottom: 1px solid rgba(245,242,234,.14);
 }
+.p016-header.is-scrolled { border-bottom-color: rgba(93,202,165,.4); box-shadow: 0 1px 0 rgba(10,84,67,.35); }
 .p016-header-inner {
   max-width: 1280px; margin: 0 auto; padding: 12px 24px;
   display: flex; align-items: center; justify-content: space-between; gap: 16px;
@@ -119,6 +125,10 @@ p { margin: 0 0 1em; max-width: 62ch; }
 .p016-pill-mint { background: var(--mint); color: var(--teal-dark); }
 .p016-pill-amber { background: var(--amber-soft); color: var(--amber-text); }
 .p016-hero-field { color: var(--mint-strong); }
+.p016-hero-field .p016-drift path { opacity: .5; }
+.p016-hero-field .p016-drift circle { opacity: .75; }
+.p016-field-accents circle { fill: #5dcaa5; }
+.p016-js .p016-hero-field.is-settled .p016-field-grid { opacity: 1; }
 .p016-hero-field .p016-caption { color: rgba(245,242,234,.55); }
 
 /* Sections */
@@ -206,7 +216,7 @@ p { margin: 0 0 1em; max-width: 62ch; }
 .p016-final { background: var(--forest); color: var(--paper); padding: clamp(72px, 10vw, 140px) 24px; text-align: center; }
 .p016-final h2 { margin-bottom: .8em; }
 .p016-paths { list-style: none; margin: 0 auto; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 16px; max-width: 980px; text-align: left; }
-.p016-paths li { background: rgba(245,242,234,.06); border: 1px solid rgba(245,242,234,.16); border-radius: 8px; padding: 18px; display: grid; gap: 6px; }
+.p016-paths li { background: rgba(245,242,234,.07); border: 1px solid rgba(245,242,234,.22); border-radius: 8px; padding: 18px; display: grid; gap: 6px; }
 .p016-paths strong { font-family: var(--font-ui); }
 .p016-paths span { color: rgba(245,242,234,.78); font-size: 15px; }
 .p016-actions-center { justify-content: center; max-width: none; }
@@ -221,7 +231,7 @@ p { margin: 0 0 1em; max-width: 62ch; }
 
 /* ---------- Motion (progressive enhancement) ---------- */
 .p016-reveal { opacity: 1; transform: none; }
-.p016-js .p016-reveal { opacity: 0; transform: translateY(24px); transition: opacity .56s var(--ease), transform .56s var(--ease); }
+.p016-js .p016-reveal { opacity: 0; transform: translateY(28px); transition: opacity .62s var(--ease), transform .62s var(--ease); }
 .p016-js .p016-reveal.is-in { opacity: 1; transform: none; }
 .p016-js #corpus .p016-reveal:not(.is-in) { transform: translateY(12px); }
 .p016-js .p016-reveal .p016-schematic,
@@ -232,6 +242,28 @@ p { margin: 0 0 1em; max-width: 62ch; }
 .p016-js .p016-reveal.is-in .p016-run-ledger li { transition-delay: calc(var(--i, 0) * .08s); }
 .p016-js .p016-reveal.is-in .p016-schematic,
 .p016-js .p016-reveal.is-in .p016-run-ledger li { opacity: 1; transform: none; }
+.p016-js .p016-reveal .p016-ledger-cards li,
+.p016-js .p016-reveal.p016-lenses li,
+.p016-js .p016-paths.p016-reveal li,
+.p016-js .p016-mini-lenses.p016-reveal li { opacity: 0; transform: translateY(14px); transition: opacity .5s var(--ease), transform .5s var(--ease); }
+.p016-js .p016-reveal.is-in .p016-ledger-cards li:nth-child(1),
+.p016-js .p016-reveal.p016-lenses.is-in li:nth-child(1),
+.p016-js .p016-paths.p016-reveal.is-in li:nth-child(1),
+.p016-js .p016-mini-lenses.p016-reveal.is-in li:nth-child(1) { transition-delay: 0s; }
+.p016-js .p016-reveal.is-in .p016-ledger-cards li:nth-child(2),
+.p016-js .p016-reveal.p016-lenses.is-in li:nth-child(2),
+.p016-js .p016-paths.p016-reveal.is-in li:nth-child(2),
+.p016-js .p016-mini-lenses.p016-reveal.is-in li:nth-child(2) { transition-delay: .12s; }
+.p016-js .p016-reveal.is-in .p016-ledger-cards li:nth-child(3),
+.p016-js .p016-reveal.p016-lenses.is-in li:nth-child(3),
+.p016-js .p016-paths.p016-reveal.is-in li:nth-child(3),
+.p016-js .p016-mini-lenses.p016-reveal.is-in li:nth-child(3) { transition-delay: .24s; }
+.p016-js .p016-reveal.p016-lenses.is-in li:nth-child(4),
+.p016-js .p016-mini-lenses.p016-reveal.is-in li:nth-child(4) { transition-delay: .36s; }
+.p016-js .p016-reveal.is-in .p016-ledger-cards li,
+.p016-js .p016-reveal.p016-lenses.is-in li,
+.p016-js .p016-paths.p016-reveal.is-in li,
+.p016-js .p016-mini-lenses.p016-reveal.is-in li { opacity: 1; transform: none; }
 
 .p016-drift path, .p016-drift circle { stroke: currentColor; }
 .p016-field-grid { stroke: currentColor; }
@@ -243,7 +275,10 @@ p { margin: 0 0 1em; max-width: 62ch; }
 .p016-js .p016-hero-field.is-settled .p016-field-grid { opacity: .9; transition: opacity .7s var(--ease) .35s; }
 
 @media (prefers-reduced-motion: reduce) {
-  .p016-js .p016-reveal, .p016-js .p016-reveal .p016-schematic, .p016-js .p016-reveal .p016-run-ledger li { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .p016-js .p016-reveal, .p016-js .p016-reveal .p016-schematic, .p016-js .p016-reveal .p016-run-ledger li,
+  .p016-js .p016-reveal .p016-ledger-cards li, .p016-js .p016-reveal.p016-lenses li,
+  .p016-js .p016-paths.p016-reveal li, .p016-js .p016-mini-lenses.p016-reveal li { opacity: 1 !important; transform: none !important; transition: none !important; }
+  .p016-js .p016-progress span { transition: none; }
   .p016-js .p016-hero-field .p016-drift-a, .p016-js .p016-hero-field .p016-drift-b { transform: none; opacity: 1; transition: none; }
   .p016-js .p016-hero-field .p016-field-grid { opacity: .9; transition: none; }
   .p016-cta, .p016-skip { transition: none; }

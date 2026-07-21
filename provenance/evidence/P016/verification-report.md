@@ -7,11 +7,11 @@ Test date: 2026-07-20 (local machine; shared-runner numbers will differ).
 ## Performance (desktop 1440×1000, cold load, loopback)
 | Metric | Measured | Budget | Status |
 |---|---|---|---|
-| LCP | 104 ms | ≤2500 ms | PASS |
+| LCP | 124 ms | ≤2500 ms | PASS |
 | CLS | 0 | ≤0.1 | PASS |
-| DOMContentLoaded | 94 ms | — | info |
+| DOMContentLoaded | 122 ms | — | info |
 | Requests | 3 (html+css+js) | minimal | PASS |
-| Transfer (uncompressed) | 37,614 B total (html 18,459 / css 16,420 / js 2,735) | <500 KB | PASS (×13 headroom) |
+| Transfer (uncompressed) | 41,861 B total (html 18,634 / css 19,278 / js 3,949) | <500 KB | PASS (×12 headroom) |
 | Third-party origins | 0 | 0 | PASS |
 | Failed requests | 0 | 0 | PASS |
 | Console errors/warnings | 0 | 0 | PASS |
@@ -107,6 +107,18 @@ stays at the top. Verified as a tooling artifact, not a page defect.
 20. Nav CTA nowrap regression caused 1-11px overflow at 390/320 → responsive
     header rework; final harness: zero overflow, zero <44px targets at all six
     widths.
+
+### Owner polish round (2026-07-20, pre-activation)
+21. Colors: hero drift marks raised to legible opacity; settled field accented
+    with A5.1 `mint-accent #5dcaa5` dots; final path-card borders brightened.
+22. Scroll feel: 2px teal reading-progress hairline (passive rAF, informational);
+    header gains an accent rule after 8px scroll; stagger extended to corpus
+    ledger cards, MFW lenses, mini-lenses, and path cards; reveal travel/time
+    28px/620ms. Native scrolling untouched; reduced-motion disables all of it.
+23. Embed resilience: rect-based reveal fallback in the rAF painter plus a
+    self-terminating 400ms watcher so wrapper-scroll environments (some in-app
+    browsers) still reveal the narrative; one-way persistence re-verified
+    (hidden-after-full-scroll = 0).
 
 ## Adjudicated independent review findings
 See `adversarial-review.md` (five-role panel verdicts, findings, and the
