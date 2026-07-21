@@ -2,6 +2,9 @@ name: Literary stylo parity evidence
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - codex/paper-literary-parity-20260721
 
 permissions:
   contents: read
