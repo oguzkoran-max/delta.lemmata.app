@@ -136,8 +136,9 @@ def sha_manifest(folder: Path) -> None:
 
 def normalize_evidence_permissions(folder: Path) -> None:
     """Make container-produced evidence readable by the host packager."""
-    paths = [folder, *sorted(folder.rglob("*"))]
-    for path in paths:
+    # The bind-mount root belongs to the host runner; only normalize entries
+    # created by this container process.
+    for path in sorted(folder.rglob("*")):
         path.chmod(0o755 if path.is_dir() else 0o644)
 
 
