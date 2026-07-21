@@ -1,0 +1,163 @@
+name: Literary stylo parity evidence
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: literary-stylo-parity-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  parity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      EVIDENCE: evaluation/literary-parity
+      IMAGE: ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa
+      FROZEN_COMMIT: 31e09782ba07e6709cbdcca48bc9db22e6c49723
+      REQUEST_COMPONENT: 28e9d3d83efa686b8b51b80eccd9b4f3439aeb56141e459abd97729c9c5b9184
+      RESULT_COMPONENT: 053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b
+      FATAL_COMPONENT: 24aeae6bd467340efb96a6a90d61ba8da4fd9a93456f172cecfe72f63db86548
+    steps:
+      - name: Check out evaluation branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Verify frozen base and evaluation-only overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git merge-base HEAD "$FROZEN_COMMIT")" = "$FROZEN_COMMIT"
+          git diff --name-only "$FROZEN_COMMIT"..HEAD > /tmp/changed-paths.txt
+          test -s /tmp/changed-paths.txt
+          if grep -Ev '^(evaluation/literary-parity/|\.github/workflows/literary-parity\.yml$)' /tmp/changed-paths.txt; then
+            echo "Unexpected path outside the evaluation overlay" >&2
+            exit 1
+          fi
+
+      - name: Pull and identify immutable image
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull "$IMAGE"
+          mkdir -p /tmp/evidence
+          docker image inspect "$IMAGE" > /tmp/evidence/image-inspect.json
+          docker image inspect --format '{{json .RepoDigests}}' "$IMAGE" | tee /tmp/evidence/repo-digests.json
+          grep -F 'sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa' /tmp/evidence/repo-digests.json
+
+      - name: Rebuild and validate the locked request
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/generated
+          python3 "$EVIDENCE/scripts/build_literary_worker_request.py" \
+            --root "$EVIDENCE" --output-dir /tmp/generated
+          cmp /tmp/generated/literary_worker_request.json "$EVIDENCE/input/literary_worker_request.json"
+          cmp /tmp/generated/request_metadata.json "$EVIDENCE/input/request_metadata.json"
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m \
+            -v "$PWD/$EVIDENCE:/evidence:ro" \
+            "$IMAGE" /opt/delta/.venv/bin/python \
+            /evidence/scripts/build_literary_worker_request.py \
+            --root /evidence --output-dir /tmp/generated-in-container --repo /opt/delta
+
+      - name: Run frozen Delta worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0777 /tmp/worker
+          cp "$EVIDENCE/input/literary_worker_request.json" "/tmp/worker/$REQUEST_COMPONENT"
+          chmod 0666 "/tmp/worker/$REQUEST_COMPONENT"
+          set +e
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m \
+            -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e TZ=UTC \
+            -v /tmp/worker:/work:rw -w /work \
+            "$IMAGE" Rscript --vanilla /opt/delta/scripts/workers/p006-stylo-worker-v1.R \
+            > /tmp/evidence/worker.stdout 2> /tmp/evidence/worker.stderr
+          status=$?
+          set -e
+          printf '%s\n' "$status" > /tmp/evidence/worker.exit-status
+          test "$status" -eq 0
+          test ! -e "/tmp/worker/$FATAL_COMPONENT"
+          test -s "/tmp/worker/$RESULT_COMPONENT"
+
+      - name: Run independent direct R stylo path
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0777 /tmp/oracle
+          cp "$EVIDENCE/input/literary_worker_request.json" /tmp/oracle/request.json
+          request_sha="$(sha256sum /tmp/oracle/request.json | awk '{print $1}')"
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m \
+            -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e TZ=UTC \
+            -v /tmp/oracle:/work:rw \
+            -v "$PWD/$EVIDENCE/scripts:/evidence-scripts:ro" \
+            "$IMAGE" Rscript --vanilla /evidence-scripts/direct_oracle_harness.R \
+            /work/request.json /work/direct-oracle.json "$request_sha" \
+            > /tmp/evidence/oracle.stdout 2> /tmp/evidence/oracle.stderr
+          test -s /tmp/oracle/direct-oracle.json
+
+      - name: Validate semantics and compare all four MFW levels
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0777 /tmp/results
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m \
+            -v /tmp/worker:/worker:ro -v /tmp/oracle:/oracle:ro \
+            -v /tmp/results:/results:rw \
+            -v "$PWD/$EVIDENCE:/evidence:ro" \
+            "$IMAGE" /opt/delta/.venv/bin/python \
+            /evidence/scripts/compare_literary_parity.py \
+            --repo /opt/delta \
+            --request /evidence/input/literary_worker_request.json \
+            --request-metadata /evidence/input/request_metadata.json \
+            --worker-result "/worker/$RESULT_COMPONENT" \
+            --worker-fatal "/worker/$FATAL_COMPONENT" \
+            --oracle-result /oracle/direct-oracle.json \
+            --output /results \
+            > /tmp/evidence/comparator.stdout 2> /tmp/evidence/comparator.stderr
+          test "$(python3 -c 'import json; print(str(json.load(open("/tmp/results/comparison_summary.json"))["all_mfw_pass"]).lower())')" = true
+
+      - name: Package immutable evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -R /tmp/results /tmp/evidence/results
+          cp -R /tmp/worker /tmp/evidence/worker-raw
+          cp -R /tmp/oracle /tmp/evidence/oracle-raw
+          cp /tmp/changed-paths.txt /tmp/evidence/changed-paths.txt
+          git rev-parse HEAD > /tmp/evidence/evaluation-commit.txt
+          printf '%s\n' "$FROZEN_COMMIT" > /tmp/evidence/frozen-source-commit.txt
+          (cd /tmp/evidence && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum) > /tmp/evidence/SHA256SUMS
+          tar -C /tmp -czf /tmp/literary-stylo-parity-evidence.tar.gz evidence
+          sha256sum /tmp/literary-stylo-parity-evidence.tar.gz > /tmp/literary-stylo-parity-evidence.tar.gz.sha256
+
+      - name: Upload evidence archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: literary-stylo-parity-evidence
+          path: |
+            /tmp/literary-stylo-parity-evidence.tar.gz
+            /tmp/literary-stylo-parity-evidence.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0

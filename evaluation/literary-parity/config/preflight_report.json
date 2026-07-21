@@ -1,0 +1,146 @@
+{
+  "analysis_started": false,
+  "checked_at_utc": "2026-07-20T10:45:08Z",
+  "checks": [
+    {
+      "check": "dataset_identity",
+      "detail": "DATA-ENDTOEND-LIT-V1",
+      "status": "pass"
+    },
+    {
+      "check": "protocol_identity",
+      "detail": "PROTO-EVAL-DELTA-1.1",
+      "status": "pass"
+    },
+    {
+      "check": "mfw_grid",
+      "detail": "[100, 300, 500, 1000]",
+      "status": "pass"
+    },
+    {
+      "check": "configuration_state",
+      "detail": "preflight_blocked_exact_reference_execution_path",
+      "status": "pass"
+    },
+    {
+      "check": "release_freeze_state",
+      "detail": "frozen",
+      "status": "pass"
+    },
+    {
+      "check": "release_commit_match",
+      "detail": "31e09782ba07e6709cbdcca48bc9db22e6c49723",
+      "status": "pass"
+    },
+    {
+      "check": "release_image_match",
+      "detail": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa",
+      "status": "pass"
+    },
+    {
+      "check": "release_ci_success",
+      "detail": "29696014941",
+      "status": "pass"
+    },
+    {
+      "check": "release_publication_success",
+      "detail": "29696211566",
+      "status": "pass"
+    },
+    {
+      "check": "no_release_result",
+      "detail": "analysis_result_created=false",
+      "status": "pass"
+    },
+    {
+      "check": "four_preregistered_runs",
+      "detail": "rows=4",
+      "status": "pass"
+    },
+    {
+      "check": "run_mfw_grid",
+      "detail": "[100, 300, 500, 1000]",
+      "status": "pass"
+    },
+    {
+      "check": "run_config_hash",
+      "detail": "79598bbd19dc4b88d1d1076730f8c10b1c1259b608528e1855c1e5cd7ccc84b1",
+      "status": "pass"
+    },
+    {
+      "check": "run_release_commit",
+      "detail": "31e09782ba07e6709cbdcca48bc9db22e6c49723",
+      "status": "pass"
+    },
+    {
+      "check": "run_release_image",
+      "detail": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa",
+      "status": "pass"
+    },
+    {
+      "check": "run_status",
+      "detail": "preflight_blocked_exact_reference_execution_path",
+      "status": "pass"
+    },
+    {
+      "check": "result_hashes_blank",
+      "detail": "four blank result_sha256 fields",
+      "status": "pass"
+    },
+    {
+      "check": "outcomes_empty",
+      "detail": "rows=0",
+      "status": "pass"
+    },
+    {
+      "check": "result_folders_empty",
+      "detail": "[]",
+      "status": "pass"
+    },
+    {
+      "check": "local_r_version",
+      "detail": "4.5.2",
+      "status": "pass"
+    },
+    {
+      "check": "stylo_version",
+      "detail": "0.7.71",
+      "status": "pass"
+    },
+    {
+      "check": "stylo_delta_kernel_smoke",
+      "detail": "0",
+      "status": "pass"
+    }
+  ],
+  "configuration_sha256": "79598bbd19dc4b88d1d1076730f8c10b1c1259b608528e1855c1e5cd7ccc84b1",
+  "dataset_id": "DATA-ENDTOEND-LIT-V1",
+  "execution_readiness": "blocked_exact_reference_execution_path",
+  "freeze_id": "FREEZE-LIT-PARITY-20260720-01",
+  "image_digest_reference": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa",
+  "limitations": [
+    "The normal macOS stylo namespace was not attached because its imported GUI stack requires XQuartz; the exact 0.7.71 lazy-load object database was used only for this numerical-kernel smoke test.",
+    "Direct readback from the live host remains unavailable because SSH timed out during banner exchange before authentication.",
+    "No local Docker, Podman, Colima, nerdctl, or OrbStack runtime was available for executing the frozen OCI image.",
+    "This preflight creates no stylometric result and does not test Delta-versus-R parity."
+  ],
+  "machine": {
+    "platform": "macOS-26.5.2-arm64-arm-64bit-Mach-O",
+    "python_version": "3.14.0",
+    "r_version": "4.5.2"
+  },
+  "protocol_id": "PROTO-EVAL-DELTA-1.1",
+  "reference_kernel": {
+    "description_sha256": "9b090ec60c45119ce45c46df3c43a39b626361e8508b032e862ab83b217e4b90",
+    "loading_mode": "exact_lazy_database_without_gui_namespace",
+    "package_directory": "/Users/mac/Library/Caches/org.R-project.R/R/renv/cache/v5/macos/R-4.5/aarch64-apple-darwin20/stylo/0.7.71/a348e7b664cdf8169f5097ef47bd5671/stylo",
+    "package_source": "local_renv_cache",
+    "rdb_sha256": "7670e723e60b1661da04bbc3db3fb87abf257fcde5f9e337550002bdf71c4d64",
+    "rdx_sha256": "24c31343c044e40c840646aab3736f6a60f073c0360bca42e5de76947a8a8df2",
+    "smoke_max_abs_difference": "0",
+    "smoke_status": "pass"
+  },
+  "schema_version": "1.0",
+  "software_commit": "31e09782ba07e6709cbdcca48bc9db22e6c49723",
+  "stylometric_result_created": false
+}

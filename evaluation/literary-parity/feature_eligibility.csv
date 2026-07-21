@@ -1,0 +1,5 @@
+mfw,available_candidate_features,selected_features,non_positive_standard_deviation_features,non_finite_standard_deviation_features,eligible
+100,20000,100,0,0,true
+300,20000,300,0,0,true
+500,20000,500,0,0,true
+1000,20000,1000,0,0,true

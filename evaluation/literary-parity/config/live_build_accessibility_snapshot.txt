@@ -1,0 +1,10 @@
+URL: https://delta.lemmata.app/
+Observed at UTC: 2026-07-20T10:12:30Z
+Observation method: Codex in-app browser semantic DOM snapshot
+Accessible node: generic "Build 31e09782ba07e6709cbdcca48bc9db22e6c49723"
+Visible text: Version 0.0.0.dev0 · Build 31e09782ba07
+Health URL: https://delta.lemmata.app/_stcore/health
+Health response body: ok
+
+This snapshot records release identity only. No corpus was uploaded and no
+analysis result was created during the observation.

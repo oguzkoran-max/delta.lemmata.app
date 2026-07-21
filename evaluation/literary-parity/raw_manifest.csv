@@ -1,0 +1,7 @@
+document_id,path,bytes,sha256,source_text_url,retrieved_on
+DOC-MANZONI-PROMESSI-PG45334,raw/manzoni_i_promessi_sposi_pg45334.txt,1472526,4cdd962f1910a49091b945eff4233798b8c13f74b011cee75a8cccc7467d3612,https://www.gutenberg.org/ebooks/45334.txt.utf-8,2026-07-20
+DOC-COLLODI-PINOCCHIO-PG52484,raw/collodi_pinocchio_pg52484.txt,288897,b51a398da257709bfd2c0007e42980935751276cdca4178d738fa4c92f799ae6,https://www.gutenberg.org/ebooks/52484.txt.utf-8,2026-07-20
+DOC-DEAMICIS-CARROZZA-PG62400,raw/deamicis_la_carrozza_di_tutti_pg62400.txt,734631,d6f79cbb39ef048f0a277af3fb5646d12752d6906c24428214fdf5b86e71a57c,https://www.gutenberg.org/ebooks/62400.txt.utf-8,2026-07-20
+DOC-DELEDDA-DIVORZIO-PG43226,raw/deledda_dopo_il_divorzio_pg43226.txt,387481,66d41d3f9b33ded2cdf551c7c576b005f76866c39541f2803bd44787680e48e6,https://www.gutenberg.org/ebooks/43226.txt.utf-8,2026-07-20
+DOC-FOGAZZARO-MISTERO-PG22504,raw/fogazzaro_il_mistero_del_poeta_pg22504.txt,395458,7fb6f04d614715150c1f6374cfcac87f94c006eb1d43e948ab2c2cf39e8750cd,https://www.gutenberg.org/ebooks/22504.txt.utf-8,2026-07-20
+DOC-PIRANDELLO-CAVALLO-PG56775,raw/pirandello_un_cavallo_nella_luna_pg56775.txt,247893,31f2d1f7e0575af592559610a1bedad7bad40c15ef4af431f2b44bd154729ef2,https://www.gutenberg.org/ebooks/56775.txt.utf-8,2026-07-20

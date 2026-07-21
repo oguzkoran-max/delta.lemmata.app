@@ -1,0 +1,22 @@
+HTTP/2 302 
+date: Mon, 20 Jul 2026 07:54:39 GMT
+server: Apache
+location: http://www.gutenberg.org/cache/epub/62400/pg62400.txt
+content-length: 304
+content-type: text/html; charset=iso-8859-1
+
+HTTP/1.1 302 Found
+content-length: 0
+location: https://www.gutenberg.org/cache/epub/62400/pg62400.txt
+cache-control: no-cache
+
+HTTP/2 200 
+date: Mon, 20 Jul 2026 07:54:39 GMT
+server: Apache
+last-modified: Thu, 25 Jun 2026 07:30:12 GMT
+accept-ranges: bytes
+content-length: 734631
+vary: Accept-Encoding
+x-backend: gutenweb7
+content-type: text/plain; charset=utf-8
+

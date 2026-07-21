@@ -1,0 +1,36 @@
+{
+  "analysis_result_created": false,
+  "dataset_id": "DATA-ENDTOEND-LIT-V1",
+  "direct_host_runtime_readback": {
+    "observed_at_utc": "2026-07-20T10:12:30Z",
+    "reason": "SSH banner exchange timed out before authentication; no server state was changed.",
+    "status": "unavailable"
+  },
+  "freeze_id": "FREEZE-LIT-PARITY-20260720-01",
+  "frozen_at_utc": "2026-07-20T10:12:30Z",
+  "image": {
+    "immutable_reference": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa",
+    "publication_run_conclusion": "success",
+    "publication_run_id": 29696211566,
+    "publication_run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29696211566",
+    "published_exact_tag": "ghcr.io/oguzkoran-max/delta.lemmata.app:sha-31e09782ba07e6709cbdcca48bc9db22e6c49723"
+  },
+  "live_observation": {
+    "accessible_build_name": "Build 31e09782ba07e6709cbdcca48bc9db22e6c49723",
+    "health_body": "ok",
+    "health_url": "https://delta.lemmata.app/_stcore/health",
+    "observed_at_utc": "2026-07-20T10:12:30Z",
+    "url": "https://delta.lemmata.app/"
+  },
+  "prerequisite_ci": {
+    "conclusion": "success",
+    "container_job_conclusion": "success",
+    "run_id": 29696014941,
+    "run_url": "https://github.com/oguzkoran-max/delta.lemmata.app/actions/runs/29696014941",
+    "verify_job_conclusion": "success"
+  },
+  "protocol_id": "PROTO-EVAL-DELTA-1.1",
+  "release_identity_basis": "The live interface exposed the full source commit. The only successful immutable-image publication run for that exact commit recorded the frozen digest.",
+  "software_commit": "31e09782ba07e6709cbdcca48bc9db22e6c49723",
+  "state": "frozen"
+}

@@ -1,0 +1,22 @@
+HTTP/2 302 
+date: Mon, 20 Jul 2026 07:54:45 GMT
+server: Apache
+location: http://www.gutenberg.org/cache/epub/56775/pg56775.txt
+content-length: 304
+content-type: text/html; charset=iso-8859-1
+
+HTTP/1.1 302 Found
+content-length: 0
+location: https://www.gutenberg.org/cache/epub/56775/pg56775.txt
+cache-control: no-cache
+
+HTTP/2 200 
+date: Mon, 20 Jul 2026 07:54:46 GMT
+server: Apache
+last-modified: Mon, 22 Jun 2026 17:05:48 GMT
+accept-ranges: bytes
+content-length: 247893
+vary: Accept-Encoding
+x-backend: gutenweb1
+content-type: text/plain; charset=utf-8
+

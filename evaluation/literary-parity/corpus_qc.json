@@ -1,0 +1,29 @@
+{
+  "aggregate_unique_token_count": 36317,
+  "candidate_feature_count_after_64_byte_limit": 20000,
+  "checks": {
+    "all_clean_files_have_unique_sha256": true,
+    "all_documents_at_least_25000_tokens": true,
+    "all_preregistered_mfw_settings_eligible": true,
+    "at_least_1000_candidate_features": true,
+    "document_count_is_six": true,
+    "unique_author_count_is_six": true
+  },
+  "dataset_id": "DATA-ENDTOEND-LIT-V1",
+  "delta_run": false,
+  "distance_computed": false,
+  "document_count": 6,
+  "eligible_for_preregistered_mfw_grid": true,
+  "mds_computed": false,
+  "minimum_document_token_count": 36743,
+  "preregistered_mfw_grid": [
+    100,
+    300,
+    500,
+    1000
+  ],
+  "profile_id": "delta-surface-words-v1",
+  "selection_based_on_results": false,
+  "stylo_run": false,
+  "unique_author_count": 6
+}

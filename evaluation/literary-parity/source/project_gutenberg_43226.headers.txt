@@ -1,0 +1,22 @@
+HTTP/2 302 
+date: Mon, 20 Jul 2026 07:54:42 GMT
+server: Apache
+location: http://www.gutenberg.org/cache/epub/43226/pg43226.txt
+content-length: 304
+content-type: text/html; charset=iso-8859-1
+
+HTTP/1.1 302 Found
+content-length: 0
+location: https://www.gutenberg.org/cache/epub/43226/pg43226.txt
+cache-control: no-cache
+
+HTTP/2 200 
+date: Mon, 20 Jul 2026 07:54:42 GMT
+server: Apache
+last-modified: Fri, 17 Jul 2026 15:50:07 GMT
+accept-ranges: bytes
+content-length: 387481
+vary: Accept-Encoding
+x-backend: gutenweb1
+content-type: text/plain; charset=utf-8
+

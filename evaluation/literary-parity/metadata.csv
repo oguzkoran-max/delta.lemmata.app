@@ -1,0 +1,7 @@
+document_order,dataset_id,document_id,author,author_birth_year,author_death_year,title,language,pg_ebook_id,analysis_unit,corpus_role,clean_path,token_count,unique_token_count
+1,DATA-ENDTOEND-LIT-V1,DOC-MANZONI-PROMESSI-PG45334,Alessandro Manzoni,1785,1873,I promessi sposi,Italian,45334,whole_text,known_engine_parity,clean/manzoni_i_promessi_sposi_pg45334.clean.txt,222415,19399
+2,DATA-ENDTOEND-LIT-V1,DOC-COLLODI-PINOCCHIO-PG52484,Carlo Collodi,1826,1890,Le avventure di Pinocchio: Storia di un burattino,Italian,52484,whole_text,known_engine_parity,clean/collodi_pinocchio_pg52484.clean.txt,40688,5993
+3,DATA-ENDTOEND-LIT-V1,DOC-DEAMICIS-CARROZZA-PG62400,Edmondo De Amicis,1846,1908,La Carrozza di tutti,Italian,62400,whole_text,known_engine_parity,clean/deamicis_la_carrozza_di_tutti_pg62400.clean.txt,115142,15293
+4,DATA-ENDTOEND-LIT-V1,DOC-DELEDDA-DIVORZIO-PG43226,Grazia Deledda,1871,1936,Dopo il divorzio,Italian,43226,whole_text,known_engine_parity,clean/deledda_dopo_il_divorzio_pg43226.clean.txt,58179,8701
+5,DATA-ENDTOEND-LIT-V1,DOC-FOGAZZARO-MISTERO-PG22504,Antonio Fogazzaro,1842,1911,Il mistero del poeta,Italian,22504,whole_text,known_engine_parity,clean/fogazzaro_il_mistero_del_poeta_pg22504.clean.txt,62214,8706
+6,DATA-ENDTOEND-LIT-V1,DOC-PIRANDELLO-CAVALLO-PG56775,Luigi Pirandello,1867,1936,Un cavallo nella luna: Novelle,Italian,56775,whole_text,known_engine_parity,clean/pirandello_un_cavallo_nella_luna_pg56775.clean.txt,36743,6678

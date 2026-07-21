@@ -1,0 +1,64 @@
+{
+  "analysis_unit": "whole_text",
+  "comparison": {
+    "diagonal_must_be_zero": true,
+    "exact_ordered_document_labels": true,
+    "exact_ordered_features": true,
+    "matrix_max_abs_difference": 1e-06,
+    "structural_max_abs_difference": 1e-12,
+    "tie_groups_must_match_exactly": true
+  },
+  "corpus_role": "known_only_engine_parity",
+  "culling_percent": 0,
+  "dataset_id": "DATA-ENDTOEND-LIT-V1",
+  "distance": "classic_delta",
+  "document_order": [
+    "DOC-MANZONI-PROMESSI-PG45334",
+    "DOC-COLLODI-PINOCCHIO-PG52484",
+    "DOC-DEAMICIS-CARROZZA-PG62400",
+    "DOC-DELEDDA-DIVORZIO-PG43226",
+    "DOC-FOGAZZARO-MISTERO-PG22504",
+    "DOC-PIRANDELLO-CAVALLO-PG56775"
+  ],
+  "feature_contract": {
+    "candidate_feature_limit": 20000,
+    "frequency_formula": "feature_count / document_token_total * 100",
+    "maximum_feature_utf8_bytes": 64,
+    "ranking_tie_break": "utf8_byte_order",
+    "sample_standard_deviation": true,
+    "zero_or_nonfinite_standard_deviation_policy": "fail_without_replacement"
+  },
+  "locale": {
+    "collation": "C.UTF-8",
+    "numeric": "C",
+    "timezone": "UTC"
+  },
+  "mfw_grid": [
+    100,
+    300,
+    500,
+    1000
+  ],
+  "preprocessing_profile": "delta-surface-words-v1",
+  "protocol_id": "PROTO-EVAL-DELTA-1.1",
+  "reference": {
+    "call": "stylo::dist.delta(z_scores, scale = FALSE)",
+    "jsonlite_version": "2.0.0",
+    "r_version": "4.5.2",
+    "stylo_version": "0.7.71"
+  },
+  "release": {
+    "evidence_level": "live_build_plus_unique_successful_immutable_publication",
+    "frozen_at_utc": "2026-07-20T10:12:30Z",
+    "image_digest_reference": "ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa",
+    "live_build_observed_at_utc": "2026-07-20T10:12:30Z",
+    "live_url": "https://delta.lemmata.app/",
+    "prerequisite_ci_run_id": 29696014941,
+    "publication_run_id": 29696211566,
+    "software_commit": "31e09782ba07e6709cbdcca48bc9db22e6c49723"
+  },
+  "schema_version": "1.0",
+  "seed": 20260713,
+  "state": "preflight_blocked_exact_reference_execution_path",
+  "use_identical_prepared_matrix_for_delta_and_r": true
+}

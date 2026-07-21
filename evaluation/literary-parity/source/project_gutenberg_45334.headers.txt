@@ -1,0 +1,22 @@
+HTTP/2 302 
+date: Mon, 20 Jul 2026 07:54:32 GMT
+server: Apache
+location: http://www.gutenberg.org/cache/epub/45334/pg45334.txt
+content-length: 304
+content-type: text/html; charset=iso-8859-1
+
+HTTP/1.1 302 Found
+content-length: 0
+location: https://www.gutenberg.org/cache/epub/45334/pg45334.txt
+cache-control: no-cache
+
+HTTP/2 200 
+date: Mon, 20 Jul 2026 07:54:33 GMT
+server: Apache
+last-modified: Sat, 18 Jul 2026 14:22:16 GMT
+accept-ranges: bytes
+content-length: 1472526
+vary: Accept-Encoding
+x-backend: gutenweb7
+content-type: text/plain; charset=utf-8
+
