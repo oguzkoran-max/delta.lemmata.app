@@ -26,6 +26,13 @@
   }
 
   var heads = document.querySelectorAll(".cine .h-mega, .cine .h-act");
+
+  /* Hero motion layer: cine-only, never on Save-Data; poster remains the LCP. */
+  var vid = document.querySelector(".keyvis video");
+  var conn = navigator.connection || {};
+  if (vid && vid.dataset.src && !conn.saveData) {
+    vid.src = vid.dataset.src;
+  }
   var blks = [];
   var blkNodes = document.querySelectorAll(".cine .blk");
   for (var b = 0; b < blkNodes.length; b += 1) {
@@ -60,6 +67,16 @@
     var w = (560 - p * 90).toFixed(0);
     for (var h = 0; h < heads.length; h += 1) {
       heads[h].style.fontVariationSettings = '"opsz" 144,"WONK" 1,"wght" ' + w;
+    }
+
+    /* hero video runs only while Act I is on stage */
+    if (vid && vid.src) {
+      if (p > 0.16) {
+        if (!vid.paused) vid.pause();
+      } else if (vid.paused) {
+        var pr = vid.play();
+        if (pr && pr.catch) pr.catch(function () {});
+      }
     }
 
     /* links inside visually hidden copy blocks must not be invisible tab stops */

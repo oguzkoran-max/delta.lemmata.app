@@ -58,3 +58,28 @@
 - SHA-256 original: 087d6f833d077009c5c5d0c360851479f34f49c7390883eb1b733574ee8743d0
 - SHA-256 derivative keyvis-03.jpg (213,378 B):
   564e3d72b690205f87dbec1ec306d065af78559f83167f3b67770fc3e6c6cb82
+
+---
+
+# motion-01 (Act I hero motion loop) — owner-generated on higgsfield.ai
+- Tool: higgsfield.ai web UI (owner's account, site free-trial "Unlimited"
+  tier), model Seedance 2.0, image-to-video, 8.06 s, 1280x720, silent.
+- Take 1 REJECTED (recorded honestly): generated without the start image
+  attached; the model read "corpus sculpture" literally and produced an
+  inscribed human effigy — violates the no-human-figure and no-readable-text
+  exclusions. File kept by the owner outside the repo; not used.
+- Take 2 ACCEPTED: floating deckled paper stack in a dark archive room, warm
+  upper-left key light, dust motes; no humans, no readable text, no logos.
+  Same material family as the styleframes; edge-melt mask hides the differing
+  background. Motion verified during playback (distinct frames at 1.0/2.6/
+  4.2/5.9 s).
+- Source file: hf_20260722_090949_2d28e9b9-98c8-46d0-a971-92ebf74a5ca8.mp4
+- SHA-256 original (7,951,936 B):
+  61b2091b87a7a4757d58bd96254d1e9bffecbee8f14589a3909018f9de4ebe60
+  (archived as motion-01-original.mp4)
+- Derivative: keyvis-hero.mp4 — avconvert Preset960x540, 3,859,596 B
+  SHA-256: 3ae4e7928787c389d1b01d8280c938a2c4c524d7757ab8641dbf3b21de685ddd
+- Integration: cine mode only; <video muted loop playsinline preload="none">
+  with the styleframe JPEG as poster (poster stays the LCP); src attached by
+  JS only when Save-Data is off; plays only while Act I is on stage (pauses
+  past p=.16); stacked/mobile/no-JS/reduced-motion never load it.
