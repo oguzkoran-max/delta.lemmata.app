@@ -11,7 +11,7 @@
 *{margin:0;padding:0;box-sizing:border-box}
 :root{
   --void:#070E0C;--forest:#0C1714;--plate:#0A1310;
-  --ivory:#F2EDE0;--bone:#CFC9B4;--muted:#93A29A;
+  --ivory:#F5F1E6;--bone:#D8D2BE;--muted:#A2B1A8;
   --emerald:#1FA97C;--mint:#5DCAA5;--copper:#C57B4A;--coral:#D8683C;
   --hair:rgba(242,237,224,.15);--hair2:rgba(242,237,224,.08);
   --sans:"InterVar",ui-sans-serif,system-ui,sans-serif;
@@ -72,9 +72,10 @@ img,svg{max-width:100%}
 .cine{display:none}
 .scene{height:720vh;position:relative}
 .pin{position:sticky;top:0;height:100vh;overflow:hidden;background:
-  radial-gradient(1200px 800px at 62% 44%, rgba(31,169,124,.08), transparent 62%),
-  radial-gradient(900px 640px at 18% 12%, rgba(242,237,224,.05), transparent 60%),
-  linear-gradient(180deg,var(--void),var(--forest) 140%)}
+  linear-gradient(180deg, rgba(242,237,224,.05), transparent 26%),
+  radial-gradient(1200px 800px at 62% 44%, rgba(31,169,124,.13), transparent 62%),
+  radial-gradient(900px 640px at 18% 12%, rgba(242,237,224,.09), transparent 60%),
+  linear-gradient(180deg,#0A1512,var(--forest) 115%)}
 /* engraved plate frame */
 .plate{position:absolute;inset:clamp(14px,2vw,28px);border:1px solid var(--hair2);pointer-events:none;z-index:6}
 .plate i{position:absolute;width:14px;height:14px;border-color:var(--hair);border-style:solid}
@@ -87,6 +88,16 @@ img,svg{max-width:100%}
 
 .stagewrap{position:absolute;inset:0;z-index:1}
 .stagewrap svg{width:100%;height:100%;display:block}
+.keyvis{position:absolute;z-index:2;right:clamp(10px,2vw,40px);top:4%;width:min(44vw,720px);aspect-ratio:3/3.4;margin:0;
+  opacity:clamp(0,calc((0.125 - var(--p))*11),1);pointer-events:none;
+  -webkit-mask-image:radial-gradient(72% 74% at 55% 47%, #000 52%, transparent 76%);
+  mask-image:radial-gradient(72% 74% at 55% 47%, #000 52%, transparent 76%)}
+.keyvis img{width:100%;height:100%;display:block;object-fit:cover;object-position:69% 38%}
+.keyvis::after{content:"";position:absolute;inset:0;
+  background:radial-gradient(80% 80% at 55% 45%, transparent 40%, rgba(10,21,18,.55) 78%);
+  mix-blend-mode:multiply}
+/* schematic twin waits under the master, takes over as it fades */
+.stagewrap svg{opacity:calc(.14 + min(var(--p)*9,1)*.86)}
 
 /* copy blocks: trapezoid visibility windows over --p (all remain in DOM for AT) */
 .blk{position:absolute;z-index:8;pointer-events:none}
@@ -121,7 +132,7 @@ img,svg{max-width:100%}
 .lenses .n{font-size:clamp(22px,2.2vw,32px);font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .lenses .u{font-size:10.5px;letter-spacing:.22em;color:var(--muted);margin-top:4px}
 .lenses .t{width:1px;height:16px;background:var(--emerald);margin:10px auto 0}
-.l100{left:20.8%}.l300{left:46.2%}.l500{left:71.5%}.l1000{left:93%}
+.l100{left:23.6%}.l300{left:47.2%}.l500{left:70.8%}.l1000{left:90.3%}
 
 /* Act IV secondary renderings labels */
 .secondary{position:absolute;z-index:7;right:clamp(20px,3.2vw,48px);bottom:5%;width:250px;
@@ -184,13 +195,16 @@ img,svg{max-width:100%}
 .sact{position:relative;min-height:100svh;padding:96px clamp(20px,5vw,56px) 64px;overflow:hidden;border-bottom:1px solid var(--hair2);display:flex;flex-direction:column}
 .sact .art{position:absolute;inset:0;z-index:1;opacity:1}
 .sact .art svg{width:100%;height:100%}
-.sact::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(7,14,12,.88) 0 14%,rgba(7,14,12,.25) 30%,transparent 46% 58%,rgba(7,14,12,.3) 74%,rgba(7,14,12,.9) 92%)}
+.sact::after{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:linear-gradient(180deg,rgba(7,14,12,.84) 0 14%,rgba(7,14,12,.2) 30%,transparent 46% 58%,rgba(7,14,12,.24) 74%,rgba(7,14,12,.86) 92%)}
 .sact .fg{position:relative;z-index:3;max-width:640px}
 .sact .h-act{margin-bottom:14px}
 .sact .sup{margin-top:6px}
 .s1 .h-mega{font-size:clamp(56px,13.8vw,120px);margin:10px 0 20px}
 .s1 .ctas{margin:26px 0 18px}
-.s1 .art{top:42%;left:2%;right:-24%;bottom:-4%;opacity:.92}
+.s1 .art{top:40%;left:-4%;right:-4%;bottom:-2%;opacity:1;
+  -webkit-mask-image:radial-gradient(85% 80% at 58% 45%, #000 50%, transparent 82%);
+  mask-image:radial-gradient(85% 80% at 58% 45%, #000 50%, transparent 82%)}
+.s1 .art img{width:100%;height:100%;object-fit:cover;object-position:66% 40%}
 .s2 .art{top:-2%;left:22%;right:-24%;bottom:0}
 .s2 .fg{max-width:520px}
 .s3 .art{top:26%;left:-6%;right:-6%;bottom:-6%}

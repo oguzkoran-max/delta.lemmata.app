@@ -75,3 +75,24 @@ Brief guidance: ≤180k tokens. Actual independent-agent spend: concept critics
 (plus main-loop work). Main driver: image-reading critics at contact-sheet
 resolution. Disclosed per the no-silent-overrun rule; the P016 precedent
 (552k, accepted) applied.
+
+## Owner feedback round (2026-07-22, it-12 → it-14)
+Owner review notes: page too dark; strata text should be meaningful (like the
+real tables used on lemmata.app); the "100" lens label clipped; check
+Higgsfield (campaign claim).
+- it-12: global lighting lift (pin ambient, strata fills/strokes, text tones);
+  strata glyphs replaced with REAL most-frequent words ("the of and a in to" /
+  "it is was that he" — the actual material stylometry counts); MFW columns
+  and labels pulled inboard so 100 and 1,000 always render in-frame.
+- Higgsfield reality check: video NOT free on this account (kling3_0_turbo 5s
+  = 7.5 credits, plan free, balance 8.35); image nano_banana 2 credits.
+  One styleframe generated with owner authorization (job
+  a21e161c-ae86-4d6b-ba03-cc8dc371ddc6, 2 credits, balance -> 6.35): the
+  material corpus monolith master. Provenance: assets/styleframe-01.md.
+- it-13: styleframe integrated as Act I key visual — first attempt read as a
+  pasted rectangle (hard frame edges, double presence with the schematic).
+- it-14: edge-melt integration: radial mask + multiply vignette dissolve the
+  photo into the stage; object-crop composition; schematic twin waits at 14%
+  opacity and takes over by p=.125 (photo -> diagram handoff); same treatment
+  as the mobile s1 full-bleed hero. Harness green throughout (LCP 716 ms with
+  the 211 KB poster, CLS 0).
