@@ -32,3 +32,29 @@
   5118784cdefae4d76c3c52c1b4331dc18e748e2781448cd064d1ebff44fac58b
 - Final output format: JPEG (WebP encode unavailable via sips on this host;
   within the ≤450 KB hero-poster budget).
+
+---
+
+# styleframe-02 (Act II · separated strata) — reference-guided edit
+- Model: nano_banana_flash (reference edit of styleframe-01); date 2026-07-22
+- Job id: adae4a8a-c6d9-4ae4-a41f-f499c60ad58a; reference: a21e161c-...ddc6
+- Cost: 2 credits. Prompt: same sculpture, strata separated vertically with
+  visible gaps, same material/light/camera; full text in job params.
+- Content check: glyphs only (A, g, M, ;), no words/numbers/faces/marks. PASS.
+- Use: DECORATIVE stacked-mode Act II art (mobile/no-JS/reduced-motion),
+  radial-mask melt; cine mode remains SVG-driven.
+- SHA-256 original: 9d7b05fdf5a1f2bf55c693c65abe944b6b2b5c366487ac6621513794a57b8e12
+- SHA-256 derivative keyvis-02.jpg (215,665 B):
+  409e4c28e6ab2af4888a6fbe810deec1dd37ec20e1f728db6cb3111ca674d8f4
+
+# styleframe-03 (Act VI · sealed record volume) — reference-guided edit
+- Model: nano_banana_flash (reference edit of styleframe-01); date 2026-07-22
+- Job id: ab0aee25-9042-4e1c-a00a-0dc4f65174af; reference: a21e161c-...ddc6
+- Cost: 2 credits (balance after the family: 2.35). Prompt: same sculpture
+  bound into a sealed archival volume, one emerald band, copper spine, stone
+  plinth, same room/light; full text in job params.
+- Content check: glyphs + abstract erosion marks only. PASS.
+- Use: DECORATIVE stacked-mode Act VI art, radial-mask melt.
+- SHA-256 original: 087d6f833d077009c5c5d0c360851479f34f49c7390883eb1b733574ee8743d0
+- SHA-256 derivative keyvis-03.jpg (213,378 B):
+  564e3d72b690205f87dbec1ec306d065af78559f83167f3b67770fc3e6c6cb82
