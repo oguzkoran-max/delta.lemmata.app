@@ -106,7 +106,7 @@ img,svg{max-width:100%}
 .b1{opacity:clamp(0,calc((0.155 - var(--p))*14),1);left:clamp(24px,4.5vw,72px);top:16.5%;max-width:min(56vw,860px)}
 .b1 .inner{transform:translateY(calc(var(--p)*-6vh))}
 .b2{opacity:clamp(0,calc(min((var(--p) - 0.165)*12,(0.35 - var(--p))*12)),1);left:clamp(24px,4.5vw,72px);top:26%;max-width:520px}
-.b3{opacity:clamp(0,calc(min((var(--p) - 0.36)*12,(0.545 - var(--p))*12)),1);left:0;right:0;top:9%;text-align:center}
+.b3{opacity:clamp(0,calc(min((var(--p) - 0.36)*12,(0.56 - var(--p))*12)),1);left:0;right:0;top:9%;text-align:center}
 .b3 .sup{margin:14px auto 0}
 .b3 .mrule{margin:16px auto 0}
 .b4{opacity:clamp(0,calc(min((var(--p) - 0.555)*12,(0.725 - var(--p))*12)),1);right:clamp(24px,4vw,64px);top:11%;max-width:420px;text-align:left}
@@ -127,7 +127,7 @@ img,svg{max-width:100%}
 
 /* Act III lens labels under columns */
 .lenses{position:absolute;z-index:7;left:0;right:0;bottom:21%;display:flex;pointer-events:none;
-  opacity:clamp(0,calc(min((var(--p) - 0.41)*10,(0.555 - var(--p))*12)),1)}
+  opacity:clamp(0,calc(min((var(--p) - 0.41)*10,(0.57 - var(--p))*12)),1)}
 .lenses div{position:absolute;transform:translateX(-50%);text-align:center}
 .lenses .n{font-size:clamp(22px,2.2vw,32px);font-weight:650;font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .lenses .u{font-size:10.5px;letter-spacing:.22em;color:var(--muted);margin-top:4px}
@@ -172,7 +172,8 @@ img,svg{max-width:100%}
   scaleY(calc(1 - var(--mat)*.5 - var(--fold)*.14));
   transform-box:fill-box;transform-origin:center;
   opacity:clamp(0,calc(1 - var(--mat)*1.15 - var(--fold)*.1),1)}
-.stx{opacity:clamp(0,calc(1 - var(--mat)*.7 - var(--col)*.55),1)} /* content survives a bit longer than the slab base */
+.stx{opacity:clamp(0,calc(1 - var(--mat)*.7 - var(--col)*.4),1)}
+.st .lift{opacity:calc(var(--col)*.14)} /* content survives a bit longer than the slab base */
 .mono-rim{opacity:calc(.6 - var(--mat)*.45)}
 /* matrix group grows out of the strata sweep */
 .mgrid{opacity:clamp(0,calc(var(--mat)*1.35*(1 - var(--fold)*.78)),1);transform:translate(calc((1 - var(--mat))*40px),0) scale(calc(.94 + var(--mat)*.06 - var(--fold)*.16));transform-box:fill-box;transform-origin:center}
