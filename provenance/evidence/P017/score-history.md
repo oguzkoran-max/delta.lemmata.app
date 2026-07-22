@@ -96,3 +96,20 @@ Higgsfield (campaign claim).
   opacity and takes over by p=.125 (photo -> diagram handoff); same treatment
   as the mobile s1 full-bleed hero. Harness green throughout (LCP 716 ms with
   the 211 KB poster, CLS 0).
+
+## Motion round + final coherence review (2026-07-22, it-15 → it-16)
+- Styleframe family (02 separated / 03 sealed record) integrated into stacked
+  acts; hero motion loop (owner-generated Seedance 2.0 on site, take 1
+  rejected for human figure, take 2 accepted) wired as cine-only
+  poster-backed video (3.86 MB, Save-Data guarded, pauses past Act I).
+- Fresh blind critic on it-16 (photo+video state): **81.4/100** — first score
+  above 80. impact 8.5 · narrative 8.6 · originality 8.4 · scientific 9.5.
+  generic: no; superior to P016: yes. Coherence verdict: photo-world and
+  schematic-world read as ONE world via the literal material-to-diagram
+  dissolve and the copper rights thread.
+- Critic recommendation: **SHIP**, with fast-follows (not release blockers):
+  (P1) Act III/IV mid-scroll panels dimmer/smaller than the hero's material
+  world; (P1) mobile acts 2-6 read more schematic than the promised
+  photo-film; (P2) copper caution crop at mobile act-4 seam, ghost-caption
+  contrast, d008 dissolve word overlap.
+- Rubric bar status: 90 still not met; trajectory 67.5 → 72.3 → **81.4**.
