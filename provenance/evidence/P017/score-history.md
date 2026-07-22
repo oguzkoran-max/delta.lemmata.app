@@ -113,3 +113,18 @@ Higgsfield (campaign claim).
   photo-film; (P2) copper caution crop at mobile act-4 seam, ghost-caption
   contrast, d008 dissolve word overlap.
 - Rubric bar status: 90 still not met; trajectory 67.5 → 72.3 → **81.4**.
+
+## Owner-reported defect + instrument round (2026-07-22, it-18)
+- DEFECT (owner screenshot, confirmed): clicking a hero link left focus inside
+  .b1; the `:focus-within{opacity:1}` a11y override then pinned Act I copy on
+  screen for the rest of the chapter (double exposure over Act VI). Root cause:
+  my it-6 a11y fix. FIX: explicit JS visibility windows mirroring the CSS
+  trapezoids; links are tabbable only inside their window and focus is blurred
+  when a window closes. Regression script (scratchpad p017_overlap_check.py):
+  after clicking the hero anchor and returning to p=.95, b1 opacity 0 /
+  b6 0.95 / focus released — PASS.
+- styleframe-04 (emerald scan line + projected grid on the same sculpture)
+  generated on the new MCP account (2 credits) and integrated as mobile Act
+  III/V art — the archival×laboratory fusion the owner asked about.
+- it-18 harness green: LCP 168 ms, CLS 0, overflow 0, sub-44 0, console 0,
+  denylist 0.

@@ -33,10 +33,12 @@
   if (vid && vid.dataset.src && !conn.saveData) {
     vid.src = vid.dataset.src;
   }
+  /* visibility windows must mirror the CSS trapezoids (see .b1-.b6) */
+  var WINDOWS = [[0, 0.155], [0.165, 0.35], [0.36, 0.56], [0.555, 0.725], [0.735, 0.868], [0.875, 2]];
   var blks = [];
   var blkNodes = document.querySelectorAll(".cine .blk");
   for (var b = 0; b < blkNodes.length; b += 1) {
-    blks.push({ el: blkNodes[b], links: blkNodes[b].querySelectorAll("a") });
+    blks.push({ el: blkNodes[b], links: blkNodes[b].querySelectorAll("a"), win: WINDOWS[b] || [0, 2] });
   }
   var ticking = false;
 
@@ -79,13 +81,16 @@
       }
     }
 
-    /* links inside visually hidden copy blocks must not be invisible tab stops */
+    /* links inside visually hidden copy blocks must not be invisible tab stops,
+       and focus must not pin a closed act on screen (double-exposure bug) */
     for (var k = 0; k < blks.length; k += 1) {
-      var vis = parseFloat(getComputedStyle(blks[k].el).opacity) > 0.05 ||
-        blks[k].el.contains(document.activeElement);
+      var inW = p >= blks[k].win[0] && p <= blks[k].win[1];
+      if (!inW && blks[k].el.contains(document.activeElement)) {
+        document.activeElement.blur();
+      }
       for (var l = 0; l < blks[k].links.length; l += 1) {
-        blks[k].links[l].tabIndex = vis ? 0 : -1;
-        blks[k].links[l].style.pointerEvents = vis ? "auto" : "none";
+        blks[k].links[l].tabIndex = inW ? 0 : -1;
+        blks[k].links[l].style.pointerEvents = inW ? "auto" : "none";
       }
     }
   }

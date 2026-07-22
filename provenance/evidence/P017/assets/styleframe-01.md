@@ -83,3 +83,18 @@
   with the styleframe JPEG as poster (poster stays the LCP); src attached by
   JS only when Save-Data is off; plays only while Act I is on stage (pauses
   past p=.16); stacked/mobile/no-JS/reduced-motion never load it.
+
+---
+
+# styleframe-04 (instrument scan) — reference-guided edit, new MCP account
+- Model: nano_banana_flash (nano_banana_2 request); date 2026-07-22
+- Job id: 47cf8afe-b136-43e9-b3ca-288fccdf13f0; reference: imported media
+  ef6513a3-3c4e-48b6-b672-b6b36c20d207 (styleframe-01 re-imported to the new
+  account). Cost: 2 credits (new-account balance 3.35 -> 1.35).
+- Content: same sculpture with a luminous emerald scan line + projected
+  measurement grid; glyphs only, no words/numbers/faces/logos. PASS.
+- Use: DECORATIVE stacked-mode Act III and Act V art (mobile/no-JS/RM), melt
+  masks; fuses the archival and laboratory poles per the owner's direction.
+- SHA-256 original: 092e1302fd4774de6815a8be15ba233cf552396c710bbd4f111ba7b7b64ae88f
+- SHA-256 derivative keyvis-04.jpg (215,036 B):
+  01212ed896d500415da2965f557f353749a086651d7a307a82852c65bb86868c
