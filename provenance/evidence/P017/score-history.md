@@ -128,3 +128,15 @@ Higgsfield (campaign claim).
   III/V art — the archival×laboratory fusion the owner asked about.
 - it-18 harness green: LCP 168 ms, CLS 0, overflow 0, sub-44 0, console 0,
   denylist 0.
+
+## Second owner-reported defect (2026-07-22, it-19)
+- DEFECT (owner screenshot, 1164x879-class windows): Act VI HTML copy collided
+  with the record card's SVG text rows — HTML tracks viewport percentages
+  while the slice-scaled SVG tracks stage space, so certain aspect ratios
+  intersected. Distinct from the focus-pin bug fixed in it-18.
+- FIX: redundant b6 run-record caption removed (the card itself now carries
+  the seven labeled rows), record group shifted +34 in stage space, b6 given
+  a scrim so any residual card edge fades beneath the copy.
+- HARDENED: harness now asserts zero rect-intersection between .b6 .sup and
+  every .record text node at 1440x1000, 1280x800 and 1164x879 (the reported
+  ratio) — it-19 result: all empty. Visual proof: it-19/act6-1164x879.png.

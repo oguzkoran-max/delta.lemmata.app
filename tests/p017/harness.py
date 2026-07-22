@@ -187,6 +187,27 @@ def main() -> None:
                 )
             )
         report["states"]["tab_stops"] = stops
+        # Act VI: b6 copy must never collide with the record card's text rows
+        overlap: dict = {}
+        for w, h in ((1440, 1000), (1280, 800), (1164, 879)):
+            page.set_viewport_size({"width": w, "height": h})
+            scroll_to_frac(page, 0.96)
+            page.wait_for_timeout(260)
+            overlap[f"{w}x{h}"] = page.evaluate(
+                """()=>{
+                const sup=document.querySelector('.cine .b6 .sup');
+                if(!sup) return 'missing';
+                const a=sup.getBoundingClientRect();
+                const hits=[...document.querySelectorAll('.cine .record text')].filter(t=>{
+                  const b=t.getBoundingClientRect();
+                  return a.left<b.right&&b.left<a.right&&a.top<b.bottom&&b.top<a.bottom;
+                }).map(t=>t.textContent.trim());
+                return hits;}"""
+            )
+        report["states"]["b6_record_overlap"] = overlap
+        page.set_viewport_size({"width": 1440, "height": 1000})
+        scroll_to_frac(page, 0)
+        page.wait_for_timeout(200)
         # denylist over rendered text
         body = page.evaluate("()=>document.body.innerText")
         hits = [m.group(0) for m in DENY.finditer(body)]
