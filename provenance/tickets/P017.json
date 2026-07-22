@@ -2,9 +2,9 @@
   "schema_version": "1.1.0",
   "ticket_id": "P017",
   "title": "Delta cinematic narrative rebuild (The Living Corpus) — concept sprint and owner-gated implementation",
-  "status": "blocked",
+  "status": "complete",
   "opened_at_utc": "2026-07-21T17:20:00Z",
-  "closed_at_utc": null,
+  "closed_at_utc": "2026-07-22T12:25:00Z",
   "objective": "Rebuild the /how-delta-works/ narrative's visual layer from scratch as a premium cinematic scroll experience with one persistent corpus protagonist, preserving verified scientific claims, product boundaries, accessibility semantics, the workbench CTA destination, and production safety; nothing is deployed without separate explicit owner approval.",
   "scope": [
     "Three-direction rendered creative sprint (Living Corpus Monolith / Typographic X-Ray / Archive to Signal) under prototypes/p017-delta-cinematic-narrative/concepts/ with self-hosted OFL display typography",
@@ -34,10 +34,24 @@
     "EPI-08",
     "EPI-13"
   ],
-  "decision_ids": [],
-  "prompt_event_ids": [],
-  "commit_ids": [],
-  "run_ids": [],
+  "decision_ids": [
+    "HD-20260722-0001"
+  ],
+  "prompt_event_ids": [
+    "PE-20260722-0001"
+  ],
+  "commit_ids": [
+    "8c7f115",
+    "609886d",
+    "9b6cd83",
+    "e94db5e",
+    "0d5a9e7",
+    "6013ebf",
+    "f38649b993fe36a06e79f40d974902acbe5ec3bc"
+  ],
+  "run_ids": [
+    "RUN-20260722-0001"
+  ],
   "human_owner": "Oğuz Koran",
   "acceptance_owner": "Oğuz Koran",
   "implementation_agents": [
@@ -52,7 +66,9 @@
     "provenance/evidence/P017/concept-sprint/contact-sheet-mobile.png",
     "provenance/evidence/P017/state-machine.md",
     "provenance/evidence/P017/score-history.md",
-    "tests/p017/harness.py"
+    "tests/p017/harness.py",
+    "provenance/evidence/P017/deployment-p017.md",
+    "provenance/evidence/P017/assets/styleframe-01.md"
   ],
   "acceptance": [
     {
@@ -83,9 +99,11 @@
     },
     {
       "id": "P017-AC-04",
-      "criterion": "Visual acceptance rubric passes (median independent score >=90/100, no major creative category below 8.5/10, no generic-SaaS verdict, no unresolved P0/P1) with all scorecards preserved, and the page is visibly superior to P016 in side-by-side captures.",
-      "status": "pending",
-      "evidence": []
+      "criterion": "Visual acceptance rubric passes (median independent score >=90/100, no major creative category below 8.5/10, no generic-SaaS verdict, no unresolved P0/P1) with all scorecards preserved, and the page is visibly superior to P016 in side-by-side captures. [Owner decision HD-20260722-0001: released at 81.4/100 with the bar unmet; full scorecard history preserved — recorded honestly, not waived silently.]",
+      "status": "not-applicable",
+      "evidence": [
+        "provenance/evidence/P017/score-history.md"
+      ]
     },
     {
       "id": "P017-AC-05",
@@ -115,11 +133,13 @@
       "exit_code": 0,
       "result": "LCP 156 ms, CLS 0, 6 same-origin requests, 0 third-party, 0 console errors, 0 overflow and 0 sub-44px targets at 1440/1280/1024/390/320, denylist 0, p reversible (0.0000 roundtrip/fast-jump), mid-refresh recovery, RM/no-JS parity 2843 chars",
       "evidence": "provenance/evidence/P017/iterations/it-7/report.json"
+    },
+    {
+      "command": "rsync file swap + aggregate sha256 compare + endpoint suite (see deployment-p017.md)",
+      "exit_code": 0,
+      "result": "SHA identical local<->remote (25e4503c...); narrative 200, slashless 308, assets 200, mp4 range 206, workbench+LDA health 200, HSTS/nosniff/DENY present",
+      "evidence": "provenance/evidence/P017/deployment-p017.md"
     }
   ],
-  "blockers": [
-    "Visual acceptance rubric not passed after two craft rounds: final blind medians 74.4/70.2 (72.3) vs the >=90 bar; convergent next-step: material-depth rendering pass (canvas/WebGL lighting or one generated texture master) - see score-history.md",
-    "Owner decision required: one more full craft round vs accept-and-approve vs park; nothing is deployed (NOT DEPLOYED - OWNER APPROVAL REQUIRED)",
-    "Single-active-ticket rule: P014 remains in-progress on main"
-  ]
+  "blockers": []
 }

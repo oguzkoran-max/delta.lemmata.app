@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.1.0",
+  "run_id": "RUN-20260722-0001",
+  "run_type": "test",
+  "status": "passed",
+  "ticket_ids": [
+    "P017"
+  ],
+  "started_at_utc": "2026-07-22T11:40:00Z",
+  "ended_at_utc": "2026-07-22T12:20:00Z",
+  "software_version": "0.0.0.dev0",
+  "git_commit": "f38649b993fe36a06e79f40d974902acbe5ec3bc",
+  "environment": {
+    "machine": "owner workstation (macOS, Darwin 25.5.0)",
+    "browser": "Playwright Chromium headless 147",
+    "server": "Hetzner VPS ubuntu-4gb-nbg1-1 via SSH"
+  },
+  "command": "python3 tests/p017/harness.py --iteration 19; rsync file swap to /opt/delta-narrative/how-delta-works; aggregate sha256 compare; endpoint suite (200/308/206/health/headers)",
+  "exit_code": 0,
+  "input_artifacts": [
+    {
+      "path": "prototypes/p017-delta-cinematic-narrative/index.html",
+      "sha256": "29cc19576def3caa152b111db21b8b49b3380f1af2866f8c2a2b702c4c4160a4"
+    },
+    {
+      "path": "prototypes/p017-delta-cinematic-narrative/assets/styles.css",
+      "sha256": "c7a16fe84eaa9d450edde871340703df261b96c9deda65d9f6844a7d2ee44f68"
+    },
+    {
+      "path": "prototypes/p017-delta-cinematic-narrative/assets/narrative.js",
+      "sha256": "075ee9472d6801069c2bc758d1caed26f2730e0e8c0590a69acc55ff5be3be3e"
+    },
+    {
+      "path": "tests/p017/harness.py",
+      "sha256": "e5d770fcd79a0cd41a593f5456f2366e8ad9d0cd4b651ddfc1f0ef007f9b7f87"
+    },
+    {
+      "path": "prompts/P017-delta-cinematic-narrative.md",
+      "sha256": "c1bfd3ba153b2950325856b7e5fcb6d53ca3593ec42804c6734976714618d6a3"
+    }
+  ],
+  "output_artifacts": [
+    {
+      "path": "provenance/evidence/P017/iterations/it-19/report.json",
+      "sha256": "9b8b07db27ccb8873d5c47e45a9eb5aec0119bf89464f2cd0c5c7cd84ffb99c5"
+    },
+    {
+      "path": "provenance/evidence/P017/deployment-p017.md",
+      "sha256": "f5594dd207aead6c35e5d77c8a2df6986d56a66fc9d3b3621b1f3fa37071fb80"
+    }
+  ],
+  "notes": "Aggregate SHA over all deployed files identical local<->remote (25e4503c...). Video streams with 206 range responses.",
+  "configuration_artifacts": [
+    {
+      "path": "prompts/P017-delta-cinematic-narrative.md",
+      "sha256": "c1bfd3ba153b2950325856b7e5fcb6d53ca3593ec42804c6734976714618d6a3"
+    }
+  ],
+  "replay": {
+    "level": "partial",
+    "working_directory": "Repository root on the owner workstation for the harness; the production VPS over SSH for the file swap and endpoint checks",
+    "command": "python3 tests/p017/harness.py --iteration 19; rsync file swap to /opt/delta-narrative/how-delta-works; aggregate sha256 compare; endpoint suite (200/308/206/health/headers)",
+    "limitations": [
+      "Endpoint checks require owner SSH access and live DNS/TLS.",
+      "Third parties can replay the harness against the committed tree and the public URL but not byte-identically re-run the recorded session."
+    ]
+  },
+  "supersedes": []
+}
