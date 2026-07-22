@@ -118,7 +118,7 @@
     }
   ],
   "blockers": [
-    "Visual acceptance rubric not passed: final blind medians 72.5/72.7 vs the >=90 bar (scorecards preserved in score-history.md); remaining P1 themes: mobile film-edit, transition lighting",
+    "Visual acceptance rubric not passed after two craft rounds: final blind medians 74.4/70.2 (72.3) vs the >=90 bar; convergent next-step: material-depth rendering pass (canvas/WebGL lighting or one generated texture master) - see score-history.md",
     "Owner decision required: one more full craft round vs accept-and-approve vs park; nothing is deployed (NOT DEPLOYED - OWNER APPROVAL REQUIRED)",
     "Single-active-ticket rule: P014 remains in-progress on main"
   ]

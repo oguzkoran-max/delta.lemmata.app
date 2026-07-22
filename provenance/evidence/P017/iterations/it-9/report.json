@@ -1,0 +1,170 @@
+{
+  "iteration": 9,
+  "base": "http://127.0.0.1:58321/index.html",
+  "console": [],
+  "network": {
+    "requests": 6,
+    "failed": [],
+    "origins": [
+      "127.0.0.1:58321"
+    ],
+    "third_party": []
+  },
+  "viewports": {
+    "1440x1000": {
+      "top": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 3012,
+        "cta": "https://delta.lemmata.app/"
+      },
+      "mid": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 3012,
+        "cta": "https://delta.lemmata.app/"
+      }
+    },
+    "1280x800": {
+      "top": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 3012,
+        "cta": "https://delta.lemmata.app/"
+      },
+      "mid": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 3012,
+        "cta": "https://delta.lemmata.app/"
+      }
+    },
+    "1024x768": {
+      "top": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 3012,
+        "cta": "https://delta.lemmata.app/"
+      },
+      "mid": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 3012,
+        "cta": "https://delta.lemmata.app/"
+      }
+    },
+    "390x844": {
+      "top": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 2792,
+        "cta": "https://delta.lemmata.app/"
+      },
+      "mid": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 2792,
+        "cta": "https://delta.lemmata.app/"
+      }
+    },
+    "320x800": {
+      "top": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 2792,
+        "cta": "https://delta.lemmata.app/"
+      },
+      "mid": {
+        "overflowX": false,
+        "h1": 2,
+        "landmarks": {
+          "header": 1,
+          "main": 1,
+          "footer": 1
+        },
+        "smallTargets": [],
+        "bodyChars": 2792,
+        "cta": "https://delta.lemmata.app/"
+      }
+    }
+  },
+  "states": {
+    "p_after_full_roundtrip": "0.0000",
+    "p_after_fast_jumps": "0.0000",
+    "p_after_mid_refresh": "0.6266",
+    "overflow_after_resize": false,
+    "tab_stops": [
+      "skip|Skip to content",
+      "wm|\u0394Delta",
+      "cta|Open the workbench",
+      "btn|Open the workbench",
+      "ghost|Read the method note",
+      "SUMMARY|What the comparison ru"
+    ],
+    "denylist_hits": [],
+    "rm_chars": 2843,
+    "nojs": {
+      "chars": 2843,
+      "cta": "https://delta.lemmata.app/"
+    }
+  },
+  "perf": {
+    "lcp_ms": 260,
+    "cls": 0,
+    "dcl": 196
+  }
+}

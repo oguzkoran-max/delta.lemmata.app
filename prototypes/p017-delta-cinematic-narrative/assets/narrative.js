@@ -41,7 +41,7 @@
     var p = Math.min(1, Math.max(0, -r.top / span));
 
     var settle = env(p, 0, 0.13);
-    var sep = env(p, 0.11, 0.24) - env(p, 0.37, 0.45);
+    var sep = env(p, 0.06, 0.22) - env(p, 0.37, 0.45);
     var col = env(p, 0.39, 0.51) - env(p, 0.55, 0.65);
     var mat = env(p, 0.55, 0.67);
     var dial = env(p, 0.72, 0.86);

@@ -48,16 +48,30 @@ the visual record).
   opening dead hold after the re-score; mobile film-edit and transition
   lighting remain the two open P1 themes.
 
+## Craft round 2 (owner-approved, it-8 → it-11)
+| It | What changed | Result |
+|---|---|---|
+| 8 | Mobile film-edit attempt: full-bleed art + scrims + per-act crops + static dial | Harness green but sheets showed art vanished on mobile |
+| 9 | ROOT CAUSE: `<symbol>` re-viewports `<use>` (scales scene into crop box) — replaced with plain `<g>`; crops became true crops | Mobile object finally present: full-width matrix, big strata stack |
+| 10 | 320 hero art lowered; review JPEGs; final blind re-score | **74.4** and **70.2** (median 72.3); generic no/no; superior yes/yes; narrative continuity up to 8.6 |
+| 11 | Critics' named finish bugs: header scrim solidified (nothing reads through chrome), 0-8% dead beat removed (separation starts at p=.06) | Harness green (LCP 508ms local, CLS 0, all zeros) |
+
+Remaining convergent objections after round 2 (both critics): the object needs
+**material depth** (light response, density, luminous matrix) beyond flat SVG —
+the named path to ≥80 is a rendering-depth pass (canvas/WebGL lighting or one
+generated texture master); closing acts could stay deeper inside the object's
+world. These are recorded as the next-round scope, not hidden.
+
 ## Gate status (honest)
 - Technical, scientific, accessibility, performance gates: **PASS** (measured).
-- Visual rubric: **NOT PASSED** — median 72.6 vs the 90 bar. Trajectory:
+- Visual rubric: **NOT PASSED** — final median 72.3 (74.4/70.2) vs the 90 bar. Trajectory:
   concept 7.3/10-class → 67.5-72.7 with floor rising; both final critics judge
   the page categorically superior to P016 and not generic. Scores were not
   gamed; all cards above are verbatim.
 
 ## Multi-agent budget disclosure
 Brief guidance: ≤180k tokens. Actual independent-agent spend: concept critics
-~184k, verification panel ~306k, re-score ~117k ≈ **607k subagent tokens**
+~184k, verification panel ~306k, re-score rounds ~235k ≈ **725k subagent tokens**
 (plus main-loop work). Main driver: image-reading critics at contact-sheet
 resolution. Disclosed per the no-silent-overrun rule; the P016 precedent
 (552k, accepted) applied.
