@@ -1,0 +1,96 @@
+{
+  "schema_version": "1.0",
+  "dataset_lock_id": "DATA-COLLODI-DEMO-V1",
+  "sealed_at_utc": "2026-08-02T09:26:38Z",
+  "result_blind_lock": true,
+  "purpose": "Demonstrate a documented Classic Delta workflow and MFW sensitivity on a bounded mixed-audience same-author corpus.",
+  "corpus_order": [
+    "COL-DEMO-OCCHI-NASI",
+    "COL-DEMO-PINOCCHIO",
+    "COL-DEMO-STORIE-ALLEGRE"
+  ],
+  "documentary_labels": {
+    "COL-DEMO-OCCHI-NASI": "general_audience_sketch_collection_candidate",
+    "COL-DEMO-PINOCCHIO": "children_serial_novel_candidate",
+    "COL-DEMO-STORIE-ALLEGRE": "children_story_collection_candidate"
+  },
+  "label_use": "documentation_only_no_group_inference",
+  "chronology_status": "candidate_metadata_only_not_an_analysis_variable",
+  "analysis": {
+    "language": "Italian",
+    "corpus_role": "known_same_author_mixed_audience_demo",
+    "analysis_unit": "whole_text_work_level",
+    "preprocessing_profile": "delta-surface-words-v1",
+    "feature_family": "surface_word_unigrams",
+    "mfw_grid": [100, 300, 500, 1000],
+    "culling_percent": 0,
+    "distance": "classic_delta",
+    "reference_call": "stylo::dist.delta(z_scores, scale = FALSE)",
+    "feature_learning_population": "the_three_named_known_documents_only",
+    "seed": 20260713,
+    "default_display_mfw": 500,
+    "default_display_is_not_an_optimality_claim": true
+  },
+  "required_per_cell_outputs": [
+    "cell_status",
+    "ordered_feature_list",
+    "actual_feature_count",
+    "full_distance_matrix",
+    "upper_triangle_values",
+    "tie_aware_nearest_neighbor_groups",
+    "exploratory_mds_coordinate_table",
+    "artifact_sha256_values"
+  ],
+  "required_cross_cell_outputs": [
+    "upper_triangle_spearman_for_each_mfw_pair",
+    "nearest_neighbor_jaccard_for_each_mfw_pair"
+  ],
+  "failure_transparency": {
+    "fallback_allowed": false,
+    "preserve_states": [
+      "not_enough_features",
+      "failed/non_positive_standard_deviation",
+      "failed/fit_unavailable"
+    ]
+  },
+  "overlap_decision": {
+    "status": "confirmed",
+    "decision": "retain_both_and_disclose_exact_overlap",
+    "affected_pair": [
+      "COL-DEMO-OCCHI-NASI",
+      "COL-DEMO-STORIE-ALLEGRE"
+    ],
+    "statistical_independence_claim_allowed": false
+  },
+  "prohibited_interpretations": [
+    "aging_or_life_course_change",
+    "chronological_change",
+    "pinocchio_pivot_or_effect",
+    "formal_periodization",
+    "causal_interpretation",
+    "authorship_attribution_or_proof",
+    "statistical_significance",
+    "statistical_independence",
+    "best_or_correct_mfw"
+  ],
+  "permitted_interpretations": [
+    "documented_stylometric_proximity",
+    "parameter_sensitivity_across_the_complete_mfw_grid",
+    "workflow_and_evidence_export_demonstration",
+    "cautious_hypothesis_generation"
+  ],
+  "rights_boundary": {
+    "internal_analysis": "permitted_by_project_rights_review",
+    "derived_numeric_outputs": "publishable_with_source_and_method_metadata",
+    "clean_txt_public_release": "conditional_not_authorized_by_this_lock"
+  },
+  "execution_gate": {
+    "dataset_lock": "sealed",
+    "software_commit": "TO_BE_FROZEN",
+    "container_image_digest": "TO_BE_FROZEN",
+    "canonical_request_sha256": "TO_BE_FROZEN",
+    "config_sha256": "TO_BE_FROZEN",
+    "run_allowed": false,
+    "reason": "Exact software, immutable image, canonical request, and configuration must be sealed in a separate results-blind execution overlay."
+  }
+}

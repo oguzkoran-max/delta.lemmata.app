@@ -1,0 +1,251 @@
+name: Collodi teaching-demo evidence
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - codex/paper-collodi-demo-20260802
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: collodi-demo-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  parity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    env:
+      DEMO_ROOT: evaluation/collodi-demo
+      EVIDENCE: evaluation/collodi-demo/execution
+      IMAGE: ghcr.io/oguzkoran-max/delta.lemmata.app@sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa
+      FROZEN_COMMIT: 31e09782ba07e6709cbdcca48bc9db22e6c49723
+      REQUEST_COMPONENT: 28e9d3d83efa686b8b51b80eccd9b4f3439aeb56141e459abd97729c9c5b9184
+      REQUEST_SHA256: 0eb1c53ca5e1f930cd7a331cf13b6b090cf68083b8a16a0bb846c496160fe5f0
+      RESULT_COMPONENT: 053bf21e22c557bd2e9cc53b858b02603c19200680fe1cc2d885bd1b11d6987b
+      FATAL_COMPONENT: 24ae13b5ee15a59e2f7924a480c4160907d13e900a8d879f1d81b0faab8f6548
+    steps:
+      - name: Check out evaluation branch
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      - name: Verify frozen base and evaluation-only overlay
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git merge-base HEAD "$FROZEN_COMMIT")" = "$FROZEN_COMMIT"
+          git diff --name-only "$FROZEN_COMMIT"..HEAD > /tmp/changed-paths.txt
+          test -s /tmp/changed-paths.txt
+          if grep -Ev '^(evaluation/collodi-demo/|\.github/workflows/collodi-demo\.yml$)' /tmp/changed-paths.txt; then
+            echo "Unexpected path outside the evaluation overlay" >&2
+            exit 1
+          fi
+
+      - name: Pull and identify immutable image
+        shell: bash
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "${{ github.actor }}" --password-stdin
+          docker pull "$IMAGE"
+          mkdir -p /tmp/evidence
+          docker image inspect "$IMAGE" > /tmp/evidence/image-inspect.json
+          docker image inspect --format '{{json .RepoDigests}}' "$IMAGE" | tee /tmp/evidence/repo-digests.json
+          grep -F 'sha256:80836f174cf24707082cb41f5937cf3169710683e8a2f50bd00110cdb1072faa' /tmp/evidence/repo-digests.json
+
+      - name: Validate the rights-preserving locked request
+        shell: bash
+        run: |
+          set -euo pipefail
+          actual_sha="$(sha256sum "$EVIDENCE/input/collodi_demo_worker_request.json" | awk '{print $1}')"
+          test "$actual_sha" = "$REQUEST_SHA256"
+          cmp "$EVIDENCE/input/collodi_demo_worker_request.json" \
+            "$EVIDENCE/input/$REQUEST_COMPONENT"
+          metadata_sha="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["request_sha256"])' "$EVIDENCE/input/request_metadata.json")"
+          test "$metadata_sha" = "$REQUEST_SHA256"
+
+          # The public branch contains the derived canonical request but not
+          # the clean texts, whose redistribution remains conditional.
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m,mode=0700,uid=10001,gid=10001 \
+            -e REQUEST_SHA256="$REQUEST_SHA256" \
+            -v "$PWD/$EVIDENCE:/evidence:ro" \
+            "$IMAGE" /opt/delta/.venv/bin/python -c '
+          import hashlib
+          import os
+          from pathlib import Path
+          from delta_lemmata.stylo_contracts import canonical_worker_json, parse_worker_input
+
+          payload = Path("/evidence/input/collodi_demo_worker_request.json").read_bytes()
+          assert hashlib.sha256(payload).hexdigest() == os.environ["REQUEST_SHA256"]
+          parsed = parse_worker_input(payload)
+          assert canonical_worker_json(parsed) == payload
+          assert len(parsed.documents) == 3
+          assert [fit.mfw for fit in parsed.fits] == [100, 300, 500, 1000]
+          print("rights-preserving-request-contract=PASS")
+          '
+
+      - name: Run frozen Delta worker
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0777 /tmp/worker
+          cp "$EVIDENCE/input/collodi_demo_worker_request.json" "/tmp/worker/$REQUEST_COMPONENT"
+          chmod 0666 "/tmp/worker/$REQUEST_COMPONENT"
+          set +e
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /r-tmp:rw,exec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001 \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m,mode=0700,uid=10001,gid=10001 \
+            -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e TZ=UTC -e TMPDIR=/r-tmp \
+            -v /tmp/worker:/work:rw -w /work \
+            "$IMAGE" Rscript --vanilla /opt/delta/scripts/workers/p006-stylo-worker-v1.R \
+            > /tmp/evidence/worker.stdout 2> /tmp/evidence/worker.stderr
+          status=$?
+          set -e
+          printf '%s\n' "$status" > /tmp/evidence/worker.exit-status
+          if [[ "$status" -ne 0 ]]; then
+            echo "Delta worker exited with status $status" >&2
+            cat /tmp/evidence/worker.stderr >&2
+            if [[ -e "/tmp/worker/$FATAL_COMPONENT" ]]; then
+              cat "/tmp/worker/$FATAL_COMPONENT" >&2
+            fi
+            exit "$status"
+          fi
+          if [[ -e "/tmp/worker/$FATAL_COMPONENT" ]]; then
+            cat "/tmp/worker/$FATAL_COMPONENT" >&2
+            exit 1
+          fi
+          test -s "/tmp/worker/$RESULT_COMPONENT"
+
+      - name: Probe frozen R environment
+        if: failure()
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /r-tmp:rw,exec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001 \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m,mode=0700,uid=10001,gid=10001 \
+            -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e TZ=UTC -e TMPDIR=/r-tmp \
+            "$IMAGE" Rscript --vanilla -e '
+              tryCatch({
+                cat("r-probe-version:", as.character(getRversion()), "\n")
+                cat("r-probe-tmpdir:", tempdir(), "\n")
+                mounts <- readLines("/proc/mounts", warn = FALSE)
+                cat("r-probe-mount:", mounts[grepl(" /r-tmp ", mounts, fixed = TRUE)], "\n")
+                executable <- file.path(Sys.getenv("TMPDIR"), "delta-r-exec-probe")
+                writeLines(c("#!/bin/sh", "exit 0"), executable)
+                Sys.chmod(executable, mode = "0700")
+                status <- system2(executable)
+                cat("r-probe-exec-status:", status, "\n")
+                if (!identical(status, 0L)) stop("temporary executable probe failed")
+                Sys.setenv(RENV_PROJECT = "/opt/delta")
+                source("/opt/delta/renv/activate.R")
+                cat("r-probe-libraries:", paste(.libPaths(), collapse = "|"), "\n")
+                cat("r-probe-jsonlite:", as.character(utils::packageVersion("jsonlite")), "\n")
+                cat("r-probe-stylo:", as.character(utils::packageVersion("stylo")), "\n")
+              }, error = function(error) {
+                message("r-probe-error: ", conditionMessage(error))
+                quit(save = "no", status = 1L, runLast = FALSE)
+              })'
+
+      - name: Upload worker failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: collodi-demo-failure-${{ github.run_id }}
+          path: |
+            /tmp/evidence
+            /tmp/worker
+          if-no-files-found: warn
+          retention-days: 90
+          compression-level: 0
+
+      - name: Run independent direct R stylo path
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0777 /tmp/oracle
+          cp "$EVIDENCE/input/collodi_demo_worker_request.json" /tmp/oracle/request.json
+          request_sha="$(sha256sum /tmp/oracle/request.json | awk '{print $1}')"
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /r-tmp:rw,exec,nosuid,nodev,size=128m,mode=0700,uid=10001,gid=10001 \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m,mode=0700,uid=10001,gid=10001 \
+            -e LANG=C.UTF-8 -e LC_ALL=C.UTF-8 -e TZ=UTC -e TMPDIR=/r-tmp \
+            -v /tmp/oracle:/work:rw \
+            -v "$PWD/$EVIDENCE/scripts:/evidence-scripts:ro" \
+            "$IMAGE" Rscript --vanilla /evidence-scripts/direct_oracle_harness.R \
+            /work/request.json /work/direct-oracle.json "$request_sha" \
+            > /tmp/evidence/oracle.stdout 2> /tmp/evidence/oracle.stderr
+          test -s /tmp/oracle/direct-oracle.json
+
+      - name: Normalize raw evidence permissions
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 16 --memory 64m --cpus 1 \
+            -v /tmp/worker:/worker:rw -v /tmp/oracle:/oracle:rw \
+            "$IMAGE" chmod 0644 \
+            "/worker/$RESULT_COMPONENT" /oracle/direct-oracle.json
+
+      - name: Validate semantics and compare all four MFW levels
+        shell: bash
+        run: |
+          set -euo pipefail
+          install -d -m 0777 /tmp/results
+          docker run --rm --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --pids-limit 64 --memory 2g --cpus 2 \
+            --tmpfs /tmp:rw,noexec,nosuid,size=128m \
+            --tmpfs /home/delta:rw,noexec,nosuid,size=16m,mode=0700,uid=10001,gid=10001 \
+            -v /tmp/worker:/worker:ro -v /tmp/oracle:/oracle:ro \
+            -v /tmp/results:/results:rw \
+            -v "$PWD/$EVIDENCE:/evidence:ro" \
+            "$IMAGE" /opt/delta/.venv/bin/python \
+            /evidence/scripts/compare_collodi_parity.py \
+            --repo /opt/delta \
+            --request /evidence/input/collodi_demo_worker_request.json \
+            --request-metadata /evidence/input/request_metadata.json \
+            --worker-result "/worker/$RESULT_COMPONENT" \
+            --worker-fatal "/worker/$FATAL_COMPONENT" \
+            --oracle-result /oracle/direct-oracle.json \
+            --output /results \
+            > /tmp/evidence/comparator.stdout 2> /tmp/evidence/comparator.stderr
+          test "$(python3 -c 'import json; print(str(json.load(open("/tmp/results/comparison_summary.json"))["all_mfw_pass"]).lower())')" = true
+
+      - name: Package immutable evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp -R /tmp/results /tmp/evidence/results
+          cp -R /tmp/worker /tmp/evidence/worker-raw
+          cp -R /tmp/oracle /tmp/evidence/oracle-raw
+          cp /tmp/changed-paths.txt /tmp/evidence/changed-paths.txt
+          git rev-parse HEAD > /tmp/evidence/evaluation-commit.txt
+          printf '%s\n' "$FROZEN_COMMIT" > /tmp/evidence/frozen-source-commit.txt
+          (cd /tmp/evidence && find . -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum) > /tmp/evidence/SHA256SUMS
+          tar -C /tmp -czf /tmp/collodi-demo-evidence.tar.gz evidence
+          sha256sum /tmp/collodi-demo-evidence.tar.gz > /tmp/collodi-demo-evidence.tar.gz.sha256
+
+      - name: Upload evidence archive
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: collodi-demo-evidence
+          path: |
+            /tmp/collodi-demo-evidence.tar.gz
+            /tmp/collodi-demo-evidence.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 90
+          compression-level: 0
