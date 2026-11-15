@@ -56,6 +56,7 @@ from delta_lemmata.preprocessing_models import (
 )
 from delta_lemmata.result_view import (
     BOUNDARIES,
+    MdsPoint,
     ResultCellStatus,
     ResultCellV1,
     ResultDocumentV1,
@@ -1030,8 +1031,9 @@ def test_result_charts_bypass_pandas_string_inference(
         "compared_display",
         "distance",
         "distance_label",
+        "cell_label",
     ]
-    assert tables[1].column_names == ["key", "title", "role", "x", "y"]
+    assert tables[1].column_names == ["key", "title", "role", "x", "y", "label_position"]
     titles = {document.key: document.title for document in view.documents}
     expected_heatmap = [
         {
@@ -1043,13 +1045,15 @@ def test_result_charts_bypass_pandas_string_inference(
             "compared_display": webapp_module._chart_axis_label(column_key, titles[column_key]),
             "distance": float(distance),
             "distance_label": f"{float(distance):.6f}",
+            "cell_label": f"{float(distance):.3f}",
         }
         for row_key, row in zip(cell.matrix.document_keys, cell.matrix.values, strict=True)
         for column_key, distance in zip(cell.matrix.document_keys, row, strict=True)
     ]
     assert tables[0].to_pylist() == expected_heatmap
     documents = {document.key: document for document in view.documents}
-    assert tables[1].to_pylist() == [
+    mds_rows = tables[1].to_pylist()
+    assert [{key: row[key] for key in ("key", "title", "role", "x", "y")} for row in mds_rows] == [
         {
             "key": point.document_key,
             "title": documents[point.document_key].title,
@@ -1059,6 +1063,26 @@ def test_result_charts_bypass_pandas_string_inference(
         }
         for point in classical_mds(cell)
     ]
+    assert {row["label_position"] for row in mds_rows} <= {"above", "below"}
+
+
+def test_mds_labels_move_below_a_close_higher_neighbour() -> None:
+    points = (
+        MdsPoint(document_key="D01", x=0.0, y=0.0),
+        MdsPoint(document_key="D02", x=0.02, y=0.03),
+        MdsPoint(document_key="D03", x=0.9, y=-0.9),
+    )
+
+    assert webapp_module._mds_label_positions(points, 1.0) == {
+        "D01": "below",
+        "D02": "above",
+        "D03": "above",
+    }
+
+
+def test_heatmap_cell_label_is_compact_while_tooltip_keeps_six_decimals() -> None:
+    assert webapp_module._heatmap_cell_label(1.0883371) == "1.088"
+    assert webapp_module._distance_label(1.0883371) == "1.088337"
 
 
 def test_review_labels_cover_nested_fields_and_all_issue_entity_types() -> None:

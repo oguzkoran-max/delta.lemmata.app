@@ -1223,6 +1223,11 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   aspect-ratio: 60 / 61;
 }
 
+.st-key-p009_mds_square,
+.st-key-p009_mds_square div:has([data-testid="stVegaLiteChart"]) {
+  height: auto !important;
+}
+
 .st-key-p009_mds_square [data-testid="stVegaLiteChart"] > div,
 .st-key-p009_mds_square [data-testid="stVegaLiteChart"] svg {
   width: 100% !important;

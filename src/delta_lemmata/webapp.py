@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import math
 import secrets
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -104,6 +105,7 @@ from delta_lemmata.preprocessing_models import (
 from delta_lemmata.provenance import canonical_json_bytes
 from delta_lemmata.result_service import VerifiedScientificResult
 from delta_lemmata.result_view import (
+    MdsPoint,
     ResultCellStatus,
     ResultCellV1,
     ResultDocumentDescriptor,
@@ -2989,6 +2991,29 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
 
 
 _HEATMAP_TEXT_MAX_DOCUMENTS = 6
+_MDS_LABEL_NEIGHBOUR_FRACTION = 0.15
+
+
+def _heatmap_cell_label(value: int | float) -> str:
+    """Return the compact in-cell label; tooltips and the matrix keep six decimals."""
+
+    return f"{float(value):.3f}"
+
+
+def _mds_label_positions(points: Sequence[MdsPoint], extent: float) -> dict[str, str]:
+    """Place each MDS label above its point unless a close neighbour sits above it."""
+
+    threshold = extent * _MDS_LABEL_NEIGHBOUR_FRACTION
+    positions: dict[str, str] = {}
+    for point in points:
+        below = any(
+            other.document_key != point.document_key
+            and math.hypot(other.x - point.x, other.y - point.y) < threshold
+            and (other.y, other.document_key) > (point.y, point.document_key)
+            for other in points
+        )
+        positions[point.document_key] = "below" if below else "above"
+    return positions
 
 
 def _chart_axis_label(key: str, title: str, *, limit: int = 14) -> str:
@@ -3015,6 +3040,7 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "compared_display": _chart_axis_label(column_key, titles[column_key]),
             "distance": float(distance),
             "distance_label": _distance_label(distance),
+            "cell_label": _heatmap_cell_label(distance),
         }
         for row_key, row in zip(matrix.document_keys, matrix.values, strict=True)
         for column_key, distance in zip(matrix.document_keys, row, strict=True)
@@ -3081,6 +3107,7 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
             "distance_label": pa.array(
                 (value["distance_label"] for value in values), type=pa.string()
             ),
+            "cell_label": pa.array((value["cell_label"] for value in values), type=pa.string()),
         }
     )
     layers: list[dict[str, Any]] = [
@@ -3133,11 +3160,11 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
     if len(order) <= _HEATMAP_TEXT_MAX_DOCUMENTS:
         layers.append(
             {
-                "mark": {"type": "text", "fontSize": 12},
+                "mark": {"type": "text", "fontSize": 11},
                 "encoding": {
                     "x": {"field": "compared_display", "type": "ordinal", "sort": order},
                     "y": {"field": "reference_display", "type": "ordinal", "sort": order},
-                    "text": {"field": "distance_label", "type": "nominal"},
+                    "text": {"field": "cell_label", "type": "nominal"},
                     "color": {
                         "condition": [
                             {
@@ -3224,6 +3251,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
     if coordinate_extent == 0:
         coordinate_extent = 1.0
     shared_domain = [-coordinate_extent * 1.08, coordinate_extent * 1.08]
+    label_positions = _mds_label_positions(points, coordinate_extent)
     chart_data = pa.table(
         {
             "key": pa.array((value["key"] for value in values), type=pa.string()),
@@ -3231,12 +3259,36 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
             "role": pa.array((value["role"] for value in values), type=pa.string()),
             "x": pa.array((value["x"] for value in values), type=pa.float64()),
             "y": pa.array((value["y"] for value in values), type=pa.float64()),
+            "label_position": pa.array(
+                (label_positions[point.document_key] for point in points), type=pa.string()
+            ),
         }
     )
+    label_layers = [
+        {
+            "transform": [{"filter": f"datum.label_position === '{position}'"}],
+            "mark": {"type": "text", "dy": dy, "fontSize": 12, "color": "#1a1a1a"},
+            "encoding": {
+                "x": {
+                    "field": "x",
+                    "type": "quantitative",
+                    "scale": {"domain": shared_domain, "nice": False, "zero": False},
+                },
+                "y": {
+                    "field": "y",
+                    "type": "quantitative",
+                    "scale": {"domain": shared_domain, "nice": False, "zero": False},
+                },
+                "text": {"field": "key", "type": "nominal"},
+            },
+        }
+        for position, dy in (("above", -16), ("below", 20))
+    ]
     spec = {
         "data": {"values": chart_data},
         "width": 360,
         "height": 360,
+        "padding": {"left": 5, "right": 18, "top": 12, "bottom": 5},
         "layer": [
             {
                 "mark": {
@@ -3286,22 +3338,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
                     ],
                 },
             },
-            {
-                "mark": {"type": "text", "dy": -16, "fontSize": 12, "color": "#1a1a1a"},
-                "encoding": {
-                    "x": {
-                        "field": "x",
-                        "type": "quantitative",
-                        "scale": {"domain": shared_domain, "nice": False, "zero": False},
-                    },
-                    "y": {
-                        "field": "y",
-                        "type": "quantitative",
-                        "scale": {"domain": shared_domain, "nice": False, "zero": False},
-                    },
-                    "text": {"field": "key", "type": "nominal"},
-                },
-            },
+            *label_layers,
         ],
         "config": {
             "background": "#ffffff",
