@@ -67,20 +67,30 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "entry.upload": "Upload my texts",
     "entry.home": "Back to overview",
     "entry.specimen": "Inside the example",
-    "entry.caption": "Three synthetic texts · {mfw} most frequent words",
+    "entry.caption": (
+        "D01, D02 and D03 label three different texts created for this example. "
+        "The table compares their {mfw} most frequent words."
+    ),
     "entry.detail": "Classic Burrows’ Delta · 0% culling · whole texts",
     "entry.sample_title": "Which texts are closest?",
     "entry.sample_intro": (
-        "Three synthetic texts share the same title. Their document codes let you "
-        "tell them apart throughout this recorded run."
+        "The three sample texts share a title. Their codes tell them apart."
     ),
     "entry.setting": "Number of most frequent words",
-    "entry.setting_hint": "Switch settings to compare the saved distances.",
+    "entry.setting_hint": (
+        "Each setting uses the full texts. Choose 100 to compare the 100 most frequent "
+        "words across them, or 500 to compare the 500 most frequent."
+    ),
     "entry.sample_source": "Recorded example · 13 November 2026",
     "entry.pairs": "Distances between texts",
     "entry.distance": "Delta distance",
     "entry.pair": "Text pair",
     "entry.closest": "Closest pair",
+    "entry.closest_scope": (
+        "Of the three pairs, these two are closest in how often they use the selected words. "
+        "This alone cannot identify an author."
+    ),
+    "entry.closest_both": "This pair comes first with both 100 and 500 words.",
     "entry.read": "Smaller distances mean closer word-use patterns within this comparison.",
     "entry.documents": "Texts in this example",
     "entry.download": "Download the recorded result (JSON)",

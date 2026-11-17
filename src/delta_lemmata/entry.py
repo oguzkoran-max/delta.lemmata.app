@@ -96,6 +96,16 @@ def example(
         for doc in view.documents
     )
     distance, left, right = _pair_distances(cell)[0]
+    closest_at = {
+        comparison.mfw: _pair_distances(comparison)[0][1:]
+        for comparison in view.cells
+        if comparison.mfw in (100, 500) and comparison.matrix is not None
+    }
+    same_pair_note = (
+        f'<p class="de-note">{text("entry.closest_both")}</p>'
+        if closest_at.get(100) == closest_at.get(500) == (left, right)
+        else ""
+    )
     return (
         '<article class="de-page">'
         + _masthead(home)
@@ -105,14 +115,17 @@ def example(
         + f'<h1>{text("entry.sample_title")}</h1>'
         + f'<p class="de-lead">{text("entry.sample_intro")}</p>'
         + '<div class="de-setting">'
-        + f"<div><strong>{text('entry.setting')}</strong><p>{text('entry.setting_hint')}</p></div>"
+        + f"<strong>{text('entry.setting')}</strong>"
         + f'<nav aria-label="{text("entry.setting")}" class="de-switch">'
         + "".join(setting_links)
         + "</nav>"
+        + f'<p class="de-setting-hint">{text("entry.setting_hint")}</p>'
         + '</div><div class="de-grid"><section class="de-pair">'
         + f'<h2>{text("entry.closest")}</h2><p class="de-bigpair">{left} ↔ {right}</p>'
+        + f'<p>{text("entry.closest_scope")}</p>'
         + f'<p class="de-distance">{distance:.6f} <span>· {text("entry.distance")}</span></p>'
-        + f'<p>{text("entry.read")}</p></section><section class="de-docs">'
+        + same_pair_note
+        + '</section><section class="de-docs">'
         + f"<h2>{text('entry.documents')}</h2><ul>{docs}</ul></section></div>"
         + '<div class="de-grid de-evidence"><section>'
         + _distance_table(cell)
