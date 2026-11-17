@@ -88,10 +88,10 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert [control.label for control in app.radio] == [
         "What do you want to investigate?",
         "Corpus input format",
+        "How will you add details about these texts?",
     ]
     assert [(uploader.label, uploader.accept_multiple_files) for uploader in app.file_uploader] == [
         ("Corpus texts (.txt) · Compare Texts · Individual TXT files", True),
-        ("Optional metadata table (.csv) · Compare Texts · Individual TXT files", False),
     ]
     assert [(button.label, button.disabled) for button in app.button] == [
         ("Continue to describe the corpus", True),
@@ -169,6 +169,7 @@ def test_v01_upload_shell_has_no_locale_selector() -> None:
     assert [control.label for control in app.radio] == [
         "What do you want to investigate?",
         "Corpus input format",
+        "How will you add details about these texts?",
     ]
 
 
@@ -184,13 +185,14 @@ def test_invalid_corpus_input_mode_falls_back_to_individual_text_files() -> None
     assert mode.value == "text_files"
     assert [uploader.label for uploader in app.file_uploader] == [
         "Corpus texts (.txt) · Compare Texts · Individual TXT files",
-        "Optional metadata table (.csv) · Compare Texts · Individual TXT files",
     ]
 
 
 def test_text_and_metadata_uploads_are_validated_and_continue_is_enabled() -> None:
     app = run_app()
-    app.file_uploader[0].upload("one.txt", b"one text", "text/plain")
+    app.file_uploader[0].upload("one.txt", b"one text", "text/plain").run()
+    app.radio(key="details_route").set_value("csv").run()
+    assert app.button(key="corpus_continue").disabled
     app.file_uploader[1].upload(
         "metadata.csv",
         b"title,year\nOne,1883",
@@ -213,6 +215,20 @@ def test_text_and_metadata_uploads_are_validated_and_continue_is_enabled() -> No
     assert "one text" not in rendered
 
 
+def test_switching_to_manual_details_drops_csv_before_continuing() -> None:
+    app = run_app()
+    app.file_uploader[0].upload("one.txt", b"one text", "text/plain").run()
+    app.radio(key="details_route").set_value("csv").run()
+    app.file_uploader[1].upload("metadata.csv", b"title,year\nOne,1883", "text/csv").run()
+    app.radio(key="details_route").set_value("manual").run()
+    assert len(app.file_uploader) == 1
+    assert not app.button(key="corpus_continue").disabled
+    app.button(key="corpus_continue").click().run()
+    assert app.session_state[webapp_module._FLOW_IMPORT_KEY] is None
+    assert app.button(key="guided_build_review")
+    assert not any(button.label == "Review imported metadata" for button in app.button)
+
+
 def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
     app = run_app()
     app.file_uploader[0].upload("secret-label.txt", b"SECRET_PAYLOAD\xff", "")
@@ -231,7 +247,7 @@ def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
     assert "SECRET_PAYLOAD" not in visible_failure
     assert "secret-label.txt" not in visible_failure
     assert app.file_uploader[0].value == []
-    assert app.file_uploader[1].value is None
+    assert len(app.file_uploader) == 1
     assert app.button(key="corpus_continue").disabled is True
     session_state = repr(app.session_state.filtered_state)
     assert "SECRET_PAYLOAD" not in session_state
@@ -240,6 +256,7 @@ def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
 
 def test_metadata_only_is_safe_but_does_not_open_describe() -> None:
     app = run_app()
+    app.radio(key="details_route").set_value("csv").run()
     app.file_uploader[1].upload(
         "metadata.csv",
         b"title,year\nOne,1883",
@@ -260,7 +277,6 @@ def test_archive_member_catalog_opens_payload_free_guided_documentation() -> Non
     _by_label(app.radio, "Corpus input format").set_value("zip_archive").run()
     assert [uploader.label for uploader in app.file_uploader] == [
         "Corpus archive (.zip) · Compare Texts · One ZIP archive",
-        "Optional metadata table (.csv) · Compare Texts · One ZIP archive",
     ]
     app.file_uploader[0].upload(
         "corpus.zip",

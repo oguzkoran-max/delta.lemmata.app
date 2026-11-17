@@ -1,5 +1,28 @@
 # Delta Session Handoff
 
+## 2026-11-17 · Yükleme yolları ve çalışan yerel hesaplama
+
+CSV ve elle giriş yolları ayrıldı. CSV seçimi tablo olmadan devam etmiyor.
+Describe yalnız seçilen yolu açıyor; geçersiz CSV'den metinleri koruyarak elle
+girişe dönülebiliyor. Devam düğmesi onay kutusuyla aynı kartta.
+103 arayüz/iş akışı testi ve Ruff kontrolleri geçti.
+
+Mac kaynak klasörünün Docker bind mount erişimi takıldığı için aynı küçük
+uygulama kaynağı RAM tabanlı Linux önizlemesine aktarıldı. Gerçek R 4.5.2 /
+stylo 0.7.71 ile aynı üç P126 metni ve CSV tarayıcıdan yüklenip dört hücre
+tamamlandı. İndirilen bütün hücreler önceki canlı sonuçla birebir eşleşti.
+Önizleme http://127.0.0.1:8768/ üzerinde. Yerel başlatma komutları
+`scripts/local_preview.sh` içinde. Oturumdaki asıl uygulama konteyneri
+`delta-entry-preview-memory`, geçidi `delta-entry-preview-gateway-memory`.
+Kaynaklar RAM'de; Docker durunca yeniden başlangıçta betikle aktarılır.
+Eski `delta-entry-preview-ux` ve geçidi durmuş başarısız denemeler olarak tutulur.
+
+Kanıtlar akademik vault'un `outputs/delta-arayuz-2026-11-17/` klasöründe
+`Yukleme-yolu-duzeltmeleri.md`, `r3-yerel-gercek-sonuc.json` ve r3 ekranları.
+Tarayıcı koşusu hazır CSV yoluyla yapıldı. İlk kez gelen insanın yardımsız
+başarısı ölçülmedi. Sıradaki arayüz işi elle giriş terimlerini sadeleştirmek ve
+yazarların onayıyla insan kullanılabilirlik denemesini belirlemek.
+
 ## 2026-11-17 · Yerel arayüz önizlemesi
 
 `codex/delta-entry-preview` dalı, grafik düzeltmesini içeren `30a50b4` üstündedir.

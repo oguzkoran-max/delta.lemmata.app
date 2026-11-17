@@ -553,16 +553,22 @@ def test_uploaded_metadata_semantics_are_reviewed_after_secure_intake(metadata_k
         )
         metadata = metadata_csv_template((validated,), PurposeId.TEXT_PROXIMITY)
     app = run_app()
+    app.radio(key="details_route").set_value("csv").run()
     app.file_uploader[0].upload("one.txt", payload, "text/plain")
     app.file_uploader[1].upload("metadata.csv", metadata, "text/csv")
     app.run()
     app.button(key="corpus_continue").click().run()
     assert len(app.exception) == 0
-    assert "Advanced metadata import" in [heading.value for heading in app.subheader]
+    assert "Review the details from your CSV" in [heading.value for heading in app.subheader]
+    assert not any(button.key == "guided_build_review" for button in app.button)
     assert any(
         "cannot yet produce a complete inventory" in message.value for message in app.warning
     )
     assert len(app.error) >= 1
+    _by_label(app.button, "Keep these texts and enter the details myself").click().run()
+    assert app.button(key="guided_build_review")
+    assert app.radio(key="details_route").value == "manual"
+    assert not any(button.label == "Review imported metadata" for button in app.button)
 
 
 def test_imported_metadata_purpose_mismatch_stays_in_describe() -> None:
@@ -576,6 +582,7 @@ def test_imported_metadata_purpose_mismatch_stays_in_describe() -> None:
 
 def test_valid_import_opens_review_and_supports_edit_and_full_reset() -> None:
     app = _inject_imported_describe(run_app(), PurposeId.TEXT_PROXIMITY)
+    assert not any(button.key == "guided_build_review" for button in app.button)
     app.session_state["review_confirmation_stale"] = True
     _by_label(app.button, "Review imported metadata").click().run()
     assert _page_title(app) == "Review the documented corpus"
@@ -2209,6 +2216,7 @@ def test_csv_correction_shortcut_names_the_source_field_without_false_editing() 
 
 def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it() -> None:
     app = _open_guided_review()
+    assert app.button(key="review_continue_prepare").disabled
     confirmation = _by_label(
         app.checkbox,
         "I reviewed the file-to-work mappings and the documented rights records.",
@@ -2216,6 +2224,7 @@ def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it()
     assert confirmation.value is False
 
     confirmation.check().run()
+    assert not app.button(key="review_continue_prepare").disabled
 
     assert (
         app.session_state[webapp_module._FLOW_CONFIRMATION_HASH_KEY]
@@ -2230,6 +2239,7 @@ def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it()
         "I reviewed the file-to-work mappings and the documented rights records.",
     ).uncheck().run()
     assert webapp_module._FLOW_CONFIRMATION_HASH_KEY not in app.session_state.filtered_state
+    assert app.button(key="review_continue_prepare").disabled
 
     _by_label(
         app.checkbox,

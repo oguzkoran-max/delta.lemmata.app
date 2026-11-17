@@ -73,9 +73,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "entry.detail": "Classic Burrows’ Delta · 0% culling · whole texts",
     "entry.sample_title": "Which texts are closest?",
-    "entry.sample_intro": (
-        "The three sample texts share a title. Their codes tell them apart."
-    ),
+    "entry.sample_intro": ("The three sample texts share a title. Their codes tell them apart."),
     "entry.setting": "Number of most frequent words",
     "entry.setting_hint": (
         "Each setting uses the full texts. Choose 100 to compare the 100 most frequent "
@@ -450,7 +448,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Add one standard ZIP containing TXT files only. Nested archives, links, "
         "ambiguous paths, extra fields, encryption, and ZIP64 are rejected."
     ),
-    "corpus.metadata_uploader": "Optional metadata table (.csv) · {purpose} · {mode}",
+    "corpus.metadata_uploader": "Prepared Delta table (.csv) · {purpose} · {mode}",
     "corpus.metadata_uploader_help": (
         "This stage checks CSV structure and unsafe cells only. Column meaning, corpus "
         "matching, dates, groups, and rights are reviewed in the next stage."
@@ -467,7 +465,17 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "Intake checks passed · Uploads: {uploads} · Corpus texts: {units} · Input bytes: {bytes}"
     ),
     "corpus.metadata_valid": "File safety checked · metadata meaning not reviewed",
-    "corpus.metadata_advanced": "Advanced · import a versioned metadata CSV",
+    "corpus.details_route": "How will you add details about these texts?",
+    "corpus.details_manual": "Enter the details myself",
+    "corpus.details_csv": "Use a prepared Delta CSV",
+    "corpus.details_manual_help": (
+        "Choose this if you only have the texts. On the next screen, add the title, "
+        "source and permissions for each file."
+    ),
+    "corpus.details_csv_help": (
+        "Upload the Delta-format table for these exact texts below. "
+        "You will review its entries on the next screen."
+    ),
     "corpus.role.text": "Corpus text",
     "corpus.role.archive": "Corpus archive",
     "corpus.role.member": "Corpus text from ZIP",
@@ -542,7 +550,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "automatic scholarly or legal determination."
     ),
     "describe.back": "Start again with different files",
-    "describe.import_title": "Advanced metadata import",
+    "describe.import_title": "Review the details from your CSV",
+    "describe.use_manual": "Keep these texts and enter the details myself",
     "describe.import_ready": (
         "The versioned CSV was parsed and domain-checked against the validated files."
     ),
@@ -550,7 +559,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "The CSV passed file-safety checks but cannot yet produce a complete inventory."
     ),
     "describe.import_review": "Review imported metadata",
-    "describe.guided_title": "Guided metadata editor",
+    "describe.guided_title": "Enter the details for each text",
     "describe.guided_body": (
         "Complete the visible fields for every TXT. Unknown remains an explicit value; "
         "Delta never invents a date, source, permission, or classification."
@@ -709,7 +718,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "review.confirmation_recorded": "Confirmation recorded for this inventory.",
     "review.confirmation_required": (
-        "Final corpus confirmation is still required before a future parameter stage can open."
+        "Check the box when you have reviewed the texts and their permissions."
     ),
     "review.confirmation_blocked": (
         "Resolve every corpus blocker before final confirmation can be recorded."

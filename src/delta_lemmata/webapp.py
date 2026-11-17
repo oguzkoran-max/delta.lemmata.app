@@ -908,6 +908,17 @@ def _correction_target() -> CorrectionTarget | None:
     return value if isinstance(value, CorrectionTarget) else None
 
 
+def _details_route(*, locked: bool = False) -> str:
+    return st.radio(
+        text("corpus.details_route"),
+        options=("manual", "csv"),
+        index=int(isinstance(st.session_state.get(_FLOW_IMPORT_KEY), MetadataCsvImportResult)),
+        format_func=lambda route: text(f"corpus.details_{route}"),
+        key="details_route",
+        disabled=locked,
+    )
+
+
 def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
     generation = int(st.session_state.get(_UPLOAD_GENERATION_KEY, 0))
     pending_error_value = st.session_state.pop(_PENDING_ERROR_KEY, None)
@@ -965,7 +976,9 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                     () if uploaded_archive is None else (_browser_upload(uploaded_archive),)
                 )
         uploaded_metadata = None
-        with st.expander(text("corpus.metadata_advanced")):
+        details_route = _details_route()
+        if details_route == "csv":
+            st.caption(text("corpus.details_csv_help"))
             uploaded_metadata = st.file_uploader(
                 text("corpus.metadata_uploader", **uploader_context),
                 type=["csv"],
@@ -973,6 +986,8 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                 help=text("corpus.metadata_uploader_help"),
                 key=f"metadata_file_{generation}",
             )
+        else:
+            st.caption(text("corpus.details_manual_help"))
         metadata_file = None if uploaded_metadata is None else _browser_upload(uploaded_metadata)
         st.caption(
             text(
@@ -1022,7 +1037,9 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
             if display_outcome.corpus_ready
             else ()
         )
-        can_continue = bool(catalog_units)
+        can_continue = bool(catalog_units) and (
+            details_route == "manual" or metadata_file is not None
+        )
         if can_continue and mode is CorpusInputMode.ZIP_ARCHIVE:
             st.caption(text("corpus.zip_ready"))
         if st.button(
@@ -1447,6 +1464,11 @@ def _store_inventory(
     st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.REVIEW.value
 
 
+def _use_manual_details() -> None:
+    st.session_state.pop(_FLOW_IMPORT_KEY, None)
+    st.session_state["details_route"] = "manual"
+
+
 def _render_describe_stage(purpose: PurposeId) -> None:
     units = cast(tuple[ValidatedCorpusUnit, ...], st.session_state.get(_FLOW_CATALOG_KEY, ()))
     if not units:
@@ -1499,14 +1521,16 @@ def _render_describe_stage(purpose: PurposeId) -> None:
                 st.warning(text("describe.import_blocked"), icon=":material/table_view:")
             else:
                 st.success(text("describe.import_ready"), icon=":material/table_view:")
-                if st.button(text("describe.import_review"), width="stretch"):
+                if st.button(text("describe.import_review"), type="primary", width="stretch"):
                     _store_inventory(
                         imported.inventory,
                         imported.validation_report,
                         origin=CorpusOrigin.CSV,
                     )
                     st.rerun()
-        st.divider()
+                return
+            st.button(text("describe.use_manual"), on_click=_use_manual_details)
+            return
         st.subheader(text("describe.guided_title"), anchor=False)
         st.caption(text("describe.guided_body"))
         indexed_units = list(enumerate(units, start=1))
@@ -2157,7 +2181,26 @@ def _render_review_stage() -> None:
         _render_timeline(projection)
         _render_composition(projection)
         _render_rights_matrix(inventory)
-        confirmed = _render_confirmation(projection, report)
+        with st.container(border=True, key="review_next_step"):
+            confirm_column, continue_column = st.columns([2, 1], vertical_alignment="center")
+            with confirm_column:
+                confirmed = _render_confirmation(projection, report)
+            with continue_column:
+                attached = isinstance(
+                    st.session_state.get(_FLOW_MATERIALIZATION_KEY), CorpusMaterializationReceipt
+                )
+                st.button(
+                    text("review.continue_prepare"),
+                    disabled=not (confirmed and attached),
+                    icon=":material/arrow_forward:",
+                    type="primary",
+                    width="stretch",
+                    key="review_continue_prepare",
+                    on_click=_set_stage,
+                    args=(CorpusSubstage.PREPARE,),
+                )
+                if confirmed and not attached:
+                    st.warning(text("review.temporary_corpus_missing"), icon=":material/timer_off:")
         edit_column, reset_column = st.columns(2)
         with edit_column:
             if st.button(text("review.edit"), icon=":material/edit:", width="stretch"):
@@ -2174,20 +2217,6 @@ def _render_review_stage() -> None:
             text("review.analysis_locked" if confirmed else "review.analysis_locked_confirmation"),
             icon=":material/lock:",
         )
-        materialization = st.session_state.get(_FLOW_MATERIALIZATION_KEY)
-        if confirmed and not report.blocked:
-            if isinstance(materialization, CorpusMaterializationReceipt):
-                st.button(
-                    text("review.continue_prepare"),
-                    icon=":material/arrow_forward:",
-                    type="primary",
-                    width="stretch",
-                    key="review_continue_prepare",
-                    on_click=_set_stage,
-                    args=(CorpusSubstage.PREPARE,),
-                )
-            else:
-                st.warning(text("review.temporary_corpus_missing"), icon=":material/timer_off:")
 
 
 def _preparation_document_id(inventory_digest: str, asset_id: str) -> str:
@@ -3379,7 +3408,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         )
     rows = "".join(
         f'<tr><th scope="row">{_html(point.document_key)} · '
-        f'{_html(documents[point.document_key].title)}</th>'
+        f"{_html(documents[point.document_key].title)}</th>"
         f"<td>{_html(documents[point.document_key].role.value)}</td>"
         f"<td>{_distance_label(point.x)}</td><td>{_distance_label(point.y)}</td></tr>"
         for point in points
@@ -3775,6 +3804,7 @@ def _render_setup(stage: CorpusSubstage) -> PurposeId:
             horizontal=True,
             disabled=True,
         )
+        _details_route(locked=True)
     return purpose
 
 
