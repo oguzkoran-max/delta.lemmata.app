@@ -1,5 +1,23 @@
 # Delta Session Handoff
 
+## 2026-11-17 · Elle giriş ile üç dosyadan gerçek sonuç
+
+GPT-6.2 Astra formu ve doğrulama kurallarını düzenleme öncesinde inceledi. Dosya başına
+gerekli bilgiler ve izinler görünür, isteğe bağlı bilgiler açılır bölümde. İlk yayın
+tarihi zamansal karşılaştırmada görünür. Grup etiketi grup karşılaştırmasında sorulur.
+Eksik künye veya hatalı bağlantı uyarısı ilgili dosyayı belirtir.
+
+http://127.0.0.1:8769/ adresindeki yerel kopyada P126'nın üç TXT dosyası yüklendi.
+Künyeler üretim betiğinden elle girildi. İsteğe bağlı bölümler kapalı kaldı.
+Üç belgenin SHA-256 değerleri kaynak manifestiyle eşleşti. Belge başına tür, okur
+kitlesi, uyarlama ve baskı yılı bilinmiyor olarak kaydedildi. Toplam 12 uyarı ve
+sıfır engel vardı. Dört matris ve belge sırası önceki yerel CSV koşusuyla eşleşti.
+106 arayüz/akış ve 22 katalog/künye testi geçti. Bu koşu yazılım kontrolüdür.
+
+Kanıtlar akademik vault içinde `outputs/delta-arayuz-2026-11-17/r4-elle-*`.
+Bu önizlemenin uygulama ve geçit konteynerleri `delta-manual-preview-app` ve
+`delta-manual-preview-gateway`. 8768 önceki sürüm için açık bırakıldı.
+
 ## 2026-11-17 · Yükleme yolları ve çalışan yerel hesaplama
 
 CSV ve elle giriş yolları ayrıldı. CSV seçimi tablo olmadan devam etmiyor.

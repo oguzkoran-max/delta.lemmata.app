@@ -323,7 +323,7 @@ def test_continue_opens_describe_and_clears_every_raw_upload_value() -> None:
     assert len(app.file_uploader) == 0
     assert [button.label for button in app.button] == [
         "Start again with different files",
-        "Build corpus review",
+        "Review my texts",
     ]
     state = repr(app.session_state.filtered_state)
     assert "SECRET_TRANSIENT_TEXT" not in state
@@ -383,8 +383,9 @@ def test_guided_editor_reports_fields_without_echoing_submitted_values() -> None
     app.button(key="guided_build_review").click().run()
     assert len(app.exception) == 0
     assert len(app.error) == 1
-    assert "primary_author_name" in app.error[0].value
-    assert "source URL" not in app.error[0].value
+    assert "one.txt" in app.error[0].value
+    assert "Primary author name" in app.error[0].value
+    assert "web address or a written reference" in app.error[0].value
     assert [heading.value for heading in app.title] == ["Describe what each text represents"]
 
 

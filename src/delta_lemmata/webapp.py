@@ -1160,14 +1160,8 @@ def _render_work_editor(
     heading = text("describe.work_heading", index=index, file_label=validated.file_label)
     is_target = target is not None and guided_work_id(unit) == target.work_id
     with st.expander(heading, expanded=index == 1 or is_target):
-        st.caption(
-            text(
-                "describe.file_metric",
-                lines=unit.line_count,
-                tokens=unit.token_count,
-                digest=validated.content_sha256[:12],
-            )
-        )
+        st.markdown(f"**{text('describe.required')}**")
+        st.caption(text("describe.prefilled"))
         _render_target_notice(target if is_target else None, CompletenessGroup.IDENTITY)
         title_column, author_column = st.columns(2)
         with title_column:
@@ -1196,15 +1190,23 @@ def _render_work_editor(
             language = st.text_input(
                 text("describe.language"),
                 value=initial.language if initial else "it",
+                help=text("describe.language_help"),
                 key=f"{prefix}_language",
             )
-        _render_target_notice(target if is_target else None, CompletenessGroup.CHRONOLOGY)
-        publication = _date_widgets(
-            f"{prefix}_publication",
-            text("describe.publication_mode"),
-            text("describe.publication_start"),
-            text("describe.publication_end"),
-            initial=initial.first_publication if initial else None,
+        _render_target_notice(target if is_target else None, CompletenessGroup.EDITION)
+        edition_label = st.text_input(
+            text("describe.edition_label"),
+            value=initial.edition_label if initial else "Uploaded text edition",
+            key=f"{prefix}_edition_label",
+        )
+        collection = st.selectbox(
+            text("describe.collection"),
+            options=list(DEFAULT_VOCABULARY.collection_statuses),
+            index=list(DEFAULT_VOCABULARY.collection_statuses).index(
+                initial.collection if initial else "independent_work"
+            ),
+            format_func=_choice_label,
+            key=f"{prefix}_collection",
         )
         group_label = None
         if purpose is PurposeId.GROUP_COMPARISON:
@@ -1213,64 +1215,17 @@ def _render_work_editor(
                 value=initial.group_label or "" if initial else "",
                 key=f"{prefix}_group",
             )
-        st.divider()
-        _render_target_notice(target if is_target else None, CompletenessGroup.EDITION)
-        edition_label = st.text_input(
-            text("describe.edition_label"),
-            value=initial.edition_label if initial else "Uploaded text edition",
-            key=f"{prefix}_edition_label",
-        )
-        edition = _date_widgets(
-            f"{prefix}_edition",
-            text("describe.edition_mode"),
-            text("describe.edition_start"),
-            text("describe.edition_end"),
-            initial=initial.edition_date if initial else None,
-        )
-        _render_target_notice(target if is_target else None, CompletenessGroup.CLASSIFICATION)
-        genre_column, audience_column = st.columns(2)
-        with genre_column:
-            genre = st.selectbox(
-                text("describe.genre"),
-                options=list(DEFAULT_VOCABULARY.genres),
-                index=list(DEFAULT_VOCABULARY.genres).index(
-                    initial.genre if initial else "unknown"
-                ),
-                format_func=_choice_label,
-                key=f"{prefix}_genre",
+        if purpose is PurposeId.STYLE_OVER_TIME:
+            st.caption(text("describe.time_required"))
+            _render_target_notice(target if is_target else None, CompletenessGroup.CHRONOLOGY)
+            publication = _date_widgets(
+                f"{prefix}_publication",
+                text("describe.publication_mode"),
+                text("describe.publication_start"),
+                text("describe.publication_end"),
+                initial=initial.first_publication if initial else None,
             )
-        with audience_column:
-            audience = st.selectbox(
-                text("describe.audience"),
-                options=list(DEFAULT_VOCABULARY.audiences),
-                index=list(DEFAULT_VOCABULARY.audiences).index(
-                    initial.audience if initial else "unknown"
-                ),
-                format_func=_choice_label,
-                key=f"{prefix}_audience",
-            )
-        adaptation_column, collection_column = st.columns(2)
-        with adaptation_column:
-            adaptation = st.selectbox(
-                text("describe.adaptation"),
-                options=list(DEFAULT_VOCABULARY.adaptation_statuses),
-                index=list(DEFAULT_VOCABULARY.adaptation_statuses).index(
-                    initial.adaptation if initial else "unknown"
-                ),
-                format_func=_choice_label,
-                key=f"{prefix}_adaptation",
-            )
-        with collection_column:
-            collection = st.selectbox(
-                text("describe.collection"),
-                options=list(DEFAULT_VOCABULARY.collection_statuses),
-                index=list(DEFAULT_VOCABULARY.collection_statuses).index(
-                    initial.collection if initial else "independent_work"
-                ),
-                format_func=_choice_label,
-                key=f"{prefix}_collection",
-            )
-        st.divider()
+        st.markdown(f"**{text('describe.source_heading')}**")
         _render_target_notice(target if is_target else None, CompletenessGroup.SOURCE)
         source_type = st.selectbox(
             text("describe.source_type"),
@@ -1286,6 +1241,7 @@ def _render_work_editor(
             value=initial.source_title if initial else validated.file_label,
             key=f"{prefix}_source_title",
         )
+        st.caption(text("describe.source_either"))
         source_url = st.text_input(
             text("describe.source_url"),
             value=str(initial.source_url) if initial and initial.source_url else "",
@@ -1304,7 +1260,6 @@ def _render_work_editor(
                 value=initial.accessed_on if initial and initial.accessed_on else date.today(),
                 key=f"{prefix}_accessed",
             )
-        st.divider()
         _render_target_notice(target if is_target else None, CompletenessGroup.RIGHTS)
         st.markdown(f"**{text('describe.rights_heading')}**")
         st.caption(text("describe.rights_help"))
@@ -1319,6 +1274,7 @@ def _render_work_editor(
         rights_license = None
         rights_jurisdiction = None
         if rights_status == RightsStatus.VERIFIED_OPEN.value:
+            st.caption(text("describe.open_help"))
             rights_column, jurisdiction_column = st.columns(2)
             with rights_column:
                 rights_license = st.text_input(
@@ -1332,12 +1288,78 @@ def _render_work_editor(
                     value=initial.rights_jurisdiction or "" if initial else "",
                     key=f"{prefix}_jurisdiction",
                 )
-        rights_notes = st.text_area(
-            text("describe.rights_notes"),
-            value=initial.rights_notes if initial else "",
-            key=f"{prefix}_rights_notes",
-            height=70,
+        show_optional = (
+            target is not None
+            and is_target
+            and target.group
+            in {
+                CompletenessGroup.CHRONOLOGY,
+                CompletenessGroup.EDITION,
+                CompletenessGroup.CLASSIFICATION,
+            }
         )
+        with st.expander(text("describe.optional"), expanded=show_optional):
+            if purpose is not PurposeId.STYLE_OVER_TIME:
+                _render_target_notice(target if is_target else None, CompletenessGroup.CHRONOLOGY)
+                publication = _date_widgets(
+                    f"{prefix}_publication",
+                    text("describe.publication_mode"),
+                    text("describe.publication_start"),
+                    text("describe.publication_end"),
+                    initial=initial.first_publication if initial else None,
+                )
+            edition = _date_widgets(
+                f"{prefix}_edition",
+                text("describe.edition_mode"),
+                text("describe.edition_start"),
+                text("describe.edition_end"),
+                initial=initial.edition_date if initial else None,
+            )
+            _render_target_notice(target if is_target else None, CompletenessGroup.CLASSIFICATION)
+            genre_column, audience_column = st.columns(2)
+            with genre_column:
+                genre = st.selectbox(
+                    text("describe.genre"),
+                    options=list(DEFAULT_VOCABULARY.genres),
+                    index=list(DEFAULT_VOCABULARY.genres).index(
+                        initial.genre if initial else "unknown"
+                    ),
+                    format_func=_choice_label,
+                    key=f"{prefix}_genre",
+                )
+            with audience_column:
+                audience = st.selectbox(
+                    text("describe.audience"),
+                    options=list(DEFAULT_VOCABULARY.audiences),
+                    index=list(DEFAULT_VOCABULARY.audiences).index(
+                        initial.audience if initial else "unknown"
+                    ),
+                    format_func=_choice_label,
+                    key=f"{prefix}_audience",
+                )
+            adaptation = st.selectbox(
+                text("describe.adaptation"),
+                options=list(DEFAULT_VOCABULARY.adaptation_statuses),
+                index=list(DEFAULT_VOCABULARY.adaptation_statuses).index(
+                    initial.adaptation if initial else "unknown"
+                ),
+                format_func=_choice_label,
+                key=f"{prefix}_adaptation",
+            )
+            rights_notes = st.text_area(
+                text("describe.rights_notes"),
+                value=initial.rights_notes if initial else "",
+                key=f"{prefix}_rights_notes",
+                height=70,
+            )
+            st.caption(
+                text(
+                    "describe.file_metric",
+                    lines=unit.line_count,
+                    tokens=unit.token_count,
+                    digest=validated.content_sha256[:12],
+                )
+            )
     return {
         "title_original": title_original,
         "author_name": author_name,
@@ -1386,8 +1408,19 @@ def _date_from_values(values: dict[str, Any], field: str) -> DateValue:
 
 def _guided_input(unit: ValidatedCorpusUnit, values: dict[str, Any]) -> GuidedWorkInput:
     source_url_value = str(values["source_url"]).strip()
-    source_url = _HTTP_URL_ADAPTER.validate_python(source_url_value) if source_url_value else None
+    try:
+        source_url = (
+            _HTTP_URL_ADAPTER.validate_python(source_url_value) if source_url_value else None
+        )
+    except ValidationError:
+        raise ValueError(text("describe.url_error")) from None
     citation = str(values["citation"]).strip() or None
+    if values["rights_status"] == RightsStatus.VERIFIED_OPEN.value and not (
+        source_url
+        and str(values["rights_license"] or "").strip()
+        and str(values["rights_jurisdiction"] or "").strip()
+    ):
+        raise ValueError(text("describe.open_help"))
     return GuidedWorkInput(
         unit=unit,
         title_original=str(values["title_original"]).strip(),
@@ -1561,10 +1594,38 @@ def _render_describe_stage(purpose: PurposeId) -> None:
             width="stretch",
             key="guided_build_review",
         ):
-            try:
-                guided_inputs = tuple(
-                    _guided_input(unit, values) for unit, values in rendered_inputs
+            inputs = []
+            for unit, values in rendered_inputs:
+                try:
+                    inputs.append(_guided_input(unit, values))
+                    continue
+                except ValidationError as error:
+                    labels = {
+                        "title_original": "describe.title_original",
+                        "primary_author_name": "describe.author_name",
+                        "language": "describe.language_help",
+                        "edition_label": "describe.edition_label",
+                        "source_title": "describe.source_title",
+                    }
+                    fields = [
+                        text(labels[str(issue["loc"][0])])
+                        if issue["loc"] and str(issue["loc"][0]) in labels
+                        else _field_label(".".join(map(str, issue["loc"])))
+                        for issue in error.errors()
+                        if issue["loc"]
+                    ]
+                    if not values["source_url"].strip() and not values["citation"].strip():
+                        fields.append(text("describe.source_either"))
+                    reason = " · ".join(fields) or text("describe.source_either")
+                except ValueError as error:
+                    reason = str(error)
+                st.error(
+                    text("describe.file_error", file=unit.validated_file.file_label, reason=reason)
                 )
+            if len(inputs) != len(rendered_inputs):
+                return
+            guided_inputs = tuple(inputs)
+            try:
                 build = build_guided_inventory(purpose, guided_inputs)
             except ValidationError as error:
                 st.error(

@@ -545,9 +545,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "describe.eyebrow": "CORPUS · DESCRIBE",
     "describe.title": "Describe what each text represents",
     "describe.body": (
-        "Confirm work, chronology, edition, source, and rights information. Suggested "
-        "titles and identifiers remain editable or visibly generated; Delta makes no "
-        "automatic scholarly or legal determination."
+        "Check which work each uploaded file contains, where it came from and how you may use it."
     ),
     "describe.back": "Start again with different files",
     "describe.import_title": "Review the details from your CSV",
@@ -561,19 +559,41 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "describe.import_review": "Review imported metadata",
     "describe.guided_title": "Enter the details for each text",
     "describe.guided_body": (
-        "Complete the visible fields for every TXT. Unknown remains an explicit value; "
-        "Delta never invents a date, source, permission, or classification."
+        "Open each file below. Complete the required details, then choose Review my texts."
     ),
+    "describe.required": "Required details for this text",
+    "describe.prefilled": (
+        "Check the suggested title, language, edition and other prefilled answers."
+    ),
+    "describe.language_help": (
+        "Enter the language code, for example it for Italian, en for English or tr for Turkish."
+    ),
+    "describe.source_heading": "Where did you get this text?",
+    "describe.source_either": (
+        "Give a web address or a written reference. For a book, you can enter the author, "
+        "title, publisher and year. For a web address, check the date you used it."
+    ),
+    "describe.open_help": (
+        "For open sharing, add a web address above that supports the permission, the license "
+        "or public-domain statement, and the country or territory where it applies."
+    ),
+    "describe.time_required": (
+        "For a comparison over time, give the first publication year, an approximate year or "
+        "a range."
+    ),
+    "describe.optional": "Optional details and file information",
+    "describe.file_error": "Check {file} — {reason}",
+    "describe.url_error": "Enter a complete web address beginning with https:// or http://.",
     "describe.work_heading": "{index}. {file_label}",
     "describe.file_metric": "{lines} lines · {tokens} tokens · SHA-256 {digest}",
     "describe.title_original": "Original work title",
     "describe.author_name": "Primary author name",
     "describe.author_kind": "Author type",
-    "describe.language": "Text language (BCP 47)",
+    "describe.language": "Language of the text",
     "describe.publication_mode": "First-publication certainty",
     "describe.publication_start": "First-publication year",
     "describe.publication_end": "End year",
-    "describe.edition_label": "Analyzed edition label",
+    "describe.edition_label": "Name of the edition or version you used",
     "describe.edition_mode": "Analyzed-edition date certainty",
     "describe.edition_start": "Analyzed-edition year",
     "describe.edition_end": "Edition end year",
@@ -587,10 +607,10 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "describe.source_url": "Source URL",
     "describe.source_citation": "Bibliographic citation",
     "describe.source_accessed": "Date accessed",
-    "describe.rights_heading": "Rights questionnaire",
+    "describe.rights_heading": "What does your permission cover?",
     "describe.rights_help": (
-        "Choose the documented state for this analyzed text. Delta records your answer "
-        "and keeps unresolved actions closed; it does not issue a legal opinion."
+        "Choose what your source permits. You can review a text with unknown permissions. "
+        "To run the comparison, each text needs documented permission to upload and analyse it."
     ),
     "describe.rights_status": "Documented rights state",
     "describe.rights.unknown": "Unknown · keep every action closed",
@@ -605,7 +625,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "describe.rights_license": "License or public-domain statement",
     "describe.rights_jurisdiction": "Jurisdiction",
     "describe.rights_notes": "Rights notes",
-    "describe.build_review": "Build corpus review",
+    "describe.build_review": "Review my texts",
     "describe.build_error": "Review these fields before continuing: {fields}",
     "describe.correction_guided": (
         "The selected work is open below. Review the highlighted {field_path} field."

@@ -509,6 +509,31 @@ def test_group_dates_and_verified_open_rights_reveal_only_relevant_fields() -> N
     assert _by_label(app.text_input, "Jurisdiction") is not None
 
 
+@pytest.mark.parametrize("purpose", [PurposeId.TEXT_PROXIMITY, PurposeId.STYLE_OVER_TIME])
+def test_manual_optional_fields_follow_the_research_purpose(purpose: PurposeId) -> None:
+    app = run_app()
+    _by_label(app.radio, "What do you want to investigate?").set_value(purpose.value).run()
+    app = _advance_to_describe(app)
+    optional = _by_label(app.expander, "Optional details and file information")
+    labels = {control.label for control in optional.selectbox}
+    assert {"Genre", "Audience", "Adaptation status", "Analyzed-edition date certainty"} <= labels
+    assert ("First-publication certainty" in labels) == (purpose is PurposeId.TEXT_PROXIMITY)
+    assert "Documented rights state" not in labels
+    assert not optional.proto.expanded
+
+
+def test_verified_open_without_url_points_to_the_specific_file() -> None:
+    app = _advance_to_describe(run_app())
+    _by_label(app.text_input, "Primary author name").input("Example author").run()
+    _by_label(app.text_area, "Bibliographic citation").input("Example reference").run()
+    _by_label(app.selectbox, "Documented rights state").set_value("verified_open").run()
+    app.button(key="guided_build_review").click().run()
+    assert "one.txt" in app.error[0].value
+    assert "web address" in app.error[0].value
+    assert "license" in app.error[0].value
+    assert _page_title(app) == "Describe what each text represents"
+
+
 def test_date_parsing_preserves_uncertainty_and_rejects_invalid_years() -> None:
     exact = webapp_module._date_from_values(
         {"mode": DateMode.EXACT, "start": "1883", "end": ""},
@@ -535,8 +560,7 @@ def test_invalid_year_is_reported_in_describe_without_a_traceback() -> None:
     app.button(key="guided_build_review").click().run()
     assert len(app.exception) == 0
     assert [message.value for message in app.error] == [
-        "Review these fields before continuing: First-publication year must be a year "
-        "from 1 to 9999."
+        "Check one.txt — First-publication year must be a year from 1 to 9999."
     ]
 
 
@@ -2211,7 +2235,7 @@ def test_csv_correction_shortcut_names_the_source_field_without_false_editing() 
         "Genre" in message.value and target.work_id in message.value for message in app.warning
     )
     assert all(target.field_path not in message.value for message in app.warning)
-    assert not any(button.label == "Build corpus review" for button in app.button)
+    assert not any(button.label == "Review my texts" for button in app.button)
 
 
 def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it() -> None:
