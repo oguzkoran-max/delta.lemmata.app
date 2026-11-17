@@ -20,7 +20,9 @@ APP = ROOT / "app.py"
 
 def run_app() -> AppTest:
     webapp_module._runtime.clear()
-    return AppTest.from_file(str(APP), default_timeout=20).run()
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.query_params["view"] = "upload"
+    return app.run()
 
 
 def make_zip(entries: list[tuple[str, bytes]]) -> bytes:
@@ -60,7 +62,9 @@ def test_runtime_failure_keeps_documentation_closed_and_reports_content_free_cod
         raise WebRuntimeError(WebRuntimeErrorCode.INITIALIZATION_FAILED)
 
     monkeypatch.setattr(webapp_module, "_runtime", unavailable_runtime)
-    app = AppTest.from_file(str(APP), default_timeout=20).run()
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.query_params["view"] = "upload"
+    app.run()
     app.file_uploader[0].upload("one.txt", b"PRIVATE_CANARY", "text/plain").run()
     app.button(key="corpus_continue").click().run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
@@ -171,6 +175,7 @@ def test_v01_upload_shell_has_no_locale_selector() -> None:
 def test_invalid_corpus_input_mode_falls_back_to_individual_text_files() -> None:
     webapp_module._runtime.clear()
     app = AppTest.from_file(str(APP), default_timeout=20)
+    app.query_params["view"] = "upload"
     app.session_state["corpus_input_mode"] = "not-a-supported-mode"
 
     app.run()
@@ -365,3 +370,34 @@ def test_guided_editor_reports_fields_without_echoing_submitted_values() -> None
     assert "primary_author_name" in app.error[0].value
     assert "source URL" not in app.error[0].value
     assert [heading.value for heading in app.title] == ["Describe what each text represents"]
+
+
+def test_landing_exposes_example_and_upload_without_opening_private_runtime() -> None:
+    app = AppTest.from_file(str(APP), default_timeout=20).run()
+    assert not app.exception and not app.file_uploader
+    markup = app.get("html")[0].proto.body
+    assert 'href="?view=example"' in markup and 'href="?view=upload"' in markup
+    assert "Compare the style of texts" in markup
+
+
+@pytest.mark.parametrize(
+    ("setting", "distance"),
+    [
+        ("100", "1.329088"),
+        ("300", "1.332424"),
+        ("500", "1.331088"),
+        ("1000", "1.332090"),
+        ("invalid", "1.331088"),
+    ],
+)
+def test_example_selects_saved_cell_without_starting_a_job(setting: str, distance: str) -> None:
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.query_params.update({"view": "example", "mfw": setting})
+    app.run()
+    assert not app.exception and not app.file_uploader
+    markup = app.get("html")[0].proto.body
+    assert f'<p class="de-distance">{distance} ' in markup
+    assert len(app.download_button) == 1
+    assert webapp_module._FLOW_JOB_PRESENTATION_KEY not in app.session_state
+    for key in ("D01", "D02", "D03"):
+        assert f"<strong>{key}</strong><span>P126 synthetic duplicate title</span>" in markup

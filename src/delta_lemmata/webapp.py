@@ -16,6 +16,7 @@ import pyarrow as pa  # type: ignore[import-untyped]
 import streamlit as st
 from pydantic import HttpUrl, TypeAdapter, ValidationError
 
+from delta_lemmata import entry
 from delta_lemmata.analysis_orchestrator import AnalysisOrchestratorError
 from delta_lemmata.catalog import text
 from delta_lemmata.corpus import (
@@ -399,7 +400,7 @@ def _sidebar_readiness_counts() -> tuple[dict[str, int], bool]:
     return ({"works": 0, "blockers": 0, "warnings": 0, "rights": 0}, False)
 
 
-def _render_sidebar_summary() -> None:
+def _render_sidebar_summary(stage: CorpusSubstage, view: ResultViewV1 | None) -> None:
     counts, has_corpus = _sidebar_readiness_counts()
     metric_rows = "".join(
         '<div class="delta-sidebar-metric">'
@@ -413,15 +414,32 @@ def _render_sidebar_summary() -> None:
         )
     )
     corpus_state_key = "evidence.corpus_validated" if has_corpus else "evidence.corpus_state"
+    parameter_status = text("evidence.parameters_state")
+    run_status = text("evidence.run_state")
+    if stage is CorpusSubstage.PARAMETERS:
+        if isinstance(st.session_state.get(_FLOW_WORKFLOW_CONFIG_KEY), ResolvedWorkflowConfigV1):
+            parameter_status = text("evidence.parameters_configured")
+        presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
+        if presentation is not None:
+            run_status = getattr(presentation, "title", text("parameters.run_status_unknown"))
+        if _evidence_is_active(stage):
+            if isinstance(view, ResultViewV1):
+                complete = sum(cell.status is ResultCellStatus.COMPLETE for cell in view.cells)
+                parameter_status = text(
+                    "evidence.matrices", complete=complete, total=len(view.cells)
+                )
+                run_status = text("evidence.run_finished")
+            else:
+                run_status = text("evidence.readback_unavailable")
     evidence_rows = "".join(
         '<div class="delta-sidebar-evidence-row">'
         f"<span>{_html(text(name_key))}</span>"
-        f"<small>{_html(text(state_key))}</small></div>"
-        for name_key, state_key in (
-            ("evidence.corpus", corpus_state_key),
-            ("evidence.parameters", "evidence.parameters_state"),
-            ("evidence.limits", "evidence.limits_state"),
-            ("evidence.run", "evidence.run_state"),
+        f"<small>{_html(status)}</small></div>"
+        for name_key, status in (
+            ("evidence.corpus", text(corpus_state_key)),
+            ("evidence.parameters", parameter_status),
+            ("evidence.limits", text("evidence.limits_state")),
+            ("evidence.run", run_status),
         )
     )
     st.markdown(
@@ -437,34 +455,38 @@ def _render_sidebar_summary() -> None:
     )
 
 
-def _render_sidebar(health: dict[str, Any], stage: CorpusSubstage) -> None:
+def _render_sidebar(
+    health: dict[str, Any], stage: CorpusSubstage, view: ResultViewV1 | None
+) -> None:
     with st.sidebar:
         badge_key = (
             "sidebar.badge.parameters" if stage is CorpusSubstage.PARAMETERS else "sidebar.badge"
         )
         st.badge(text(badge_key), icon=":material/menu_book:", color="green")
-        guide_items = "".join(
-            f"<li>{_html(text(key))}</li>"
-            for key in (
-                "sidebar.guide.question",
-                "sidebar.guide.corpus",
-                "sidebar.guide.parameters",
+        if stage is CorpusSubstage.UPLOAD:
+            guide_items = "".join(
+                f"<li>{_html(text(key))}</li>"
+                for key in (
+                    "sidebar.guide.question",
+                    "sidebar.guide.corpus",
+                    "sidebar.guide.parameters",
+                )
             )
-        )
-        st.markdown(
-            '<section class="delta-sidebar-guide" role="region" '
-            'aria-labelledby="delta-sidebar-title">'
-            f'<strong class="delta-sidebar-title" id="delta-sidebar-title">'
-            f"{_html(text('sidebar.guide_title'))}</strong>"
-            f"<p>{_html(text('sidebar.guide_body'))}</p>"
-            f"<ol>{guide_items}</ol>"
-            '<div class="delta-sidebar-parameters">'
-            f"<strong>{_html(text('sidebar.parameters_title'))}</strong>"
-            f"<p>{_html(text('sidebar.parameters_body'))}</p>"
-            "</div></section>",
-            unsafe_allow_html=True,
-        )
-        _render_sidebar_summary()
+            st.markdown(
+                '<section class="delta-sidebar-guide" role="region" '
+                'aria-labelledby="delta-sidebar-title">'
+                f'<strong class="delta-sidebar-title" id="delta-sidebar-title">'
+                f"{_html(text('sidebar.guide_title'))}</strong>"
+                f"<p>{_html(text('sidebar.guide_body'))}</p>"
+                f"<ol>{guide_items}</ol>"
+                '<div class="delta-sidebar-parameters">'
+                f"<strong>{_html(text('sidebar.parameters_title'))}</strong>"
+                f"<p>{_html(text('sidebar.parameters_body'))}</p>"
+                "</div></section>",
+                unsafe_allow_html=True,
+            )
+        else:
+            _render_sidebar_summary(stage, view)
         with st.expander(text("build.title"), icon=":material/info:"):
             st.markdown(f"**{text('build.readiness_label')}**")
             st.caption(text("build.readiness_value"))
@@ -2975,7 +2997,7 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
     for key, values in zip(matrix.document_keys, matrix.values, strict=True):
         cells = "".join(f"<td>{_distance_label(value)}</td>" for value in values)
         rows.append(
-            f'<tr><th scope="row" title="{_html(titles[key])}">{_html(key)}</th>' + cells + "</tr>"
+            f'<tr><th scope="row">{_html(key)} · {_html(titles[key])}</th>' + cells + "</tr>"
         )
     _render_table_scroll_note("results.table_scroll")
     st.markdown(
@@ -3210,8 +3232,8 @@ def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
         return text("results.neighbour.tie_count", count=count)
 
     rows = "".join(
-        f'<tr><th scope="row">{_html(titles[item.document_key])}</th>'
-        f"<td>{_html(titles[item.neighbour_key])}</td>"
+        f'<tr><th scope="row">{_html(item.document_key)} · {_html(titles[item.document_key])}</th>'
+        f"<td>{_html(item.neighbour_key)} · {_html(titles[item.neighbour_key])}</td>"
         f"<td>{_distance_label(item.distance)}</td>"
         f"<td>{_html(tie_label(item.tie_count))}</td></tr>"
         for item in nearest_neighbours(cell)
@@ -3331,6 +3353,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
                         "legend": None,
                     },
                     "tooltip": [
+                        {"field": "key", "type": "nominal", "title": "Code"},
                         {"field": "title", "type": "nominal", "title": "Text"},
                         {"field": "role", "type": "nominal", "title": "Role"},
                         {"field": "x", "type": "quantitative", "format": ".6f"},
@@ -3355,7 +3378,8 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
             key=f"p009_mds_{cell.mfw}",
         )
     rows = "".join(
-        f'<tr><th scope="row">{_html(documents[point.document_key].title)}</th>'
+        f'<tr><th scope="row">{_html(point.document_key)} · '
+        f'{_html(documents[point.document_key].title)}</th>'
         f"<td>{_html(documents[point.document_key].role.value)}</td>"
         f"<td>{_distance_label(point.x)}</td><td>{_distance_label(point.y)}</td></tr>"
         for point in points
@@ -3456,7 +3480,7 @@ def _render_result_view(view: ResultViewV1) -> None:
     )
 
 
-def _render_parameters_stage() -> None:
+def _render_parameters_stage() -> ResultViewV1 | None:
     inventory = st.session_state.get(_FLOW_INVENTORY_KEY)
     annotations = st.session_state.get(_FLOW_ANNOTATIONS_KEY)
     preparation = st.session_state.get(_FLOW_PREPARATION_KEY)
@@ -3476,6 +3500,7 @@ def _render_parameters_stage() -> None:
     try:
         config = _resolve_session_workflow(inventory, annotations)
     except (ValidationError, ValueError):
+        st.session_state.pop(_FLOW_WORKFLOW_CONFIG_KEY, None)
         with st.container(key="parameters_stage"):
             st.markdown(
                 f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
@@ -3491,7 +3516,7 @@ def _render_parameters_stage() -> None:
             ):
                 _set_stage(CorpusSubstage.PREPARE)
                 st.rerun()
-        return
+        return None
     st.session_state[_FLOW_WORKFLOW_CONFIG_KEY] = config
     presentation = st.session_state.get(_FLOW_JOB_PRESENTATION_KEY)
     if getattr(presentation, "state_id", "") == "succeeded":
@@ -3506,7 +3531,8 @@ def _render_parameters_stage() -> None:
                 st.error(text("results.unavailable"), icon=":material/gpp_bad:")
             else:
                 _render_result_view(result_view)
-        return
+                return result_view
+        return None
     with st.container(key="parameters_stage"):
         st.markdown(
             f'<div class="delta-eyebrow">{_html(text("parameters.eyebrow"))}</div>',
@@ -3534,7 +3560,7 @@ def _render_parameters_stage() -> None:
             ):
                 _set_stage(CorpusSubstage.PREPARE)
                 st.rerun()
-            return
+            return None
 
         st.success(text("parameters.guided_ready"), icon=":material/check_circle:")
         metric_columns = st.columns(4)
@@ -3577,7 +3603,7 @@ def _render_parameters_stage() -> None:
             ):
                 _clear_documentation_state(keep_purpose=True)
                 st.rerun()
-            return
+            return None
 
         confirmed = st.checkbox(
             text("parameters.confirm"),
@@ -3705,6 +3731,7 @@ def _render_parameters_stage() -> None:
             else:
                 st.session_state[_FLOW_JOB_PRESENTATION_KEY] = presentation
                 st.rerun()
+    return None
 
 
 def _render_setup(stage: CorpusSubstage) -> PurposeId:
@@ -3767,10 +3794,41 @@ def main() -> None:
         layout="wide",
         initial_sidebar_state="auto",
     )
-    st.markdown(APP_CSS, unsafe_allow_html=True)
     _clear_pending_upload_widgets()
-    health = dict(public_health())
     stage = _stage()
+    route = st.query_params.get("view", "home")
+    if stage is CorpusSubstage.UPLOAD and route != "upload":
+        raw = entry.example_record()
+        view = ResultViewV1.model_validate_json(raw)
+        if route == "example":
+            requested = st.query_params.get("mfw", str(view.reference_mfw))
+            cell = next(
+                (item for item in view.cells if str(item.mfw) == requested),
+                next(item for item in view.cells if item.is_reference),
+            )
+            markup = entry.example(
+                view,
+                cell,
+                home="?view=home",
+                upload="?view=upload",
+                setting_url="?view=example&mfw={mfw}",
+            )
+        else:
+            markup = entry.landing(
+                view, home="?view=home", example="?view=example", upload="?view=upload"
+            )
+        st.html(f"<style>{entry.entry_css()}</style>{markup}")
+        if route == "example":
+            st.download_button(
+                text("entry.download"),
+                data=raw,
+                file_name=entry.EXAMPLE_FILE,
+                mime="application/json",
+                on_click="ignore",
+            )
+        return
+    st.markdown(APP_CSS, unsafe_allow_html=True)
+    health = dict(public_health())
     evidence_active = _evidence_is_active(stage)
     _render_header(health, stage, evidence_active=evidence_active)
     if stage is CorpusSubstage.UPLOAD:
@@ -3782,6 +3840,7 @@ def main() -> None:
     column_ratio = [1000, 1] if stage is CorpusSubstage.UPLOAD else [1.8, 0.8]
     column_gap: Literal["large"] | None = None if stage is CorpusSubstage.UPLOAD else "large"
     left, right = st.columns(column_ratio, gap=column_gap)
+    displayed_view = None
     with left:
         if stage is CorpusSubstage.UPLOAD:
             _render_corpus_stage(purpose)
@@ -3795,13 +3854,13 @@ def main() -> None:
         elif stage is CorpusSubstage.PREPARE:
             _render_prepare_stage()
         else:
-            _render_parameters_stage()
+            displayed_view = _render_parameters_stage()
     if stage is CorpusSubstage.UPLOAD:
         _render_boundary()
     else:
         with right:
             _render_boundary()
-    _render_sidebar(health, stage)
+    _render_sidebar(health, stage, displayed_view)
     st.markdown(
         '<footer class="delta-footer">'
         f"<p>{_html(text('footer.scope'))}</p>"

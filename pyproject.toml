@@ -59,7 +59,7 @@ version = { file = ["VERSION"] }
 where = ["src"]
 
 [tool.setuptools.package-data]
-delta_lemmata = ["py.typed", "data/*.json", "data/fonts/*"]
+delta_lemmata = ["py.typed", "data/*.json", "data/*.css", "data/fonts/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

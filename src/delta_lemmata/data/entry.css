@@ -1,0 +1,67 @@
+.de-page {
+  --ink: #172d29; --muted: #475e56; --rule: #cad6ce; --green: #185845;
+  color: var(--ink); background: #fbfaf6; max-width: 1120px; margin: 0 auto;
+  padding: clamp(16px,4vw,52px); font: 16px/1.5 Inter,system-ui,sans-serif;
+  border: 1px solid #d6dfd6; border-radius: 12px; box-sizing: border-box;
+}
+.de-page *, .de-page *::before { box-sizing: border-box; }
+.de-page h1,.de-page h2,.de-page p,.de-page figure { margin: 0; padding: 0; }
+.de-page a { color: var(--green); text-decoration: none; }
+.de-page a:hover { text-decoration: underline; }
+.de-page a:focus-visible { outline: 3px solid #935925; outline-offset: 3px; }
+.de-mast,.de-lockup,.de-actions,.de-setting,.de-switch { display: flex; align-items: center; }
+.de-mast { justify-content: space-between; gap: 10px; padding-bottom: 19px; border-bottom: 1px solid var(--rule); }
+.de-lockup { gap: 14px; }
+.de-page .de-wordmark { color: var(--ink); font: bold 26px/1.1 Georgia,serif; white-space: nowrap; }
+.de-lockup span,.de-release,.de-page .de-note,.de-page .de-source { color: var(--muted); font-size: .85rem; }
+.de-release { text-align: right; }
+.de-hero,.de-grid { display: grid; grid-template-columns: 1.12fr 1fr; gap: clamp(24px,5vw,68px); }
+.de-hero { align-items: center; padding: clamp(35px,6vw,88px) 0 30px; }
+.de-page h1 { font: 500 clamp(2.55rem,5.4vw,4.85rem)/1.03 Georgia,serif; letter-spacing: -.046em; color: var(--ink); }
+.de-page .de-intro > p,.de-page .de-lead { color: var(--muted); margin: 20px 0 24px; max-width: 59ch; font-size: 1.08rem; }
+.de-actions,.de-switch { flex-wrap: wrap; gap: 8px; }
+.de-page .de-primary,.de-page .de-secondary,.de-switch a,.de-switch span {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 9px 16px; font-weight: 600; font-size: .94rem; border-radius: 5px;
+}
+.de-page .de-primary,.de-switch span { background: var(--green); border: 1px solid var(--green); color: #fff; }
+.de-page .de-secondary,.de-switch a { border: 1px solid #92a99b; background: #fff; }
+.de-page .de-specimen,.de-pair { padding: clamp(20px,3vw,32px); background: #eaf1e8; border-radius: 8px; }
+.de-page figcaption,.de-page h2,.de-table caption { color: var(--ink); font: 500 1.42rem/1.2 Georgia,serif; }
+.de-page figcaption { margin-bottom: 5px; }
+.de-specimen > p,.de-setting p,.de-distance span { color: var(--muted); font-size: .9rem; }
+.de-table { width: 100%; border-collapse: collapse; font-size: .96rem; font-variant-numeric: tabular-nums; }
+.de-page .de-table caption { text-align: left; padding: 0 0 12px; }
+.de-specimen .de-table { margin: 17px 0; }
+.de-specimen .de-table caption { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.de-table th,.de-table td { padding: 9px 0; border: 0; border-bottom: 1px solid var(--rule); text-align: left; }
+.de-table thead th { font: 500 .85rem/1.4 Inter,system-ui,sans-serif; color: var(--muted); }
+.de-table th:last-child,.de-table td:last-child { text-align: right; }
+.de-table th span { color: var(--muted); }
+.de-page .de-result { padding-top: 22px; }
+.de-page .de-back { font-size: .94rem; text-decoration: underline; text-underline-offset: 3px; }
+.de-page .de-source { margin: 23px 0 9px; }
+.de-result h1 { font-size: clamp(2.25rem,4vw,3.85rem); }
+.de-setting { justify-content: space-between; flex-wrap: wrap; gap: 12px; padding: 15px 0; border-block: 1px solid var(--rule); }
+.de-switch a,.de-switch span { font-variant-numeric: tabular-nums; }
+.de-grid { gap: 28px; margin: 22px 0; align-items: start; }
+.de-page .de-bigpair { font: 500 clamp(1.9rem,3.5vw,3.25rem)/1.2 Georgia,serif; margin: 12px 0 0; }
+.de-pair .de-distance { margin: 3px 0 13px; font-variant-numeric: tabular-nums; }
+.de-docs ul { list-style: none; margin: 9px 0 0; padding: 0; }
+.de-docs li { display: flex; gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.de-docs li span { overflow-wrap: anywhere; }
+.de-evidence aside { border-inline-start: 3px solid #b0be9b; padding-inline-start: 17px; }
+.de-evidence aside p,.de-evidence .de-note { margin-top: 9px; }
+@media (max-width: 720px) {
+  .de-lockup { flex-direction: column; align-items: flex-start; gap: 3px; }
+  .de-hero,.de-grid { grid-template-columns: minmax(0,1fr); gap: 23px; }
+  .de-hero { padding-bottom: 6px; }
+  .de-page .de-intro > p { margin: 13px 0 17px; }
+  .de-page .de-wordmark { font-size: 23px; }
+  .de-lockup span,.de-release { font-size: .76rem; }
+  .de-switch { gap: 5px; }
+  .de-switch a,.de-switch span { padding-inline: 12px; }
+}
+[data-testid="stMainBlockContainer"]:has(.de-page) { padding-top: clamp(32px,5vw,68px); }
+.de-page .de-bigpair { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; letter-spacing: -.06em; }
+.de-table tbody th,.de-docs li strong { font-family: ui-monospace,SFMono-Regular,Menlo,monospace; }

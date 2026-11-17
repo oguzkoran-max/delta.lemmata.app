@@ -1,5 +1,21 @@
 # Delta Session Handoff
 
+## 2026-11-17 · Yerel arayüz önizlemesi
+
+`codex/delta-entry-preview` dalı, grafik düzeltmesini içeren `30a50b4` üstündedir.
+Açılış ekranından kayıtlı örneğe veya mevcut dosya yükleme akışına geçilir.
+Yan panel, sonuç ekranda okunabildiğinde aynı ResultViewV1 kaydından tamamlanan
+hücreleri sayar. Kısmi sonuç ve kayıt okuma hatası ayrı gösterilir. Komşu,
+mesafe ve koordinat tabloları belge kodu ile başlığı birlikte gösterir.
+Örneğin dört hücresi 13 Kasım'daki üç sentetik metin koşusunun indirilen JSON'udur
+(SHA-256 `9ecaff568453658df3278c71b7015efe76277f138d30a59806c1c28317bf730a`).
+Uygulamanın iki ekranı 1440 × 900 ve 390 × 844 tarayıcı görünümünde kontrol edildi.
+`pytest -q tests/test_webapp.py tests/test_webapp_workflow.py` ile 102 test geçti.
+Taşınabilir HTML ve dört ekran görüntüsü akademik vault içinde
+`outputs/delta-arayuz-2026-11-17/` konumunda. Yerel önizleme aşamasında.
+Edebî örnek seçimi, yeni R koşusu ve canlı dağıtım bu turda yapılmadı.
+
+
 **Güncellendi:** 2026-07-19
 
 **En yeni checkpoint: Pre-manuscript public-alpha denetimi + düzeltmeler + Codex

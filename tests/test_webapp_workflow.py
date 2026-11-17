@@ -75,7 +75,9 @@ FIXTURES = Path(__file__).resolve().parent / "fixtures" / "p004"
 
 def run_app() -> AppTest:
     webapp_module._runtime.clear()
-    return AppTest.from_file(str(APP), default_timeout=20).run()
+    app = AppTest.from_file(str(APP), default_timeout=20)
+    app.query_params["view"] = "upload"
+    return app.run()
 
 
 def _by_label(elements: Iterable[Any], label: str) -> Any:
@@ -798,6 +800,11 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
     assert "Classic Delta distance matrix" in rendered
     assert "Nearest-neighbour table with tolerance-aware ties" in rendered
     assert "MDS coordinate table" in rendered
+    assert "4 of 4 comparisons produced matrices" in rendered
+    assert "Awaiting configuration" not in rendered
+    assert "Start here" not in rendered
+    for document in result_view.documents:
+        assert f"{document.key} · {document.title}" in rendered
     assert "Method key" in rendered
     assert "How to read this map" in rendered
     assert rendered.count("What this does not show") == 1
@@ -873,6 +880,8 @@ def test_partial_result_marks_unavailable_cell_without_hiding_completed_evidence
         "500 MFW",
     ]
     rendered = "\n".join(item.value for item in app.markdown)
+    assert "3 of 4 comparisons produced matrices" in rendered
+    assert "Awaiting configuration" not in rendered
     assert rendered.count('class="delta-result-cell ') == 4
     assert 'class="delta-result-cell delta-result-cell-failed"' in rendered
     assert 'data-mfw="1000" data-status="failed"' in rendered
@@ -950,6 +959,7 @@ def test_succeeded_result_readback_failure_is_visible_and_content_free(
     app.run()
 
     assert len(app.exception) == 0
+    assert "Run finished · result unavailable" in "\n".join(item.value for item in app.markdown)
     assert "The verified result view is not available." in "\n".join(
         message.value for message in app.error
     )

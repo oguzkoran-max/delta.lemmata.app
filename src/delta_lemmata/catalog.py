@@ -57,6 +57,39 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "build.engine_label": "Analysis engine",
     "build.engine_value": "Connected · R stylo",
     "setup.eyebrow": "COMPARE HOW TEXTS ARE WRITTEN",
+    "entry.tagline": "A Lemmata stylometry workbench",
+    "entry.title": "Compare the style of texts",
+    "entry.intro": (
+        "See how closely texts resemble one another in their use of frequent words. "
+        "Explore a recorded comparison or start with your own texts."
+    ),
+    "entry.example": "Explore the example",
+    "entry.upload": "Upload my texts",
+    "entry.home": "Back to overview",
+    "entry.specimen": "Inside the example",
+    "entry.caption": "Three synthetic texts · {mfw} most frequent words",
+    "entry.detail": "Classic Burrows’ Delta · 0% culling · whole texts",
+    "entry.sample_title": "Which texts are closest?",
+    "entry.sample_intro": (
+        "Three synthetic texts share the same title. Their document codes let you "
+        "tell them apart throughout this recorded run."
+    ),
+    "entry.setting": "Number of most frequent words",
+    "entry.setting_hint": "Switch settings to compare the saved distances.",
+    "entry.sample_source": "Recorded example · 13 November 2026",
+    "entry.pairs": "Distances between texts",
+    "entry.distance": "Delta distance",
+    "entry.pair": "Text pair",
+    "entry.closest": "Closest pair",
+    "entry.read": "Smaller distances mean closer word-use patterns within this comparison.",
+    "entry.documents": "Texts in this example",
+    "entry.download": "Download the recorded result (JSON)",
+    "entry.upload_preview": "The file upload runs in the workbench",
+    "entry.upload_note": (
+        "This offline preview contains the opening screen and the recorded example. "
+        "Open the workbench to start a new analysis with your own files."
+    ),
+    "entry.live": "Open the public workbench",
     "setup.title": "Discover patterns in writing style.",
     "setup.intro": (
         "Stylometry compares measurable patterns in language use across texts, such as "
@@ -1159,6 +1192,10 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "evidence.corpus_validated": "Validated for intake",
     "evidence.corpus_rejected": "Intake submission rejected",
     "evidence.parameters": "Parameter sensitivity",
+    "evidence.parameters_configured": "Guided settings configured",
+    "evidence.matrices": "{complete} of {total} comparisons produced matrices",
+    "evidence.run_finished": "Run finished",
+    "evidence.readback_unavailable": "Run finished · result unavailable",
     "evidence.parameters_state": "Awaiting configuration",
     "evidence.limits": "Interpretive limits",
     "evidence.limits_state": "Purpose selected",
