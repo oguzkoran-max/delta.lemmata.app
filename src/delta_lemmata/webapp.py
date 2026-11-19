@@ -1484,7 +1484,7 @@ def _render_csv_issues(result: MetadataCsvImportResult, mismatch_files: Mapping[
             and issue.row_number in mismatch_files
         ):
             label = mismatch_files[issue.row_number]
-            literal_label = label.translate(str.maketrans({c: f"\\{c}" for c in punctuation}))
+            literal_label = label.translate({ord(c): f"\\{c}" for c in punctuation})
             st.error(
                 text(
                     "describe.csv_file_mismatch",
