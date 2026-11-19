@@ -500,12 +500,12 @@ def test_semantic_result_parity_binds_tables_to_exported_matrix_and_mds(
     }
     expected = {
         "Classic Delta distance matrix": (
-            ("D01", "0.000000", "2.000000"),
-            ("D02", "2.000000", "0.000000"),
+            ("D01 · Early work", "0.000000", "2.000000"),
+            ("D02 · Late work", "2.000000", "0.000000"),
         ),
         "MDS coordinate table": (
-            ("Early work", "known", "1.000000", "0.000000"),
-            ("Late work", "known", "-1.000000", "0.000000"),
+            ("D01 · Early work", "known", "1.000000", "0.000000"),
+            ("D02 · Late work", "known", "-1.000000", "0.000000"),
         ),
     }
     monkeypatch.setattr(
@@ -525,7 +525,9 @@ def test_semantic_result_parity_binds_tables_to_exported_matrix_and_mds(
         P009_BROWSER_AUDIT,
         "_semantic_table_rows",
         lambda _page, label: (
-            (("D01", "0.000000", "9.000000"),) if label.startswith("Classic") else expected[label]
+            (("D01 · Early work", "0.000000", "9.000000"),)
+            if label.startswith("Classic")
+            else expected[label]
         ),
     )
     mismatch = _semantic_result_parity(cast(Page, object()), exported, 500)

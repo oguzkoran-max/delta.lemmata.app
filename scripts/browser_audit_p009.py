@@ -389,7 +389,11 @@ def _semantic_table_rows(page: Page, label: str) -> tuple[tuple[str, ...], ...]:
     rows = table.locator("tbody tr").evaluate_all(
         """elements => elements.map(row =>
           Array.from(row.querySelectorAll(':scope > th, :scope > td'))
-            .map(cell => cell.innerText.trim())
+            .map(cell => {
+              const filename = cell.querySelector(':scope > .delta-result-filename');
+              const text = cell.innerText.trim();
+              return filename ? text.slice(0, -filename.innerText.trim().length).trim() : text;
+            })
         )"""
     )
     return tuple(tuple(str(cell).strip() for cell in row) for row in rows)
@@ -408,15 +412,16 @@ def _semantic_result_parity(
     cell_payload = next(cell for cell in exported["cells"] if cell["mfw"] == mfw)
     matrix_payload = cell_payload["matrix"]
     document_keys = tuple(matrix_payload["document_keys"])
+    documents = {document["key"]: document for document in exported["documents"]}
+    labels = {key: f"{key} · {item['title']}" for key, item in documents.items()}
     expected_matrix = tuple(
-        (key, *(f"{float(value):.6f}" for value in values))
+        (labels[key], *(f"{float(value):.6f}" for value in values))
         for key, values in zip(document_keys, matrix_payload["values"], strict=True)
     )
-    documents = {document["key"]: document for document in exported["documents"]}
     points = classical_mds(ResultCellV1.model_validate(cell_payload))
     expected_mds = tuple(
         (
-            str(documents[point.document_key]["title"]),
+            labels[point.document_key],
             str(documents[point.document_key]["role"]),
             f"{point.x:.6f}",
             f"{point.y:.6f}",

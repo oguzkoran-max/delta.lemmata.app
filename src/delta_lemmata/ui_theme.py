@@ -1222,35 +1222,10 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   box-shadow: inset 4px 0 0 var(--delta-coral);
 }
 
-.st-key-p009_mds_square [data-testid="stVegaLiteChart"] {
-  width: 100% !important;
+.st-key-p009_mds_square [data-testid="stVegaLiteChart"],
+.st-key-p009_mds_square [data-testid="stVegaLiteChart"] svg {
   max-width: 100%;
   height: auto !important;
-  aspect-ratio: 60 / 61;
-}
-
-.st-key-p009_mds_square,
-.st-key-p009_mds_square div:has([data-testid="stVegaLiteChart"]) {
-  height: auto !important;
-}
-
-.st-key-p009_mds_square [data-testid="stVegaLiteChart"] > div,
-.st-key-p009_mds_square [data-testid="stVegaLiteChart"] svg {
-  width: 100% !important;
-  max-width: 100% !important;
-  height: auto !important;
-}
-
-@media (min-width: 761px) and (max-width: 1320px) {
-  .st-key-p009_mds_square [data-testid="stVegaLiteChart"] {
-    aspect-ratio: 60 / 61.3;
-  }
-}
-
-@media (max-width: 340px) {
-  .st-key-p009_mds_square [data-testid="stVegaLiteChart"] {
-    aspect-ratio: 60 / 61.18;
-  }
 }
 
 .delta-result-matrix th,
