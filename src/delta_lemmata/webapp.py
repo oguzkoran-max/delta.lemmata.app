@@ -3237,6 +3237,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
         "data": {"values": chart_data},
         "width": 360,
         "height": 360,
+        "autosize": "pad",
         "layer": [
             {
                 "mark": {
@@ -3312,8 +3313,8 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
     with st.container(key="p009_mds_square"):
         st.vega_lite_chart(
             spec=spec,
-            width="stretch",
-            height=360,
+            width="content",
+            height="content",
             theme=None,
             key=f"p009_mds_{cell.mfw}",
         )

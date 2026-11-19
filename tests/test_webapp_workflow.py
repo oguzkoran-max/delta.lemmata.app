@@ -818,6 +818,7 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
     assert point_encoding["shape"]["field"] == "role"
     assert point_encoding["shape"]["scale"]["range"] == ["circle", "diamond"]
     assert mds["width"] == mds["height"] == 360
+    assert mds["autosize"] == "pad"
     assert "Known reference text" in rendered
     assert "Unknown holdout" in rendered
     assert [button.label for button in app.download_button][-1] == (
