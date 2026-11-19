@@ -249,7 +249,7 @@ def test_invalid_upload_is_rejected_without_payload_or_label_leakage() -> None:
     assert app.file_uploader[0].value == []
     assert len(app.file_uploader) == 1
     assert app.button(key="corpus_continue").disabled is True
-    session_state = repr(app.session_state.filtered_state)
+    session_state = repr(app.session_state.to_dict())
     assert "SECRET_PAYLOAD" not in session_state
     assert "secret-label.txt" not in session_state
 
@@ -308,7 +308,7 @@ def test_archive_member_catalog_opens_payload_free_guided_documentation() -> Non
         "2. one.txt",
     ]
     assert len([item for item in app.text_input if item.label == "Primary author name"]) == 2
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "ZIP_SECRET_ONE" not in state
     assert "ZIP_SECRET_TWO" not in state
     assert "storage_name" not in state
@@ -325,7 +325,7 @@ def test_continue_opens_describe_and_clears_every_raw_upload_value() -> None:
         "Start again with different files",
         "Review my texts",
     ]
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "SECRET_TRANSIENT_TEXT" not in state
     assert "BrowserUpload" not in state
     assert "storage_name" not in state
@@ -377,7 +377,7 @@ def test_guided_text_path_builds_review_without_running_analysis() -> None:
     assert "Prohibited" in rendered
     assert len(app.metric) == 0
     assert any("No stylometric analysis has run" in message.value for message in app.info)
-    assert "one text" not in repr(app.session_state.filtered_state)
+    assert "one text" not in repr(app.session_state.to_dict())
 
 
 def test_guided_editor_reports_fields_without_echoing_submitted_values() -> None:
