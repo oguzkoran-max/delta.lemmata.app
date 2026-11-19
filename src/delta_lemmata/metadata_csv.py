@@ -690,11 +690,13 @@ def import_metadata_csv(
     *,
     display_label: str = "metadata.csv",
     limits: IngestionLimits = DEFAULT_LIMITS,
+    on_file_hash_mismatch: Callable[[int, str], None] | None = None,
 ) -> MetadataCsvImportResult:
     """Validate untrusted bytes, then build and domain-validate one inventory.
 
     Import failures are content-free. No partial inventory is returned when a row
     cannot be parsed, a file is unmatched, or an embedded identity conflicts.
+    The optional UI callback identifies a mismatch by CSV row and accepted upload label.
     """
 
     digest = hashlib.sha256(payload).hexdigest()
@@ -795,6 +797,8 @@ def import_metadata_csv(
             parsed_rows.append(_parse_row(row, offset, catalog_by_label))
         except _CellFailure as error:
             issues.append(_issue(error.code, error.field_name, row_number=offset))
+            if error.code is MetadataCsvIssueCode.FILE_HASH_MISMATCH and on_file_hash_mismatch:
+                on_file_hash_mismatch(offset, catalog_by_label[row["file_label"]].file_label)
         except ValueError:
             issues.append(
                 _issue(

@@ -291,6 +291,8 @@ def _open_imported_review() -> AppTest:
 
 def _open_guided_review() -> AppTest:
     app = _advance_to_describe(run_app())
+    _by_label(app.text_input, "Language of the text").input("it")
+    _by_label(app.selectbox, "Source type").set_value("digital_library")
     _by_label(app.text_input, "Primary author name").input("Carlo Collodi").run()
     _by_label(app.text_input, "Source URL").input("https://www.liberliber.it/").run()
     _by_label(app.selectbox, "Documented rights state").set_value("analysis_only").run()
@@ -313,6 +315,10 @@ def _open_two_work_prepare() -> AppTest:
     ).run()
     app.button(key="corpus_continue").click().run()
     app.run()
+    for language in _all_by_label(app.text_input, "Language of the text"):
+        language.input("it")
+    for source_type in _all_by_label(app.selectbox, "Source type"):
+        source_type.set_value("digital_library")
     for author in _all_by_label(app.text_input, "Primary author name"):
         author.input("Carlo Collodi")
     for source in _all_by_label(app.text_input, "Source URL"):
@@ -589,6 +595,12 @@ def test_uploaded_metadata_semantics_are_reviewed_after_secure_intake(metadata_k
         "cannot yet produce a complete inventory" in message.value for message in app.warning
     )
     assert len(app.error) >= 1
+    issues = app.session_state[webapp_module._FLOW_IMPORT_KEY].issues
+    assert issues
+    assert any(
+        f'<b class="delta-sidebar-metric-blocker">{len(issues)}</b>' in item.value
+        for item in app.sidebar.markdown
+    )
     _by_label(app.button, "Keep these texts and enter the details myself").click().run()
     assert app.button(key="guided_build_review")
     assert app.radio(key="details_route").value == "manual"
@@ -627,6 +639,8 @@ def test_valid_import_opens_review_and_supports_edit_and_full_reset() -> None:
 
 def test_unknown_rights_produce_a_blocked_review() -> None:
     app = _advance_to_describe(run_app())
+    _by_label(app.text_input, "Language of the text").input("it")
+    _by_label(app.selectbox, "Source type").set_value("digital_library")
     _by_label(app.text_input, "Primary author name").input("Carlo Collodi").run()
     _by_label(app.text_input, "Source URL").input("https://www.liberliber.it/").run()
     app.button(key="guided_build_review").click().run()
@@ -664,6 +678,10 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
     assert persisted_mode.value == "zip_archive"
     assert persisted_mode.disabled is True
 
+    for language in _all_by_label(app.text_input, "Language of the text"):
+        language.input("it")
+    for source_type in _all_by_label(app.selectbox, "Source type"):
+        source_type.set_value("digital_library")
     authors = _all_by_label(app.text_input, "Primary author name")
     sources = _all_by_label(app.text_input, "Source URL")
     assert len(authors) == len(sources) == 2
@@ -831,6 +849,12 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
     assert "Classic Delta distance matrix" in rendered
     assert "Nearest-neighbour table with tolerance-aware ties" in rendered
     assert "MDS coordinate table" in rendered
+    for key, title, filename in (
+        ("D01", "Early work", "early.txt"),
+        ("D02", "Late work", "late.txt"),
+    ):
+        label = f'{key} · {title}<small class="delta-result-filename">{filename}</small>'
+        assert rendered.count(label) == 4  # matrix, neighbour pair (both directions), MDS
     assert "4 of 4 comparisons produced matrices" in rendered
     assert "Awaiting configuration" not in rendered
     assert "Start here" not in rendered
@@ -1543,7 +1567,12 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
         "project_result_view",
         lambda **_kwargs: "verified-public-view",
     )
-    monkeypatch.setattr(webapp_module, "_render_result_view", rendered.append)
+
+    def record_render(view: object, filenames: dict[str, str]) -> None:
+        assert filenames == {"D01": "early.txt", "D02": "late.txt"}
+        rendered.append(view)
+
+    monkeypatch.setattr(webapp_module, "_render_result_view", record_render)
 
     app.checkbox(key="p008_parameter_confirmation").check().run()
     assert app.button(key="parameters_run_analysis").disabled is False
@@ -2196,6 +2225,8 @@ def test_guided_correction_shortcut_returns_to_the_exact_work_section() -> None:
     assert _page_title(app) == "Describe what each text represents"
     assert any("First Publication" in message.value for message in app.info)
     assert _by_label(app.text_input, "Primary author name").value == "Carlo Collodi"
+    assert _by_label(app.text_input, "Language of the text").value == "it"
+    assert _by_label(app.selectbox, "Source type").value == "digital_library"
 
 
 def test_csv_correction_shortcut_names_the_source_field_without_false_editing() -> None:
@@ -2323,7 +2354,7 @@ def test_download_failure_is_visible_and_disables_only_metadata_csv(
         inventory=None,
         validation_report=None,
     )
-    webapp_module._render_csv_issues(empty_result)
+    webapp_module._render_csv_issues(empty_result, {})
     assert fake_streamlit.warnings == [
         "The metadata CSV cannot be generated safely from the current inventory."
     ]

@@ -1097,6 +1097,12 @@ div[class*="st-key-review_timeline_selector_"] [role="radio"] p {
   background: var(--delta-paper);
 }
 
+.delta-result-filename {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font-weight: normal;
+}
 .delta-review-table caption {
   position: absolute;
   width: 1px;

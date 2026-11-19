@@ -105,6 +105,18 @@ def _domain_codes(result: MetadataCsvImportResult) -> dict[IssueCode, int | None
     return {issue.code: issue.row_number for issue in result.validation_report.issues}
 
 
+def test_hash_mismatch_identifies_the_matched_upload_even_with_reordered_rows() -> None:
+    rows, files = _two_rows()
+    rows[1]["content_sha256"] = "f" * 64
+    labels: dict[int, str] = {}
+    result = import_metadata_csv(
+        _payload(list(reversed(rows))), files, on_file_hash_mismatch=labels.__setitem__
+    )
+    assert result.blocked and result.inventory is None
+    assert labels == {2: "fixture_two.txt"}
+    assert "fixture_two.txt" not in result.model_dump_json()
+
+
 def test_field_dictionary_is_versioned_ordered_downloadable_and_below_p003_limit() -> None:
     assert FIELD_DICTIONARY.csv_schema_version == CORPUS_METADATA_CSV_VERSION
     assert len(CSV_COLUMNS) == 58

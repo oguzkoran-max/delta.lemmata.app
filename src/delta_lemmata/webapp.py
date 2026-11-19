@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from datetime import date
 from enum import StrEnum
 from html import escape
+from string import punctuation
 from typing import Any, Literal, cast
 
 import pyarrow as pa  # type: ignore[import-untyped]
@@ -88,6 +89,7 @@ from delta_lemmata.intake_ui import (
     validate_browser_uploads,
     visit_browser_corpus_payloads,
 )
+from delta_lemmata.metadata_csv_models import MetadataCsvIssueCode
 from delta_lemmata.prepared_corpus_service import (
     PreparationOutcome,
     PreparedCorpusError,
@@ -147,6 +149,7 @@ _FLOW_INPUT_MODE_KEY = "_p004_input_mode"
 _FLOW_CATALOG_KEY = "_p004_catalog"
 _FLOW_CATALOG_HASH_KEY = "_p004_catalog_sha256"
 _FLOW_IMPORT_KEY = "_p004_metadata_import"
+_FLOW_MISMATCH_FILES_KEY = "_p004_csv_mismatch_files"
 _FLOW_INVENTORY_KEY = "_p004_inventory"
 _FLOW_REPORT_KEY = "_p004_validation_report"
 _FLOW_ORIGIN_KEY = "_p004_inventory_origin"
@@ -397,7 +400,9 @@ def _sidebar_readiness_counts() -> tuple[dict[str, int], bool]:
             },
             True,
         )
-    return ({"works": 0, "blockers": 0, "warnings": 0, "rights": 0}, False)
+    imported = st.session_state.get(_FLOW_IMPORT_KEY)
+    blockers = len(imported.issues) if isinstance(imported, MetadataCsvImportResult) else 0
+    return ({"works": 0, "blockers": blockers, "warnings": 0, "rights": 0}, False)
 
 
 def _render_sidebar_summary(stage: CorpusSubstage, view: ResultViewV1 | None) -> None:
@@ -865,6 +870,7 @@ def _clear_documentation_state(*, keep_purpose: bool) -> None:
         _FLOW_INPUT_MODE_KEY,
         _FLOW_CATALOG_HASH_KEY,
         _FLOW_IMPORT_KEY,
+        _FLOW_MISMATCH_FILES_KEY,
         _FLOW_INVENTORY_KEY,
         _FLOW_REPORT_KEY,
         _FLOW_ORIGIN_KEY,
@@ -1051,11 +1057,13 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
         ):
             units = catalog_units
             metadata_result = None
+            mismatch_files: dict[int, str] = {}
             if metadata_file is not None:
                 metadata_result = import_metadata_csv(
                     metadata_file.data,
                     tuple(unit.validated_file for unit in units),
                     display_label=metadata_file.display_label,
+                    on_file_hash_mismatch=mismatch_files.__setitem__,
                 )
             owner_key = _owner_key()
             try:
@@ -1079,6 +1087,7 @@ def _render_corpus_stage(purpose: PurposeId) -> IntakeOutcome:
                 st.session_state[_FLOW_CATALOG_KEY] = units
                 st.session_state[_FLOW_CATALOG_HASH_KEY] = corpus_catalog_sha256(units)
                 st.session_state[_FLOW_IMPORT_KEY] = metadata_result
+                st.session_state[_FLOW_MISMATCH_FILES_KEY] = mismatch_files
                 st.session_state[_FLOW_MATERIALIZATION_KEY] = materialization
                 st.session_state[_FLOW_STAGE_KEY] = CorpusSubstage.DESCRIBE.value
                 st.session_state[_PENDING_UPLOAD_CLEAR_KEY] = _upload_widget_keys(generation)
@@ -1189,7 +1198,7 @@ def _render_work_editor(
         with language_column:
             language = st.text_input(
                 text("describe.language"),
-                value=initial.language if initial else "it",
+                value=initial.language if initial else "",
                 help=text("describe.language_help"),
                 key=f"{prefix}_language",
             )
@@ -1230,9 +1239,10 @@ def _render_work_editor(
         source_type = st.selectbox(
             text("describe.source_type"),
             options=list(DEFAULT_VOCABULARY.source_types),
-            index=list(DEFAULT_VOCABULARY.source_types).index(
-                initial.source_type if initial else "digital_library"
-            ),
+            index=list(DEFAULT_VOCABULARY.source_types).index(initial.source_type)
+            if initial
+            else None,
+            placeholder=text("describe.source_type_prompt"),
             format_func=_choice_label,
             key=f"{prefix}_source_type",
         )
@@ -1443,7 +1453,7 @@ def _guided_input(unit: ValidatedCorpusUnit, values: dict[str, Any]) -> GuidedWo
             cast(dict[str, Any], values["edition"]),
             text("describe.edition_start"),
         ),
-        source_type=str(values["source_type"]),
+        source_type=values["source_type"],
         source_title=str(values["source_title"]).strip(),
         source_url=source_url,
         bibliographic_citation=citation,
@@ -1462,17 +1472,29 @@ def _validation_fields(error: ValidationError) -> str:
     return ", ".join(fields) or "metadata"
 
 
-def _render_csv_issues(result: MetadataCsvImportResult) -> None:
+def _render_csv_issues(result: MetadataCsvImportResult, mismatch_files: Mapping[int, str]) -> None:
     for issue in result.issues:
         row = issue.row_number if issue.row_number is not None else "-"
-        st.error(
-            text(
-                "describe.csv_issue",
-                row=row,
-                field=issue.field_name,
-                code=issue.code.value,
-            )
+        reference = text(
+            "describe.csv_issue", row=row, field=issue.field_name, code=issue.code.value
         )
+        if (
+            issue.code is MetadataCsvIssueCode.FILE_HASH_MISMATCH
+            and issue.row_number is not None
+            and issue.row_number in mismatch_files
+        ):
+            label = mismatch_files[issue.row_number]
+            literal_label = label.translate(str.maketrans({c: f"\\{c}" for c in punctuation}))
+            st.error(
+                text(
+                    "describe.csv_file_mismatch",
+                    filename=literal_label,
+                    restart=text("describe.back"),
+                )
+            )
+            st.caption(reference)
+            continue
+        st.error(reference)
         st.caption(issue.message)
         st.caption(f"{text('review.issue_why')}: {issue.why_it_matters}")
         st.caption(f"{text('review.issue_fix')}: {issue.how_to_fix}")
@@ -1499,6 +1521,7 @@ def _store_inventory(
 
 def _use_manual_details() -> None:
     st.session_state.pop(_FLOW_IMPORT_KEY, None)
+    st.session_state.pop(_FLOW_MISMATCH_FILES_KEY, None)
     st.session_state["details_route"] = "manual"
 
 
@@ -1548,8 +1571,10 @@ def _render_describe_stage(purpose: PurposeId) -> None:
         if isinstance(imported, MetadataCsvImportResult):
             st.subheader(text("describe.import_title"), anchor=False)
             if imported.inventory is None or imported.validation_report is None:
-                st.warning(text("describe.import_blocked"), icon=":material/table_view:")
-                _render_csv_issues(imported)
+                mismatch_files = st.session_state.get(_FLOW_MISMATCH_FILES_KEY, {})
+                if not mismatch_files:
+                    st.warning(text("describe.import_blocked"), icon=":material/table_view:")
+                _render_csv_issues(imported, mismatch_files)
             elif imported.inventory.purpose is not purpose:
                 st.warning(text("describe.import_blocked"), icon=":material/table_view:")
             else:
@@ -1604,6 +1629,7 @@ def _render_describe_stage(purpose: PurposeId) -> None:
                         "title_original": "describe.title_original",
                         "primary_author_name": "describe.author_name",
                         "language": "describe.language_help",
+                        "source_type": "describe.source_type_prompt",
                         "edition_label": "describe.edition_label",
                         "source_title": "describe.source_title",
                     }
@@ -3074,11 +3100,27 @@ def _render_mds_guide() -> None:
     )
 
 
-def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
+def _result_document_labels(
+    view: ResultViewV1, filenames: Mapping[str, str] | None
+) -> dict[str, str]:
+    labels = {}
+    for document in view.documents:
+        label = f"{_html(document.key)} · {_html(document.title)}"
+        if filenames and document.key in filenames:
+            filename = _html(filenames[document.key])
+            label += f'<small class="delta-result-filename">{filename}</small>'
+        labels[document.key] = label
+    return labels
+
+
+def _render_distance_matrix(
+    cell: ResultCellV1, view: ResultViewV1, filenames: Mapping[str, str] | None = None
+) -> None:
     matrix = cell.matrix
     if matrix is None:
         raise ValueError("distance matrix is unavailable")
     titles = {document.key: document.title for document in view.documents}
+    labels = _result_document_labels(view, filenames)
     header = "".join(
         f'<th scope="col" title="{_html(titles[key])}">{_html(key)}</th>'
         for key in matrix.document_keys
@@ -3086,9 +3128,7 @@ def _render_distance_matrix(cell: ResultCellV1, view: ResultViewV1) -> None:
     rows = []
     for key, values in zip(matrix.document_keys, matrix.values, strict=True):
         cells = "".join(f"<td>{_distance_label(value)}</td>" for value in values)
-        rows.append(
-            f'<tr><th scope="row">{_html(key)} · {_html(titles[key])}</th>' + cells + "</tr>"
-        )
+        rows.append(f'<tr><th scope="row">{labels[key]}</th>' + cells + "</tr>")
     _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
@@ -3313,8 +3353,10 @@ def _render_heatmap(cell: ResultCellV1, view: ResultViewV1) -> None:
     )
 
 
-def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
-    titles = {document.key: document.title for document in view.documents}
+def _render_nearest_neighbours(
+    cell: ResultCellV1, view: ResultViewV1, filenames: Mapping[str, str] | None = None
+) -> None:
+    labels = _result_document_labels(view, filenames)
 
     def tie_label(count: int) -> str:
         if count == 1:
@@ -3322,8 +3364,8 @@ def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
         return text("results.neighbour.tie_count", count=count)
 
     rows = "".join(
-        f'<tr><th scope="row">{_html(item.document_key)} · {_html(titles[item.document_key])}</th>'
-        f"<td>{_html(item.neighbour_key)} · {_html(titles[item.neighbour_key])}</td>"
+        f'<tr><th scope="row">{labels[item.document_key]}</th>'
+        f"<td>{labels[item.neighbour_key]}</td>"
         f"<td>{_distance_label(item.distance)}</td>"
         f"<td>{_html(tie_label(item.tie_count))}</td></tr>"
         for item in nearest_neighbours(cell)
@@ -3343,7 +3385,9 @@ def _render_nearest_neighbours(cell: ResultCellV1, view: ResultViewV1) -> None:
     )
 
 
-def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
+def _render_mds(
+    cell: ResultCellV1, view: ResultViewV1, filenames: Mapping[str, str] | None = None
+) -> None:
     points = classical_mds(cell)
     documents = {document.key: document for document in view.documents}
     values = [
@@ -3467,9 +3511,9 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
             theme=None,
             key=f"p009_mds_{cell.mfw}",
         )
+    labels = _result_document_labels(view, filenames)
     rows = "".join(
-        f'<tr><th scope="row">{_html(point.document_key)} · '
-        f"{_html(documents[point.document_key].title)}</th>"
+        f'<tr><th scope="row">{labels[point.document_key]}</th>'
         f"<td>{_html(documents[point.document_key].role.value)}</td>"
         f"<td>{_distance_label(point.x)}</td><td>{_distance_label(point.y)}</td></tr>"
         for point in points
@@ -3489,7 +3533,7 @@ def _render_mds(cell: ResultCellV1, view: ResultViewV1) -> None:
     )
 
 
-def _render_result_view(view: ResultViewV1) -> None:
+def _render_result_view(view: ResultViewV1, filenames: Mapping[str, str]) -> None:
     st.markdown(
         f'<div class="delta-eyebrow">{_html(text("results.eyebrow"))}</div>',
         unsafe_allow_html=True,
@@ -3543,17 +3587,17 @@ def _render_result_view(view: ResultViewV1) -> None:
 
     st.subheader(text("results.matrix.title"), anchor=False)
     st.caption(text("results.matrix.body"))
-    _render_distance_matrix(selected, view)
+    _render_distance_matrix(selected, view, filenames)
 
     st.subheader(text("results.neighbour.title"), anchor=False)
     st.caption(text("results.neighbour.body"))
-    _render_nearest_neighbours(selected, view)
+    _render_nearest_neighbours(selected, view, filenames)
 
     mds_column, guide_column = st.columns([1.45, 0.75], gap="large")
     with mds_column:
         st.subheader(text("results.mds.title"), anchor=False)
         st.caption(text("results.mds.body"))
-        _render_mds(selected, view)
+        _render_mds(selected, view, filenames)
     with guide_column:
         _render_mds_guide()
 
@@ -3620,7 +3664,13 @@ def _render_parameters_stage() -> ResultViewV1 | None:
                 st.title(text("results.title"), anchor=False)
                 st.error(text("results.unavailable"), icon=":material/gpp_bad:")
             else:
-                _render_result_view(result_view)
+                # Public document keys follow READY receipt order. Filenames stay in the UI.
+                asset_labels = {asset.asset_id: asset.file_label for asset in inventory.assets}
+                filenames = {
+                    f"D{index:02d}": asset_labels[binding.asset_id]
+                    for index, binding in enumerate(ready_receipt.ordered_documents, start=1)
+                }
+                _render_result_view(result_view, filenames)
                 return result_view
         return None
     with st.container(key="parameters_stage"):

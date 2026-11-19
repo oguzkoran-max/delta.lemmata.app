@@ -337,6 +337,8 @@ def test_continue_opens_describe_and_clears_every_raw_upload_value() -> None:
 
 def test_guided_text_path_builds_review_without_running_analysis() -> None:
     app = _advance_to_describe(run_app())
+    _by_label(app.text_input, "Language of the text").input("it")
+    _by_label(app.selectbox, "Source type").set_value("digital_library")
     _by_label(app.text_input, "Primary author name").input("Carlo Collodi").run()
     _by_label(app.text_input, "Source URL").input("https://www.liberliber.it/").run()
     _by_label(app.selectbox, "Documented rights state").set_value("analysis_only").run()
@@ -384,6 +386,10 @@ def test_guided_editor_reports_fields_without_echoing_submitted_values() -> None
     assert len(app.exception) == 0
     assert len(app.error) == 1
     assert "one.txt" in app.error[0].value
+    assert _by_label(app.text_input, "Language of the text").value == ""
+    assert _by_label(app.selectbox, "Source type").value is None
+    assert "language code" in app.error[0].value
+    assert "Choose a source type" in app.error[0].value
     assert "Primary author name" in app.error[0].value
     assert "web address or a written reference" in app.error[0].value
     assert [heading.value for heading in app.title] == ["Describe what each text represents"]

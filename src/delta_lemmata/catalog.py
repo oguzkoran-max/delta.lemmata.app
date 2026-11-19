@@ -563,7 +563,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "describe.required": "Required details for this text",
     "describe.prefilled": (
-        "Check the suggested title, language, edition and other prefilled answers."
+        "Check the suggested title and edition. Enter the language and choose the source type."
     ),
     "describe.language_help": (
         "Enter the language code, for example it for Italian, en for English or tr for Turkish."
@@ -603,6 +603,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     "describe.collection": "Collection status",
     "describe.group_label": "Group label",
     "describe.source_type": "Source type",
+    "describe.source_type_prompt": "Choose a source type",
     "describe.source_title": "Source title",
     "describe.source_url": "Source URL",
     "describe.source_citation": "Bibliographic citation",
@@ -641,6 +642,11 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "describe.year_error": "{field} must be a year from 1 to 9999.",
     "describe.csv_issue": "Row {row} · {field} · {code}",
+    "describe.csv_file_mismatch": (
+        "The contents of **{filename}** do not match your CSV. Analysis is blocked.\n\n"
+        "Choose **{restart}** and upload the version of the text used to make this CSV. "
+        "If you want to use the changed text, create a new CSV for that version and upload both."
+    ),
     "review.eyebrow": "CORPUS · REVIEW",
     "review.title": "Review the documented corpus",
     "review.body": (
