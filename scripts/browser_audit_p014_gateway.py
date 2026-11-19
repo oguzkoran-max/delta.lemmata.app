@@ -17,8 +17,8 @@ from types import TracebackType
 from typing import Self
 from urllib.parse import urlparse
 
+from playwright.sync_api import Request, sync_playwright
 from playwright.sync_api import TimeoutError as PlaywrightTimeoutError
-from playwright.sync_api import sync_playwright
 
 VIEWPORTS = (
     ("desktop", 1280, 900),
@@ -175,7 +175,13 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
     with _TLSForwarder(certificate, private_key) as forwarder, sync_playwright() as playwright:
         browser = playwright.chromium.launch(
             headless=True,
-            args=[f"--host-resolver-rules=MAP {PUBLIC_HOST} {UPSTREAM_HOST}"],
+            args=[
+                f"--host-resolver-rules=MAP {PUBLIC_HOST} {UPSTREAM_HOST}",
+                # Keep HTTP caching active across normal navigation. The local TLS
+                # listener rejects plaintext proxy requests to unexpected hosts.
+                f"--proxy-server=http://{UPSTREAM_HOST}:{PUBLIC_PORT}",
+                f"--proxy-bypass-list=<-loopback>;{PUBLIC_HOST}",
+            ],
         )
         context = browser.new_context(
             viewport={"width": 1280, "height": 900},
@@ -183,19 +189,14 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
         )
         page = context.new_page()
 
-        def guard_request(route) -> None:
+        def observe_request(request: Request) -> None:
             nonlocal blocked_requests
-            if urlparse(route.request.url).hostname != PUBLIC_HOST:
+            host = urlparse(request.url).hostname or "unknown"
+            requests.add(host)
+            if host != PUBLIC_HOST:
                 blocked_requests += 1
-                route.abort("blockedbyclient")
-                return
-            route.continue_()
 
-        context.route("**/*", guard_request)
-        page.on(
-            "request",
-            lambda request: requests.add(urlparse(request.url).hostname or "unknown"),
-        )
+        page.on("request", observe_request)
         page.on("websocket", lambda socket: websockets.append(socket.url))
         page.on(
             "console",
