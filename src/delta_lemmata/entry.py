@@ -112,7 +112,7 @@ def example(
         + '<div class="de-result">'
         + link(home, "← " + text("entry.home"), "de-back")
         + f'<p class="de-source">{text("entry.sample_source")}</p>'
-        + f'<h1>{text("entry.sample_title")}</h1>'
+        + f"<h1>{text('entry.sample_title')}</h1>"
         + f'<p class="de-lead">{text("entry.sample_intro")}</p>'
         + '<div class="de-setting">'
         + f"<strong>{text('entry.setting')}</strong>"
@@ -122,7 +122,7 @@ def example(
         + f'<p class="de-setting-hint">{text("entry.setting_hint")}</p>'
         + '</div><div class="de-grid"><section class="de-pair">'
         + f'<h2>{text("entry.closest")}</h2><p class="de-bigpair">{left} ↔ {right}</p>'
-        + f'<p>{text("entry.closest_scope")}</p>'
+        + f"<p>{text('entry.closest_scope')}</p>"
         + f'<p class="de-distance">{distance:.6f} <span>· {text("entry.distance")}</span></p>'
         + same_pair_note
         + '</section><section class="de-docs">'
