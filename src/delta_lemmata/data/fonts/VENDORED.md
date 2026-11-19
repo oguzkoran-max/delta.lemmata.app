@@ -14,7 +14,7 @@ from an external service at runtime.
 
 ## Source Sans 3 runtime asset
 
-- Provider: the pinned `streamlit==1.59.1` wheel
+- Provider: the pinned `streamlit==1.66.1` wheel
 - Upstream family: `adobe-fonts/source-sans`
 - Upstream font version: Source Sans 3.052 (read from both bundled font name tables)
 - License: SIL Open Font License 1.1 (`OFL-1.1`)
@@ -22,7 +22,7 @@ from an external service at runtime.
 - Runtime asset SHA-256: `5f16566f7a40d39b339ad26be151fa5a1ab1f0c2574c7a2e619765584a1acbd8`
 - Italic runtime asset: `SourceSansVF-Italic.ttf.Bt9VkdQ3.woff2`
 - Italic runtime asset SHA-256: `b4959abc0569392f87c6c6ac612f90e3fe0104d283724189b7d8b6f61af347d3`
-- Verified: 2026-07-17
+- Verified: 2026-11-19
 - Upstream license record: <https://github.com/adobe-fonts/source-sans/blob/release/LICENSE.md>
 
 Delta does not copy or separately serve these two files. Streamlit already

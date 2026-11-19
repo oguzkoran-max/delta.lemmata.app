@@ -91,7 +91,7 @@ def test_inter_is_self_hosted_with_recorded_provenance_and_no_runtime_font_reque
 
 
 def test_streamlit_source_sans_assets_are_pinned_and_recorded() -> None:
-    assert version("streamlit") == "1.59.1"
+    assert version("streamlit") == "1.66.1"
     media = files("streamlit").joinpath("static", "static", "media")
     upright = media.joinpath("SourceSansVF-Upright.ttf.BsWL4Kly.woff2").read_bytes()
     italic = media.joinpath("SourceSansVF-Italic.ttf.Bt9VkdQ3.woff2").read_bytes()
@@ -105,7 +105,7 @@ def test_streamlit_source_sans_assets_are_pinned_and_recorded() -> None:
     assert "Source Sans 3 runtime asset" in record
     assert "Source Sans 3.052" in record
     assert "SIL Open Font License 1.1" in record
-    assert "streamlit==1.59.1" in record
+    assert "streamlit==1.66.1" in record
 
 
 def test_main_landmark_bridge_promotes_the_real_streamlit_main(

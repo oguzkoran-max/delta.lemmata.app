@@ -152,7 +152,7 @@ def test_python_direct_dependencies_are_locked() -> None:
     }
     assert versions["jsonschema"] == "4.26.0"
     assert versions["pydantic"] == "2.13.4"
-    assert versions["streamlit"] == "1.59.1"
+    assert versions["streamlit"] == "1.66.1"
 
 
 def test_r_direct_dependencies_are_locked() -> None:

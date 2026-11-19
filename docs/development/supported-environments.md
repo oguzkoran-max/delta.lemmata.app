@@ -36,7 +36,7 @@ Delta'nın bilimsel olarak kanonik çalışma ortamı, pinlenmiş Linux OCI imag
 |---|---|---|
 | Python | CPython 3.13.9 | `.python-version`, `uv.lock` |
 | Python resolver | uv 0.11.28 | `scripts/bootstrap.sh` |
-| Streamlit | 1.59.1 | `uv.lock` |
+| Streamlit | 1.66.1 | `uv.lock` |
 | Pydantic | 2.13.4 | `uv.lock` |
 | JSON Schema | jsonschema 4.26.0 | `uv.lock` |
 | R | 4.5.2 | `renv.lock` |
