@@ -162,15 +162,8 @@ def _choose_selectbox(page: Page, locator: Locator, option: str) -> None:
             _wait_for_streamlit_idle(page)
             rendered = locator.evaluate(
                 """element => {
-                  let current = element;
-                  for (let depth = 0; depth < 8 && current; depth += 1) {
-                    const text = (current.textContent || '').trim();
-                    if (text.includes('Analysis only') || text.includes('MFW')) {
-                      return text;
-                    }
-                    current = current.parentElement;
-                  }
-                  return (element.value || '').trim();
+                  const control = element.closest('[data-testid="stSelectbox"]');
+                  return (element.value || control?.innerText || '').trim();
                 }"""
             )
             if option in str(rendered):
@@ -328,7 +321,7 @@ def _document_corpus(
             expander = page.locator('[data-testid="stExpander"]').filter(
                 has=page.get_by_text(group_label, exact=True)
             )
-            details = expander.locator("details")
+            details = expander.locator("details").first
             try:
                 details.wait_for(state="attached", timeout=5_000)
                 field = (
@@ -337,7 +330,7 @@ def _document_corpus(
                     else details.get_by_label(label, exact=True)
                 )
                 if not field.is_visible() and details.get_attribute("open") is None:
-                    summary = details.locator("summary")
+                    summary = details.locator("summary").first
                     summary.wait_for(state="visible", timeout=5_000)
                     summary.click(timeout=5_000)
                 field.wait_for(state="visible", timeout=5_000)
