@@ -185,7 +185,7 @@ def test_sidebar_summary_flags_live_blockers_and_warnings(
         lambda: ({"works": 6, "blockers": 2, "warnings": 4, "rights": 1}, True),
     )
 
-    webapp_module._render_sidebar_summary()
+    webapp_module._render_sidebar_summary(webapp_module.CorpusSubstage.UPLOAD, None)
 
     markup = render.call_args.args[0]
     assert 'class="delta-sidebar-metric-blocker">2<' in markup
@@ -204,7 +204,7 @@ def test_sidebar_summary_stays_neutral_until_a_corpus_is_validated(
         lambda: ({"works": 0, "blockers": 0, "warnings": 0, "rights": 0}, False),
     )
 
-    webapp_module._render_sidebar_summary()
+    webapp_module._render_sidebar_summary(webapp_module.CorpusSubstage.UPLOAD, None)
 
     markup = render.call_args.args[0]
     assert "delta-sidebar-metric-blocker" not in markup

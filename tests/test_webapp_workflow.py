@@ -30,6 +30,7 @@ from delta_lemmata.corpus import (
     ValidatedFileRecord,
     VocabularyTerm,
     build_review_projection,
+    export_metadata_csv,
     inventory_sha256,
     metadata_csv_template,
     validate_inventory,
@@ -605,6 +606,49 @@ def test_uploaded_metadata_semantics_are_reviewed_after_secure_intake(metadata_k
     assert app.button(key="guided_build_review")
     assert app.radio(key="details_route").value == "manual"
     assert not any(button.label == "Review imported metadata" for button in app.button)
+
+
+def test_changed_csv_file_warning_is_local_and_blocks_analysis() -> None:
+    filename = "one_[copy].txt"
+    inventory = _fixture_inventory()
+    fixture_label = inventory.validated_files[0].file_label
+    metadata = export_metadata_csv(inventory).replace(fixture_label.encode(), filename.encode())
+    app = run_app()
+    app.radio(key="details_route").set_value("csv").run()
+    app.file_uploader[0].upload(filename, b"changed text", "text/plain")
+    app.file_uploader[1].upload("metadata.csv", metadata, "text/csv")
+    app.run()
+    app.button(key="corpus_continue").click().run()
+    assert not app.exception
+    assert not app.warning
+    assert r"one\_\[copy\]\.txt" in app.error[0].value
+    assert "Analysis is blocked" in app.error[0].value
+    report = app.session_state[webapp_module._FLOW_IMPORT_KEY]
+    assert filename not in report.model_dump_json()
+    assert not any(
+        button.label in {"Review my texts", "Review imported metadata"} for button in app.button
+    )
+    _by_label(app.button, "Keep these texts and enter the details myself").click().run()
+    assert app.button(key="guided_build_review")
+
+
+@pytest.mark.parametrize("failure", ["schema", "inventory"])
+def test_guided_inventory_errors_keep_review_closed(
+    monkeypatch: pytest.MonkeyPatch, failure: str
+) -> None:
+    def reject_inventory(*_args: object) -> None:
+        if failure == "schema":
+            CorpusInventory.model_validate({})
+        raise ValueError("Document mapping is inconsistent.")
+
+    monkeypatch.setattr(webapp_module, "build_guided_inventory", reject_inventory)
+    app = _open_guided_review()
+    assert not app.exception
+    assert _page_title(app) == "Describe what each text represents"
+    assert len(app.error) == 1
+    assert ("purpose" if failure == "schema" else "Document mapping is inconsistent.") in app.error[
+        0
+    ].value
 
 
 def test_imported_metadata_purpose_mismatch_stays_in_describe() -> None:

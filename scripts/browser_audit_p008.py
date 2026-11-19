@@ -412,7 +412,7 @@ def _document_corpus(
             if retained != value:
                 fill_document_field(group_label, label, value)
 
-    page.get_by_role("button", name="Build corpus review", exact=True).click()
+    page.get_by_role("button", name="Review my texts", exact=True).click()
     review_heading = page.get_by_role("heading", name="Review the documented corpus", level=1)
     try:
         review_heading.wait_for()

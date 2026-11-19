@@ -394,6 +394,16 @@ def test_guided_editor_reports_fields_without_echoing_submitted_values() -> None
     assert "web address or a written reference" in app.error[0].value
     assert [heading.value for heading in app.title] == ["Describe what each text represents"]
 
+    link = _by_label(app.text_input, "Source URL")
+    link.input("invalid-address-content").run()
+    app.button(key="guided_build_review").click().run()
+    assert app.error[0].value == "Check one.txt — Enter a complete HTTP or HTTPS web address."
+
+    _by_label(app.text_input, "Source URL").input("https://example.org/source").run()
+    app.button(key="guided_build_review").click().run()
+    assert "language code" in app.error[0].value
+    assert "web address or a written reference" not in app.error[0].value
+
 
 def test_landing_exposes_example_and_upload_without_opening_private_runtime() -> None:
     app = AppTest.from_file(str(APP), default_timeout=20).run()
@@ -424,3 +434,10 @@ def test_example_selects_saved_cell_without_starting_a_job(setting: str, distanc
     assert webapp_module._FLOW_JOB_PRESENTATION_KEY not in app.session_state
     for key in ("D01", "D02", "D03"):
         assert f"<strong>{key}</strong><span>P126 synthetic duplicate title</span>" in markup
+
+
+def test_example_requires_a_completed_comparison() -> None:
+    view = webapp_module.ResultViewV1.model_validate_json(webapp_module.entry.example_record())
+    missing_matrix = view.cells[0].model_copy(update={"matrix": None})
+    with pytest.raises(ValueError, match="requires a completed comparison"):
+        webapp_module.entry._pair_distances(missing_matrix)

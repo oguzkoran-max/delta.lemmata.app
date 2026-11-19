@@ -583,7 +583,7 @@ _ENGLISH_STRINGS: dict[str, str] = {
     ),
     "describe.optional": "Optional details and file information",
     "describe.file_error": "Check {file} — {reason}",
-    "describe.url_error": "Enter a complete web address beginning with https:// or http://.",
+    "describe.url_error": "Enter a complete HTTP or HTTPS web address.",
     "describe.work_heading": "{index}. {file_label}",
     "describe.file_metric": "{lines} lines · {tokens} tokens · SHA-256 {digest}",
     "describe.title_original": "Original work title",
