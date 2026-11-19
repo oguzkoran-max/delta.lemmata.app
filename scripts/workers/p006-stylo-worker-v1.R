@@ -50,6 +50,9 @@ json_array <- function(value) {
 }
 
 sort_json_objects <- function(value) {
+  if (is.data.frame(value)) {
+    return(value[order(names(value), method = "radix")])
+  }
   if (!is.list(value)) {
     return(value)
   }
@@ -484,7 +487,13 @@ analyze_request <- function(request) {
         function(document) document$document_id,
         character(1)
       )),
-      ranked_features = lapply(ranked, identity)
+      # jsonlite encodes data-frame columns in bulk as the same JSON array of rows.
+      ranked_features = data.frame(
+        feature = vapply(ranked, `[[`, character(1), "feature"),
+        known_document_count = vapply(ranked, `[[`, integer(1), "known_document_count"),
+        known_total_count = vapply(ranked, `[[`, integer(1), "known_total_count"),
+        stringsAsFactors = FALSE
+      )
     ),
     fits = unname(lapply(fit_runs, function(run) run$result)),
     cells = cells
