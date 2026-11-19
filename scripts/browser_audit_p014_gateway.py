@@ -133,7 +133,7 @@ class _TLSForwarder:
 def _geometry(page) -> dict[str, int]:
     measured = page.evaluate(
         """() => {
-          const release = document.querySelector('.delta-release-status');
+          const release = document.querySelector('.de-release, .delta-release-status');
           const bounds = release.getBoundingClientRect();
           return {
             clientWidth: document.documentElement.clientWidth,
@@ -213,6 +213,12 @@ def audit(url: str, certificate: Path, private_key: Path) -> dict[str, object]:
         entry_status = response.status if response is not None else None
         if entry_status == 200:
             try:
+                page.get_by_role("heading", name="Compare the style of texts", level=1).wait_for(
+                    timeout=60_000
+                )
+                page.get_by_text("Public alpha · Experimental", exact=True).wait_for(timeout=10_000)
+                page.get_by_role("link", name="Explore the example", exact=True).wait_for()
+                page.get_by_role("link", name="Upload my texts", exact=True).click()
                 page.get_by_text("Discover patterns in writing style.", exact=True).wait_for(
                     timeout=60_000
                 )

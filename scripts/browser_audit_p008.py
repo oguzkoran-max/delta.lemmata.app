@@ -310,6 +310,9 @@ def _document_corpus(
     documents: tuple[tuple[str, bytes], ...],
     output: Path,
 ) -> None:
+    page.get_by_role("radiogroup", name="How will you add details about these texts?").get_by_role(
+        "radio", name="Enter the details myself", exact=True
+    ).check()
     page.get_by_role("region", name="Corpus texts (.txt)", exact=False).locator(
         'input[type="file"]'
     ).set_input_files(
@@ -375,6 +378,12 @@ def _document_corpus(
     for index, (name, _payload) in enumerate(documents):
         group_label = f"{index + 1}. {name}"
         fill_document_field(group_label, "Primary author name", "Delta Synthetic Author")
+        fill_document_field(group_label, "Language of the text", "en")
+        _choose_selectbox(
+            page,
+            document_field(group_label, "Source type", role="combobox"),
+            "Other",
+        )
         fill_document_field(
             group_label,
             "Bibliographic citation",
@@ -395,6 +404,7 @@ def _document_corpus(
         group_label = f"{index + 1}. {name}"
         expected = {
             "Primary author name": "Delta Synthetic Author",
+            "Language of the text": "en",
             "Bibliographic citation": f"Synthetic P008 browser-audit source record for {name}.",
         }
         for label, value in expected.items():
@@ -643,6 +653,7 @@ def _audit_flow(
     page.on("request", lambda request: requests.append(request.url))
     _observe_console(page, console_messages)
     page.goto(url, wait_until="networkidle")
+    page.get_by_role("link", name="Upload my texts", exact=True).click()
     page.get_by_role("heading", name="Discover patterns in writing style.", level=1).wait_for()
     _document_corpus(page, documents, output)
     preparation = _confirm_and_prepare(page, output)

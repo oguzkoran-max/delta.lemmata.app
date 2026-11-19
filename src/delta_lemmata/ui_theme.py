@@ -2450,6 +2450,7 @@ div[data-testid="stMainBlockContainer"] h3 {
 
 .st-key-research_purpose label[data-testid="stRadioOption"],
 .st-key-corpus_input_mode label[data-testid="stRadioOption"],
+.st-key-details_route label[data-testid="stRadioOption"],
 .st-key-p009_result_cell_selector label[data-testid="stRadioOption"] {
   display: flex;
   align-items: center;
@@ -2463,6 +2464,7 @@ div[data-testid="stMainBlockContainer"] h3 {
 
 .st-key-research_purpose label[data-testid="stRadioOption"]:has(input:checked),
 .st-key-corpus_input_mode label[data-testid="stRadioOption"]:has(input:checked),
+.st-key-details_route label[data-testid="stRadioOption"]:has(input:checked),
 .st-key-p009_result_cell_selector label[data-testid="stRadioOption"]:has(input:checked) {
   border-color: var(--delta-teal);
   background: var(--delta-mint-soft);
@@ -2471,6 +2473,7 @@ div[data-testid="stMainBlockContainer"] h3 {
 
 .st-key-research_purpose label[data-testid="stRadioOption"]:has(input:focus-visible),
 .st-key-corpus_input_mode label[data-testid="stRadioOption"]:has(input:focus-visible),
+.st-key-details_route label[data-testid="stRadioOption"]:has(input:focus-visible),
 .st-key-p009_result_cell_selector label[data-testid="stRadioOption"]:has(input:focus-visible) {
   outline: 3px solid rgba(15, 110, 86, 0.28);
   outline-offset: 2px;
