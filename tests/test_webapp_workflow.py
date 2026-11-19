@@ -481,7 +481,7 @@ def test_describe_can_return_to_upload_without_retaining_draft_state() -> None:
     _by_label(app.text_input, "Primary author name").input("Temporary author").run()
     _by_label(app.button, "Start again with different files").click().run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
-    assert "Temporary author" not in repr(app.session_state.filtered_state)
+    assert "Temporary author" not in repr(app.session_state.to_dict())
 
 
 def test_group_dates_and_verified_open_rights_reveal_only_relevant_fields() -> None:
@@ -576,7 +576,7 @@ def test_valid_import_opens_review_and_supports_edit_and_full_reset() -> None:
     app.session_state["review_confirmation_stale"] = True
     _by_label(app.button, "Review imported metadata").click().run()
     assert _page_title(app) == "Review the documented corpus"
-    assert "review_confirmation_stale" not in app.session_state.filtered_state
+    assert "review_confirmation_stale" not in app.session_state
     assert [message.value for message in app.success][-1] == (
         "No corpus-documentation issues were reported."
     )
@@ -588,7 +588,7 @@ def test_valid_import_opens_review_and_supports_edit_and_full_reset() -> None:
     _by_label(app.button, "Review imported metadata").click().run()
     _by_label(app.button, "Start over").click().run()
     assert [heading.value for heading in app.header][0] == "Upload the research corpus"
-    assert webapp_module._FLOW_PURPOSE_KEY not in app.session_state.filtered_state
+    assert webapp_module._FLOW_PURPOSE_KEY not in app.session_state
 
 
 def test_unknown_rights_produce_a_blocked_review() -> None:
@@ -651,7 +651,7 @@ def test_guided_zip_members_build_two_work_review_without_payload_retention() ->
     rendered = "\n".join(item.value for item in app.markdown)
     assert "<span>Independent works</span><strong>2</strong>" in rendered
     assert rendered.count('data-row-key="work_') >= 2
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "ZIP_CANARY_EARLY" not in state
     assert "ZIP_CANARY_LATE" not in state
     assert "storage_name" not in state
@@ -676,7 +676,7 @@ def test_confirmed_corpus_opens_beginner_facing_preparation_decisions() -> None:
         for control in _all_by_label(app.selectbox, "OCR status")
     )
     assert "no lemmatization or stemming" in "\n".join(item.value for item in app.info)
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "alpha beta gamma" not in state
     assert "SessionCapability" not in state
 
@@ -715,7 +715,7 @@ def test_preparation_runs_real_health_checks_and_exports_payload_free_evidence()
     assert captions.count("What this does not establish") == 5
     assert "**Flagged pairs**" in rendered
     assert "Preparation completed deterministically" in rendered
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "PreparationOutcome" in state
     assert "AnalysisPreparationReceiptV1" in state
     assert "alpha beta gamma" not in state
@@ -745,7 +745,7 @@ def test_guided_parameter_review_explains_the_complete_fixed_grid() -> None:
     assert rendered.count("<td>Sensitivity check</td>") == 3
     assert rendered.count("<td>Display reference</td>") == 1
     assert rendered.count('<tr data-reference="true">') == 1
-    assert [expander.label for expander in app.expander] == ["Understand these settings"]
+    assert [expander.label for expander in app.main.expander] == ["Understand these settings"]
     captions = "\n".join(item.value for item in app.caption)
     assert "A larger number includes more vocabulary" in captions
     assert "it does not prove authorship" in captions
@@ -753,7 +753,7 @@ def test_guided_parameter_review_explains_the_complete_fixed_grid() -> None:
     assert [item.label for item in app.download_button] == ["Download resolved parameter record"]
     run_button = app.button(key="parameters_run_analysis")
     assert run_button.disabled is True
-    assert "alpha beta gamma" not in repr(app.session_state.filtered_state)
+    assert "alpha beta gamma" not in repr(app.session_state.to_dict())
 
 
 def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
@@ -823,7 +823,7 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
     assert [button.label for button in app.download_button][-1] == (
         "Download canonical result record"
     )
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "ResultViewV1" not in state
     assert "feature-" not in state
 
@@ -1499,7 +1499,7 @@ def test_confirmed_guided_grid_is_admitted_and_run_once(
         webapp_module.CorpusSubstage.PARAMETERS.value
     )
     assert app.session_state[webapp_module._FLOW_JOB_PRESENTATION_KEY].state_id == "succeeded"
-    state = repr(app.session_state.filtered_state)
+    state = repr(app.session_state.to_dict())
     assert "alpha beta gamma" not in state
     assert "SessionCapability" not in state
 
@@ -2195,7 +2195,7 @@ def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it()
         app.checkbox,
         "I reviewed the file-to-work mappings and the documented rights records.",
     ).uncheck().run()
-    assert webapp_module._FLOW_CONFIRMATION_HASH_KEY not in app.session_state.filtered_state
+    assert webapp_module._FLOW_CONFIRMATION_HASH_KEY not in app.session_state
 
     _by_label(
         app.checkbox,
@@ -2204,7 +2204,7 @@ def test_final_confirmation_is_bound_to_inventory_hash_and_edit_invalidates_it()
 
     _by_label(app.button, "Edit metadata").click().run()
     assert _page_title(app) == "Describe what each text represents"
-    assert webapp_module._FLOW_CONFIRMATION_HASH_KEY not in app.session_state.filtered_state
+    assert webapp_module._FLOW_CONFIRMATION_HASH_KEY not in app.session_state
 
 
 class _Context:
