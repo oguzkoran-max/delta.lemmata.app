@@ -320,6 +320,13 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "values without this display rounding."
     ),
     "results.matrix.label": "Classic Delta distance matrix",
+    "results.matrix.two_references": (
+        "With only two reference works, Delta scales each selected word using those two works. "
+        "This makes the gap between their scaled frequencies the same for every word, "
+        "so the Classic Delta distance between {first} and {second} is always √2 (about 1.4142). "
+        "This fixed value provides no evidence of similarity or of stability across settings. "
+        "Distances involving any other text can vary."
+    ),
     "results.neighbour.title": "Nearest neighbours, including ties",
     "results.neighbour.body": (
         "For each text, Delta lists the smallest distance in this selected matrix. Distances "

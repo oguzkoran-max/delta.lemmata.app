@@ -891,6 +891,11 @@ def test_succeeded_analysis_renders_all_cells_and_accessible_result_views(
     assert rendered.count('class="delta-result-cell delta-result-cell-complete"') == 4
     assert all(f'data-mfw="{mfw}"' in rendered for mfw in (100, 300, 500, 1000))
     assert "Classic Delta distance matrix" in rendered
+    [warning] = app.warning
+    assert "Classic Delta distance between D01 and D02 is always √2 (about 1.4142)" in (
+        warning.value
+    )
+    assert "no evidence of similarity or of stability across settings" in warning.value
     assert "Nearest-neighbour table with tolerance-aware ties" in rendered
     assert "MDS coordinate table" in rendered
     for key, title, filename in (
@@ -1255,6 +1260,59 @@ def test_review_labels_cover_nested_fields_and_all_issue_entity_types() -> None:
         webapp_module._issue_affected_label(issue("edition", "orphan-edition"), orphan_inventory)
         == "orphan-work · Unknown edition"
     )
+
+
+@pytest.mark.parametrize(
+    ("roles", "distance", "pair"),
+    (
+        (
+            (DocumentRole.KNOWN, DocumentRole.UNKNOWN, DocumentRole.KNOWN),
+            DistanceMeasure.CLASSIC_DELTA,
+            "D01 and D03",
+        ),
+        ((DocumentRole.KNOWN,) * 3, DistanceMeasure.CLASSIC_DELTA, None),
+        ((DocumentRole.KNOWN,) * 2, DistanceMeasure.EDERS_DELTA, None),
+        ((DocumentRole.KNOWN,) * 2, DistanceMeasure.COSINE_DELTA, None),
+    ),
+)
+def test_fixed_delta_warning_uses_known_roles_and_classic_distance(
+    monkeypatch: pytest.MonkeyPatch,
+    roles: tuple[DocumentRole, ...],
+    distance: DistanceMeasure,
+    pair: str | None,
+) -> None:
+    warnings: list[str] = []
+    monkeypatch.setattr(webapp_module.st, "warning", warnings.append)
+    monkeypatch.setattr(webapp_module.st, "markdown", lambda *_args, **_kwargs: None)
+    monkeypatch.setattr(webapp_module.st, "caption", lambda *_args, **_kwargs: None)
+    documents = tuple(
+        ResultDocumentV1(key=f"D{index:02d}", title=f"Work {index}", role=role)
+        for index, role in enumerate(roles, start=1)
+    )
+    keys = tuple(document.key for document in documents)
+    values = tuple(
+        tuple(float(abs(row - column)) for column in range(len(keys))) for row in range(len(keys))
+    )
+    # Public Guided Mode validates Classic Delta only. Exercise the display guard
+    # with an alternate cell in case other measures reach this renderer later.
+    cell = (
+        _public_result_view()
+        .cells[2]
+        .model_copy(
+            update={
+                "distance": distance,
+                "matrix": ResultMatrixV1(document_keys=keys, values=values),
+            }
+        )
+    )
+    webapp_module._render_distance_matrix(cell, SimpleNamespace(documents=documents))
+
+    if pair is None:
+        assert not warnings
+    else:
+        [warning] = warnings
+        assert f"distance between {pair} is always √2 (about 1.4142)" in warning
+        assert "Distances involving any other text can vary." in warning
 
 
 def test_result_renderers_cover_variable_scale_ties_and_zero_mds_extent(

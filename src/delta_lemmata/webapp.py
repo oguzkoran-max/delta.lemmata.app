@@ -118,7 +118,7 @@ from delta_lemmata.result_view import (
     nearest_neighbours,
     project_result_view,
 )
-from delta_lemmata.stylo_contracts import DocumentRole
+from delta_lemmata.stylo_contracts import DistanceMeasure, DocumentRole
 from delta_lemmata.ui_theme import APP_CSS
 from delta_lemmata.web_runtime import (
     WebRuntime,
@@ -3129,6 +3129,11 @@ def _render_distance_matrix(
     for key, values in zip(matrix.document_keys, matrix.values, strict=True):
         cells = "".join(f"<td>{_distance_label(value)}</td>" for value in values)
         rows.append(f'<tr><th scope="row">{labels[key]}</th>' + cells + "</tr>")
+    references = [
+        document.key for document in view.documents if document.role is DocumentRole.KNOWN
+    ]
+    if cell.distance is DistanceMeasure.CLASSIC_DELTA and len(references) == 2:
+        st.warning(text("results.matrix.two_references", first=references[0], second=references[1]))
     _render_table_scroll_note("results.table_scroll")
     st.markdown(
         '<div class="delta-table-scroll" role="region" '
