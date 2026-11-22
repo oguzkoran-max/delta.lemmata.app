@@ -13,6 +13,10 @@ authors:
     orcid: "https://orcid.org/0000-0001-7954-9597"
     affiliation: "Ankara University"
     email: "koran@ankara.edu.tr"
+  - family-names: Yücesan
+    given-names: Barış
+    orcid: "https://orcid.org/0000-0002-1776-9815"
+    affiliation: "Ankara University"
 license: MIT
 url: "https://delta.lemmata.app"
 keywords:

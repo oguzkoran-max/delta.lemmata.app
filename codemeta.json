@@ -29,6 +29,16 @@
         "@type": "Organization",
         "name": "Ankara University"
       }
+    },
+    {
+      "@type": "Person",
+      "givenName": "Barış",
+      "familyName": "Yücesan",
+      "id": "https://orcid.org/0000-0002-1776-9815",
+      "affiliation": {
+        "@type": "Organization",
+        "name": "Ankara University"
+      }
     }
   ],
   "keywords": [
