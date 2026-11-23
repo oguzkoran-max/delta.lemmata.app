@@ -105,6 +105,21 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert 'aria-label="Release status: Public alpha, experimental"' in rendered
     assert '<span class="delta-release-alpha">Public alpha</span>' in rendered
     assert '<span class="delta-release-experimental">Experimental</span>' in rendered
+    assert (
+        "Cite as: Koran, O., & Yücesan, B. Delta: An Uncertainty-Aware Stylometry Workbench."
+        in rendered
+    )
+    assert (
+        '<a href="https://lemmata.app/delta/#cite" target="_blank" rel="noopener">Full citation</a>'
+    ) in rendered
+    assert (
+        '<a href="https://lemmata.app/delta/" target="_blank" rel="noopener">About Delta</a>'
+        in rendered
+    )
+    assert (
+        '<a href="https://github.com/oguzkoran-max/delta.lemmata.app" target="_blank" '
+        'rel="noopener">Source code (MIT)</a>'
+    ) in rendered
     assert rendered.count('<h1 id="delta-entry-title">') == 1
     assert "Discover patterns in writing style." in rendered
     assert "Stylometry compares measurable patterns in language use across texts" in rendered
