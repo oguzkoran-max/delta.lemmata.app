@@ -1297,7 +1297,24 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "FAIR-oriented development record · decisions, tests, failures, and "
         "limitations are versioned."
     ),
+    "footer.cite": (
+        "Cite as: Koran, O., & Yücesan, B. (2026). "
+        "Delta: An Uncertainty-Aware Stylometry Workbench."
+    ),
+    "footer.cite_link": "Full citation",
+    "footer.about_link": "About Delta",
+    "footer.source_link": "Source code (MIT)",
 }
+
+# Public pages the footer links to. The browser opens them only when the
+# researcher clicks; the application itself never requests these addresses.
+FOOTER_LINKS: Mapping[str, str] = MappingProxyType(
+    {
+        "about": "https://lemmata.app/delta/",
+        "cite": "https://lemmata.app/delta/#cite",
+        "source": "https://github.com/oguzkoran-max/delta.lemmata.app",
+    }
+)
 
 UI_CATALOG: Mapping[str, Mapping[str, str]] = MappingProxyType(
     {DEFAULT_LOCALE: MappingProxyType(_ENGLISH_STRINGS)}

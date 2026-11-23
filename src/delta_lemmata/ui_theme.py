@@ -2698,6 +2698,10 @@ button[data-testid="stBaseButton-elementToolbar"] {
   line-height: 1.45;
 }
 
+.delta-footer .delta-footer-links {
+  grid-column: 1 / -1;
+}
+
 div[data-testid="stMainBlockContainer"] h1 {
   font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 26px;

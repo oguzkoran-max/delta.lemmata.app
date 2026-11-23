@@ -19,7 +19,7 @@ from pydantic import HttpUrl, TypeAdapter, ValidationError
 
 from delta_lemmata import entry
 from delta_lemmata.analysis_orchestrator import AnalysisOrchestratorError
-from delta_lemmata.catalog import text
+from delta_lemmata.catalog import FOOTER_LINKS, text
 from delta_lemmata.corpus import (
     DEFAULT_VOCABULARY,
     AuthorKind,
@@ -4008,10 +4008,17 @@ def main() -> None:
         with right:
             _render_boundary()
     _render_sidebar(health, stage, displayed_view)
+    footer_links = " · ".join(
+        f'<a href="{_html(FOOTER_LINKS[name])}" target="_blank" rel="noopener">'
+        f"{_html(text(f'footer.{name}_link'))}</a>"
+        for name in ("cite", "about", "source")
+    )
     st.markdown(
         '<footer class="delta-footer">'
         f"<p>{_html(text('footer.scope'))}</p>"
         f"<p>{_html(text('footer.fair'))}</p>"
+        '<p class="delta-footer-links">'
+        f"{_html(text('footer.cite'))} · {footer_links}</p>"
         "</footer>",
         unsafe_allow_html=True,
     )

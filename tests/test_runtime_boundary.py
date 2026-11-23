@@ -3,6 +3,7 @@ from __future__ import annotations
 import tomllib
 from pathlib import Path
 
+from delta_lemmata.catalog import FOOTER_LINKS
 from delta_lemmata.workbench import RUNTIME_POLICY
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -45,5 +46,17 @@ def test_application_source_declares_no_remote_endpoint() -> None:
     source = "\n".join(
         path.read_text(encoding="utf-8") for path in (ROOT / "src" / "delta_lemmata").glob("*.py")
     )
+    # The footer's click-only navigation links are the single allowed exception.
+    for url in FOOTER_LINKS.values():
+        source = source.replace(f'"{url}"', "")
     assert "https://" not in source
     assert "http://" not in source
+
+
+def test_footer_links_are_fixed_public_pages_not_runtime_endpoints() -> None:
+    assert dict(FOOTER_LINKS) == {
+        "about": "https://lemmata.app/delta/",
+        "cite": "https://lemmata.app/delta/#cite",
+        "source": "https://github.com/oguzkoran-max/delta.lemmata.app",
+    }
+    assert RUNTIME_POLICY.external_endpoints == ()
