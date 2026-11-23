@@ -106,8 +106,8 @@ def test_upload_shell_explains_stylometry_and_keeps_future_analysis_absent() -> 
     assert '<span class="delta-release-alpha">Public alpha</span>' in rendered
     assert '<span class="delta-release-experimental">Experimental</span>' in rendered
     assert (
-        "Cite as: Koran, O., & Yücesan, B. Delta: An Uncertainty-Aware Stylometry Workbench."
-        in rendered
+        "Cite as: Koran, O., & Yücesan, B. (2026). "
+        "Delta: An Uncertainty-Aware Stylometry Workbench." in rendered
     )
     assert (
         '<a href="https://lemmata.app/delta/#cite" target="_blank" rel="noopener">Full citation</a>'

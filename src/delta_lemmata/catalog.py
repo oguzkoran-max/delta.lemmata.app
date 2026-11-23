@@ -1298,7 +1298,8 @@ _ENGLISH_STRINGS: dict[str, str] = {
         "limitations are versioned."
     ),
     "footer.cite": (
-        "Cite as: Koran, O., & Yücesan, B. Delta: An Uncertainty-Aware Stylometry Workbench."
+        "Cite as: Koran, O., & Yücesan, B. (2026). "
+        "Delta: An Uncertainty-Aware Stylometry Workbench."
     ),
     "footer.cite_link": "Full citation",
     "footer.about_link": "About Delta",
