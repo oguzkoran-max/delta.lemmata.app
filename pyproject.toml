@@ -12,6 +12,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 authors = [
   { name = "Oğuz Koran", email = "koran@ankara.edu.tr" },
+  { name = "Barış Yücesan" },
 ]
 keywords = [
   "stylometry",
